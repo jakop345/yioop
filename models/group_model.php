@@ -50,26 +50,12 @@ require_once BASE_DIR."/lib/utility.php";
 
 class GroupModel extends Model
 {
-
-    /**
-     * @var string
-     */
-    var $from_tables = "GROUPS G, USER_GROUP UG, USERS O";
-    /**
-     *  @var string
-     */
-    var $where_callback = "groupWhereCallback";
-    /**
-     *  @var string
-     */
-     var $select_callback = "groupSelectCallback";
-
     /**
      *  Associations of the form
      *      name of field for web forms => database column names/abbreviations
      *  In this case, things will in general map to the GROUPS, or USER_GROUP
      *  or GROUP_ITEM tables in the Yioop database
-     *  var array
+     *  @var array
      */
     var $search_table_column_map = array("access"=>"G.MEMBER_ACCESS",
         "group_id"=>"G.GROUP_ID", "post_id" => "GI.ID",
@@ -79,32 +65,15 @@ class GroupModel extends Model
         "register"=>"G.REGISTER_TYPE", "status"=>"UG.STATUS",
         "user_id"=>"P.USER_ID");
 
-    function __construct($db_name = DB_NAME, $connect = true)
-    {
-        parent::__construct($db_name, $connect);
-        $this->any_fields = array("access", "register");
-    }
+    /**
+     * @var array
+     */
+    var $any_fields = array("access", "register");
 
-    function groupWhereCallback($args)
-    {
-        $db = $this->db;
-        if(count($args) < 2) {
-            return "";
-        }
-        list($user_id, $browse, ) = $args;
-        if($browse) {
-            $where =
-                " UG.GROUP_ID=G.GROUP_ID AND G.OWNER_ID=O.USER_ID AND NOT ".
-                "EXISTS (SELECT * FROM USER_GROUP UG2 WHERE UG2.USER_ID = ".
-                $db->escapeString($user_id)." AND UG2.GROUP_ID = G.GROUP_ID)";
-        } else {
-            $where = " UG.USER_ID='".$db->escapeString($user_id).
-                "' AND  UG.GROUP_ID=G.GROUP_ID AND G.OWNER_ID=O.USER_ID";
-        }
-        return $where;
-    }
-
-    function groupSelectCallback($args)
+    /**
+     *  @param mixed $args
+     */
+    function selectCallback($args)
     {
         if(count($args) < 2) {
             return "*";
@@ -122,6 +91,36 @@ class GroupModel extends Model
             O.USER_NAME AS OWNER, REGISTER_TYPE, $status
             G.MEMBER_ACCESS $join_date";
         return $select;
+    }
+
+    /**
+     *  @param mixed $args
+     */
+    function fromCallback($args)
+    {
+        return "GROUPS G, USER_GROUP UG, USERS O";
+    }
+
+    /**
+     *  @param mixed $args
+     */
+    function whereCallback($args)
+    {
+        $db = $this->db;
+        if(count($args) < 2) {
+            return "";
+        }
+        list($user_id, $browse, ) = $args;
+        if($browse) {
+            $where =
+                " UG.GROUP_ID=G.GROUP_ID AND G.OWNER_ID=O.USER_ID AND NOT ".
+                "EXISTS (SELECT * FROM USER_GROUP UG2 WHERE UG2.USER_ID = ".
+                $db->escapeString($user_id)." AND UG2.GROUP_ID = G.GROUP_ID)";
+        } else {
+            $where = " UG.USER_ID='".$db->escapeString($user_id).
+                "' AND  UG.GROUP_ID=G.GROUP_ID AND G.OWNER_ID=O.USER_ID";
+        }
+        return $where;
     }
 
     /**
@@ -350,7 +349,7 @@ class GroupModel extends Model
      *  @param int $group_id id of group to look up
      *  @param int $user_id user asking for group info
      *  @return array row from group table or false (if no access or doesn't
-     *      existss)
+     *      exists)
      */
     function getGroupById($group_id, $user_id)
     {

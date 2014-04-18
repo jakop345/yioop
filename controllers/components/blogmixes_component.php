@@ -259,7 +259,6 @@ class BlogmixesComponent extends Component implements CrawlConstants
                 array("status", "=", ACTIVE_STATUS, ""),
                 array("join_date", "=","", "DESC"));
             $groups = $group_model->getRows(
-                "database",
                 0, $limit + $results_per_page, $groups_count,
                 $search_array, array($user_id, false));
             $pages = array();
@@ -372,18 +371,6 @@ class BlogmixesComponent extends Component implements CrawlConstants
         $possible_arguments = array(
             "createmix", "deletemix", "editmix", "index", "importmix",
             "search", "sharemix");
-        $data['COMPARISON_TYPES'] = array(
-            "=" => tl('accountaccess_component_equal'),
-            "!=" => tl('accountaccess_component_not_equal'),
-            "CONTAINS" => tl('accountaccess_component_contains'),
-            "BEGINS WITH" => tl('accountaccess_component_begins_with'),
-            "ENDS WITH" => tl('accountaccess_component_ends_with'),
-        );
-        $data['SORT_TYPES'] = array(
-            "NONE" => tl('accountaccess_component_no_sort'),
-            "ASC" => tl('accountaccess_component_sort_ascending'),
-            "DESC" => tl('accountaccess_component_sort_descending'),
-        );
         $data["ELEMENT"] = "mixcrawls";
         $user_id = $_SESSION['USER_ID'];
 
@@ -485,41 +472,9 @@ class BlogmixesComponent extends Component implements CrawlConstants
                     }
                 break;
                 case "search":
-                    $data['FORM_TYPE'] = "search";
-                    $comparison_fields = array('name');
-                    $paging = "";
-                    foreach($comparison_fields as $comparison_start) {
-                        $comparison = $comparison_start."_comparison";
-                        $data[$comparison] = (isset($_REQUEST[$comparison]) &&
-                            isset($data['COMPARISON_TYPES'][
-                            $_REQUEST[$comparison]])) ?$_REQUEST[$comparison] :
-                            "=";
-                        $paging .= "&amp;$comparison=".
-                            urlencode($data[$comparison]);
-                    }
-                    foreach($comparison_fields as $sort_start) {
-                        $sort = $sort_start."_sort";
-                        $data[$sort] = (isset($_REQUEST[$sort]) &&
-                            isset($data['SORT_TYPES'][
-                            $_REQUEST[$sort]])) ?$_REQUEST[$sort] :
-                            "NONE";
-                        $paging .= "&amp;$sort=".urlencode($data[$sort]);
-                    }
-                    $search_array = array();
-                    foreach($comparison_fields as $field) {
-                        $field_name = $field;
-                        $field_comparison = $field."_comparison";
-                        $field_sort = $field."_sort";
-                        $data[$field_name] = (isset($_REQUEST[$field_name])) ?
-                            $parent->clean($_REQUEST[$field_name], "string") :
-                            "";
-                        $search_array[] = array($field,
-                            $data[$field_comparison], $data[$field_name],
-                            $data[$field_sort]);
-                        $paging .= "&amp;$field_name=".
-                            urlencode($data[$field_name]);
-                    }
-                    $data['PAGING'] = $paging;
+                    $search_array = 
+                        $parent->tableSearchRequestHandler($data,
+                        array('name'));
                 break;
                 case "sharemix":
                     if(!$parent->checkCSRFTime(CSRF_TOKEN)) {

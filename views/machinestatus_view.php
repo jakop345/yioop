@@ -85,14 +85,16 @@ class MachinestatusView extends View
         </form>
         </div><br />
         <?php
-        $data['TABLE_TITLE'] = "";
-        $data['ACTIVITY'] = 'manageMachines';
-        $data['VIEW'] = $this;
-        $data['FORM_TYPE'] = null;
-        $data['NO_SEARCH'] = true;
-        $data['NO_FLOAT_TABLE'] = true;
-        $this->helper("pagingtable")->render($data);
-
+        if(count($data['MACHINES']) > 1) {
+            $data['TABLE_TITLE'] = "";
+            $data['ACTIVITY'] = 'manageMachines';
+            $data['VIEW'] = $this;
+            $data['FORM_TYPE'] = null;
+            $data['NO_SEARCH'] = true;
+            $data['NO_FLOAT_TABLE'] = true;
+            $this->helper("pagingtable")->render($data);
+        }
+        
         foreach($data['MACHINES'] as $k => $m) {
             if(!is_numeric($k)) {
                 continue;

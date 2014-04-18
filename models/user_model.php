@@ -50,19 +50,6 @@ require_once BASE_DIR."/lib/utility.php";
 class UserModel extends Model
 {
     /**
-     * @var string
-     */
-    var $from_tables = "USERS";
-
-    /**
-     *  @var string
-     */
-    var $where_callback = "userWhereCallback";
-    /**
-     *  @var string
-     */
-     var $select_callback = "userSelectCallback";
-    /**
      *  Associations of the form
      *      name of field for web forms => database column names/abbreviations
      *  In this case, things will in general map to the USERS table in the
@@ -72,20 +59,32 @@ class UserModel extends Model
     var $search_table_column_map = array("first"=>"FIRST_NAME",
         "last" => "LAST_NAME", "user" => "USER_NAME", "email"=>"EMAIL",
         "status"=>"STATUS");
+
     /**
-     * @param mixed $args
+     * @var array
      */
-    function userWhereCallback($args = NULL)
-    {
-        return "USER_ID != '".PUBLIC_USER_ID."'";
-    }
+    var $any_fields = array("status");
 
     /**
      * @param mixed $args
      */
-    function userSelectCallback($args = NULL)
+    function selectCallback($args = NULL)
     {
         return "USER_ID, USER_NAME, FIRST_NAME, LAST_NAME, EMAIL, STATUS";
+    }
+    /**
+     * @param mixed $args
+     */
+    function fromCallback($args = NULL)
+    {
+        return "USERS";
+    }
+    /**
+     * @param mixed $args
+     */
+    function whereCallback($args = NULL)
+    {
+        return "USER_ID != '".PUBLIC_USER_ID."'";
     }
 
     /**

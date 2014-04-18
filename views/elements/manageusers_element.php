@@ -310,13 +310,15 @@ class ManageusersElement extends Element
                                 NUM_RESULTS_PER_PAGE) {
                                 ?><a href='<?php e(
                                 "$action_url&amp;arg=edituser&amp;role_limit=".
-                                ($limit + NUM_RESULTS_PER_PAGE)); ?>'>&gt;&gt;</a>
+                                ($limit + NUM_RESULTS_PER_PAGE)); ?>'
+                                >&gt;&gt;</a>
                             <?php
                             }
                         ?><br />
                         <button type="submit" name="change_filter"
                             value="role"><?php
-                        e(tl('manageusers_element_filter')); ?></button><br />&nbsp;
+                        e(tl('manageusers_element_filter')); ?></button>
+                        <br />&nbsp;
                     </div>
                     <?php
                     }
@@ -327,7 +329,8 @@ class ManageusersElement extends Element
                     <button type="submit"
                         class="button-box">
                         <label for='select-role'><?php
-                        e(tl('manageusers_element_add_role')); ?></label></button>
+                        e(tl('manageusers_element_add_role')); ?></label>
+                    </button>
                     </div>
                     </div>
                 <?php
@@ -462,144 +465,26 @@ class ManageusersElement extends Element
      */
     function renderSearchForm($data)
     {
-        $base_url = "?c=admin&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
-            "&amp;a=manageUsers";
-        e("<div class='float-opposite'><a href='$base_url'>".
-            tl('manageusers_element_adduser_form')."</a></div>");
-        e("<h2>".tl('manageusers_element_search_user'). "</h2>");
-        $item_sep = (MOBILE) ? "<br />" : "</td><td>";
-        ?>
-        <form id="user-form" method="post" action='#' autocomplete="off">
-        <input type="hidden" name="c" value="admin" />
-        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
-            e($data[CSRF_TOKEN]); ?>" />
-        <input type="hidden" name="a" value="manageUsers" />
-        <input type="hidden" name="arg" value="search" />
-        <table class="name-table">
-        <tr><td class="table-label"><label for="user-name"><?php
-            e(tl('manageusers_element_username'))?>:</label>
-            <?php
-                e($item_sep);
-                $this->view->helper("options")->render(
-                    "user-comparison", "user_comparison",
-                    $data['COMPARISON_TYPES'],
-                    $data['user_comparison']);
-                e($item_sep);
-            ?><input type="text" id="user-name"
-                name="user_name"  maxlength="80"
-                value="<?php e($data['user_name']); ?>"
-                class="narrow-field"  />
-            <?php
-                e($item_sep);
-                $this->view->helper("options")->render(
-                    "user-sort", "user_sort",
-                    $data['SORT_TYPES'],
-                    $data['user_sort']);
-            ?></td></tr>
-        <tr><td class="table-label"><label for="first-name"><?php
-                e(tl('manageusers_element_firstname')); ?>:</label>
-            <?php
-                e($item_sep);
-                $this->view->helper("options")->render(
-                    "first-comparison", "first_comparison",
-                    $data['COMPARISON_TYPES'],
-                    $data['first_comparison']);
-                e($item_sep);
-            ?><input type="text" id="first-name"
-                name="first_name"  maxlength="80"
-                value="<?php e($data['first_name']); ?>"
-                class="narrow-field"/>
-            <?php
-                e($item_sep);
-                $this->view->helper("options")->render(
-                    "first-sort", "first_sort",
-                    $data['SORT_TYPES'],
-                    $data['first_sort']);
-            ?></td></tr>
-        <tr><td class="table-label"><label for="last-name"><?php
-                e(tl('manageusers_element_lastname')); ?>:</label>
-            <?php
-                e($item_sep);
-                $this->view->helper("options")->render(
-                    "last-comparison", "last_comparison",
-                    $data['COMPARISON_TYPES'],
-                    $data['last_comparison']);
-                e($item_sep);
-            ?><input type="text" id="last-name"
-                name="last_name"  maxlength="80"
-                value="<?php e($data['last_name']); ?>"
-                class="narrow-field"/>
-            <?php
-                e($item_sep);
-                $this->view->helper("options")->render(
-                    "last-sort", "last_sort",
-                    $data['SORT_TYPES'],
-                    $data['last_sort']);
-            ?></td></tr>
-        <tr><td class="table-label"><label for="e-mail"><?php
-                e(tl('manageusers_element_email')); ?>:</label>
-            <?php
-                e($item_sep);
-                $this->view->helper("options")->render(
-                    "email-comparison", "email_comparison",
-                    $data['COMPARISON_TYPES'],
-                    $data['email_comparison']);
-                e($item_sep);
-            ?><input type="text" id="e-mail"
-                name="email_name" maxlength="80"
-                value="<?php e($data['email_name']); ?>"
-                class="narrow-field"/>
-            <?php
-                e($item_sep);
-                $this->view->helper("options")->render(
-                    "email-sort", "email_sort",
-                    $data['SORT_TYPES'],
-                    $data['email_sort']);
-            ?></td></tr>
-        <tr><td class="table-label"><label for="search-userstatus-user"><?php
-                e(tl('manageusers_element_status')); ?>:</label>
-            <?php
-                e($item_sep);
-                $this->view->helper("options")->render(
-                    "status-comparison", "status_comparison",
-                    $data['STATUS_COMPARISON_TYPES'],
-                    $data['status_comparison']);
-            ?>
-            <style type="text/css">
-            #status-comparison {
-                width:100%;
-            }
-            </style>
-            <?php
-            e($item_sep);
-            $this->view->helper("options")->render(
-                "search-userstatus-user",
-                "status_name", $data['STATUS_CODES'],
-                $data['status_name']);
-            ?>
-            <style type="text/css">
-            #search-userstatus-user {
-                width:100%
-            }
-            </style>
-            <?php
-                e($item_sep);
-                $this->view->helper("options")->render(
-                    "status-sort", "status_sort",
-                    $data['SORT_TYPES'],
-                    $data['status_sort']);
-            ?></td></tr>
-        <tr><?php if(!MOBILE) {?><td></td><td></td> <?php } ?>
-            <td <?php if(!MOBILE) {
-                    ?>class="center" <?php
-                }
-                ?>><button class="button-box"
-                type="submit"><?php e(tl('manageusers_element_search'));
-                ?></button></td>
-        </tr>
-        </table>
-        </form>
-        <?php
+        $controller = "admin";
+        $activity = "manageUsers";
+        $view = $this->view;
+        $title = tl('manageusers_element_search_user');
+        $return_form_name = tl('manageusers_element_adduser_form');
+        $fields = array(
+            tl('manageusers_element_username') => "user",
+            tl('manageusers_element_firstname') => "first",
+            tl('manageusers_element_lastname') => "last",
+            tl('manageusers_element_email') => "email",
+            tl('manageusers_element_status') =>
+                array("status", $data['EQUAL_COMPARISON_TYPES']),
+        );
+        $postfix = "name";
+        $dropdowns = array(
+            "status" => $data['STATUS_CODES']
+        );
+        $view->helper("searchtable")->render($data, $controller, $activity,
+                $view, $title, $return_form_name, $fields, $dropdowns,
+                $postfix);
     }
 }
 ?>

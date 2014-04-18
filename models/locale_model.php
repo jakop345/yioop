@@ -70,7 +70,6 @@ class LocaleModel extends Model
      * @var array
      */
     var $configure = array();
-
     /**
      * Used to store ini file data of the default locale (will use if no
      * translation current locale)
@@ -104,6 +103,65 @@ class LocaleModel extends Model
      * @var array
      */
     var $extensions = array("php");
+    /**
+     *  Associations of the form
+     *      name of field for web forms => database column names/abbreviations
+     *  In this case, things will in general map to the LOCALES tables in the 
+     *  Yioop database
+     *  @var array
+     */
+    var $search_table_column_map = array("name"=>"LOCALE_NAME",
+        "tag"=>"LOCALE_TAG", "mode" => "WRITING_MODE");
+    /**
+     * @var array
+     */
+    var $any_fields = array("mode");
+    /**
+     * @param mixed $args
+     */
+    function selectCallback($args = NULL)
+    {
+        return "LOCALE_ID, LOCALE_TAG, LOCALE_NAME, WRITING_MODE";
+    }
+    /**
+     * @param mixed $args
+     */
+    function rowCallback($locale, $args)
+    {
+        /*
+            the statistics text file contains info used to calculate
+            what fraction of strings have been translated
+         */
+        $tag_prefix = LOCALE_DIR."/".$locale['LOCALE_TAG'];
+        if(!file_exists($tag_prefix)) {
+            mkdir($tag_prefix); //create locale_dirs that are missing
+            $this->db->setWorldPermissionsRecursive($tag_prefix);
+        }
+        if(!file_exists("$tag_prefix/statistics.txt") ||
+            filemtime("$tag_prefix/statistics.txt") <
+            filemtime("$tag_prefix/configure.ini")) {
+
+            $tmp = parse_ini_with_fallback(
+                "$tag_prefix/configure.ini");
+            $num_ids = 0;
+            $num_strings = 0;
+            foreach ($tmp['strings'] as $msg_id => $msg_string) {
+                $num_ids++;
+                if(strlen($msg_string) > 0) {
+                    $num_strings++;
+                }
+            }
+            $locale['PERCENT_WITH_STRINGS'] =
+                floor(100 * $num_strings/$num_ids);
+            file_put_contents("$tag_prefix/statistics.txt",
+                serialize($locale['PERCENT_WITH_STRINGS']));
+        } else {
+            $locale['PERCENT_WITH_STRINGS'] =
+                unserialize(
+                    file_get_contents("$tag_prefix/statistics.txt"));
+        }
+        return $locale;
+    }
 
     /**
      * Loads the provided locale's configure file (containing transalation) and
@@ -202,6 +260,46 @@ class LocaleModel extends Model
         return $locales;
     }
 
+    /**
+     *   Check if there is a locale with tag equal to $locale_tag
+     *
+     *   @param string $locale_tag to check for
+     *   @return bool whether or not has exists
+     */
+    function checkLocaleExists($locale_tag)
+    {
+        $db = $this->db;
+        $params = array($locale_tag);
+        $sql = "SELECT COUNT(*) AS NUM FROM LOCALE WHERE
+            LOCALE_TAG=? ";
+        $result = $db->execute($sql, $params);
+        if(!$row = $db->fetchArray($result) ) {
+            return false;
+        }
+        if($row['NUM'] <= 0) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     *   Returns the name of the locale for tag $locale_tag
+     *
+     *   @param string $locale_tag to get name for
+     *   @return string name of locale
+     */
+    function getLocaleName($locale_tag)
+    {
+        $db = $this->db;
+        $params = array($locale_tag);
+        $sql = "SELECT LOCALE_NAME FROM LOCALE WHERE
+            LOCALE_TAG=? ";
+        $result = $db->execute($sql, $params);
+        if(!$row = $db->fetchArray($result) ) {
+            return "";
+        }
+        return $row["LOCALE_NAME"];
+    }
 
     /**
      * Adds information concerning a new locale to the database

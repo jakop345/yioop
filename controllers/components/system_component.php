@@ -45,9 +45,6 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  */
 class SystemComponent extends Component
 {
-    var $activities = array("manageMachines", "manageLocales",
-        "serverSettings", "configure");
-
     /**
      * Handles admin request related to the managing the machines which perform
      *  crawls
@@ -340,87 +337,56 @@ class SystemComponent extends Component
     {
         $parent = $this->parent;
         $locale_model = $parent->model("locale");
-        $possible_arguments = array("addlocale", "deletelocale", "editlocale");
-
+        $possible_arguments = array("addlocale", "deletelocale", "editlocale",
+            "search");
+        $search_array = array();
         $data['SCRIPT'] = "";
         $data["ELEMENT"] = "managelocales";
-
-        $data["LOCALES"] = $locale_model->getLocaleList();
-        $data['LOCALE_NAMES'][-1] = tl('system_component_select_localename');
-
-        $locale_ids = array();
-
-        foreach ($data["LOCALES"] as $locale) {
-            $data["LOCALE_NAMES"][$locale["LOCALE_TAG"]] =
-                $locale["LOCALE_NAME"];
-            $locale_ids[] = $locale["LOCALE_TAG"];
-        }
-
+        $data['FORM_TYPE'] = "addlocale";
         if(isset($_REQUEST['arg']) &&
             in_array($_REQUEST['arg'], $possible_arguments)) {
-            if(isset($_REQUEST['localename'])) {
-                $localename = $parent->clean($_REQUEST['localename'], "string");
-            } else {
-                $localename = "";
+            $clean_fields = array('localename', 'localetag', 'writingmode',
+                'selectlocale');
+            foreach($clean_fields as $field) {
+                $$field = "";
+                if(isset($_REQUEST[$field])) {
+                    $$field = $parent->clean($_REQUEST[$field], "string");
+                }
             }
-            if(isset($_REQUEST['localetag'])) {
-                $localetag = $parent->clean($_REQUEST['localetag'], "string" );
-            } else {
-                $localetag = "";
-            }
-            if(isset($_REQUEST['writingmode'])) {
-                $writingmode =
-                    $parent->clean($_REQUEST['writingmode'], "string" );
-            } else {
-                $writingmode = "";
-            }
-            if(isset($_REQUEST['selectlocale'])) {
-                $select_locale =
-                    $parent->clean($_REQUEST['selectlocale'], "string" );
-            } else {
-                $select_locale = "";
-            }
-
             switch($_REQUEST['arg'])
             {
                 case "addlocale":
                     $locale_model->addLocale(
                         $localename, $localetag, $writingmode);
                     $locale_model->extractMergeLocales();
-                    $data["LOCALES"] = $locale_model->getLocaleList();
-                    $data['LOCALE_NAMES'][$localetag] = $localename;
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('system_component_locale_added')."</h1>')";
                 break;
 
                 case "deletelocale":
-
-                    if(!in_array($select_locale, $locale_ids)) {
+                    if(!$locale_model->checkLocaleExists($selectlocale)) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('system_component_localename_doesnt_exists').
                             "</h1>')";
                         return $data;
                     }
-                    $locale_model->deleteLocale($select_locale);
-                    $data["LOCALES"] = $locale_model->getLocaleList();
-                    unset($data['LOCALE_NAMES'][$select_locale]);
-
+                    $locale_model->deleteLocale($selectlocale);
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('system_component_localename_deleted')."</h1>')";
                 break;
 
                 case "editlocale":
-                    if(!isset($select_locale)) break;
+                    if(!isset($selectlocale)) break;
                     $data["leftorright"] =
                         (getLocaleDirection() == 'ltr') ? "right": "left";
                     $data["ELEMENT"] = "editlocales";
                     $data['STATIC_PAGES'][-1]=
                         tl('system_component_select_staticpages');
                     $data['STATIC_PAGES'] +=
-                        $locale_model->getStaticPageList($select_locale);
+                        $locale_model->getStaticPageList($selectlocale);
                     $data['CURRENT_LOCALE_NAME'] =
-                        $data['LOCALE_NAMES'][$select_locale];
-                    $data['CURRENT_LOCALE_TAG'] = $select_locale;
+                        $locale_model->getLocaleName($selectlocale);
+                    $data['CURRENT_LOCALE_TAG'] = $selectlocale;
                     $tmp_pages = $data['STATIC_PAGES'];
                     array_shift($tmp_pages);
                     $page_keys = array_keys($tmp_pages);
@@ -459,7 +425,7 @@ class SystemComponent extends Component
                             $safe_strings[$clean_key] = $clean_value;
                         }
                         $locale_model->updateStringData(
-                            $select_locale, $safe_strings);
+                            $selectlocale, $safe_strings);
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('system_component_localestrings_updated').
                             "</h1>')";
@@ -467,12 +433,18 @@ class SystemComponent extends Component
                         $locale_model->extractMergeLocales();
                     }
                     $data['STRINGS'] =
-                        $locale_model->getStringData($select_locale);
+                        $locale_model->getStringData($selectlocale);
                     $data['DEFAULT_STRINGS'] =
                         $locale_model->getStringData(DEFAULT_LOCALE);
                 break;
+                case "search":
+                    $search_array = $parent->tableSearchRequestHandler($data,
+                        array('name', 'tag', 'mode'));
+                break;
             }
         }
+        $parent->pagingLogic($data, $locale_model,
+            "LOCALES", DEFAULT_ADMIN_PAGING_NUM, $search_array);
         return $data;
     }
 

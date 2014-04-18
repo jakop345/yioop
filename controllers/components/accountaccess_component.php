@@ -204,26 +204,10 @@ class AccountaccessComponent extends Component
             ACTIVE_STATUS => tl('accountaccess_component_active_status'),
             BANNED_STATUS => tl('accountaccess_component_banned_status')
         );
-        $data['COMPARISON_TYPES'] = array(
-            "=" => tl('accountaccess_component_equal'),
-            "!=" => tl('accountaccess_component_not_equal'),
-            "CONTAINS" => tl('accountaccess_component_contains'),
-            "BEGINS WITH" => tl('accountaccess_component_begins_with'),
-            "ENDS WITH" => tl('accountaccess_component_ends_with'),
-        );
-        $data['STATUS_COMPARISON_TYPES'] = array(
-            "=" => tl('accountaccess_component_equal'),
-            "!=" => tl('accountaccess_component_not_equal'),
-        );
-        $data['SORT_TYPES'] = array(
-            "NONE" => tl('accountaccess_component_no_sort'),
-            "ASC" => tl('accountaccess_component_sort_ascending'),
-            "DESC" => tl('accountaccess_component_sort_descending'),
-        );
         $data['FORM_TYPE'] = "adduser";
         $search_array = array();
         $username = "";
-        if(isset($_REQUEST['user_name'])) {
+        if(isset($_REQUEST['user'])) {
             $username = $parent->clean($_REQUEST['user_name'], "string" );
         }
         if($username == "" && isset($_REQUEST['arg']) && $_REQUEST['arg']
@@ -497,7 +481,13 @@ class AccountaccessComponent extends Component
                         }
                     }
                 break;
-
+                case "search":
+                    $data["FORM_TYPE"] = "search";
+                    $search_array = 
+                        $parent->tableSearchRequestHandler($data,
+                        array('user', 'first', 'last', 'email', 'status'),
+                        array('status'), "_name");
+                break;
                 case "updatestatus":
                     $user_id = $signin_model->getUserId($username);
                     if(!isset($data['STATUS_CODES'][$_REQUEST['userstatus']]) ||
@@ -512,50 +502,6 @@ class AccountaccessComponent extends Component
                             tl('accountaccess_component_userstatus_updated') .
                             "</h1>');\n";
                     }
-                break;
-
-                case "search":
-                    $data['STATUS_CODES'][0] =
-                        tl('accountaccess_component_any_status');
-                    ksort($data['STATUS_CODES']);
-                    $data["FORM_TYPE"] = "search";
-                    $comparison_fields = array('user',
-                        'first', 'last', 'email', 'status');
-                    $paging = "";
-                    foreach($comparison_fields as $comparison_start) {
-                        $comparison = $comparison_start."_comparison";
-                        $comparison_types = ($comparison == 'status_comparison')
-                            ? 'STATUS_COMPARISON_TYPES' : 'COMPARISON_TYPES';
-                        $data[$comparison] = (isset($_REQUEST[$comparison]) &&
-                            isset($data[$comparison_types][
-                            $_REQUEST[$comparison]])) ?$_REQUEST[$comparison] :
-                            "=";
-                        $paging .= "&amp;$comparison=".
-                            urlencode($data[$comparison]);
-                    }
-                    foreach($comparison_fields as $sort_start) {
-                        $sort = $sort_start."_sort";
-                        $data[$sort] = (isset($_REQUEST[$sort]) &&
-                            isset($data['SORT_TYPES'][
-                            $_REQUEST[$sort]])) ?$_REQUEST[$sort] :
-                            "NONE";
-                        $paging .= "&amp;$sort=".urlencode($data[$sort]);
-                    }
-                    $search_array = array();
-                    foreach($comparison_fields as $field) {
-                        $field_name = $field."_name";
-                        $field_comparison = $field."_comparison";
-                        $field_sort = $field."_sort";
-                        $data[$field_name] = (isset($_REQUEST[$field_name])) ?
-                            $parent->clean($_REQUEST[$field_name], "string") :
-                            "";
-                        $search_array[] = array($field,
-                            $data[$field_comparison], $data[$field_name],
-                            $data[$field_sort]);
-                        $paging .= "&amp;$field_name=".
-                            urlencode($data[$field_name]);
-                    }
-                    $data['PAGING'] = $paging;
                 break;
             }
         }
@@ -655,18 +601,6 @@ class AccountaccessComponent extends Component
                 "deleteactivity","deleterole", "editrole", "search");
         $data["ELEMENT"] = "manageroles";
         $data['SCRIPT'] = "";
-        $data['COMPARISON_TYPES'] = array(
-            "=" => tl('accountaccess_component_equal'),
-            "!=" => tl('accountaccess_component_not_equal'),
-            "CONTAINS" => tl('accountaccess_component_contains'),
-            "BEGINS WITH" => tl('accountaccess_component_begins_with'),
-            "ENDS WITH" => tl('accountaccess_component_ends_with'),
-        );
-        $data['SORT_TYPES'] = array(
-            "NONE" => tl('accountaccess_component_no_sort'),
-            "ASC" => tl('accountaccess_component_sort_ascending'),
-            "DESC" => tl('accountaccess_component_sort_descending'),
-        );
         $data['FORM_TYPE'] = "addrole";
 
         $search_array = array();
@@ -722,7 +656,6 @@ class AccountaccessComponent extends Component
             if(isset($_REQUEST['selectactivity'])) {
                 $select_activity =
                     $parent->clean($_REQUEST['selectactivity'], "int" );
-
             } else {
                 $select_activity = "";
             }
@@ -798,41 +731,9 @@ class AccountaccessComponent extends Component
                     }
                 break;
                 case "search":
-                    $data['FORM_TYPE'] = "search";
-                    $comparison_fields = array('name');
-                    $paging = "";
-                    foreach($comparison_fields as $comparison_start) {
-                        $comparison = $comparison_start."_comparison";
-                        $data[$comparison] = (isset($_REQUEST[$comparison]) &&
-                            isset($data['COMPARISON_TYPES'][
-                            $_REQUEST[$comparison]])) ?$_REQUEST[$comparison] :
-                            "=";
-                        $paging .= "&amp;$comparison=".
-                            urlencode($data[$comparison]);
-                    }
-                    foreach($comparison_fields as $sort_start) {
-                        $sort = $sort_start."_sort";
-                        $data[$sort] = (isset($_REQUEST[$sort]) &&
-                            isset($data['SORT_TYPES'][
-                            $_REQUEST[$sort]])) ?$_REQUEST[$sort] :
-                            "NONE";
-                        $paging .= "&amp;$sort=".urlencode($data[$sort]);
-                    }
-                    $search_array = array();
-                    foreach($comparison_fields as $field) {
-                        $field_name = $field;
-                        $field_comparison = $field."_comparison";
-                        $field_sort = $field."_sort";
-                        $data[$field_name] = (isset($_REQUEST[$field_name])) ?
-                            $parent->clean($_REQUEST[$field_name], "string") :
-                            "";
-                        $search_array[] = array($field,
-                            $data[$field_comparison], $data[$field_name],
-                            $data[$field_sort]);
-                        $paging .= "&amp;$field_name=".
-                            urlencode($data[$field_name]);
-                    }
-                    $data['PAGING'] = $paging;
+                    $search_array = 
+                        $parent->tableSearchRequestHandler($data,
+                        array('name'));
                 break;
 
                 case "addactivity":
@@ -928,23 +829,6 @@ class AccountaccessComponent extends Component
             GROUP_READ => tl('accountaccess_component_read'),
             GROUP_READ_WRITE => tl('accountaccess_component_read_write')
         );
-        $data['COMPARISON_TYPES'] = array(
-            "=" => tl('accountaccess_component_equal'),
-            "!=" => tl('accountaccess_component_not_equal'),
-            "CONTAINS" => tl('accountaccess_component_contains'),
-            "BEGINS WITH" => tl('accountaccess_component_begins_with'),
-            "ENDS WITH" => tl('accountaccess_component_ends_with'),
-        );
-        $data['DROPDOWN_COMPARISON_TYPES'] = array(
-            "=" => tl('accountaccess_component_equal'),
-            "!=" => tl('accountaccess_component_not_equal')
-        );
-        $data['SORT_TYPES'] = array(
-            "NONE" => tl('accountaccess_component_no_sort'),
-            "ASC" => tl('accountaccess_component_sort_ascending'),
-            "DESC" => tl('accountaccess_component_sort_descending'),
-        );
-
         $search_array = array();
 
         $data['CURRENT_GROUP'] = array("name" => "","id" => "", "owner" =>"",
@@ -1265,60 +1149,16 @@ class AccountaccessComponent extends Component
                     }
                 break;
                 case "search":
-                    $data['FORM_TYPE'] = "search";
-                    $data['REGISTER_CODES'][0] =
-                        tl('accountaccess_component_any');
-                    ksort($data['REGISTER_CODES']);
                     $data['ACCESS_CODES'][INACTIVE_STATUS * 10] =
                         tl('accountaccess_component_request_join');
                     $data['ACCESS_CODES'][INVITED_STATUS * 10] =
                         tl('accountaccess_component_invited');
                     $data['ACCESS_CODES'][BANNED_STATUS * 10] =
                         tl('accountaccess_component_banned_status');
-                    $data['ACCESS_CODES'][0] =
-                        tl('accountaccess_component_any');
-                    ksort($data['ACCESS_CODES']);
-                    $comparison_fields = array('name', 'owner', 'register',
-                        'access');
-                    $paging = "";
-                    foreach($comparison_fields as $comparison_start) {
-                        $comparison = $comparison_start."_comparison";
-                        $data[$comparison] = (isset($_REQUEST[$comparison]) &&
-                            isset($data['COMPARISON_TYPES'][
-                            $_REQUEST[$comparison]])) ?$_REQUEST[$comparison] :
-                            "=";
-                        $paging .= "&amp;$comparison=".
-                            urlencode($data[$comparison]);
-                    }
-                    foreach($comparison_fields as $sort_start) {
-                        $sort = $sort_start."_sort";
-                        $data[$sort] = (isset($_REQUEST[$sort]) &&
-                            isset($data['SORT_TYPES'][
-                            $_REQUEST[$sort]])) ?$_REQUEST[$sort] :
-                            "NONE";
-                        $paging .= "&amp;$sort=".urlencode($data[$sort]);
-                    }
-                    $search_array = array();
-                    foreach($comparison_fields as $field) {
-                        $field_name = $field;
-                        $field_comparison = $field."_comparison";
-                        $field_sort = $field."_sort";
-                        $data[$field_name] = (isset($_REQUEST[$field_name])) ?
-                            $parent->clean($_REQUEST[$field_name], "string") :
-                            "";
-                        if($field_name=='access' && $data[$field_name] >=10) {
-                            $search_array[] = array("status",
-                                $data[$field_comparison], $data[$field_name]/10,
-                                $data[$field_sort]);
-                        } else {
-                            $search_array[] = array($field,
-                                $data[$field_comparison], $data[$field_name],
-                                $data[$field_sort]);
-                        }
-                        $paging .= "&amp;$field_name=".
-                            urlencode($data[$field_name]);
-                    }
-                    $data['PAGING'] = $paging;
+                    $search_array = 
+                        $parent->tableSearchRequestHandler($data,
+                        array('name', 'owner', 'register', 'access'),
+                        array('register', 'access'));
                 break;
                 case "unsubscribe":
                     $user_id = (isset($_REQUEST['user_id'])) ?

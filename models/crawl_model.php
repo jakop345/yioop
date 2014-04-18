@@ -57,15 +57,6 @@ if(!defined("POST_PROCESSING") && !defined("NO_LOGGING")) {
  */
 class CrawlModel extends ParallelModel implements CrawlConstants
 {
-
-    /**
-     * @var string
-     */
-    var $from_tables = "CRAWL_MIXES";
-    /**
-     * @var string
-     */
-    var $row_callback = "mixRowCallback";
     /**
      * Used to map between search crawl mix form variables and database columns
      * @var array
@@ -90,7 +81,15 @@ class CrawlModel extends ParallelModel implements CrawlConstants
     /**
      *
      */
-    function mixRowCallback($row, $with_components)
+    function fromCallback($args)
+    {
+        return "CRAWL_MIXES";
+    }
+
+    /**
+     *
+     */
+    function rowCallback($row, $with_components)
     {
         if($with_components) {
             $mix = $this->getCrawlMix($row['TIMESTAMP'], true);

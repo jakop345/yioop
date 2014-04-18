@@ -49,15 +49,6 @@ require_once BASE_DIR."/lib/utility.php";
 class RoleModel extends Model
 {
     /**
-     * @var string
-     */
-    var $from_tables = "ROLE";
-    /**
-     * @var string
-     */
-    var $select_callback = "roleSelectCallback";
-
-    /**
      * Used to map between search role form variables and database columns
      * @var array
      */
@@ -66,7 +57,7 @@ class RoleModel extends Model
     /**
      * @param mixed $args
      */
-    function roleSelectCallback($args = NULL)
+    function selectCallback($args = NULL)
     {
         return "NAME";
     }

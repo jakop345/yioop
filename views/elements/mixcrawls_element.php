@@ -191,7 +191,7 @@ class MixcrawlsElement extends Element
         <?php if(isset($data['available_mixes'])) { ?>
         <?php } ?>
         <div class="top-margin"><label for="mix-name"><?php
-            e(tl('mixcrawls_element_mix_name')); ?></label>
+            e(tl('mixcrawls_element_mix_name')); ?></label>:
             <input type="text" id="mix-name" name="NAME"
                 value="" maxlength="80"
                     class="wide-field"/>
@@ -203,51 +203,16 @@ class MixcrawlsElement extends Element
 
     function renderSearchForm($data)
     {
-        $base_url = "?c=admin&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
-            "&amp;a=mixCrawls";
-        e("<div class='float-opposite'><a href='$base_url'>".
-            tl('mixcrawls_element_createmix_form')."</a></div>");
-        e("<h2>".tl('mixcrawls_element_search_mix'). "</h2>");
-        $item_sep = (MOBILE) ? "<br />" : "</td><td>";
-        ?>
-        <form id="roleForm" method="post" action='#' autocomplete="off">
-        <input type="hidden" name="c" value="admin" />
-        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
-            e($data[CSRF_TOKEN]); ?>" />
-        <input type="hidden" name="a" value="mixCrawls" />
-        <input type="hidden" name="arg" value="search" />
-        <table class="name-table">
-        <tr><td class="table-label"><label for="role-name"><b><?php
-            e(tl('mixcrawls_element_mixname'))?></b></label>
-            <?php
-                e($item_sep);
-                $this->view->helper("options")->render(
-                    "name-comparison", "name_comparison",
-                    $data['COMPARISON_TYPES'],
-                    $data['name_comparison']);
-                e($item_sep);
-            ?><input type="text" id="mix-name"
-                name="name"  maxlength="80"
-                value="<?php e($data['name']); ?>"
-                class="narrow-field"  />
-            <?php
-                e($item_sep);
-                $this->view->helper("options")->render(
-                    "name-sort", "name_sort",
-                    $data['SORT_TYPES'],
-                    $data['name_sort']);
-            ?></td></tr>
-        <tr><?php if(!MOBILE) {?><td></td><td></td> <?php } ?>
-            <td <?php if(!MOBILE) {
-                    ?>class="center" <?php
-                }
-                ?>><button class="button-box"
-                type="submit"><?php e(tl('mixcrawls_element_search'));
-                ?></button></td>
-        </tr>
-        </table>
-        </form>
-        <?php
+        $controller = "admin";
+        $activity = "mixCrawls";
+        $view = $this->view;
+        $title = tl('mixcrawls_element_search_mix');
+        $return_form_name = tl('mixcrawls_element_createmix_form');
+        $fields = array(
+            tl('mixcrawls_element_mixname') => "name",
+        );
+        $view->helper("searchtable")->render($data, $controller, $activity,
+                $view, $title, $return_form_name, $fields);
     }
 }
 ?>

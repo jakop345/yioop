@@ -91,10 +91,6 @@ class Model implements CrawlConstants
      */
     var $edited_page_summaries = NULL;
     /**
-     * @var string
-     */
-    var $from_tables = "MODEL";
-    /**
      * @var array
      */
     var $any_fields = array();
@@ -538,55 +534,74 @@ class Model implements CrawlConstants
         $search_array = array(), $args = NULL)
     {
         $db = $this->db;
-        $tables = $this->from_tables;
+        $tables = $this->fromCallback($args);
         $limit = $db->limitOffset($limit, $num);
         list($where, $order_by) =
             $this->searchArrayToWhereOrderClauses($search_array,
             $this->any_fields);
-        if(isset($this->where_callback)) {
-            $where_callback = $this->where_callback;
-            $more_conditions = $this->$where_callback($args);
-            if($more_conditions) {
-                $add_where = " WHERE ";
-                if($where != "") {
-                    $add_where = " AND ";
-                }
-                $where .= $add_where. $more_conditions;
+        $more_conditions = $this->whereCallback($args);
+        if($more_conditions) {
+            $add_where = " WHERE ";
+            if($where != "") {
+                $add_where = " AND ";
             }
+            $where .= $add_where. $more_conditions;
         }
         $sql = "SELECT COUNT(*) AS NUM FROM $tables $where";
         $result = $db->execute($sql);
         $row = $db->fetchArray($result);
         $total = $row['NUM'];
-        $select_columns = "*";
-        if(isset($this->select_callback)) {
-            $select_callback = $this->select_callback;
-            $select_columns = $this->$select_callback($args);
-        }
+        $select_columns = $this->selectCallback($args);
         $sql = "SELECT $select_columns FROM ".
             "$tables $where $order_by $limit";
         $result = $db->execute($sql);
         $i = 0;
         $row = array();
         $row_callback = false;
-        if(isset($this->row_callback)) {
-            $row_callback = $this->row_callback;
-            while($rows[$i] = $db->fetchArray($result)) {
-                $rows[$i] = $this->$row_callback($rows[$i], $args);
-                $i++;
-            }
-        } else {
-            while($rows[$i] = $db->fetchArray($result)) {
-                $i++;
-            }
+        while($rows[$i] = $db->fetchArray($result)) {
+            $rows[$i] = $this->rowCallback($rows[$i], $args);
+            $i++;
         }
         unset($rows[$i]); //last one will be null
-        if(isset($this->post_query_callback) &&
-            $this->post_query_callback != "") {
-            $post_callback = $this->post_query_callback;
-            $rows = $this->$post_callback($rows);
-        }
+        $rows = $this->postQueryCallback($rows);
+        return $rows;
+    }
 
+    /**
+     *  @param mixed $args
+     */
+    function selectCallback($args)
+    {
+        return "*";
+    }
+    /**
+     *  @param mixed $args
+     */
+    function fromCallback($args)
+    {
+        $name = strtoupper(get_class($this));
+        $name = substr($name, 0, -strlen("Model"));
+        return $name;
+    }
+    /**
+     *  @param mixed $args
+     */
+    function whereCallback($args)
+    {
+        return "";
+    }
+    /**
+     *  @param mixed $args
+     */
+    function rowCallback($row, $args)
+    {
+        return $row;
+    }
+    /**
+     *  @param mixed $args
+     */
+    function postQueryCallback($rows)
+    {
         return $rows;
     }
 }

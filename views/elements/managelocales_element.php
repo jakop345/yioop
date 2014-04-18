@@ -57,6 +57,51 @@ class ManagelocalesElement extends Element
     {
     ?>
         <div class="current-activity">
+        <?php
+        if($data['FORM_TYPE'] == "search") {
+            $this->renderSearchForm($data);
+        } else {
+            $this->renderLocaleForm($data);
+        }
+        $data['TABLE_TITLE'] = tl('managelocales_element_locale_list');
+        $data['NO_FLOAT_TABLE'] = true;
+        $data['ACTIVITY'] = 'manageLocales';
+        $data['VIEW'] = $this->view;
+        $this->view->helper("pagingtable")->render($data);
+        ?>
+        <table class="locale-table">
+            <tr>
+            <th><?php e(tl('managelocales_element_localename')); ?></th>
+            <th><?php e(tl('managelocales_element_localetag'));?></th>
+            <th><?php e(tl('managelocales_element_writingmode'));
+                ?></th>
+            <th><?php e(tl('managelocales_element_percenttranslated'));?></th>
+            <th><?php e(tl('managelocales_element_actions'));?></th>
+            </tr>
+        <?php
+        $base_url = '?c=admin&amp;a=manageLocales&amp;'.CSRF_TOKEN."=".
+            $data[CSRF_TOKEN];
+        foreach($data['LOCALES'] as $locale) {
+            e("<tr><td><a href='$base_url".
+                "&amp;arg=editlocale&amp;selectlocale=".$locale['LOCALE_TAG'].
+                "' >". $locale['LOCALE_NAME']."</a></td><td>".
+                $locale['LOCALE_TAG']."</td>");
+            e("<td>".$locale['WRITING_MODE']."</td><td class='align-right' >".
+                $locale['PERCENT_WITH_STRINGS']."</td>");
+            e("<td><a href='$base_url"
+                ."&amp;arg=deletelocale&amp;selectlocale=".
+                $locale['LOCALE_TAG']."' >"
+                .tl('managelocales_element_delete')."</a></td></tr>");
+        }
+        ?>
+        </table>
+        </div>
+    <?php
+    }
+
+    function renderLocaleForm($data)
+    {
+        ?>
         <h2><?php e(tl('managelocales_element_add_locale'))?></h2>
         <form id="addLocaleForm" method="post" action=''>
         <input type="hidden" name="c" value="admin" />
@@ -95,50 +140,30 @@ class ManagelocalesElement extends Element
             </tr>
         </table>
         </form>
-
-        <h2><?php e(tl('managelocales_element_delete_locale'))?></h2>
-        <form id="deleteLocaleForm" method="post" action='#'>
-        <input type="hidden" name="c" value="admin" />
-        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
-            e($data[CSRF_TOKEN]); ?>" />
-        <input type="hidden" name="a" value="manageLocales" />
-        <input type="hidden" name="arg" value="deletelocale" />
-
-        <table class="name-table" >
-        <tr><td><label for="delete-localename"><?php
-            e(tl('managelocales_element_delete_localelabel'))?></label></td>
-            <td><?php $this->view->helper("options")->render(
-                "delete-localename",
-                "selectlocale", $data['LOCALE_NAMES'], "-1"); ?></td>
-            <td><button class="button-box" type="submit"><?php
-                e(tl('managelocales_element_submit')); ?></button></td>
-        </tr>
-        </table>
-        </form>
-
-        <h2><?php e(tl('managelocales_element_locale_list'))?></h2>
-        <table class="locale-table">
-            <tr>
-            <th><?php e(tl('managelocales_element_localename')); ?></th>
-            <th><?php e(tl('managelocales_element_localetag'));?></th>
-            <th><?php e(tl('managelocales_element_writingmode'));
-                ?></th>
-            <th><?php  e(tl('managelocales_element_percenttranslated'));?></th>
-            </tr>
         <?php
-        foreach($data['LOCALES'] as $locale) {
-            e("<tr><td><a href='?c=admin&amp;a=manageLocales".
-                "&amp;arg=editlocale&amp;selectlocale=".$locale['LOCALE_TAG'].
-                "&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN]."'>".
-                $locale['LOCALE_NAME']."</a></td><td>".
-                $locale['LOCALE_TAG']."</td>");
-            e("<td>".$locale['WRITING_MODE']."</td><td class='align-right' >".
-                $locale['PERCENT_WITH_STRINGS']."</td></tr>");
-        }
-        ?>
-        </table>
-        </div>
-    <?php
+    }
+
+    /**
+     *
+     */
+    function renderSearchForm($data)
+    {
+        $controller = "admin";
+        $activity = "manageLocales";
+        $view = $this->view;
+        $title = tl('managelocales_element_search_locales');
+        $return_form_name = tl('managelocales_element_addlocale_form');
+        $fields = array(
+            tl('managelocales_element_localename') => "name",
+            tl('managelocales_element_localetag') => "tag",
+            tl('managelocales_element_writingmode') => "mode"
+        );
+        $dropdowns = array(
+            "mode" => array("lr-tb" => "lr-rb", "rl-tb" => "rl-tb",
+                "tb-rl" => "tb-rl", "tb-lr" => "tb-lr")
+        );
+        $view->helper("searchtable")->render($data, $controller, $activity,
+                $view, $title, $return_form_name, $fields, $dropdowns);
     }
 }
 ?>

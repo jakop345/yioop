@@ -50,17 +50,16 @@ require_once BASE_DIR."/lib/fetch_url.php";
  */
 class MachineModel extends Model
 {
-    /**
-     * @var string
-     */
-    var $from_tables = "MACHINE";
-
-    /**
-     * @var string
-     */
-    var $post_query_callback = "getMachineStatuses";
 
     var $search_table_column_map = array("name" => "NAME");
+
+    /**
+     * @param mixed $args
+     */
+    function postQueryCallback($rows)
+    {
+        return $this->getMachineStatuses($rows);
+    }
 
     /**
      *  Returns urls for all the queue_servers stored in the DB
@@ -106,7 +105,7 @@ class MachineModel extends Model
      *
      *   @param string $column to use to look up machine (either name or url)
      *   @param string $value for that field
-     *   @return bool whether or not has role
+     *   @return bool whether or not has machine
      */
     function checkMachineExists($field, $value)
     {

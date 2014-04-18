@@ -400,5 +400,73 @@ class AdminController extends Controller implements CrawlConstants
             }
         }
     }
+
+    /**
+     *
+     */
+    function tableSearchRequestHandler(&$data, $comparison_fields = array(),
+        $equal_comparison_fields = array(), $field_postfix = "")
+    {
+        $data['FORM_TYPE'] = "search";
+        $data['COMPARISON_TYPES'] = array(
+            "=" => tl('admin_controller_equal'),
+            "!=" => tl('admin_controller_not_equal'),
+            "CONTAINS" => tl('admin_controller_contains'),
+            "BEGINS WITH" => tl('admin_controller_begins_with'),
+            "ENDS WITH" => tl('admin_controller_ends_with'),
+        );
+        $data['EQUAL_COMPARISON_TYPES'] = array(
+            "=" => tl('admin_controller_equal'),
+            "!=" => tl('admin_controller_not_equal'),
+        );
+        $data['SORT_TYPES'] = array(
+            "NONE" => tl('admin_controller_no_sort'),
+            "ASC" => tl('admin_controller_sort_ascending'),
+            "DESC" => tl('admin_controller_sort_descending'),
+        );
+        $paging = "";
+        foreach($comparison_fields as $comparison_start) {
+            $comparison = $comparison_start."_comparison";
+            $comparison_types = (in_array($comparison_start, $data[
+                'EQUAL_COMPARISON_TYPES']))
+                ? 'EQUAL_COMPARISON_TYPES' : 'COMPARISON_TYPES';
+            $data[$comparison] = (isset($_REQUEST[$comparison]) &&
+                isset($data[$comparison_types][
+                $_REQUEST[$comparison]])) ? $_REQUEST[$comparison] :
+                "=";
+            $paging .= "&amp;$comparison=".
+                urlencode($data[$comparison]);
+        }
+        foreach($comparison_fields as $sort_start) {
+            $sort = $sort_start."_sort";
+            $data[$sort] = (isset($_REQUEST[$sort]) &&
+                isset($data['SORT_TYPES'][
+                $_REQUEST[$sort]])) ?$_REQUEST[$sort] :
+                "NONE";
+            $paging .= "&amp;$sort=".urlencode($data[$sort]);
+        }
+        $search_array = array();
+        foreach($comparison_fields as $field) {
+            $field_name = $field.$field_postfix;
+            $field_comparison = $field."_comparison";
+            $field_sort = $field."_sort";
+            $data[$field_name] = (isset($_REQUEST[$field_name])) ?
+                $this->clean($_REQUEST[$field_name], "string") :
+                "";
+            if($field_name=='access' && $data[$field_name] >=10) {
+                $search_array[] = array("status",
+                    $data[$field_comparison], $data[$field_name]/10,
+                    $data[$field_sort]);
+            } else {
+                $search_array[] = array($field,
+                    $data[$field_comparison], $data[$field_name],
+                    $data[$field_sort]);
+            }
+            $paging .= "&amp;$field_name=".
+                urlencode($data[$field_name]);
+        }
+        $data['PAGING'] = $paging;
+        return $search_array;
+    }
 }
 ?>

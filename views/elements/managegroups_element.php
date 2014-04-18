@@ -571,148 +571,29 @@ class ManagegroupsElement extends Element
      */
     function renderSearchForm($data)
     {
-        $base_url = "?c=admin&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
-            "&amp;a=manageGroups";
-        e("<div class='float-opposite'><a href='$base_url'>".
-            tl('managegroups_element_addgroup_form')."</a></div>");
+        $controller = "admin";
+        $activity = "manageGroups";
+        $view = $this->view;
         if(isset($data['browse'])) {
-            $base_url .= "&amp;browse=".$data['browse'];
-            e("<h2>".tl('managegroups_element_discover_groups'). "</h2>");
+            $title = tl('managegroups_element_discover_groups');
         } else {
-            e("<h2>".tl('managegroups_element_search_group'). "</h2>");
+            $title = tl('managegroups_element_search_group');
         }
-        $item_sep = (MOBILE) ? "<br />" : "</td><td>";
-        ?>
-        <form id="search-form" method="post" action='./' autocomplete="off">
-        <input type="hidden" name="c" value="admin" />
-        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
-            e($data[CSRF_TOKEN]); ?>" />
-        <input type="hidden" name="a" value="manageGroups" />
-        <input type="hidden" name="arg" value="search" />
-        <?php
-            if(isset($data['browse'])) { ?>
-                <input type="hidden" name="browse" value="true" />
-            <?php
-            }
-        ?>
-        <table class="name-table">
-        <tr><td class="table-label"><label for="group-name"><?php
-            e(tl('managegroups_element_groupname'))?>:</label>
-            <?php
-                e($item_sep);
-                $this->view->helper("options")->render(
-                    "name-comparison", "name_comparison",
-                    $data['COMPARISON_TYPES'],
-                    $data['name_comparison']);
-                e($item_sep);
-            ?><input type="text" id="group-name"
-                name="name"  maxlength="80"
-                value="<?php e($data['name']); ?>"
-                class="narrow-field"  />
-            <?php
-                e($item_sep);
-                $this->view->helper("options")->render(
-                    "name-sort", "name_sort",
-                    $data['SORT_TYPES'],
-                    $data['name_sort']);
-            ?></td></tr>
-        <tr><td class="table-label"><label for="owner-name"><?php
-            e(tl('managegroups_element_groupowner')); ?>:</label>
-            <?php
-                e($item_sep);
-                $this->view->helper("options")->render(
-                    "owner-comparison", "owner_comparison",
-                    $data['COMPARISON_TYPES'],
-                    $data['owner_comparison']);
-                e($item_sep);
-            ?><input type="text" id="owner-name"
-                name="owner"  maxlength="80"
-                value="<?php e($data['owner']); ?>"
-                class="narrow-field"  />
-            <?php
-                e($item_sep);
-                $this->view->helper("options")->render(
-                    "owner-sort", "owner_sort",
-                    $data['SORT_TYPES'],
-                    $data['owner_sort']);
-            ?></td></tr>
-        <tr><td class="table-label"><label for="search-registertype"><?php
-                e(tl('managegroups_element_registertype')); ?>:</label>
-            <?php
-                e($item_sep);
-                $this->view->helper("options")->render(
-                    "register-comparison", "register_comparison",
-                    $data['DROPDOWN_COMPARISON_TYPES'],
-                    $data['register_comparison']);
-            ?>
-            <style type="text/css">
-            #register-comparison {
-                width:100%;
-            }
-            </style>
-            <?php
-            e($item_sep);
-            $this->view->helper("options")->render(
-                "search-registertype",
-                "register", $data['REGISTER_CODES'],
-                $data['register']);
-            ?>
-            <style type="text/css">
-            #search-registertype {
-                width:100%
-            }
-            </style>
-            <?php
-                e($item_sep);
-                $this->view->helper("options")->render(
-                    "register-sort", "register_sort",
-                    $data['SORT_TYPES'],
-                    $data['register_sort']);
-            ?></td></tr>
-        <tr><td class="table-label"><label for="search-groupaccess"><?php
-                e(tl('manageusers_element_member_access')); ?>:</label>
-            <?php
-                e($item_sep);
-                $this->view->helper("options")->render(
-                    "access-comparison", "access_comparison",
-                    $data['DROPDOWN_COMPARISON_TYPES'],
-                    $data['access_comparison']);
-            ?>
-            <style type="text/css">
-            #access-comparison {
-                width:100%;
-            }
-            </style>
-            <?php
-            e($item_sep);
-            $this->view->helper("options")->render(
-                "search-groupaccess",
-                "access", $data['ACCESS_CODES'],
-                $data['access']);
-            ?>
-            <style type="text/css">
-            #search-groupaccess {
-                width:100%
-            }
-            </style>
-            <?php
-                e($item_sep);
-                $this->view->helper("options")->render(
-                    "access-sort", "access_sort",
-                    $data['SORT_TYPES'],
-                    $data['access_sort']);
-            ?></td></tr>
-        <tr><?php if(!MOBILE) {?><td></td><td></td> <?php } ?>
-            <td <?php if(!MOBILE) {
-                    ?>class="center" <?php
-                }
-                ?>><button class="button-box"
-                type="submit"><?php e(tl('managegroups_element_search'));
-                ?></button></td>
-        </tr>
-        </table>
-        </form>
-        <?php
+        $return_form_name = tl('managegroups_element_addgroup_form');
+        $fields = array(
+            tl('managegroups_element_groupname') => "name",
+            tl('managegroups_element_groupowner') => "owner",
+            tl('managegroups_element_registertype') =>
+                array("register", $data['EQUAL_COMPARISON_TYPES']),
+            tl('managegroups_element_memberaccess') =>
+                array("access", $data['EQUAL_COMPARISON_TYPES'])
+        );
+        $dropdowns = array(
+            "register" => $data['REGISTER_CODES'],
+            "access" => $data['ACCESS_CODES']
+        );
+        $view->helper("searchtable")->render($data, $controller, $activity,
+                $view, $title, $return_form_name, $fields, $dropdowns);
     }
 }
 ?>
