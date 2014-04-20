@@ -94,7 +94,30 @@ class SearchsourcesElement extends Element
             ?></button></td></tr>
         </table>
         </form>
-        <h2><?php e(tl('searchsources_element_media_sources'))?></h2>
+        <?php
+        $data['FORM_TYPE'] = "";
+        $data['TABLE_TITLE'] = tl('searchsources_element_media_sources');
+        $data['NO_FLOAT_TABLE'] = true;
+        $data['ACTIVITY'] = 'searchSources';
+        $data['VIEW'] = $this->view;
+        $data['NO_SEARCH'] = true;
+        $paging_items = array('SUBstart_row', 'SUBend_row', 'SUBnum_show');
+        $paging1 = "";
+        foreach($paging_items as $item) {
+            if(isset($data[strtoupper($item)])) {
+                $paging1 .= "&amp;".$item."=".$data[strtoupper($item)];
+            }
+        }
+        $paging2 = "";
+        $paging_items = array('start_row', 'end_row', 'num_show');
+        foreach($paging_items as $item) {
+            if(isset($data[strtoupper($item)])) {
+                $paging2 .= "&amp;".$item."=".$data[strtoupper($item)];
+            }
+        }
+        $data['PAGING'] = $paging1;
+        $this->view->helper("pagingtable")->render($data);
+        ?>
         <table class="search-sources-table">
         <tr><th><?php e(tl('searchsources_element_medianame'));?></th>
             <th><?php e(tl('searchsources_element_mediatype'));?></th><th><?php
@@ -106,8 +129,8 @@ class SearchsourcesElement extends Element
             <td><?php e($data['SOURCE_TYPES'][$source['TYPE']]); ?></td>
             <td><?php e($source['SOURCE_URL']."<br />".
                     $source['THUMB_URL']); ?></td>
-            <td><a href="<?php e($base_url.'&arg=deletesource&ts='.
-                $source['TIMESTAMP']); ?>"><?php
+            <td><a href="<?php e($base_url."&amp;arg=deletesource&amp;ts=".
+                $source['TIMESTAMP'].$paging1.$paging2); ?>"><?php
                 e(tl('searchsources_element_deletemedia'));
             ?></a></td></tr>
         <?php
@@ -141,7 +164,16 @@ class SearchsourcesElement extends Element
             type="submit"><?php e(tl('searchsources_element_submit'));
             ?></button></td></tr>
         </table>
-        <h2><?php e(tl('searchsources_element_subsearches'))?></h2>
+        <?php
+        $data['SUBFORM_TYPE'] = "";
+        $data['TABLE_TITLE'] = tl('searchsources_element_subsearches');
+        $data['NO_FLOAT_TABLE'] = true;
+        $data['ACTIVITY'] = 'searchSources';
+        $data['VIEW'] = $this->view;
+        $data['VAR_PREFIX'] = "SUB";
+        $data['PAGING'] = $paging2;
+        $this->view->helper("pagingtable")->render($data);
+        ?>
         <table class="search-sources-table">
         <tr><th><?php e(tl('searchsources_element_dirname'));?></th>
             <th><?php
@@ -165,7 +197,7 @@ class SearchsourcesElement extends Element
                 e(tl('searchsources_element_localize'));
                 ?></a></td>
             <td><a href="<?php e($base_url.'&amp;arg=deletesubsearch&amp;fn='.
-                $search['FOLDER_NAME']); ?>"><?php
+                $search['FOLDER_NAME'].$paging1.$paging2); ?>"><?php
                 e(tl('searchsources_element_deletesubsearch'));
             ?></a></td></tr>
         <?php

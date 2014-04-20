@@ -96,6 +96,11 @@ class ManagegroupsElement extends Element
             if(isset($data['browse'])) {
                 $base_url .= "&amp;browse=".$data['browse'];
             }
+            if(isset($data['START_ROW'])) {
+                $base_url .= "&amp;start_row=".$data['START_ROW'].
+                    "&amp;end_row=".$data['END_ROW'].
+                    "&amp;num_show=".$data['NUM_SHOW'];
+            }
             $is_root = ($_SESSION['USER_ID'] == ROOT_ID);
             $delete_url = $base_url . "&amp;arg=deletegroup&amp;";
             $unsubscribe_url = $base_url . "&amp;arg=unsubscribe&amp;";

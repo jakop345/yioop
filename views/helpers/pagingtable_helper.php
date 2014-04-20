@@ -88,6 +88,16 @@ class PagingtableHelper extends Helper
         $activity = $data['ACTIVITY'];
         $base_url = "?c=admin&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
             "&amp;a=$activity";
+        $data_fields = array('NUM_TOTAL', 'NUM_SHOW', 'START_ROW', 'END_ROW',
+            'NEXT_START', 'NEXT_END', 'PREV_START', 'PREV_END', 'FORM_TYPE');
+        $var_prefix = (isset($data['VAR_PREFIX'])) ? 
+            strtoupper($data['VAR_PREFIX']) : "";
+        foreach($data_fields as $field) {
+            $d[$field] = $var_prefix . $field;
+        }
+        $start_row = $var_prefix."start_row";
+        $end_row = $var_prefix."end_row";
+        $num_show = $var_prefix."num_show";
         ?>
         <h2><?php e($data['TABLE_TITLE']); ?>&nbsp;&nbsp;<?php
             if($data['FORM_TYPE'] != 'search' &&
@@ -100,7 +110,7 @@ class PagingtableHelper extends Helper
             <form  method="get" action='#' >
             <?php
             $name = isset($data['NAME']) ? $data['NAME'] : "";
-            $bound_url = $base_url."&amp;arg=".$data['FORM_TYPE'];
+            $bound_url = $base_url."&amp;arg=".$data[$d['FORM_TYPE']];
             if(isset($data['browse'])) {
                 $bound_url .= "&amp;browse=".$data['browse'];
             }
@@ -114,25 +124,25 @@ class PagingtableHelper extends Helper
             <?php
             e("<b>".tl('pagingtable_helper_show')."</b>");
             $data['VIEW']->helper("options")->render(
-                "num-show", "num_show", $this->show_choices,
-                $data['NUM_SHOW'], true);
+                "{$var_prefix}num-show", "{$var_prefix}num_show",
+                $this->show_choices, $data[$d['NUM_SHOW']], true);
             e("<br />");
-            if($data['START_ROW'] > 0) {
+            if($data[$d['START_ROW']] > 0) {
                 ?>
-                <a href="<?php e($bound_url); ?>&amp;start_row=<?php
-                    e($data['PREV_START']); ?>&amp;end_row=<?php
-                    e($data['PREV_END']); ?>&amp;num_show=<?php
-                    e($data['NUM_SHOW'].$data['PAGING']); ?>">&lt;&lt;</a>
+                <a href="<?php e($bound_url."&amp;$start_row=".
+                    $data[$d['PREV_START']]."&amp;$end_row=".
+                    $data[$d['PREV_END']]."&amp;$num_show=".
+                    $data[$d['NUM_SHOW']].$data['PAGING']); ?>">&lt;&lt;</a>
                 <?php
             }
-            e("<b>".tl('pagingtable_helper_row_range', $data['START_ROW'],
-                $data['END_ROW'], $data['NUM_TOTAL'])."</b>");
-            if($data['END_ROW'] < $data['NUM_TOTAL']) {
+            e("<b>".tl('pagingtable_helper_row_range', $data[$d['START_ROW']],
+                $data[$d['END_ROW']], $data[$d['NUM_TOTAL']])."</b>");
+            if($data[$d['END_ROW']] < $data[$d['NUM_TOTAL']]) {
                 ?>
-                <a href="<?php e($bound_url); ?>&amp;start_row=<?php
-                    e($data['NEXT_START']); ?>&amp;end_row=<?php
-                    e($data['NEXT_END']); ?>&amp;num_show=<?php
-                    e($data['NUM_SHOW'].$data['PAGING']); ?>" >&gt;&gt;</a>
+                <a href="<?php e($bound_url."&amp;$start_row=".
+                    $data[$d['NEXT_START']]."&amp;$end_row=".
+                    $data[$d['NEXT_END']]."&amp;$num_show=".
+                    $data[$d['NUM_SHOW']].$data['PAGING']); ?>" >&gt;&gt;</a>
                 <?php
             }
             ?>
@@ -153,6 +163,16 @@ class PagingtableHelper extends Helper
         $activity = $data['ACTIVITY'];
         $base_url = "?c=admin&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
             "&amp;a=$activity";
+        $data_fields = array('NUM_TOTAL', 'NUM_SHOW', 'START_ROW', 'END_ROW',
+            'NEXT_START', 'NEXT_END', 'PREV_START', 'PREV_END', 'FORM_TYPE');
+        $var_prefix = (isset($data['VAR_PREFIX'])) ?
+            strtoupper($data['VAR_PREFIX']) : "";
+        foreach($data_fields as $field) {
+            $d[$field] = $var_prefix . $field;
+        }
+        $start_row = $var_prefix."start_row";
+        $end_row = $var_prefix."end_row";
+        $num_show = $var_prefix."num_show";
         $class = 'class="table-margin float-opposite"';
         $top = false;
         if(isset( $data['NO_FLOAT_TABLE'] ) &&  $data['NO_FLOAT_TABLE'] ){
@@ -170,29 +190,29 @@ class PagingtableHelper extends Helper
             <?php
             $name = isset($data['NAME']) ? $data['NAME'] : "";
 
-            $bound_url = $base_url."&amp;arg=".$data['FORM_TYPE'];
+            $bound_url = $base_url."&amp;arg=".$data[$d['FORM_TYPE']];
             if($name != "") {
                 $bound_url .="&amp;name=".$name;
             }
             if(isset($data['browse'])) {
                 $bound_url .= "&amp;browse=".$data['browse'];
             }
-            if($data['START_ROW'] > 0) {
+            if($data[$d['START_ROW']] > 0) {
                 ?>
-                <a href="<?php e($bound_url); ?>&amp;start_row=<?php
-                    e($data['PREV_START']); ?>&amp;end_row=<?php
-                    e($data['PREV_END']); ?>&amp;num_show=<?php
-                    e($data['NUM_SHOW'].$data['PAGING']); ?>">&lt;&lt;</a>
+                <a href="<?php e($bound_url."&amp;$start_row=".
+                    $data[$d['PREV_START']]."&amp;$end_row=".
+                    $data[$d['PREV_END']]."&amp;$num_show=".
+                    $data[$d['NUM_SHOW']].$data['PAGING']); ?>">&lt;&lt;</a>
                 <?php
             }
-            e("<b>".tl('pagingtable_helper_row_range', $data['START_ROW'],
-                $data['END_ROW'], $data['NUM_TOTAL'])."</b>");
-            if($data['END_ROW'] < $data['NUM_TOTAL']) {
+            e("<b>".tl('pagingtable_helper_row_range', $data[$d['START_ROW']],
+                $data[$d['END_ROW']], $data[$d['NUM_TOTAL']])."</b>");
+            if($data[$d['END_ROW']] < $data[$d['NUM_TOTAL']]) {
                 ?>
-                <a href="<?php e($bound_url); ?>&amp;start_row=<?php
-                    e($data['NEXT_START']); ?>&amp;end_row=<?php
-                    e($data['NEXT_END']); ?>&amp;num_show=<?php
-                    e($data['NUM_SHOW'].$data['PAGING']); ?>" >&gt;&gt;</a>
+                <a href="<?php e($bound_url."&amp;$start_row=".
+                    $data[$d['NEXT_START']]."&amp;$end_row=".
+                    $data[$d['NEXT_END']]."&amp;$num_show=".
+                    $data[$d['NUM_SHOW']].$data['PAGING']); ?>" >&gt;&gt;</a>
                 <?php
             }
             ?>
@@ -203,9 +223,10 @@ class PagingtableHelper extends Helper
             <?php
                 e("<b>".tl('pagingtable_helper_show')."</b>");
                 $data['VIEW']->helper("options")->render(
-                    "num-show", "num_show",  $this->show_choices,
-                    $data['NUM_SHOW'], true);
-                if( $data['FORM_TYPE'] != "search" &&
+                    "{$var_prefix}num-show", "{$var_prefix}num_show",
+                    $this->show_choices,
+                    $data[$d['NUM_SHOW']], true);
+                if( $data[$d['FORM_TYPE']] != "search" &&
                     !isset($data['NO_SEARCH'])) {?>
                     [<a href="<?php e($base_url . '&amp;arg=search');
                         ?>"><?php e(tl('pagingtable_helper_search'));?></a>]

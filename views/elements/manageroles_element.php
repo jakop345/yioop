@@ -76,6 +76,11 @@ class ManagerolesElement extends Element
         <?php
             $base_url = "?c=admin&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
                 "&amp;a=manageRoles";
+            if(isset($data['START_ROW'])) {
+                $base_url .= "&amp;start_row=".$data['START_ROW'].
+                    "&amp;end_row=".$data['END_ROW'].
+                    "&amp;num_show=".$data['NUM_SHOW'];
+            }
             $delete_url = $base_url . "&amp;arg=deleterole&amp;";
             $edit_url = $base_url . "&amp;arg=editrole&amp;";
             $stretch = (MOBILE) ? 1 :2;

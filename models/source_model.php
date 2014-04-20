@@ -56,6 +56,17 @@ class SourceModel extends Model
     const MAX_FEEDS_ONE_GO = 100;
 
     /**
+     *  @param mixed $args
+     */
+    function fromCallback($args = NULL)
+    {
+        if($args == "SUBSEARCH") {
+            return "SUBSEARCH";
+        }
+        return "MEDIA_SOURCE";
+    }
+
+    /**
      *  Returns a list of media sources such as (video, rss sites) and their
      *  URL and thumb url formats, etc
      *

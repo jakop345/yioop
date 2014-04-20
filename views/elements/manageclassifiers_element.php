@@ -60,6 +60,8 @@ class ManageclassifiersElement extends Element
         } else {
             $this->renderClassifierForm($data);
         }
+        $base_url = "?c=admin&amp;a=manageClassifiers&amp;".CSRF_TOKEN."=".
+            $data[CSRF_TOKEN]."&amp;arg=";
         if (!empty($data['classifiers'])) {
             $data['TABLE_TITLE'] = 
                 tl('manageclassifiers_available_classifiers');
@@ -139,8 +141,6 @@ class ManageclassifiersElement extends Element
      */
      function renderClassifierForm($data)
      {
-        $base_url = "?c=admin&amp;a=manageClassifiers&amp;".CSRF_TOKEN."=".
-            $data[CSRF_TOKEN]."&amp;arg=";
         ?>
         <h2><?php e(tl('manageclassifiers_manage_classifiers')) ?></h2>
         <form id="classifiersForm" method="get" action=''>

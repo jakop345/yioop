@@ -666,7 +666,8 @@ class CrawlComponent extends Component implements CrawlConstants
 
         $data['classifiers'] = $classifiers;
         $parent->pagingLogic($data, 'classifiers', 'classifiers',
-            10, $search_array, "", array('name' => 'class_label'));
+            DEFAULT_ADMIN_PAGING_NUM, $search_array, "",
+            array('name' => 'class_label'));
         $data['reload'] = false;
         foreach($classifiers as $label => $classifier) {
             if($classifier->finalized == Classifier::FINALIZING) {
@@ -1462,13 +1463,13 @@ class CrawlComponent extends Component implements CrawlConstants
                 break;
             }
         }
-        $data["MEDIA_SOURCES"] = $source_model->getMediaSources();
-        $subsearches = $source_model->getSubsearches();
-        $data["SUBSEARCHES"] = array();
-        foreach($subsearches as $search) {
-            if(isset($data["SEARCH_LISTS"][$search['INDEX_IDENTIFIER']])) {
-                $data["SUBSEARCHES"][] = $search;
-            } else {
+        $parent->pagingLogic($data, $source_model, "MEDIA_SOURCES",
+            DEFAULT_ADMIN_PAGING_NUM/5);
+        $parent->pagingLogic($data, $source_model,
+            "SUBSEARCHES", DEFAULT_ADMIN_PAGING_NUM/5, array(), "SUB",
+            "SUBSEARCH");
+        foreach($data["SUBSEARCHES"] as $search) {
+            if(!isset($data["SEARCH_LISTS"][$search['INDEX_IDENTIFIER']])) {
                 $source_model->deleteSubsearch($search["FOLDER_NAME"]);
             }
         }

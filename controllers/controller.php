@@ -371,7 +371,7 @@ abstract class Controller
             $num_rows);
         $data[$d['PREV_START']] = max(0, $data[$d['START_ROW']] - $num_show);
         $data[$d['PREV_END']] = $data[$d['START_ROW']];
-        $data['NUM_TOTAL'] = $num_rows;
+        $data[$d['NUM_TOTAL']] = $num_rows;
      }
 
 

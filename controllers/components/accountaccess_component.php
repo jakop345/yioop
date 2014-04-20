@@ -207,7 +207,7 @@ class AccountaccessComponent extends Component
         $data['FORM_TYPE'] = "adduser";
         $search_array = array();
         $username = "";
-        if(isset($_REQUEST['user'])) {
+        if(isset($_REQUEST['user_name'])) {
             $username = $parent->clean($_REQUEST['user_name'], "string" );
         }
         if($username == "" && isset($_REQUEST['arg']) && $_REQUEST['arg']
@@ -505,7 +505,7 @@ class AccountaccessComponent extends Component
                 break;
             }
         }
-        $parent->pagingLogic($data, $user_model, "USERS", 
+        $parent->pagingLogic($data, $user_model, "USERS",
             DEFAULT_ADMIN_PAGING_NUM, $search_array, "");
         return $data;
     }
@@ -893,8 +893,7 @@ class AccountaccessComponent extends Component
                     }
                 break;
                 case "addgroup":
-                    if(($add_id = $group_model->getGroupId($name)) > 0 ||
-                        $name == "" ) {
+                    if(($add_id = $group_model->getGroupId($name)) > 0) {
                         $register =
                             $group_model->getRegisterType($add_id);
                         if($add_id > 0 && $register && $register != NO_JOIN) {
@@ -914,7 +913,7 @@ class AccountaccessComponent extends Component
                             tl('accountaccess_component_groupname_unavailable').
                                 "</h1>')";
                         }
-                    } else {
+                    } else if ($name != ""){
                         $data['FORM_TYPE'] = "creategroup";
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_name_available').
@@ -1046,6 +1045,7 @@ class AccountaccessComponent extends Component
                     $this->getGroupUsersData($data, $group_id);
                 break;
                 case "editgroup":
+                    if(!$group_id) { break;}
                     $data['FORM_TYPE'] = "editgroup";
                     $update_fields = array(
                         array('register', 'REGISTER_TYPE','REGISTER_CODES'),
