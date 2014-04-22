@@ -53,7 +53,7 @@ class ManageaccountElement extends Element
     function render($data)
     {
         $token = CSRF_TOKEN . "=". $data[CSRF_TOKEN];
-        $settings_url = "?c=settings&amp;$token";
+        $settings_url = "?c=settings&amp;$token&amp;return=manageAccount";
         $feed_url = "?c=admin&amp;a=groupFeeds&amp;$token";
         $group_url = "?c=admin&amp;a=manageGroups&amp;$token";
         $mix_url = "?c=admin&amp;a=mixCrawls&amp;$token";

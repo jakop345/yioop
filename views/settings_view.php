@@ -64,7 +64,7 @@ class SettingsView extends View
 ?>
 <div class="landing non-search">
 <h1 class="logo"><a href="./?<?php
-    e(CSRF_TOKEN."=".$data[CSRF_TOKEN])?>&amp;its=<?php
+    e(CSRF_TOKEN."=".$data[CSRF_TOKEN]); ?>&amp;its=<?php
     e($data['its'])?>"><img
     src="<?php e($logo); ?>" alt="Yioop!" /></a><span> - <?php
     e(tl('settings_view_settings')); ?></span>
@@ -101,8 +101,11 @@ class SettingsView extends View
     e(CSRF_TOKEN); ?>" value="<?php
     e($data[CSRF_TOKEN]); ?>" /><input type="hidden"
     name="its" value="<?php e($data['its']); ?>" /><button
-    class="top-margin" type="submit" name="c" value="search"><?php
-    e(tl('settings_view_return_yioop'));
+    class="top-margin" name="c" value="search" <?php
+        if(isset($data['RETURN'])) {
+            e(' onclick="javascript:window.location.href='."'".
+            $data['RETURN']."'".';return false;"');
+        } ?>><?php e(tl('settings_view_return_yioop'));
     ?></button></td><td class="table-input">
 <button class="top-margin" type="submit" name="c" value="settings"><?php
     e(tl('settings_view_save')); ?></button>

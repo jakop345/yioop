@@ -52,7 +52,6 @@ class SigninElement extends Element
     function render($data)
     {
     ?>
-
         <div class="user-nav" >
         <ul>
         <?php
@@ -61,6 +60,8 @@ class SigninElement extends Element
                 e(CSRF_TOKEN."=".$data[CSRF_TOKEN])?>&amp;l=<?php
                 e(getLocaleTag());
                 e((isset($data['its'])) ? '&amp;its='.$data['its'] : '');
+                e((isset($data['ACTIVITY_METHOD'])) ? 
+                    '&amp;return='.$data['ACTIVITY_METHOD']:'');
                 ?>"><?php
             e(tl('signin_element_settings')); ?></a></li><?php
         }

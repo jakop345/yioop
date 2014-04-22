@@ -245,6 +245,7 @@ class AdminController extends Controller implements CrawlConstants
         //for now we allow anyone to get crawlStatus
         if($allowed) {
             $data = $this->call($activity);
+            $data['ACTIVITY_METHOD'] = $activity; //for settings controller
             if(!is_array($data)) {
                 $data = array();
             }

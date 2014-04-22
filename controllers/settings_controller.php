@@ -124,11 +124,8 @@ class SettingsController extends Controller
                 " ... ".tl('settings_controller_crawl_mix');
         }
         $crawl_stamps = array_keys($data['CRAWLS']);
-        if($token_okay && isset($_REQUEST['index_ts']) &&
-            in_array($_REQUEST['index_ts'], $crawl_stamps)) {
-            $_SESSION['its'] = $_REQUEST['index_ts'];
-            $data['its'] = $_REQUEST['index_ts'];
-            $changed_settings_flag = true;
+        if($token_okay) {
+            $changed_settings_flag = $this->loggedInChangeSettings($data);
         } else if(isset($_REQUEST['its']) &&
             in_array($_REQUEST['its'],$crawl_stamps)){
             $data['its'] = $_REQUEST['its'];
@@ -143,8 +140,34 @@ class SettingsController extends Controller
                 $this->model("user")->setUserSession($user, $_SESSION);
             }
         }
-
         $this->displayView($view, $data);
+    }
+
+    /**
+     *  Changes settings for a logged in user, this might involve storing
+     *  data into the active session.
+     *
+     *  @param array &$data fields which might be sent to the view
+     *  @return bool if any settings were changed
+     */
+    function loggedInChangeSettings(&$data)
+    {
+        $crawl_model = $this->model("crawl");
+        $changed_settings_flag = false;
+        if(isset($_REQUEST['index_ts']) &&
+            in_array($_REQUEST['index_ts'], $crawl_stamps)) {
+            $_SESSION['its'] = $_REQUEST['index_ts'];
+            $data['its'] = $_REQUEST['index_ts'];
+            $changed_settings_flag = true;
+        } else {
+            $data['its'] = $crawl_model->getCurrentIndexDatabaseName();
+        }
+        if(isset($_REQUEST['return'])) {
+            $return = $this->clean($_REQUEST['return'], 'string');
+            $data['RETURN'] = "?c=admin&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
+                "&amp;a=$return";
+        }
+        return $changed_settings_flag;
     }
 
 }

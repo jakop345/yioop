@@ -59,6 +59,7 @@ class MoreoptionsElement extends Element
             $num_columns = 4;
         }
         $num_rows = ceil(count($data["SUBSEARCHES"])/$num_columns);
+
         ?>
         <h2><?php e(tl('moreoptions_element_other_searches'))?></h2>
         <table>
@@ -66,11 +67,14 @@ class MoreoptionsElement extends Element
         $cur_column = 0;
         $cur_row = 0;
         foreach($data["SUBSEARCHES"] as $search) {
-            if($cur_column == 0) {
-                e("<tr>");
-            }
             if($cur_row == 0) {
+                e("<tr>");
+                $cur_row++;
+                $tr_open = true;
+            }
+            if($cur_column == 0) {
                 e("<td><ul class='square-list'>");
+                $ul_open = true;
             }
             $query = ($search["FOLDER_NAME"] == "") ? "?":
                 "?s={$search["FOLDER_NAME"]}";
@@ -79,16 +83,19 @@ class MoreoptionsElement extends Element
             e("<li><a href='$query'>".
                 "{$search['SUBSEARCH_NAME']}</a></li>");
             $cur_column++;
-            $cur_row++;
-            if($cur_row >= $num_rows) {
+            if($cur_column >= $num_columns) {
+                $ul_open = false;
                 e("</ul></td>");
-                $cur_row = 0;
-                if($cur_column >= $num_columns) {
-                    e("</tr>");
-                    $cur_column = 0;
-                }
+                $cur_column = 0;
             }
-        } ?>
+        }
+        if($ul_open) {
+            e("</ul></td>");
+        }
+        if($tr_open) {
+            e("</tr>");
+        }
+        ?>
         </table>
         <h2 class="reduce-top"><?php
             e(tl('moreoptions_element_my_accounts'))?></h2>
