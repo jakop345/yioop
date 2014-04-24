@@ -373,6 +373,11 @@ a.echo-link:hover
     padding-top:5px;
 }
 
+.align-top
+{
+    vertical-align: top;
+}
+
 fieldset
 {
     border-color:black;

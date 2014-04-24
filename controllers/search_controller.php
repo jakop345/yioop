@@ -350,6 +350,11 @@ class SearchController extends Controller implements CrawlConstants
         if($activity == "more") {
             $data['MORE'] = true;
             $data['NO_QUERY'] = true;
+            $data['MORE_PAGE'] = 0;
+            if(isset($_REQUEST['more_page'])) {
+                $data['MORE_PAGE'] = max(0,
+                    $this->clean($_REQUEST['more_page'], "int"));
+            }
             $_SESSION['REMOTE_ADDR'] = $_SERVER['REMOTE_ADDR'];
         }
         return array($query, $activity, $arg);

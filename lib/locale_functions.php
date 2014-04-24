@@ -290,7 +290,7 @@ function tl()
     }
     $args = func_get_args();
     $translation = $locale->translate($args);
-    if(!$translation) {
+    if(!trim($translation)) {
         $translation = $args[0];
     }
     return $translation;

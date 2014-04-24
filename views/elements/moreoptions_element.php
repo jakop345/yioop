@@ -53,28 +53,45 @@ class MoreoptionsElement extends Element
      */
     function render($data)
     {
+        $max_column_num = 10;
         if(MOBILE) {
             $num_columns = 1;
         } else {
             $num_columns = 4;
         }
-        $num_rows = ceil(count($data["SUBSEARCHES"])/$num_columns);
-
+        $max_items = $max_column_num * $num_columns;
+        $subsearches = array_slice($data["SUBSEARCHES"], $max_items *
+            $data['MORE_PAGE']);
+        $spacer = "";
+        $prev_link = false;
+        $next_link = false;
+        if($data['MORE_PAGE'] > 0) {
+            $prev_link = true;
+        }
+        $num_remaining = count($subsearches);
+        if($num_remaining > $max_items) {
+            $next_link = true;
+            $subsearches = array_slice($subsearches, 0,
+                $max_items);
+        }
+        if($next_link && $prev_link) {
+            $spacer = "&nbsp;&nbsp;--&nbsp;&nbsp;";
+        }
+        $num_rows = ceil(count($subsearches)/$num_columns);
         ?>
         <h2><?php e(tl('moreoptions_element_other_searches'))?></h2>
         <table>
+        <tr class="align-top">
         <?php
-        $cur_column = 0;
         $cur_row = 0;
-        foreach($data["SUBSEARCHES"] as $search) {
+        foreach($subsearches as $search) {
             if($cur_row == 0) {
-                e("<tr>");
-                $cur_row++;
-                $tr_open = true;
-            }
-            if($cur_column == 0) {
                 e("<td><ul class='square-list'>");
                 $ul_open = true;
+            }
+            $cur_row++;
+            if(!$search['SUBSEARCH_NAME']) {
+                $search['SUBSEARCH_NAME'] = $search['LOCALE_STRING'];
             }
             $query = ($search["FOLDER_NAME"] == "") ? "?":
                 "?s={$search["FOLDER_NAME"]}";
@@ -82,21 +99,31 @@ class MoreoptionsElement extends Element
                 "=".$data[CSRF_TOKEN] : "";
             e("<li><a href='$query'>".
                 "{$search['SUBSEARCH_NAME']}</a></li>");
-            $cur_column++;
-            if($cur_column >= $num_columns) {
+            if($cur_row >= $num_rows) {
                 $ul_open = false;
                 e("</ul></td>");
-                $cur_column = 0;
+                $cur_row = 0;
             }
         }
         if($ul_open) {
             e("</ul></td>");
         }
-        if($tr_open) {
-            e("</tr>");
-        }
         ?>
+        </tr>
         </table>
+        <div class="indent"><?php
+            if($prev_link) {
+                e("<a href='./?a=more&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
+                    "&amp;more_page=".($data['MORE_PAGE'] -1)."'>".
+                    tl('moreoptions_element_previous')."</a>");
+            }
+            e($spacer);
+            if($next_link) {
+                e("<a href='./?a=more&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
+                    "&amp;more_page=".($data['MORE_PAGE'] + 1)."'>".
+                    tl('moreoptions_element_next')."</a>");
+            }
+        ?></div>
         <h2 class="reduce-top"><?php
             e(tl('moreoptions_element_my_accounts'))?></h2>
         <table class="reduce-top">
