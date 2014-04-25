@@ -597,7 +597,7 @@ class ManagegroupsElement extends Element
             "register" => $data['REGISTER_CODES'],
             "access" => $data['ACCESS_CODES']
         );
-        $view->helper("searchtable")->render($data, $controller, $activity,
+        $view->helper("searchform")->render($data, $controller, $activity,
                 $view, $title, $return_form_name, $fields, $dropdowns);
     }
 }

@@ -173,7 +173,7 @@ class ManageclassifiersElement extends Element
         $fields = array(
             tl('manageclassifiers_classifier_name') => "name",
         );
-        $view->helper("searchtable")->render($data, $controller, $activity,
+        $view->helper("searchform")->render($data, $controller, $activity,
                 $view, $title, $return_form_name, $fields);
      }
 }

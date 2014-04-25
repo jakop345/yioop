@@ -39,16 +39,33 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 require_once BASE_DIR."/views/helpers/helper.php";
 
 /**
+ * Used to draw the form to do advanced search for items in a user, group, 
+ * locale, etc folder
  *
  * @author Chris Pollett
  * @package seek_quarry
  * @subpackage helper
  */
-class SearchtableHelper extends Helper
+class SearchformHelper extends Helper
 {
 
     /**
+     *  Draw the form for advanced search for any HTML table drawn based on
+     *  using a model's getRow function
      *
+     *  @param array  $data from the controller with info of what fields might
+     *      already be filled.
+     *  @param object $controller what controller is being used to handle logic
+     *  @param string $activity what activity the controller was executing
+     *      (for return link)
+     *  @param object $view which view is responsible for calling this helper
+     *  @param string $title what to display as the header of this form
+     *  @param string $return_form_name string to use for return link to previous
+     *      page
+     *  @param array $fields a list of searchable fields
+     *  @param array $dropdowns which fields should be rendered as dropdowns
+     *  @param string $postfix string to tack on to form variables (might use
+     *      to make var names unique on page)
      */
     function render($data, $controller, $activity, $view, $title,
         $return_form_name, $fields, $dropdowns = array(), $postfix = "")
@@ -108,7 +125,7 @@ class SearchtableHelper extends Helper
             }
             if(isset($dropdowns[$name])) {
                 array_unshift($dropdowns[$name],
-                    tl('searchtable_helper_any'));
+                    tl('searchform_helper_any'));
                 ?>
                 <style type="text/css">
                 #<?php e($name); ?>-id {
@@ -134,7 +151,7 @@ class SearchtableHelper extends Helper
                     ?>class="center" <?php
                 }
                 ?>><button class="button-box"
-                type="submit"><?php e(tl('searchtable_helper_search'));
+                type="submit"><?php e(tl('searchform_helper_search'));
                 ?></button></td>
         </tr>
         </table>

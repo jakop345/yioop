@@ -162,7 +162,7 @@ class ManagelocalesElement extends Element
             "mode" => array("lr-tb" => "lr-rb", "rl-tb" => "rl-tb",
                 "tb-rl" => "tb-rl", "tb-lr" => "tb-lr")
         );
-        $view->helper("searchtable")->render($data, $controller, $activity,
+        $view->helper("searchform")->render($data, $controller, $activity,
                 $view, $title, $return_form_name, $fields, $dropdowns);
     }
 }

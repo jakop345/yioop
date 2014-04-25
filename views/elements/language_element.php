@@ -44,7 +44,6 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 class LanguageElement extends Element
 {
-
     /**
      * Draws a selects tag with a list of available languages
      *
@@ -55,7 +54,6 @@ class LanguageElement extends Element
     function render($data)
     {
     ?>
-
         <select id="locale" name="lang" dir="ltr" size="4">
         <?php
         foreach ($data['LANGUAGES'] as $locale_tag => $locale_name) {
@@ -68,7 +66,6 @@ class LanguageElement extends Element
         }
         ?>
         </select>
-
     <?php
     }
 

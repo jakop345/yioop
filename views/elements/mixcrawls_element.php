@@ -211,7 +211,7 @@ class MixcrawlsElement extends Element
         $fields = array(
             tl('mixcrawls_element_mixname') => "name",
         );
-        $view->helper("searchtable")->render($data, $controller, $activity,
+        $view->helper("searchform")->render($data, $controller, $activity,
                 $view, $title, $return_form_name, $fields);
     }
 }

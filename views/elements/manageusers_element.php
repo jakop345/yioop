@@ -487,7 +487,7 @@ class ManageusersElement extends Element
         $dropdowns = array(
             "status" => $data['STATUS_CODES']
         );
-        $view->helper("searchtable")->render($data, $controller, $activity,
+        $view->helper("searchform")->render($data, $controller, $activity,
                 $view, $title, $return_form_name, $fields, $dropdowns,
                 $postfix);
     }
