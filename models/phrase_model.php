@@ -1296,7 +1296,6 @@ class PhraseModel extends ParallelModel
 
         $get_pages = array_slice($pages, $limit, $num);
         $to_get_count = count($get_pages);
-
         $groups_with_docs = false;
         if(preg_match("/\bsite:doc\b/", $original_query)) {
             $groups_with_docs = true;

@@ -79,7 +79,7 @@ class IndexManager implements CrawlConstants
      */
     static function getIndex($index_name)
     {
-
+        $index_name = trim($index_name); //trim to fix postgres quirkiness
         if(!isset(self::$indexes[$index_name])) {
             if($index_name == "feed") {
                 $index_file = WORK_DIRECTORY."/feeds/index";

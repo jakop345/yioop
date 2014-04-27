@@ -286,7 +286,6 @@ class SourceModel extends Model
             $i++;
         }
         unset($feeds[$i]); //last one will be null
-
         $feeds = FetchUrl::getPages($feeds, false, 0, NULL, "SOURCE_URL",
             CrawlConstants::PAGE, true, NULL, true);
         $feed_items = array();
@@ -332,7 +331,7 @@ class SourceModel extends Model
                     }
                     $item[$db_element] = strip_tags($element_text);
                 }
-                $did_add = $this->addFeedItemIfNew($item,$feed['NAME'], $lang,
+                $did_add = $this->addFeedItemIfNew($item, $feed['NAME'], $lang,
                     $age);
                 if($did_add) {
                     $num_added++;
@@ -456,7 +455,7 @@ class SourceModel extends Model
                 return false;
             }
         } else {
-            return false;
+            return true;
         }
         $sql = "INSERT INTO FEED_ITEM VALUES (?, ?, ?, ?, ?, ?)";
         $result = $db->execute($sql, array($item['guid'], $item['title'],

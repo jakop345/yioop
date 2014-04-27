@@ -114,7 +114,6 @@ class Model implements CrawlConstants
             $this->db->connect();
         }
         $this->db_name = $db_name;
-
     }
 
 
