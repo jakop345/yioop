@@ -1469,7 +1469,8 @@ class CrawlComponent extends Component implements CrawlConstants
             "SUBSEARCHES", DEFAULT_ADMIN_PAGING_NUM/5, array(), "SUB",
             "SUBSEARCH");
         foreach($data["SUBSEARCHES"] as $search) {
-            if(!isset($data["SEARCH_LISTS"][$search['INDEX_IDENTIFIER']])) {
+            if(!isset($data["SEARCH_LISTS"][trim($search['INDEX_IDENTIFIER'])])
+                ) {
                 $source_model->deleteSubsearch($search["FOLDER_NAME"]);
             }
         }

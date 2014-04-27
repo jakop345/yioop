@@ -37,7 +37,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * Used to draw the admin screen on which users can create groups, delete
  * groups and add and delete users and roles to a group
  *
- * @author Mallika Perepa
+ * @author Mallika Perepa (started) Chris Pollett (rewrite)
  * @package seek_quarry
  * @subpackage element
  */
@@ -91,8 +91,9 @@ class ManagegroupsElement extends Element
                     e(tl('managegroups_element_actions'));?></th>
             </tr>
         <?php
-            $base_url = "?c=admin&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
-                "&amp;a=manageGroups";
+            $group_url = "?c=admin&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN];
+            $base_url = $group_url . "&amp;a=manageGroups";
+            $group_url .= "&amp;a=groupFeeds&amp;just_group_id=";
             if(isset($data['browse'])) {
                 $base_url .= "&amp;browse=".$data['browse'];
             }
@@ -157,22 +158,23 @@ class ManagegroupsElement extends Element
                                 "</span>");
                         } else {
                         ?>
-                        <form  method="get" action='#' >
-                        <input type="hidden" name="c" value="admin" />
-                        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>"
-                            value="<?php e($data[CSRF_TOKEN]); ?>" />
-                        <input type="hidden" name="a" value="manageGroups" />
-                        <input type="hidden" name="arg" value="<?php
-                            e($arg_name); ?>" />
-                        <input type="hidden" name="group_id" value="<?php
-                            e($group['GROUP_ID']); ?>" />
-                        <?php
-                        $this->view->helper("options")->render(
-                            "update-$arg_name-{$group['GROUP_ID']}",
-                            $arg_name, $data[$choice_array],
-                            $group[$col_name], true);
-                        ?>
-                        </form>
+                            <form  method="get" action='#' >
+                            <input type="hidden" name="c" value="admin" />
+                            <input type="hidden" name="<?php e(CSRF_TOKEN); ?>"
+                                value="<?php e($data[CSRF_TOKEN]); ?>" />
+                            <input type="hidden" name="a" value="manageGroups"
+                            />
+                            <input type="hidden" name="arg" value="<?php
+                                e($arg_name); ?>" />
+                            <input type="hidden" name="group_id" value="<?php
+                                e($group['GROUP_ID']); ?>" />
+                            <?php
+                            $this->view->helper("options")->render(
+                                "update-$arg_name-{$group['GROUP_ID']}",
+                                $arg_name, $data[$choice_array],
+                                $group[$col_name], true);
+                            ?>
+                            </form>
                         <?php
                         }
                         ?>
@@ -187,13 +189,19 @@ class ManagegroupsElement extends Element
                                 $group['GROUP_ID']."'>$group_column".
                                 "</a></b></td>");
                         }
+                    } else if($col_name == 'GROUP_NAME' &&
+                        (!isset($data['browse']) || !$data['browse']) &&
+                        ($group['MEMBER_ACCESS'] != GROUP_PRIVATE ||
+                        $group["OWNER_ID"] == $_SESSION['USER_ID'])) {
+                        e("<td><a href='".$group_url.$group['GROUP_ID']."' >".
+                            $group_column."</a></td>");
                     } else {
                         e("<td>$group_column</td>");
                     }
                 }
                 ?>
                 <td><?php
-                    if($group['OWNER_ID']!=$_SESSION['USER_ID']||
+                    if($group['OWNER_ID'] != $_SESSION['USER_ID']||
                         $group['GROUP_NAME'] == 'Public') {
                         if(isset($group['STATUS']) && 
                             $group['STATUS'] == INVITED_STATUS) {

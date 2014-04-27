@@ -188,7 +188,7 @@ class SearchsourcesElement extends Element
         ?>
         <tr><td><b><?php e($search['FOLDER_NAME']); ?></b></td>
             <td><?php
-                e("<b>".$data["SEARCH_LISTS"][$search['INDEX_IDENTIFIER']].
+                e("<b>".$data["SEARCH_LISTS"][trim($search['INDEX_IDENTIFIER'])].
                 "</b><br />".$search['INDEX_IDENTIFIER']); ?></td>
             <td><?php e($search['LOCALE_STRING']);?></td>
             <td><?php e($search['PER_PAGE']);?></td>

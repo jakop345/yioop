@@ -345,7 +345,7 @@ $db->execute("INSERT INTO MIX_COMPONENTS VALUES(4, 0, 1, 1,
     'media:news')");
 
 $db->execute("INSERT INTO SUBSEARCH VALUES('db_subsearch_images',
-    'images','m:2',50)");
+    'images','m:2', 50)");
 $db->execute("INSERT INTO TRANSLATION VALUES (1002,'db_subsearch_images')");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
         (1002, 1, 'Images' )");
@@ -362,7 +362,7 @@ $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
         (1002, 20, 'تصاویر' )");
 
 $db->execute("INSERT INTO SUBSEARCH VALUES ('db_subsearch_videos',
-    'videos','m:3',10)");
+    'videos','m:3', 10)");
 $db->execute("INSERT INTO TRANSLATION VALUES (1003,'db_subsearch_videos')");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
         (1003, 1, 'Videos' )");
