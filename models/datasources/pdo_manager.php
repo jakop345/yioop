@@ -66,6 +66,12 @@ class PdoManager extends DatasourceManager
      */
     var $num_affected = 0;
 
+    /**
+     *  if DBMS is one like postgres which lower cases table names that aren't
+     *  in quotes that this field has the name of the database;
+     *  otherwise, false.
+     * @var mixed
+     */
     var $to_upper_dbms;
 
     /** {@inheritdoc} */
@@ -76,7 +82,7 @@ class PdoManager extends DatasourceManager
         $this->pdo = new PDO($db_host, $db_user, $db_password);
         $this->to_upper_dbms = false;
         if(stristr($db_host, 'PGSQL')) {
-            $this->to_upper_dbms = true;
+            $this->to_upper_dbms = 'PGSQL';
         }
         return $this->pdo;
     }
@@ -131,8 +137,12 @@ class PdoManager extends DatasourceManager
 
 
     /** {@inheritdoc} */
-    function insertID()
+    function insertID($table = "")
     {
+        if($table && $this->to_upper_dbms == "PGSQL") {
+            $table .= "_ID_SEQ";
+            return $this->pdo->lastInsertId($table);
+        }
         return $this->pdo->lastInsertId();
     }
 

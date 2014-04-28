@@ -544,12 +544,12 @@ class GroupModel extends Model
         $db = $this->db;
         $join_date = time();
         $now = time();
-        $sql = "INSERT INTO GROUP_ITEM(PARENT_ID, GROUP_ID, USER_ID, TITLE,
+        $sql = "INSERT INTO GROUP_ITEM (PARENT_ID, GROUP_ID, USER_ID, TITLE,
             DESCRIPTION, PUBDATE) VALUES (?, ?, ?, ?, ?, ? )";
         $db->execute($sql, array($parent_id, $group_id, $user_id, $title,
             $description, $now));
         if($parent_id == 0) {
-            $id = $db->insertID();
+            $id = $db->insertID("GROUP_ITEM");
             $sql = "UPDATE GROUP_ITEM SET PARENT_ID=? WHERE ID=?";
             $db->execute($sql, array($id, $id));
         }
@@ -631,7 +631,7 @@ class GroupModel extends Model
             P.USER_ID = GI.USER_ID";
         if($for_group >= 0) {
             $group_by = " GROUP BY GI.PARENT_ID";
-            $order_by = "";
+            $order_by = " ORDER BY PUBDATE DESC ";
             $select = "SELECT DISTINCT MIN(GI.ID) AS ID,
                 COUNT(GI.ID) AS NUM_POSTS, GI.PARENT_ID AS PARENT_ID,
                 MIN(GI.GROUP_ID) AS GROUP_ID, MIN(GI.TITLE )AS TITLE,
