@@ -327,8 +327,6 @@ class UserModel extends Model
         return $user_id;
     }
 
-
-
     /**
      * Deletes a user by username from the list of users that can login to
      * the admin panel

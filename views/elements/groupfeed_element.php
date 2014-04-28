@@ -96,26 +96,29 @@ class GroupfeedElement extends Element implements CrawlConstants
             <?php
             $open_in_tabs = $data['OPEN_IN_TABS'];
             $time = time();
-            if(isset($data['JUST_THREAD'])) {
-                ?>
-                <div class='button-group-result'>
-                <button class="button-box" onclick='comment_form(<?php
-                        e("\"add-comment\", {$data['PAGES'][0]['PARENT_ID']},".
-                            "{$data['PAGES'][0]['GROUP_ID']}"); ?>)'><?php
-                        e(tl('groupfeed_element_comment'));?></button>
-                <div id='add-comment'></div>
-                </div>
-                <?php
-            } else if(isset($data['JUST_GROUP_ID'])) {
-                ?>
-                <div class='button-group-result'>
-                <button class="button-box" onclick='start_thread_form(<?php
-                        e("\"add-comment\", ".
-                            "{$data['PAGES'][0]['GROUP_ID']}"); ?>)'><?php
-                        e(tl('groupfeed_element_start_thread'));?></button>
-                <div id='add-comment'></div>
-                </div>
-                <?php
+            if($page["MEMBER_ACCESS"] == GROUP_READ_WRITE) {
+                if(isset($data['JUST_THREAD'])) {
+                    ?>
+                    <div class='button-group-result'>
+                    <button class="button-box" onclick='comment_form(<?php
+                            e("\"add-comment\", ".
+                                "{$data['PAGES'][0]['PARENT_ID']},".
+                                "{$data['PAGES'][0]['GROUP_ID']}"); ?>)'><?php
+                            e(tl('groupfeed_element_comment'));?></button>
+                    <div id='add-comment'></div>
+                    </div>
+                    <?php
+                } else if(isset($data['JUST_GROUP_ID'])) {
+                    ?>
+                    <div class='button-group-result'>
+                    <button class="button-box" onclick='start_thread_form(<?php
+                            e("\"add-comment\", ".
+                                "{$data['PAGES'][0]['GROUP_ID']}"); ?>)'><?php
+                            e(tl('groupfeed_element_start_thread'));?></button>
+                    <div id='add-comment'></div>
+                    </div>
+                    <?php
+                }
             }
             foreach($data['PAGES'] as $page) {
                 $pub_date = $page['PUBDATE'];
