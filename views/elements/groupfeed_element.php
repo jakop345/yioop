@@ -96,7 +96,7 @@ class GroupfeedElement extends Element implements CrawlConstants
             <?php
             $open_in_tabs = $data['OPEN_IN_TABS'];
             $time = time();
-            if($page["MEMBER_ACCESS"] == GROUP_READ_WRITE) {
+            if($data['PAGES'][0]["MEMBER_ACCESS"] == GROUP_READ_WRITE) {
                 if(isset($data['JUST_THREAD'])) {
                     ?>
                     <div class='button-group-result'>
