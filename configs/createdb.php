@@ -356,8 +356,7 @@ $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
         (1002, 15, 'Hình' )");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
-        (1002, 16, '图象
-' )");
+        (1002, 16, '图象' )");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
         (1002, 20, 'تصاویر' )");
 
@@ -373,8 +372,7 @@ $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
         (1003, 15, 'Thâu hình' )");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
-        (1003, 16, '录影
-' )");
+        (1003, 16, '录影' )");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
         (1003, 20, 'ویدیوها' )");
 
@@ -390,9 +388,7 @@ $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
         (1004, 15, 'Tin tức' )");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
-        (1004, 16, '新闻
-
-' )");
+        (1004, 16, '新闻' )");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
         (1004, 20, 'اخبار' )");
 

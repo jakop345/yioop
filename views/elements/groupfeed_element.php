@@ -74,9 +74,20 @@ class GroupfeedElement extends Element implements CrawlConstants
             <?php
             }
             ?>
-            <h2><?php e(tl('groupfeed_element_recent_activity'));
-            if($data['SUBTITLE'] != "") {
-                e("[{$data['SUBTITLE']}]");
+            <h2><?php
+            if($data['SUBTITLE'] == "") {
+                e(tl('groupfeed_element_recent_activity'));
+            } else {
+                if(isset($data['JUST_THREAD'])) {
+                    e(tl('groupfeed_element_thread',
+                        $data['PAGES'][0][self::SOURCE_NAME],
+                        $data['SUBTITLE']));
+                } else if(isset($data['JUST_GROUP_ID'])){
+                    e(tl('groupfeed_element_group',
+                        $data['PAGES'][0][self::SOURCE_NAME]));
+                } else {
+                    e("[{$data['SUBTITLE']}]");
+                }
             }
             ?></h2>
             <div>
@@ -85,6 +96,27 @@ class GroupfeedElement extends Element implements CrawlConstants
             <?php
             $open_in_tabs = $data['OPEN_IN_TABS'];
             $time = time();
+            if(isset($data['JUST_THREAD'])) {
+                ?>
+                <div class='button-group-result'>
+                <button class="button-box" onclick='comment_form(<?php
+                        e("\"add-comment\", {$data['PAGES'][0]['PARENT_ID']},".
+                            "{$data['PAGES'][0]['GROUP_ID']}"); ?>)'><?php
+                        e(tl('groupfeed_element_comment'));?></button>
+                <div id='add-comment'></div>
+                </div>
+                <?php
+            } else if(isset($data['JUST_GROUP_ID'])) {
+                ?>
+                <div class='button-group-result'>
+                <button class="button-box" onclick='start_thread_form(<?php
+                        e("\"add-comment\", ".
+                            "{$data['PAGES'][0]['GROUP_ID']}"); ?>)'><?php
+                        e(tl('groupfeed_element_start_thread'));?></button>
+                <div id='add-comment'></div>
+                </div>
+                <?php
+            }
             foreach($data['PAGES'] as $page) {
                 $pub_date = $page['PUBDATE'];
                 $pub_date = $this->view->helper("feeds")->getPubdateString(
@@ -120,7 +152,12 @@ class GroupfeedElement extends Element implements CrawlConstants
                     $page['PARENT_ID']);?>" rel="nofollow"
                     id='title<?php e($page['ID']);?>' <?php
                     if($open_in_tabs) { ?> target="_blank" <?php }
-                    ?>><?php e($page[self::TITLE]); ?></a>.
+                    ?>><?php e($page[self::TITLE]); ?></a><?php
+                    if(isset($page['NUM_POSTS'])) {
+                        e(tl('groupfeed_element_num_posts',
+                            $page['NUM_POSTS']));
+                    }
+                    ?>.
                 <a class="gray-link" rel='nofollow' href="<?php e($base_query.
                     "&amp;just_group_id=".$page['GROUP_ID']);?>" ><?php
                     e($page[self::SOURCE_NAME]."</a>"
@@ -136,16 +173,20 @@ class GroupfeedElement extends Element implements CrawlConstants
                 <div id='description<?php e($page['ID']);?>' ><?php
                     e($description); ?></div>
                 <div class="float-opposite">
-                    <?php if($page["MEMBER_ACCESS"] == GROUP_READ_WRITE) { ?>
-                    <a href='javascript:comment_form(<?php
-                    e("{$page['ID']}, {$page['PARENT_ID']}, ".
-                        "{$page['GROUP_ID']}"); ?>)'><?php
-                    e(tl('groupfeed_element_comment'));?></a>.
-                    <a href='javascript:start_thread_form(<?php
-                    e("{$page['ID']},".
-                        "{$page['GROUP_ID']}"); ?>)'><?php
-                        e(tl('groupfeed_element_start_thread'));?></a>.
-                    <?php
+                    <?php if($page["MEMBER_ACCESS"] == GROUP_READ_WRITE &&
+                        !isset($data['JUST_THREAD'])){ ?>
+                        <a href='javascript:comment_form(<?php
+                        e("{$page['ID']}, {$page['PARENT_ID']}, ".
+                            "{$page['GROUP_ID']}"); ?>)'><?php
+                        e(tl('groupfeed_element_comment'));?></a>.<?php
+                        if(!isset($data['JUST_GROUP_ID'])) {
+                        ?>
+                            <a href='javascript:start_thread_form(<?php
+                            e("{$page['ID']},".
+                                "{$page['GROUP_ID']}"); ?>)'><?php
+                                e(tl('groupfeed_element_start_thread'));?></a>.
+                        <?php
+                        }
                     }
                     ?>
                 </div>
@@ -183,6 +224,16 @@ class GroupfeedElement extends Element implements CrawlConstants
         if(isset($data['ADD_PAGING_QUERY'])) {
             $paging_query .= $data['ADD_PAGING_QUERY'];
         }
+        $just_fields = array("JUST_THREAD", "JUST_USER_ID",
+            "JUST_GROUP_ID");
+        $hidden_form = "\n";
+        foreach($just_fields as $field) {
+            $lower_field = strtolower($field);
+            if(isset($data[$field])) {
+                $hidden_form .= "'<input type=\"hidden\" ".
+                    "name=\"$lower_field\" value=\"{$data[$field]}\" />' +\n";
+            }
+        }
         ?>
         <script type="text/javascript"><?php
             $clear = (MOBILE) ? " clear" : "";
@@ -195,7 +246,7 @@ class GroupfeedElement extends Element implements CrawlConstants
             if(start_elt != tmp) {
                 elt(id).innerHTML =
                     tmp +
-                    '<form action="./" >' +
+                    '<form action="./" >' + <?php e($hidden_form); ?>
                     '<input type="hidden" name="c" value="admin" />' +
                     '<input type="hidden" name="a" value="groupFeeds" />' +
                     '<input type="hidden" name="arg" value="addcomment" />' +
@@ -228,7 +279,7 @@ class GroupfeedElement extends Element implements CrawlConstants
             if(start_elt != tmp) {
                 elt(id).innerHTML =
                     tmp +
-                    '<form action="./" >' +
+                    '<form action="./" >' + <?php e($hidden_form); ?>
                     '<input type="hidden" name="c" value="admin" />' +
                     '<input type="hidden" name="a" value="groupFeeds" />' +
                     '<input type="hidden" name="arg" value="newthread" />' +

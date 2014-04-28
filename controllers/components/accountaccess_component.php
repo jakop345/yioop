@@ -106,7 +106,7 @@ class AccountaccessComponent extends Component
             $data['GROUPS'][$i]['NUM_POSTS'] =
                 $group_model->getGroupItemCount($search_array, $user_id);
             $data['GROUPS'][$i]['NUM_THREADS'] =
-                $group_model->getGroupThreadCount(
+                $group_model->getGroupItemCount($search_array, $user_id,
                 $data['GROUPS'][$i]['GROUP_ID']);
             if(isset($item[0]['TITLE'])) {
                 $data['GROUPS'][$i]["ITEM_TITLE"] = $item[0]['TITLE'];
@@ -295,7 +295,7 @@ class AccountaccessComponent extends Component
                                         $update = true;
                                     }
                                 }
-                                $data['CURRENT_USER'][$field] = 
+                                $data['CURRENT_USER'][$field] =
                                     $user[$upper_field];
                             } else if($_REQUEST["password"] !=
                                 $_REQUEST["retypepassword"]) {
@@ -483,7 +483,7 @@ class AccountaccessComponent extends Component
                 break;
                 case "search":
                     $data["FORM_TYPE"] = "search";
-                    $search_array = 
+                    $search_array =
                         $parent->tableSearchRequestHandler($data,
                         array('user', 'first', 'last', 'email', 'status'),
                         array('status'), "_name");
@@ -775,7 +775,7 @@ class AccountaccessComponent extends Component
                     }
                 break;
                 case "search":
-                    $search_array = 
+                    $search_array =
                         $parent->tableSearchRequestHandler($data,
                         array('name'));
                 break;
@@ -1151,7 +1151,7 @@ class AccountaccessComponent extends Component
                         tl('accountaccess_component_invited');
                     $data['ACCESS_CODES'][BANNED_STATUS * 10] =
                         tl('accountaccess_component_banned_status');
-                    $search_array = 
+                    $search_array =
                         $parent->tableSearchRequestHandler($data,
                         array('name', 'owner', 'register', 'access'),
                         array('register', 'access'));

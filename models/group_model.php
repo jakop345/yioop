@@ -159,7 +159,12 @@ class GroupModel extends Model
     }
 
     /**
+     *  Get the number of users which belong to a group and whose user_name
+     *  matches a filter
      *
+     *  @param int $group_id id of the group to get a count of
+     *  @param string $filter to filter usernames by
+     *  @return int count of matching users
      */
     function countGroupUsers($group_id, $filter="")
     {
@@ -599,10 +604,13 @@ class GroupModel extends Model
      *      name of a field, what comparison to perform, a value to check,
      *      and an order (ascending/descending) to sort by
      *  @param int $user_id who is making this request to determine which
+     *  @param int $for_group if this value is set it is a assumed
+     *      that group_items are being returned for only one group
+     *      and that they should be grouped by thread
      *  @return array elements of which represent one group feed item
      */
     function getGroupItems($limit=0, $num=100, $search_array = array(),
-        $user_id = ROOT_ID)
+        $user_id = ROOT_ID, $for_group = -1)
     {
         $db = $this->db;
         $limit = $db->limitOffset($limit, $num);
@@ -621,14 +629,22 @@ class GroupModel extends Model
             AND G.MEMBER_ACCESS IN ('".GROUP_READ."','".GROUP_READ_WRITE."'))OR
             (G.OWNER_ID = UG.USER_ID)) AND
             P.USER_ID = GI.USER_ID";
-        $sql = "SELECT DISTINCT GI.ID AS ID, GI.PARENT_ID AS PARENT_ID,
-            GI.GROUP_ID AS GROUP_ID, GI.TITLE AS TITLE,
+        if($for_group >= 0) {
+            $group_by = " GROUP BY GI.PARENT_ID";
+            $num_threads = " COUNT(GI.ID) AS NUM_POSTS, ";
+        } else {
+            $group_by = "";
+            $num_threads = "";
+        }
+        $sql = "SELECT DISTINCT GI.ID AS ID, $num_threads
+            GI.PARENT_ID AS PARENT_ID, GI.GROUP_ID AS GROUP_ID,
+            GI.TITLE AS TITLE,
             GI.DESCRIPTION AS DESCRIPTION, GI.PUBDATE AS PUBDATE, G.OWNER_ID
             AS OWNER_ID, G.MEMBER_ACCESS AS MEMBER_ACCESS,
             G.GROUP_NAME AS GROUP_NAME, P.USER_NAME AS USER_NAME, P.USER_ID AS
             USER_ID
             FROM GROUP_ITEM GI, GROUPS G, USER_GROUP UG, USERS U, USERS P
-            $where $order_by $limit";
+            $where $group_by $order_by $limit";
         $result = $db->execute($sql);
         $i = 0;
         while($groups[$i] = $db->fetchArray($result)) {
@@ -646,10 +662,15 @@ class GroupModel extends Model
      *      name of a field, what comparison to perform, a value to check,
      *      and an order (ascending/descending) to sort by
      *  @param int $user_id who is making this request to determine which
+     *  @param int $for_group if this value is set it is a assumed
+     *      that group_items are being returned for only one group
+     *      and that the count desrired is over the number of threads in that
+     *      group
      *  @return int number of items matching the search criteria for the
      *      given user_id
      */
-    function getGroupItemCount($search_array = array(), $user_id = ROOT_ID)
+    function getGroupItemCount($search_array = array(), $user_id = ROOT_ID,
+        $for_group = -1)
     {
         $db = $this->db;
         $any_fields = array("access", "register");
@@ -666,23 +687,14 @@ class GroupModel extends Model
             UG.STATUS='".ACTIVE_STATUS."'
             AND G.MEMBER_ACCESS IN ('".GROUP_READ."','".GROUP_READ_WRITE."'))OR
             (G.OWNER_ID = UG.USER_ID))";
-        $sql = "SELECT COUNT(*) AS NUM FROM GROUP_ITEM GI, GROUPS G,
+        if($for_group >= 0) {
+            $count_col = " COUNT(DISTINCT GI.PARENT_ID) ";
+        } else {
+            $count_col = " COUNT(*) ";
+        }
+        $sql = "SELECT $count_col AS NUM FROM GROUP_ITEM GI, GROUPS G,
             USER_GROUP UG, USERS P $where";
         $result = $db->execute($sql);
-        $row = $db->fetchArray($result);
-        return $row['NUM'];
-    }
-
-    /**
-     *
-     *  @param int $group_id
-     */
-    function getGroupThreadCount($group_id)
-    {
-        $db = $this->db;
-        $sql = "SELECT COUNT(*) AS NUM FROM (SELECT DISTINCT PARENT_ID
-            FROM GROUP_ITEM  WHERE GROUP_ID = ?) AS THREADS";
-        $result = $db->execute($sql, array($group_id));
         $row = $db->fetchArray($result);
         return $row['NUM'];
     }

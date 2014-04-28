@@ -1170,18 +1170,28 @@ ul.in-list li
     margin:10px;
 }
 
+
+
 .group-result
 {
     box-shadow: 0px 0px 3px 3px #ccc;
     padding: .1in .1in .25in .1in;
 }
 
+.button-group-result
+{
+    padding: .1in .1in .25in .1in;
+}
+
+.button-group-result h2,
 .result h2,
 .group-result h2
 {
     font-size: 14pt;
     font-weight: normal;
 }
+
+div..button-group-result
  div.group-result
 {
     font-size: 12pt;

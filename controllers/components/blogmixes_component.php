@@ -157,7 +157,7 @@ class BlogmixesComponent extends Component implements CrawlConstants
                             "</h1>');";
                         break;
                     }
-                    $post_id =$parent->clean($_REQUEST['post_id'], "int");
+                    $post_id = $parent->clean($_REQUEST['post_id'], "int");
                     $success=$group_model->deleteGroupItem($post_id, $user_id);
                     if($success) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
@@ -252,7 +252,7 @@ class BlogmixesComponent extends Component implements CrawlConstants
         }
         $groups_count = 0;
         $page = array();
-        if(!$just_user_id) {
+        if(!$just_user_id && (!$just_thread || $just_thread < 0)) {
             $search_array = array(
                 array("group_id", "=", max(-$just_thread, $just_group_id), ""),
                 array("access", "!=", GROUP_PRIVATE, ""),
@@ -288,9 +288,11 @@ class BlogmixesComponent extends Component implements CrawlConstants
             array("group_id", "=", $just_group_id, ""),
             array("user_id", "=", $just_user_id, ""),
             array('pub_date', "=", "", "DESC"));
-        $item_count = $group_model->getGroupItemCount($search_array, $user_id);
+        $for_group = ($just_group_id) ? $just_group_id : -1;
+        $item_count = $group_model->getGroupItemCount($search_array, $user_id,
+            $for_group);
         $group_items = $group_model->getGroupItems(0,
-            $limit + $results_per_page, $search_array, $user_id);
+            $limit + $results_per_page, $search_array, $user_id, $for_group);
         $recent_found = false;
         $time = time();
         foreach($group_items as $item) {
@@ -320,7 +322,7 @@ class BlogmixesComponent extends Component implements CrawlConstants
             if($item['OWNER_ID'] == $user_id || $user_id == ROOT_ID) {
                 $page['MEMBER_ACCESS'] = GROUP_READ_WRITE;
             }
-            if(!$recent_found && $time - $item["PUBDATE"] < 
+            if(!$recent_found && $time - $item["PUBDATE"] <
                 5 * self::ONE_MINUTE) {
                 $recent_found = true;
                 $data['SCRIPT'] .= 'doUpdate();';
@@ -333,14 +335,17 @@ class BlogmixesComponent extends Component implements CrawlConstants
             $title = $page[self::TITLE];
             $data['SUBTITLE'] = trim($title, "\- \t\n\r\0\x0B");
             $data['ADD_PAGING_QUERY'] = "&amp;just_thread=$just_thread";
+            $data['JUST_THREAD'] = $just_thread;
         }
         if($just_group_id && isset($page[self::SOURCE_NAME])) {
             $data['SUBTITLE'] = $page[self::SOURCE_NAME];
             $data['ADD_PAGING_QUERY'] = "&amp;just_group_id=$just_group_id";
+            $data['JUST_GROUP_ID'] = $just_group_id;
         }
         if($just_user_id && isset($page["USER_NAME"])) {
             $data['SUBTITLE'] = $page["USER_NAME"];
             $data['ADD_PAGING_QUERY'] = "&amp;just_user_id=$just_user_id";
+            $data['JUST_USER_ID'] = $just_user_id;
         }
         $pages = array_slice($pages, $limit , $results_per_page - 1);
         $data['TOTAL_ROWS'] = $item_count + $groups_count;
@@ -472,7 +477,7 @@ class BlogmixesComponent extends Component implements CrawlConstants
                     }
                 break;
                 case "search":
-                    $search_array = 
+                    $search_array =
                         $parent->tableSearchRequestHandler($data,
                         array('name'));
                 break;
