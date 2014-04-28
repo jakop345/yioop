@@ -631,18 +631,26 @@ class GroupModel extends Model
             P.USER_ID = GI.USER_ID";
         if($for_group >= 0) {
             $group_by = " GROUP BY GI.PARENT_ID";
-            $num_threads = " COUNT(GI.ID) AS NUM_POSTS, ";
+            $order_by = "";
+            $select = "SELECT DISTINCT MIN(GI.ID) AS ID,
+                COUNT(GI.ID) AS NUM_POSTS, GI.PARENT_ID AS PARENT_ID,
+                MIN(GI.GROUP_ID) AS GROUP_ID, MIN(GI.TITLE )AS TITLE,
+                MIN(GI.DESCRIPTION) AS DESCRIPTION, MIN(GI.PUBDATE) AS PUBDATE,
+                MIN(G.OWNER_ID) AS OWNER_ID,
+                MIN(G.MEMBER_ACCESS) AS MEMBER_ACCESS,
+                MIN(G.GROUP_NAME) AS GROUP_NAME, MIN(P.USER_NAME) AS USER_NAME,
+                MIN(P.USER_ID) AS USER_ID ";
         } else {
             $group_by = "";
-            $num_threads = "";
+            $select = "SELECT DISTINCT GI.ID AS ID,
+                GI.PARENT_ID AS PARENT_ID, GI.GROUP_ID AS GROUP_ID,
+                GI.TITLE AS TITLE, GI.DESCRIPTION AS DESCRIPTION,
+                GI.PUBDATE AS PUBDATE, G.OWNER_ID AS OWNER_ID,
+                G.MEMBER_ACCESS AS MEMBER_ACCESS,
+                G.GROUP_NAME AS GROUP_NAME, P.USER_NAME AS USER_NAME,
+                P.USER_ID AS USER_ID ";
         }
-        $sql = "SELECT DISTINCT GI.ID AS ID, $num_threads
-            GI.PARENT_ID AS PARENT_ID, GI.GROUP_ID AS GROUP_ID,
-            GI.TITLE AS TITLE,
-            GI.DESCRIPTION AS DESCRIPTION, GI.PUBDATE AS PUBDATE, G.OWNER_ID
-            AS OWNER_ID, G.MEMBER_ACCESS AS MEMBER_ACCESS,
-            G.GROUP_NAME AS GROUP_NAME, P.USER_NAME AS USER_NAME, P.USER_ID AS
-            USER_ID
+        $sql = "$select
             FROM GROUP_ITEM GI, GROUPS G, USER_GROUP UG, USERS U, USERS P
             $where $group_by $order_by $limit";
         $result = $db->execute($sql);
