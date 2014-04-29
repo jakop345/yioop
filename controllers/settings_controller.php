@@ -153,6 +153,7 @@ class SettingsController extends Controller
     function loggedInChangeSettings(&$data)
     {
         $crawl_model = $this->model("crawl");
+        $crawl_stamps = array_keys($data['CRAWLS']);
         $changed_settings_flag = false;
         if(isset($_REQUEST['index_ts']) &&
             in_array($_REQUEST['index_ts'], $crawl_stamps)) {
