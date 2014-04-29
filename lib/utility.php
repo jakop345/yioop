@@ -819,7 +819,7 @@ function crawlLog($msg, $lname = NULL, $check_process_handler = false)
                 }
             }
             file_put_contents("$logfile.0.gz",
-                gzcompress(file_get_contents($logfile)));
+                gzencode(file_get_contents($logfile)));
             unlink($logfile);
         }
         //don't use error_log options in this case to happify hiphop4php
