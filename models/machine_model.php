@@ -175,7 +175,7 @@ class MachineModel extends Model
                 $machines[$i]["URL"] ."?c=machine&a=statuses&time=$time".
                 "&session=$session";
         }
-        $statuses = FetchUrl::getPages($machines, true);
+        $statuses = FetchUrl::getPages($machines);
         for($i = 0; $i < $num_machines; $i++) {
             foreach($statuses as $status) {
                 if($machines[$i][CrawlConstants::URL] ==
