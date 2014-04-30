@@ -85,6 +85,9 @@ class GroupfeedElement extends Element implements CrawlConstants
                 } else if(isset($data['JUST_GROUP_ID'])){
                     e(tl('groupfeed_element_group',
                         $data['PAGES'][0][self::SOURCE_NAME]));
+                } else if(isset($data['JUST_USER_ID'])) {
+                    e(tl('groupfeed_element_user',
+                        $data['PAGES'][0]["USER_NAME"]));
                 } else {
                     e("[{$data['SUBTITLE']}]");
                 }
@@ -96,7 +99,8 @@ class GroupfeedElement extends Element implements CrawlConstants
             <?php
             $open_in_tabs = $data['OPEN_IN_TABS'];
             $time = time();
-            if($data['PAGES'][0]["MEMBER_ACCESS"] == GROUP_READ_WRITE) {
+            $can_comment = array(GROUP_READ_COMMENT, GROUP_READ_WRITE);
+            if(in_array($data['PAGES'][0]["MEMBER_ACCESS"], $can_comment)) {
                 if(isset($data['JUST_THREAD'])) {
                     ?>
                     <div class='button-group-result'>
@@ -108,7 +112,8 @@ class GroupfeedElement extends Element implements CrawlConstants
                     <div id='add-comment'></div>
                     </div>
                     <?php
-                } else if(isset($data['JUST_GROUP_ID'])) {
+                } else if(isset($data['JUST_GROUP_ID']) &&
+                    $data['PAGES'][0]["MEMBER_ACCESS"] == GROUP_READ_WRITE) {
                     ?>
                     <div class='button-group-result'>
                     <button class="button-box" onclick='start_thread_form(<?php
@@ -176,13 +181,14 @@ class GroupfeedElement extends Element implements CrawlConstants
                 <div id='description<?php e($page['ID']);?>' ><?php
                     e($description); ?></div>
                 <div class="float-opposite">
-                    <?php if($page["MEMBER_ACCESS"] == GROUP_READ_WRITE &&
+                    <?php if(in_array($page["MEMBER_ACCESS"], $can_comment) &&
                         !isset($data['JUST_THREAD'])){ ?>
                         <a href='javascript:comment_form(<?php
                         e("{$page['ID']}, {$page['PARENT_ID']}, ".
                             "{$page['GROUP_ID']}"); ?>)'><?php
                         e(tl('groupfeed_element_comment'));?></a>.<?php
-                        if(!isset($data['JUST_GROUP_ID'])) {
+                        if(!isset($data['JUST_GROUP_ID']) &&
+                            $page["MEMBER_ACCESS"] == GROUP_READ_WRITE) {
                         ?>
                             <a href='javascript:start_thread_form(<?php
                             e("{$page['ID']},".

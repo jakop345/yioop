@@ -113,6 +113,7 @@ class BlogmixesComponent extends Component implements CrawlConstants
                         $group_model->getGroupById($group_id,
                         $user_id);
                     if(!$group || ($group["OWNER_ID"] != $user_id &&
+                        $group["MEMBER_ACCESS"] != GROUP_READ_COMMENT &&
                         $group["MEMBER_ACCESS"] != GROUP_READ_WRITE &&
                         $user_id != ROOT_ID)) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
@@ -240,7 +241,7 @@ class BlogmixesComponent extends Component implements CrawlConstants
                         $user_id != ROOT_ID)) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('blogmixes_component_no_update_access').
-                            "</h1>')";;
+                            "</h1>')";
                         break;
                     }
                     $group_model->updateGroupItem($post_id, $title,

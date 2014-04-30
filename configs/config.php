@@ -645,8 +645,14 @@ define('GROUP_PRIVATE', 1);
  */
 define('GROUP_READ', 2);
 /**
+ *   Group access code signifying members of the group can
+ *   read items posted to the group but only the owner can post
+ *    new items
+ */
+define('GROUP_READ_COMMENT', 3);
+/**
  *   Group access code signifying members of the group can both
  *   read items posted to the group as well as post new items
  */
-define('GROUP_READ_WRITE', 3);
+define('GROUP_READ_WRITE', 4);
 ?>

@@ -823,6 +823,7 @@ class AccountaccessComponent extends Component
         $data['ACCESS_CODES'] = array(
             GROUP_PRIVATE => tl('accountaccess_component_private'),
             GROUP_READ => tl('accountaccess_component_read'),
+            GROUP_READ_COMMENT => tl('accountaccess_component_read_comment'),
             GROUP_READ_WRITE => tl('accountaccess_component_read_write')
         );
         $search_array = array();

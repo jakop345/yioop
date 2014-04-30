@@ -626,7 +626,8 @@ class GroupModel extends Model
             GI.GROUP_ID=G.GROUP_ID AND GI.GROUP_ID=UG.GROUP_ID AND
             UG.USER_ID = U.USER_ID AND ((
             UG.STATUS='".ACTIVE_STATUS."'
-            AND G.MEMBER_ACCESS IN ('".GROUP_READ."','".GROUP_READ_WRITE."'))OR
+            AND G.MEMBER_ACCESS IN ('".GROUP_READ."','".GROUP_READ_COMMENT.
+            "','".GROUP_READ_WRITE."'))OR
             (G.OWNER_ID = UG.USER_ID)) AND
             P.USER_ID = GI.USER_ID";
         if($for_group >= 0) {
@@ -693,7 +694,8 @@ class GroupModel extends Model
             GI.USER_ID=P.USER_ID AND
             GI.GROUP_ID=G.GROUP_ID AND GI.GROUP_ID=UG.GROUP_ID AND ((
             UG.STATUS='".ACTIVE_STATUS."'
-            AND G.MEMBER_ACCESS IN ('".GROUP_READ."','".GROUP_READ_WRITE."'))OR
+            AND G.MEMBER_ACCESS IN ('".GROUP_READ."','".GROUP_READ_COMMENT.
+            "','".GROUP_READ_WRITE."'))OR
             (G.OWNER_ID = UG.USER_ID))";
         if($for_group >= 0) {
             $count_col = " COUNT(DISTINCT GI.PARENT_ID) ";
