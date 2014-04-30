@@ -259,7 +259,7 @@ class AdminController extends Controller implements CrawlConstants
         $data['COMPONENT_ACTIVITIES'] = array();
         $component_translations = array(
             "accountaccess" => tl('admin_controller_account_access'),
-            "blogmixes" => tl('blogmixes_component_blogs_pages_mixes'),
+            "social" => tl('admin_controller_social'),
             "crawl" => tl('admin_controller_crawl_settings'),
             "system" => tl('admin_controller_system_settings')
         );

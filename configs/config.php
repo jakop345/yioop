@@ -79,8 +79,8 @@ if(!defined('TIME_ZONE')) {
  */
 $COMPONENT_ACTIVITIES = array(
     "accountaccess" => array("signin", "manageAccount", "manageUsers",
-        "manageRoles", "manageGroups"),
-    "blogmixes" => array("groupFeeds", "mixCrawls"),
+        "manageRoles"),
+    "social" => array("manageGroups", "groupFeeds", "mixCrawls"),
     "crawl" => array("manageCrawls", "manageClassifiers", "pageOptions",
         "resultsEditor", "searchSources"),
     "system" => array("manageMachines", "manageLocales",

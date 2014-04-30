@@ -118,16 +118,16 @@ function drawFragment(fragment_num, num_results)
 function makeBlankMixTable(tbl, num_fragments, num_results)
 {
     var tdata = "<tr><td colspan=\"2\"><label for=\"add-crawls-"+num_fragments +
-        "\">"+tl['blogmixes_component_add_crawls']+"</label>"+
+        "\">"+tl['social_component_add_crawls']+"</label>"+
         drawCrawlSelect(num_fragments)+"</td><td><label for=\"num-results-"+
-        num_fragments+"\">"+tl['blogmixes_component_num_results']+"</label>"+
+        num_fragments+"\">"+tl['social_component_num_results']+"</label>"+
         drawNumResultSelect(num_fragments, num_results)+
             "<td><a href=\"javascript:removeFragment(" + num_fragments + ")\">"+
-            tl['blogmixes_component_del_frag']+'</a></td></tr>'+
-            "<tr><th>"+tl['blogmixes_component_weight']+'</th>'+
-            "<th>"+tl['blogmixes_component_name']+'</th>'+
-            "<th>"+tl['blogmixes_component_add_keywords']+'</th>'+
-            "<th>"+tl['blogmixes_component_actions']+"</th></tr>";
+            tl['social_component_del_frag']+'</a></td></tr>'+
+            "<tr><th>"+tl['social_component_weight']+'</th>'+
+            "<th>"+tl['social_component_name']+'</th>'+
+            "<th>"+tl['social_component_add_keywords']+'</th>'+
+            "<th>"+tl['social_component_actions']+"</th></tr>";
     tbl.innerHTML = tdata;
 }
 
@@ -204,13 +204,13 @@ function drawCrawl(i, j, ts, name, weight, keywords)
         "<td>"+drawWeightSelect(i, j, weight)+"</td><td>"+name+
         "</td><td><input type='hidden' name= \"mix[FRAGMENTS]["+i+
         "][COMPONENTS]["+j+"][CRAWL_TIMESTAMP]\"' value=\""+ts+"\" />"+
-        "<input title=\""+tl['blogmixes_component_add_query']+"\" "+
+        "<input title=\""+tl['social_component_add_query']+"\" "+
         "name=\"mix[FRAGMENTS]["+i+"][COMPONENTS]["+j+"][KEYWORDS]\" "+
         "value=\""+ keywords+"\" onchange=\"updateKeywords("+i+","+j+
         ", this.value)\""+
         "class=\"widefield\"/></td><td><a href=\""+
         "javascript:removeCrawl("+i+", "+j+");\">"+
-        tl['blogmixes_component_delete']+"</a></td>";
+        tl['social_component_delete']+"</a></td>";
 }
 
 /*

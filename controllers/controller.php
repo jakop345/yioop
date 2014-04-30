@@ -312,7 +312,7 @@ abstract class Controller
                         if(isset($args[$column_name])) {
                             $column_name = $args[$column_name];
                         }
-                        $row_value = is_object($field_data) ? 
+                        $row_value = is_object($field_data) ?
                             $field_data->$column_name:
                             $field_data[$column_name];
                         $cmp = strcmp($search_value, $row_value);
@@ -346,7 +346,7 @@ abstract class Controller
                     }
                     $values = array();
                     foreach($out_data as $name => $field_data) {
-                        $values[$name] = is_object($field_data) ? 
+                        $values[$name] = is_object($field_data) ?
                             $field_data->$column_name:
                             $field_data[$column_name];
                     }
@@ -602,16 +602,11 @@ abstract class Controller
         if(!isset($_REQUEST['time']) ||
             !isset($_REQUEST['session']) ||
             !in_array($_REQUEST['a'], $this->activities)) { return; }
-
         $time = $_REQUEST['time'];
             // request must be within an hour of this machine's clock
-
         if(abs(time() - $time) > Model::ONE_HOUR) { return false;}
-
         $session = $_REQUEST['session'];
-
         if(md5($time . AUTH_KEY) != $session) { return false; }
-
         return true;
     }
 }
