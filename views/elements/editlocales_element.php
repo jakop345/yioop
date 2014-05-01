@@ -90,18 +90,20 @@ class EditlocalesElement extends Element
             e($data['CURRENT_LOCALE_TAG']); ?>" />
         <table class="translate-table">
         <?php
+        $mobile_tr = (MOBILE) ? "</tr><tr>" : "";
         foreach($data['STRINGS'] as $msg_id => $msg_string) {
             if(strlen($msg_string) > 0) {
                 e("<tr><td><label for='$msg_id'>$msg_id</label>".
-                    "</td><td><input type='text' title='".
+                    "</td>$mobile_tr<td><input type='text' title='".
                     $data['DEFAULT_STRINGS'][$msg_id].
                     "' id='$msg_id' name='STRINGS[$msg_id]' ".
                     "value='$msg_string' /></td></tr>");
             } else {
-                e("<tr><td><label for='$msg_id'>$msg_id</label></td><td><input".
-                    " class='highlight' type='text' title='".
-                    $data['DEFAULT_STRINGS'][$msg_id]."' id='$msg_id' ".
-                    "name='STRINGS[$msg_id]' value='$msg_string' /></td></tr>");
+                e("<tr><td><label for='$msg_id'>$msg_id</label></td>".
+                    "$mobile_tr<td><input class='highlight' type='text' ".
+                    "title='".$data['DEFAULT_STRINGS'][$msg_id].
+                    "' id='$msg_id' name='STRINGS[$msg_id]' ".
+                    "value='$msg_string' /></td></tr>");
             }
         }
         ?>

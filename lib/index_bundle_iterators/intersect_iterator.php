@@ -434,6 +434,8 @@ class IntersectIterator extends IndexBundleIterator
                 $sync_time = time();
             }
             $time_out = self::SYNC_TIMEOUT + $sync_time;
+        } else {
+            $timer_on = false;
         }
         if(($biggest_gen_offset = $this->index_bundle_iterators[
                         0]->currentGenDocOffsetWithWord()) == -1) {

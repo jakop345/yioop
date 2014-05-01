@@ -209,9 +209,14 @@ class CrawlstatusView extends View
         if(isset($data['RECENT_CRAWLS']) && count($data['RECENT_CRAWLS']) > 0) {
             ?>
             <table class="crawls-table">
-            <tr><th><?php e(tl('crawlstatus_view_description'));?></th><th><?php
+            <tr><th><?php e(tl('crawlstatus_view_description'));?></th><?php
+            if(!MOBILE) {?>
+                <th><?php
                 e(tl('crawlstatus_view_timestamp')); ?></th>
-            <th><?php e(tl('crawlstatus_view_url_counts'));?></th>
+                <th><?php e(tl('crawlstatus_view_url_counts'));?></th>
+            <?php
+            }
+            ?>
             <th colspan="3"><?php e(tl('crawlstatus_view_actions'));?></th></tr>
             <?php
             foreach($data['RECENT_CRAWLS'] as $crawl) {
@@ -220,21 +225,26 @@ class CrawlstatusView extends View
                     [<a href="?<?php e(CSRF_TOKEN."=".$data[CSRF_TOKEN]);
                         ?>&amp;c=statistics&amp;its=<?php
                     e($crawl['CRAWL_TIME']); ?>"><?php
-                    e(tl('crawlstatus_view_statistics')); ?></a>]</td>
+                    e(tl('crawlstatus_view_statistics')); ?></a>]</td><?php
+                    if(!MOBILE) { ?>
                     <td><?php
-                    e("<b>{$crawl['CRAWL_TIME']}</b><br />");
-                    e("<small>".date("r", $crawl['CRAWL_TIME']).
-                        "</small>"); ?></td>
-                <td> <?php e( (isset($crawl["VISITED_URLS_COUNT"]) ?
-                    $crawl['VISITED_URLS_COUNT'] : 0) ."/".
-                    $crawl['COUNT']); ?></td>
-                <td><?php if($crawl['RESUMABLE']) { ?>
-                    <a href="<?php e($base_url); ?>resume&amp;timestamp=<?php
-                        e($crawl['CRAWL_TIME']); ?>"><?php
-                        e(tl('crawlstatus_view_resume'));?></a>
-                    <?php } else {
-                            e(tl('crawlstatus_view_no_resume'));
-                          }?></td>
+                        e("<b>{$crawl['CRAWL_TIME']}</b><br />");
+                        e("<small>".date("r", $crawl['CRAWL_TIME']).
+                            "</small>"); ?></td>
+                        <td> <?php e( (isset($crawl["VISITED_URLS_COUNT"]) ?
+                            $crawl['VISITED_URLS_COUNT'] : 0) ."/".
+                            $crawl['COUNT']); ?></td>
+                    <?php
+                    }
+                    ?>
+                    <td><?php if($crawl['RESUMABLE']) { ?>
+                        <a href="<?php e($base_url); 
+                            ?>resume&amp;timestamp=<?php
+                            e($crawl['CRAWL_TIME']); ?>"><?php
+                            e(tl('crawlstatus_view_resume'));?></a>
+                        <?php } else {
+                                e(tl('crawlstatus_view_no_resume'));
+                              }?></td>
                 <td>
                 <?php
                 if( $crawl['CRAWL_TIME'] != $data['CURRENT_INDEX']) { ?>

@@ -72,9 +72,14 @@ class ManagelocalesElement extends Element
         <table class="locale-table">
             <tr>
             <th><?php e(tl('managelocales_element_localename')); ?></th>
-            <th><?php e(tl('managelocales_element_localetag'));?></th>
-            <th><?php e(tl('managelocales_element_writingmode'));
-                ?></th>
+            <?php
+            if(!MOBILE) { ?>
+                <th><?php e(tl('managelocales_element_localetag'));?></th>
+                <th><?php e(tl('managelocales_element_writingmode'));
+                    ?></th>
+            <?php
+            }
+            ?>
             <th><?php e(tl('managelocales_element_percenttranslated'));?></th>
             <th><?php e(tl('managelocales_element_actions'));?></th>
             </tr>
@@ -84,9 +89,12 @@ class ManagelocalesElement extends Element
         foreach($data['LOCALES'] as $locale) {
             e("<tr><td><a href='$base_url".
                 "&amp;arg=editlocale&amp;selectlocale=".$locale['LOCALE_TAG'].
-                "' >". $locale['LOCALE_NAME']."</a></td><td>".
-                $locale['LOCALE_TAG']."</td>");
-            e("<td>".$locale['WRITING_MODE']."</td><td class='align-right' >".
+                "' >". $locale['LOCALE_NAME']."</a></td>");
+            if(!MOBILE) {
+                e("<td>".$locale['LOCALE_TAG']."</td>");
+                e("<td>".$locale['WRITING_MODE']."</td>");
+            }
+            e("<td class='align-right' >".
                 $locale['PERCENT_WITH_STRINGS']."</td>");
             e("<td><a href='$base_url"
                 ."&amp;arg=deletelocale&amp;selectlocale=".

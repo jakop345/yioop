@@ -73,8 +73,12 @@ class MixcrawlsElement extends Element
         $this->view->helper("pagingtable")->render($data);
         ?>
         <table class="mixes-table">
-        <tr><th><?php e(tl('mixcrawls_view_name'));?></th>
-        <th><?php e(tl('mixcrawls_view_definition'));?></th>
+        <tr><th><?php e(tl('mixcrawls_view_name'));?></th><?php
+        if(!MOBILE) { ?>
+            <th><?php e(tl('mixcrawls_view_definition'));?></th>
+        <?php
+        }
+        ?>
         <th colspan="4"><?php e(tl('mixcrawls_view_actions'));?></th></tr>
         <?php
         foreach($data['available_mixes'] as $mix) {
@@ -83,16 +87,23 @@ class MixcrawlsElement extends Element
                 <?php e($mix['TIMESTAMP']); ?><br /><?php
                 e("<small>".date("d M Y H:i:s", $mix['TIMESTAMP']).
                     "</small>"); ?></td>
-            <td><?php
-                if(isset($mix['FRAGMENTS']) && count($mix['FRAGMENTS'])  > 0) {
-                    foreach($mix['FRAGMENTS'] as $fragment_id=>$fragment_data) {
+            <?php
+            if(!MOBILE) {
+                e("<td>");
+                if(isset($mix['FRAGMENTS']) 
+                    && count($mix['FRAGMENTS'])  > 0) {
+                    foreach($mix['FRAGMENTS'] as 
+                        $fragment_id=>$fragment_data) {
                         if(!isset($fragment_data['RESULT_BOUND']) ||
                            !isset($fragment_data['COMPONENTS']) ||
-                           count($fragment_data['COMPONENTS']) == 0) continue;
+                           count($fragment_data['COMPONENTS']) == 0) {
+                           continue;
+                        }
                         e(" #".$fragment_data['RESULT_BOUND']."[");
                         $plus = "";
                         foreach($fragment_data['COMPONENTS'] as $component){
-                            $crawl_timestamp = $component['CRAWL_TIMESTAMP'];
+                            $crawl_timestamp =
+                                $component['CRAWL_TIMESTAMP'];
                             e($plus.$component['WEIGHT']." * (".
                                 $data['available_crawls'][
                                 $crawl_timestamp]." + K:".
@@ -104,7 +115,9 @@ class MixcrawlsElement extends Element
                 } else {
                     e(tl('mixcrawls_view_no_components'));
                 }
-            ?></td>
+                e("</td>");
+            }
+            ?>
             <td><a href="javascript:share_form(<?php
                 e($mix['TIMESTAMP']); ?>, '<?php e($mix['NAME']);?>')"><?php
                 e(tl('mixcrawls_view_share'));?></a></td>

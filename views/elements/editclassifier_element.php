@@ -103,10 +103,13 @@ class EditclassifierElement extends Element
             } ?>><?php e(tl('editclassifier_update')) ?></a>]</p>
         <h3><?php e(tl('editclassifier_add_examples')) ?></h3>
         <form id="label-docs-form" action="" method="GET">
+        <?php
+            $td = (MOBILE) ? "</tr><td>" : "<td>";
+        ?>
         <table>
             <tr>
             <th><?php e(tl('editclassifier_source')) ?></th>
-            <td>
+            <?php e($td); ?>
                 <select id="label-docs-source" name="label_docs_source">
                     <option value="1" selected="selected"><?php
                         e(tl('editclassifier_default_crawl')) ?></option>
@@ -116,7 +119,7 @@ class EditclassifierElement extends Element
                 <?php } ?>
                 </select>
             </td>
-            <td>
+            <?php e($td); ?>
                 <select id="label-docs-type" name="label_docs_type">
                     <option value="manual" selected="selected"><?php
                         e(tl('editclassifier_label_by_hand')) ?></option>
@@ -128,8 +131,11 @@ class EditclassifierElement extends Element
             </td>
             </tr>
             <tr>
-                <th><?php e(tl('editclassifier_keywords')) ?></th>
-                <td colspan="2">
+                <th><?php e(tl('editclassifier_keywords')) ?></th><?php
+                if(MOBILE) {
+                    e("</tr><tr>");
+                }?>
+                <td <?php if(!MOBILE) {?>colspan="2" <?php } ?> >
                     <input type="text" maxlength="80" id="label-docs-keywords"
                         name="label_docs_keywords" />
                     <button class="button-box" type="submit"><?php
@@ -142,9 +148,11 @@ class EditclassifierElement extends Element
                         e(tl('editclassifier_finalize')) ?></button>
                 </td>
             </tr>
-            <tr>
-                <th>&nbsp;</th>
-                <td id="label-docs-status" colspan="2"><?php
+            <tr><?php
+                if(!MOBILE) {
+                    e("<th>&nbsp;</th>");
+                }
+                ?><td id="label-docs-status" colspan="2"><?php
                     e(tl('editclassifier_no_documents')) ?></td>
             </tr>
         </table>

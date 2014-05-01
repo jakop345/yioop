@@ -314,7 +314,7 @@ foreach($new_user_activities as $new_activity) {
 
 $db->execute("INSERT INTO MEDIA_SOURCE VALUES ('1342634195',
     'YouTube', 'video', 'http://www.youtube.com/watch?v={}&',
-    'http://img.youtube.com/vi/{}/2.jpg', '')");
+    'http://i1.ytimg.com/vi/{}/default.jpg', '')");
 $db->execute("INSERT INTO MEDIA_SOURCE VALUES ('1342634196',
     'MetaCafe', 'video', 'http://www.metacafe.com/watch/{}/',
     'http://www.metacafe.com/thumb/{}.jpg', '')");

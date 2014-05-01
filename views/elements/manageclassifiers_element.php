@@ -73,8 +73,15 @@ class ManageclassifiersElement extends Element
             <table class="classifiers-table">
                 <tr>
                     <th><?php e(tl('manageclassifiers_label_col')) ?></th>
-                    <th><?php e(tl('manageclassifiers_positive_col')) ?></th>
-                    <th><?php e(tl('manageclassifiers_negative_col')) ?></th>
+                    <?php
+                    if(!MOBILE) { ?>
+                        <th><?php e(tl('manageclassifiers_positive_col'));
+                         ?></th>
+                        <th><?php e(tl('manageclassifiers_negative_col'));
+                        ?></th>
+                    <?php
+                    }
+                    ?>
                     <th colspan="3"><?php
                         e(tl('manageclassifiers_actions_col')) ?></th>
                 </tr>
@@ -85,8 +92,13 @@ class ManageclassifiersElement extends Element
                         <small><?php e(date("d M Y H:i:s",
                             $classifier->timestamp)) ?></small>
                     </td>
-                    <td><?php e($classifier->positive) ?></td>
-                    <td><?php e($classifier->negative) ?></td>
+                    <?php
+                    if(!MOBILE) { ?>
+                        <td><?php e($classifier->positive) ?></td>
+                        <td><?php e($classifier->negative) ?></td>
+                    <?php
+                    }
+                    ?>
                     <td><a href="<?php e($base_url)
                         ?>editclassifier&amp;name=<?php
                         e($label) ?>"><?php
