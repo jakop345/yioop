@@ -70,7 +70,7 @@ class EditlocalesElement extends Element
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" name="a" value="manageLocales" />
-        <input type="hidden" name="arg" value="editlocale" />
+        <input type="hidden" name="arg" value="editstrings" />
         <input type="hidden" name="selectlocale" value="<?php
             e($data['CURRENT_LOCALE_TAG']); ?>" />
         <div class="top-margin"><b><label for="static-pages"><?php
@@ -85,21 +85,25 @@ class EditlocalesElement extends Element
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" name="a" value="manageLocales" />
-        <input type="hidden" name="arg" value="editlocale" />
+        <input type="hidden" name="arg" value="editstrings" />
         <input type="hidden" name="selectlocale" value="<?php
             e($data['CURRENT_LOCALE_TAG']); ?>" />
         <table class="translate-table">
         <?php
         $mobile_tr = (MOBILE) ? "</tr><tr>" : "";
         foreach($data['STRINGS'] as $msg_id => $msg_string) {
+            $out_id = $msg_id;
+            if(MOBILE && strlen($out_id) > 33) {
+                $out_id = wordwrap($out_id, 30, "<br />\n", true);
+            }
             if(strlen($msg_string) > 0) {
-                e("<tr><td><label for='$msg_id'>$msg_id</label>".
+                e("<tr><td><label for='$msg_id'>$out_id</label>".
                     "</td>$mobile_tr<td><input type='text' title='".
                     $data['DEFAULT_STRINGS'][$msg_id].
                     "' id='$msg_id' name='STRINGS[$msg_id]' ".
                     "value='$msg_string' /></td></tr>");
             } else {
-                e("<tr><td><label for='$msg_id'>$msg_id</label></td>".
+                e("<tr><td><label for='$msg_id'>$out_id</label></td>".
                     "$mobile_tr<td><input class='highlight' type='text' ".
                     "title='".$data['DEFAULT_STRINGS'][$msg_id].
                     "' id='$msg_id' name='STRINGS[$msg_id]' ".

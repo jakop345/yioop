@@ -338,10 +338,19 @@ class SystemComponent extends Component
         $parent = $this->parent;
         $locale_model = $parent->model("locale");
         $possible_arguments = array("addlocale", "deletelocale", "editlocale",
-            "search");
-        $search_array = array();
+            "editstrings", "search");
+        $search_array = array(array("tag", "", "", "ASC"));
         $data['SCRIPT'] = "";
         $data["ELEMENT"] = "managelocales";
+        $data['CURRENT_LOCALE'] = array("localename" => "",
+            'localetag' => "", 'writingmode' => '-1');
+        $data['WRITING_MODES'] = array(
+            -1 => tl('system_component_select_mode'),
+            "lr-tb" => "lr-tb",
+            "rl-tb" => "rl-tb",
+            "tb-rl" => "tb-rl",
+            "tb-lr" => "tb-lr"
+        );
         $data['FORM_TYPE'] = "addlocale";
         if(isset($_REQUEST['arg']) &&
             in_array($_REQUEST['arg'], $possible_arguments)) {
@@ -350,7 +359,12 @@ class SystemComponent extends Component
             foreach($clean_fields as $field) {
                 $$field = "";
                 if(isset($_REQUEST[$field])) {
-                    $$field = $parent->clean($_REQUEST[$field], "string");
+                    $tmp = $parent->clean($_REQUEST[$field], "string");
+                    if($field == "writingmode" && ($tmp == -1 || 
+                        !isset($data['WRITING_MODES'][$tmp]))) {
+                        $tmp = "lr-tb";
+                    }
+                    $$field = $tmp;
                 }
             }
             switch($_REQUEST['arg'])
@@ -376,6 +390,39 @@ class SystemComponent extends Component
                 break;
 
                 case "editlocale":
+                    if(!$locale_model->checkLocaleExists($selectlocale)) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('system_component_localename_doesnt_exists').
+                            "</h1>')";
+                        return $data;
+                    }
+                    $data['FORM_TYPE'] = "editlocale";
+                    $info = $locale_model->getLocaleInfo($selectlocale);
+                    $change = false;
+                    if(isset($localetag) && $localetag != "") {
+                        $info["LOCALE_TAG"] = $localetag;
+                        $change = true;
+                    }
+                    if(isset($writingmode) && $writingmode != "") {
+                        $info["WRITING_MODE"] = $writingmode;
+                        $change = true;
+                    }
+                    if(isset($localetag))
+                    $data['CURRENT_LOCALE']['localename'] = 
+                        $info["LOCALE_NAME"];
+                    $data['CURRENT_LOCALE']['localetag'] = 
+                        $selectlocale;
+                    $data['CURRENT_LOCALE']['writingmode'] = 
+                        $info["WRITING_MODE"];
+                    if($change) {
+                        $locale_model->updateLocaleInfo($info);
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('system_component_locale_updated').
+                            "</h1>')";
+                    }
+                break;
+
+                case "editstrings":
                     if(!isset($selectlocale)) break;
                     $data["leftorright"] =
                         (getLocaleDirection() == 'ltr') ? "right": "left";

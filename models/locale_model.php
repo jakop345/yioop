@@ -283,6 +283,25 @@ class LocaleModel extends Model
     }
 
     /**
+     *   Returns the locale name, tag, and writing mode for tag $locale_tag
+     *
+     *   @param string $locale_tag to get name for
+     *   @return string name of locale
+     */
+    function getLocaleInfo($locale_tag)
+    {
+        $db = $this->db;
+        $params = array($locale_tag);
+        $sql = "SELECT * FROM LOCALE WHERE
+            LOCALE_TAG=? ";
+        $result = $db->execute($sql, $params);
+        if(!$row = $db->fetchArray($result) ) {
+            return "";
+        }
+        return $row;
+    }
+
+    /**
      *   Returns the name of the locale for tag $locale_tag
      *
      *   @param string $locale_tag to get name for
@@ -323,7 +342,6 @@ class LocaleModel extends Model
 
     }
 
-
     /**
      *  Remove a locale from the database
      *
@@ -336,6 +354,30 @@ class LocaleModel extends Model
         if(file_exists(LOCALE_DIR."/$locale_tag")) {
             $this->db->unlinkRecursive(LOCALE_DIR."/$locale_tag", true);
         }
+    }
+
+    /**
+     *  Used to update the fields stored in a LOCALE row according to
+     *  an array holding new values
+     *
+     *  @param array $user updated values for a LOCALE row
+     */
+    function updateLocaleInfo($locale_info)
+    {
+        $locale_id = $locale_info['LOCALE_ID'];
+        unset($locale_info['LOCALE_ID']);
+        unset($locale_info['LOCALE_NAME']);
+        $sql = "UPDATE LOCALE SET ";
+        $comma ="";
+        $params = array();
+        foreach($locale_info as $field => $value) {
+            $sql .= "$comma $field=? ";
+            $comma = ",";
+            $params[] = $value;
+        }
+        $sql .= " WHERE LOCALE_ID=?";
+        $params[] = $locale_id;
+        $this->db->execute($sql, $params);
     }
 
     /**

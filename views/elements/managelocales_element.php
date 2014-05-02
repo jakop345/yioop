@@ -81,14 +81,14 @@ class ManagelocalesElement extends Element
             }
             ?>
             <th><?php e(tl('managelocales_element_percenttranslated'));?></th>
-            <th><?php e(tl('managelocales_element_actions'));?></th>
+            <th colspan="2"><?php e(tl('managelocales_element_actions'));?></th>
             </tr>
         <?php
         $base_url = '?c=admin&amp;a=manageLocales&amp;'.CSRF_TOKEN."=".
             $data[CSRF_TOKEN];
         foreach($data['LOCALES'] as $locale) {
             e("<tr><td><a href='$base_url".
-                "&amp;arg=editlocale&amp;selectlocale=".$locale['LOCALE_TAG'].
+                "&amp;arg=editstrings&amp;selectlocale=".$locale['LOCALE_TAG'].
                 "' >". $locale['LOCALE_NAME']."</a></td>");
             if(!MOBILE) {
                 e("<td>".$locale['LOCALE_TAG']."</td>");
@@ -96,6 +96,10 @@ class ManagelocalesElement extends Element
             }
             e("<td class='align-right' >".
                 $locale['PERCENT_WITH_STRINGS']."</td>");
+            e("<td><a href='$base_url"
+                ."&amp;arg=editlocale&amp;selectlocale=".
+                $locale['LOCALE_TAG']."' >"
+                .tl('managelocales_element_edit')."</a></td>");
             e("<td><a href='$base_url"
                 ."&amp;arg=deletelocale&amp;selectlocale=".
                 $locale['LOCALE_TAG']."' >"
@@ -107,39 +111,65 @@ class ManagelocalesElement extends Element
     <?php
     }
 
+    /**
+     *  Draws the add locale and edit locale forms
+     *
+     *  @param array $data consists of values of locale fields set
+     *      so far as well as values of the drops downs on the form
+
+     */
     function renderLocaleForm($data)
     {
+        $base_url = "?c=admin&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
+            "&amp;a=manageLocales";
+        $editlocale = ($data['FORM_TYPE'] == "editlocale") ? true: false;
+        if($editlocale) {
+            e("<div class='float-opposite'><a href='$base_url'>".
+                tl('manageloecales_element_add_locale_form')."</a></div>");
+            e("<h2>".tl('managelocales_element_locale_info'). "</h2>");
+        } else {
+            e("<h2>".tl('managelocales_element_add_locale'). "</h2>");
+        }
         ?>
-        <h2><?php e(tl('managelocales_element_add_locale'))?></h2>
         <form id="addLocaleForm" method="post" action=''>
         <input type="hidden" name="c" value="admin" />
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" name="a" value="manageLocales" />
-        <input type="hidden" name="arg" value="addlocale" />
-
+        <input type="hidden" name="arg" value="<?php
+            e($data['FORM_TYPE']);?>" />
+        <?php 
+        if($editlocale) {
+        ?>
+            <input type="hidden" name="selectlocale" value="<?php
+                e($data['CURRENT_LOCALE']['localetag']);?>" /><?php
+        }
+        ?>
         <table class="name-table">
             <tr><td><label for="locale-name"><?php
                 e(tl('managelocales_element_localenamelabel'))?></label></td>
                 <td><input type="text" id="locale-name"
-                    name="localename" maxlength="80" class="narrow-field"/>
+                    name="localename" maxlength="80" class="narrow-field"
+                    value="<?php e($data['CURRENT_LOCALE']['localename']); ?>"
+                    <?php
+                    if($editlocale) {
+                        e(' disabled="disabled" ');
+                    }
+                    ?> />
                 </td><td></td>
             </tr>
             <tr><td><label for="locale-tag"><?php
                 e(tl('managelocales_element_localetaglabel'))?></label></td>
                 <td><input type="text" id="locale-tag"
-                name="localetag"  maxlength="80" class="narrow-field"/></td>
+                name="localetag"  maxlength="80"
+                value="<?php e($data['CURRENT_LOCALE']['localetag']); ?>"
+                class="narrow-field"/></td>
             </tr>
             <tr><td><?php e(tl('managelocales_element_writingmodelabel'))?></td>
-            <td><label for="locale-lr-tb">lr-tb</label><input type="radio"
-                id="locale-lr-tb" name="writingmode"
-                value="lr-tb" checked="checked" />
-            <label for="locale-rl-tb">rl-tb</label><input type="radio"
-                id="locale-rl-tb" name="writingmode" value="rl-tb" />
-            <label for="locale-tb-rl">tb-rl</label><input type="radio"
-                id="locale-tb-rl" name="writingmode" value="tb-rl" />
-            <label for="locale-tb-lr">tb-lr</label><input type="radio"
-                id="locale-tb-lr" name="writingmode" value="tb-lr" />
+            <td><?php $this->view->helper("options")->render(
+                        "writing-mode", "writingmode",
+                        $data['WRITING_MODES'],
+                        $data['CURRENT_LOCALE']['writingmode']); ?>
             </td>
             </tr>
             <tr><td></td><td class="center"><button class="button-box"
@@ -152,7 +182,11 @@ class ManagelocalesElement extends Element
     }
 
     /**
+     *  Draws the search for locales forms
      *
+     *  @param array $data consists of values of locale fields set
+     *      so far as well as values of the drops downs on the form
+
      */
     function renderSearchForm($data)
     {
