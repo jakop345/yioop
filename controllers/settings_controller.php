@@ -164,8 +164,12 @@ class SettingsController extends Controller
             $data['its'] = $crawl_model->getCurrentIndexDatabaseName();
         }
         if(isset($_REQUEST['return'])) {
+            $c="admin";
+            if(isset($_REQUEST['oldc'])) {
+                $c = $this->clean($_REQUEST['oldc'], "string");
+            }
             $return = $this->clean($_REQUEST['return'], 'string');
-            $data['RETURN'] = "?c=admin&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
+            $data['RETURN'] = "?c=$c&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
                 "&amp;a=$return";
         }
         return $changed_settings_flag;

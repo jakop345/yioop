@@ -54,45 +54,68 @@ class GroupfeedElement extends Element implements CrawlConstants
      */
     function render($data)
     {
+        $is_admin = (get_class($this->view) == "AdminView");
         if(!isset($data['STATUS'])) {
         ?>
-            <div id="feedstatus" class="current-activity">
+            <div id="feedstatus" <?php if($is_admin) {
+                e(' class="current-activity" ');
+                } else {
+                e(' class="small-margin-current-activity" ');
+                }?> >
         <?php
         }
             $base_query = $data['PAGING_QUERY']."&amp;".CSRF_TOKEN."=".
                 $data[CSRF_TOKEN];
-            $paging_query = $data['PAGING_QUERY']."&amp;".CSRF_TOKEN."=".
-                    $data[CSRF_TOKEN];
+            $paging_query = $base_query;
+            $other_paging_query = $data['OTHER_PAGING_QUERY']."&amp;".
+                CSRF_TOKEN."=".$data[CSRF_TOKEN];
             if(isset($data['ADD_PAGING_QUERY'])) {
                 $paging_query .= $data['ADD_PAGING_QUERY'];
+                $other_paging_query .= $data['ADD_PAGING_QUERY'];
             }
-            if($data['SUBTITLE'] != "") { ?>
+            if(isset($data['LIMIT'])) {
+                $other_paging_query .= "&limit=".$data['LIMIT'];
+            }
+            if(isset($data['RESULTS_PER_PAGE'])) {
+                $other_paging_query .= "&num=".$data['RESULTS_PER_PAGE'];
+            }
+            if($data['SUBTITLE'] != "" && isset($data['ADMIN']) &&
+                $data['ADMIN']) { ?>
                 <div class="float-opposite">
                 <a href="<?php e($base_query) ?>"><?php
                     e(tl('groupfeed_element_back'))?></a>
                 </div>
             <?php
             }
-            ?>
-            <h2><?php
-            if($data['SUBTITLE'] == "") {
-                e(tl('groupfeed_element_recent_activity'));
-            } else {
-                if(isset($data['JUST_THREAD'])) {
-                    e(tl('groupfeed_element_thread',
-                        $data['PAGES'][0][self::SOURCE_NAME],
-                        $data['SUBTITLE']));
-                } else if(isset($data['JUST_GROUP_ID'])){
-                    e(tl('groupfeed_element_group',
-                        $data['PAGES'][0][self::SOURCE_NAME]));
-                } else if(isset($data['JUST_USER_ID'])) {
-                    e(tl('groupfeed_element_user',
-                        $data['PAGES'][0]["USER_NAME"]));
+            if($is_admin) {
+                ?>
+                <h2><?php
+                    e("<a href='$other_paging_query'>&lt;&lt;</a>");
+                if($data['SUBTITLE'] == "") {
+                    e(tl('groupfeed_element_recent_activity'));
                 } else {
-                    e("[{$data['SUBTITLE']}]");
+                    if(isset($data['JUST_THREAD'])) {
+                        e(tl('groupfeed_element_thread',
+                            $data['PAGES'][0][self::SOURCE_NAME],
+                            $data['SUBTITLE']));
+                    } else if(isset($data['JUST_GROUP_ID'])){
+                        e($data['PAGES'][0][self::SOURCE_NAME]);
+                        e(" [".tl('groupfeed_element_feed')."|".
+                            "<a href='?c=group&a=wiki&group_id=".
+                            $data['JUST_GROUP_ID']."'>" .
+                            tl('group_view_wiki') . "</a>]");
+                    } else if(isset($data['JUST_USER_ID'])) {
+                        e(tl('groupfeed_element_user',
+                            $data['PAGES'][0]["USER_NAME"]));
+                    } else {
+                        e("[{$data['SUBTITLE']}]");
+                    }
                 }
+                ?>
+                </h2>
+                <?php
             }
-            ?></h2>
+            ?>
             <div>
             &nbsp;
             </div>
@@ -100,7 +123,8 @@ class GroupfeedElement extends Element implements CrawlConstants
             $open_in_tabs = $data['OPEN_IN_TABS'];
             $time = time();
             $can_comment = array(GROUP_READ_COMMENT, GROUP_READ_WRITE);
-            if(in_array($data['PAGES'][0]["MEMBER_ACCESS"], $can_comment)) {
+            if(isset($data['PAGES'][0]["MEMBER_ACCESS"]) &&
+                in_array($data['PAGES'][0]["MEMBER_ACCESS"], $can_comment)) {
                 if(isset($data['JUST_THREAD'])) {
                     ?>
                     <div class='button-group-result'>
@@ -137,7 +161,7 @@ class GroupfeedElement extends Element implements CrawlConstants
                 $subsearch = (isset($data["SUBSEARCH"])) ? $data["SUBSEARCH"] :
                     "";
                 if($page["MEMBER_ACCESS"] == GROUP_READ_WRITE &&
-                    !$page['USER_ID'] == "" &&
+                    $page['USER_ID'] != "" && isset($_SESSION['USER_ID']) &&
                     ($page['USER_ID'] == $_SESSION['USER_ID'] ||
                     $_SESSION['USER_ID'] == ROOT_ID)) {
                     ?>
@@ -250,8 +274,8 @@ class GroupfeedElement extends Element implements CrawlConstants
         function comment_form(id, parent_id, group_id)
         {
             clearInterval(updateId);
-            tmp = '<div class="comment<?php e($clear); ?>" ></div>';
-            start_elt = elt(id).innerHTML.substr(0, tmp.length)
+            tmp = '<div class="comment<?php e($clear); ?>"></div>';
+            start_elt = elt(id).innerHTML.substr(0, tmp.length);
             if(start_elt != tmp) {
                 elt(id).innerHTML =
                     tmp +
@@ -364,7 +388,7 @@ class GroupfeedElement extends Element implements CrawlConstants
         }
         </script>
         <?php
-        if($data['LIMIT'] == 0) { ?>
+        if($data['LIMIT'] == 0 ) { ?>
             <script type="text/javascript" >
             var updateId;
             function feedStatusUpdate()

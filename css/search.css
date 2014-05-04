@@ -804,19 +804,32 @@ ul.in-list li
     top: 14pt;
 }
 
-.admin-heading
+.admin-heading,
+.group-heading,
 {
     position: relative;
     top: 30px;
 }
-
+.group-heading small
+{
+    position: relative;
+    top: -30px;
+}
 .mobile .admin-heading
 {
     position: absolute;
     top: 20px;
 }
-
-
+.mobile .group-heading
+{
+    position: absolute;
+    top: 10 px;
+}
+.mobile .group-heading small
+{
+    position: relative;
+    top: 0px;
+}
 .landing .logo
 {
     min-width: 6in;
@@ -1797,7 +1810,8 @@ div..button-group-result
     margin: 0;
 }
 
-.current-activity
+.current-activity,
+.small-margin-current-activity
 {
     background-color: #fff;
     border: 1px solid #ccc;
@@ -1823,8 +1837,14 @@ div..button-group-result
     margin-right: 2.75in;
 }
 
+.small-margin-current-activity
+{
+    margin-left: .2in;
+    margin-right: .2in;
+}
 
-.mobile .current-activity
+.mobile .current-activity,
+.mobile .small-margin-current-activity
 {
     clear:both;
     font-size:12pt;
@@ -1839,7 +1859,10 @@ div..button-group-result
     top:120px;
     width: 310px;
 }
-
+.mobile .small-margin-current-activity
+{
+    top:90px;
+}
 .current-activity h2
 {
     margin-top: 0.05in;

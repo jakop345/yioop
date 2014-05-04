@@ -220,8 +220,11 @@ class CrawlstatusView extends View
             <th colspan="3"><?php e(tl('crawlstatus_view_actions'));?></th></tr>
             <?php
             foreach($data['RECENT_CRAWLS'] as $crawl) {
+                $description = (MOBILE) ? wordwrap($crawl['DESCRIPTION'],
+                    10, "<br />\n", true) :
+                    $crawl['DESCRIPTION'];
             ?>
-                <tr><td><b><?php e($crawl['DESCRIPTION']); ?></b><br />
+                <tr><td><b><?php e($description); ?></b><br />
                     [<a href="?<?php e(CSRF_TOKEN."=".$data[CSRF_TOKEN]);
                         ?>&amp;c=statistics&amp;its=<?php
                     e($crawl['CRAWL_TIME']); ?>"><?php

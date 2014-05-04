@@ -62,6 +62,8 @@ class SigninElement extends Element
                 e((isset($data['its'])) ? '&amp;its='.$data['its'] : '');
                 e((isset($data['ACTIVITY_METHOD'])) ? 
                     '&amp;return='.$data['ACTIVITY_METHOD']:'');
+                e((isset($data['ACTIVITY_CONTROLLER'])) ? 
+                    '&amp;oldc='.$data['ACTIVITY_CONTROLLER']:'');
                 ?>"><?php
             e(tl('signin_element_settings')); ?></a></li><?php
         }

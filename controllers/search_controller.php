@@ -148,7 +148,7 @@ class SearchController extends Controller implements CrawlConstants
                 $out_data = array();
                 $out_data["language"] = getLocaleTag();
                 $out_data["link"] = NAME_SERVER.
-                    "?f=json&amp;q={$data['QUERY']}&amp;its={$data['QUERY']}";
+                    "?f=json&amp;q={$data['QUERY']}";
                 $out_data["totalResults"] = $data['TOTAL_ROWS'];
                 $out_data["startIndex"] = $data['LIMIT'];
                 $out_data["itemsPerPage"] = $data['RESULTS_PER_PAGE'];

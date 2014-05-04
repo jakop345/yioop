@@ -46,7 +46,7 @@ class FeedstatusView extends View
 {
 
     /**
-     * An Ajax call from the My Group Feeds elemnt in Admin View triggers
+     * An Ajax call from the My Group Feeds element in Admin View triggers
      * this view to be instantiated. The renderView method then draws
      * the most recent feed posts.
      *

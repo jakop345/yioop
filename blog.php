@@ -33,8 +33,9 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-$_REQUEST['c'] = "static";
-$_REQUEST['p'] = "blog";
+$_REQUEST['c'] = "group";
+$_REQUEST['a'] = "groupFeeds";
+$_REQUEST['just_group_id'] = 2;
 
 require_once("index.php");
 ?>

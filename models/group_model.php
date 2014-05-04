@@ -609,7 +609,7 @@ class GroupModel extends Model
      *      and that they should be grouped by thread
      *  @return array elements of which represent one group feed item
      */
-    function getGroupItems($limit=0, $num=100, $search_array = array(),
+    function getGroupItems($limit = 0, $num = 100, $search_array = array(),
         $user_id = ROOT_ID, $for_group = -1)
     {
         $db = $this->db;
@@ -622,11 +622,16 @@ class GroupModel extends Model
             $add_where = " AND ";
         }
         $user_id = $db->escapeString($user_id);
-        $where .= $add_where. " UG.USER_ID='$user_id' AND
-            GI.GROUP_ID=G.GROUP_ID AND GI.GROUP_ID=UG.GROUP_ID AND
-            UG.USER_ID = U.USER_ID AND ((
-            UG.STATUS='".ACTIVE_STATUS."'
-            AND G.MEMBER_ACCESS IN ('".GROUP_READ."','".GROUP_READ_COMMENT.
+        $non_public_where = ($user_id != PUBLIC_GROUP_ID) ?
+            " UG.USER_ID='$user_id' AND " :
+            " G.REGISTER_TYPE='".PUBLIC_JOIN."' AND ";
+        $non_public_status = ($user_id != PUBLIC_GROUP_ID) ?
+            " UG.STATUS='".ACTIVE_STATUS."' AND " : "";
+        $where .= $add_where. $non_public_where .
+            "GI.USER_ID=P.USER_ID AND
+            GI.GROUP_ID=G.GROUP_ID AND GI.GROUP_ID=UG.GROUP_ID AND ((
+            $non_public_status
+            G.MEMBER_ACCESS IN ('".GROUP_READ."','".GROUP_READ_COMMENT.
             "','".GROUP_READ_WRITE."'))OR
             (G.OWNER_ID = UG.USER_ID)) AND
             P.USER_ID = GI.USER_ID";
@@ -636,7 +641,7 @@ class GroupModel extends Model
             $select = "SELECT DISTINCT MIN(GI.ID) AS ID,
                 COUNT(GI.ID) AS NUM_POSTS, GI.PARENT_ID AS PARENT_ID,
                 MIN(GI.GROUP_ID) AS GROUP_ID, MIN(GI.TITLE )AS TITLE,
-                MIN(GI.DESCRIPTION) AS DESCRIPTION, MIN(GI.PUBDATE) AS PUBDATE,
+                MAX(GI.DESCRIPTION) AS DESCRIPTION, MAX(GI.PUBDATE) AS PUBDATE,
                 MIN(G.OWNER_ID) AS OWNER_ID,
                 MIN(G.MEMBER_ACCESS) AS MEMBER_ACCESS,
                 MIN(G.GROUP_NAME) AS GROUP_NAME, MIN(P.USER_NAME) AS USER_NAME,
@@ -652,12 +657,20 @@ class GroupModel extends Model
                 P.USER_ID AS USER_ID ";
         }
         $sql = "$select
-            FROM GROUP_ITEM GI, GROUPS G, USER_GROUP UG, USERS U, USERS P
+            FROM GROUP_ITEM GI, GROUPS G, USER_GROUP UG, USERS P
             $where $group_by $order_by $limit";
         $result = $db->execute($sql);
         $i = 0;
-        while($groups[$i] = $db->fetchArray($result)) {
-            $i++;
+        $read_only = ($user_id == PUBLIC_GROUP_ID);
+        if($read_only) {
+            while($groups[$i] = $db->fetchArray($result)) {
+                $groups[$i]["MEMBER_ACCESS"] = GROUP_READ;
+                $i++;
+            }
+        } else {
+            while($groups[$i] = $db->fetchArray($result)) {
+                $i++;
+            }
         }
         unset($groups[$i]); //last one will be null
         return $groups;
@@ -690,11 +703,16 @@ class GroupModel extends Model
             $add_where = " AND ";
         }
         $user_id = $db->escapeString($user_id);
-        $where .= $add_where. " UG.USER_ID='$user_id' AND
-            GI.USER_ID=P.USER_ID AND
+        $non_public_where = ($user_id != PUBLIC_GROUP_ID) ?
+            " UG.USER_ID='$user_id' AND " :
+            " G.REGISTER_TYPE='".PUBLIC_JOIN."' AND ";
+        $non_public_status = ($user_id != PUBLIC_GROUP_ID) ?
+            " UG.STATUS='".ACTIVE_STATUS."' AND " : "";
+        $where .= $add_where. $non_public_where .
+            "GI.USER_ID=P.USER_ID AND
             GI.GROUP_ID=G.GROUP_ID AND GI.GROUP_ID=UG.GROUP_ID AND ((
-            UG.STATUS='".ACTIVE_STATUS."'
-            AND G.MEMBER_ACCESS IN ('".GROUP_READ."','".GROUP_READ_COMMENT.
+            $non_public_status
+            G.MEMBER_ACCESS IN ('".GROUP_READ."','".GROUP_READ_COMMENT.
             "','".GROUP_READ_WRITE."'))OR
             (G.OWNER_ID = UG.USER_ID))";
         if($for_group >= 0) {

@@ -548,14 +548,23 @@ class SocialComponent extends Component implements CrawlConstants
     function groupFeeds()
     {
         $parent = $this->parent;
+        $controller_name = 
+            (get_class($parent) == "AdminController") ? "admin" : "group";
+        $other_controller_name = (get_class($parent) == "AdminController")
+            ? "group" : "admin";
         $group_model = $parent->model("group");
         $user_model = $parent->model("user");
         $data["ELEMENT"] = "groupfeed";
         $data['SCRIPT'] = "";
-        $user_id = $_SESSION['USER_ID'];
+        if(isset($_SESSION['USER_ID'])) {
+            $user_id = $_SESSION['USER_ID'];
+        } else {
+            $user_id = PUBLIC_GROUP_ID;
+        }
+        
         $username = $user_model->getUsername($user_id);
         if(isset($_REQUEST['num'])) {
-            $results_per_page = $this->clean($_REQUEST['num'], "int");
+            $results_per_page = $parent->clean($_REQUEST['num'], "int");
         } else if(isset($_SESSION['MAX_PAGES_TO_SHOW']) ) {
             $results_per_page = $_SESSION['MAX_PAGES_TO_SHOW'];
         } else {
@@ -849,7 +858,9 @@ class SocialComponent extends Component implements CrawlConstants
         $data['LIMIT'] = $limit;
         $data['RESULTS_PER_PAGE'] = $results_per_page;
         $data['PAGES'] = $pages;
-        $data['PAGING_QUERY'] = "?c=admin&amp;a=groupFeeds";
+        $data['PAGING_QUERY'] = "?c=$controller_name&amp;a=groupFeeds";
+        $data['OTHER_PAGING_QUERY'] =
+            "?c=$other_controller_name&amp;a=groupFeeds";
         return $data;
 
     }
