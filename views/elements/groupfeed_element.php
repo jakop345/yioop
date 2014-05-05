@@ -54,8 +54,9 @@ class GroupfeedElement extends Element implements CrawlConstants
      */
     function render($data)
     {
-        $is_admin = (get_class($this->view) == "AdminView");
-        if(!isset($data['STATUS'])) {
+        $is_admin = ($data["CONTROLLER"] == "admin");
+        $is_status = isset($data['STATUS']);
+        if(!$is_status) {
         ?>
             <div id="feedstatus" <?php if($is_admin) {
                 e(' class="current-activity" ');
@@ -239,7 +240,7 @@ class GroupfeedElement extends Element implements CrawlConstants
             ?>
         </div>
         <?php
-        if(!isset($data['STATUS'])) {
+        if(!$is_status) {
             $this->renderScripts($data);
         }
     }

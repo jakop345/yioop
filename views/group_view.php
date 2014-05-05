@@ -53,6 +53,9 @@ class GroupView extends View implements CrawlConstants
         $logo = "resources/yioop.png";
         $base_query = $data['PAGING_QUERY']."&amp;".CSRF_TOKEN."=".
             $data[CSRF_TOKEN];
+        $other_base_query = $data['OTHER_PAGING_QUERY']."&amp;".CSRF_TOKEN."=".
+            $data[CSRF_TOKEN];
+        $logged_in = isset($data["ADMIN"]) && $data["ADMIN"];
         if(MOBILE) {
             $logo = "resources/m-yioop.png";
         }
@@ -77,21 +80,36 @@ class GroupView extends View implements CrawlConstants
                     "&a=groupFeeds&just_thread=".
                     $data['JUST_THREAD']."'>RSS</a>]");
             }
+            if($logged_in) {
+                e(" <a href='$other_base_query&a=groupFeeds&just_thread=".
+                    $data['JUST_THREAD']."' >&gt;&gt;</a>");
+            }
         } else if(isset($data['JUST_GROUP_ID'])){
             e($data['PAGES'][0][self::SOURCE_NAME]);
             e(" [".tl('group_view_feed'));
-            if(!MOBILE && (!isset($data["ADMIN"]) || !$data["ADMIN"])) {
+            if(!MOBILE && !$logged_in) {
                 e("|<a href='$base_query&a=groupFeeds&just_group_id=".
                     $data['PAGES'][0]["GROUP_ID"]."&f=rss' >RSS</a>");
             }
             e("|<a href='$base_query&a=wiki&group_id=".
                 $data['JUST_GROUP_ID']."'>" .
                 tl('group_view_wiki') . "</a>]");
+            if($logged_in) {
+                e(" <a href='$other_base_query&a=groupFeeds&just_group_id=".
+                    $data['PAGES'][0]["GROUP_ID"]."' >&gt;&gt;</a>");
+            }
         } else if(isset($data['JUST_USER_ID'])) {
             e(tl('group_view_user',
                 $data['PAGES'][0]["USER_NAME"]));
+            if($logged_in) {
+                e(" <a href='$other_base_query&a=groupFeeds&just_user_id=".
+                    $data['PAGES'][0]["USER_ID"]."' >&gt;&gt;</a>");
+            }
         } else {
             e(tl('group_view_myfeeds'));
+            if($logged_in) {
+                e(" <a href='$other_base_query&a=groupFeeds' >&gt;&gt;</a>");
+            }
         }
         ?></small>
         </h1>

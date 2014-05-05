@@ -366,7 +366,11 @@ class UserModel extends Model
         foreach($user as $field => $value) {
             $sql .= "$comma $field=? ";
             $comma = ",";
-            $params[] = $value;
+            if($field == "PASSWORD") {
+                $params[] = crawlCrypt($value);
+            } else {
+                $params[] = $value;
+            }
         }
         $sql .= " WHERE USER_ID=?";
         $params[] = $user_id;

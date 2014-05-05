@@ -550,6 +550,7 @@ class SocialComponent extends Component implements CrawlConstants
         $parent = $this->parent;
         $controller_name = 
             (get_class($parent) == "AdminController") ? "admin" : "group";
+        $data["CONTROLLER"] = $controller_name;
         $other_controller_name = (get_class($parent) == "AdminController")
             ? "group" : "admin";
         $group_model = $parent->model("group");

@@ -249,6 +249,23 @@ class SourceModel extends Model
     }
 
     /**
+     *  Return the media source by the name of the source
+     *  @param string $folder_name 
+     *  @return array 
+     */
+    function getSubsearch($folder_name)
+    {
+        $db = $this->db;
+        $sql = "SELECT * FROM SUBSEARCH WHERE FOLDER_NAME = ?";
+        $result = $db->execute($sql, array($folder_name));
+        if(!$result) {
+            return false;
+        }
+        $row = $db->fetchArray($result);
+        return $row;
+    }
+
+    /**
      * Adds a new subsearch to the list of subsearches. This are displayed
      * at the top od the Yioop search pages.
      *
@@ -270,6 +287,28 @@ class SourceModel extends Model
         $db->execute($sql, array(time(), $locale_string));
     }
 
+    /**
+     *  Used to update the fields stored in a SUBSEARCH row according to
+     *  an array holding new values
+     *
+     *  @param array $search_info updated values for a SUBSEARCH row
+     */
+    function updateSubsearch($search_info)
+    {
+        $folder_name = $search_info['FOLDER_NAME'];
+        unset($search_info['FOLDER_NAME']);
+        $sql = "UPDATE SUBSEARCH SET ";
+        $comma ="";
+        $params = array();
+        foreach($search_info as $field => $value) {
+            $sql .= "$comma $field=? ";
+            $comma = ",";
+            $params[] = $value;
+        }
+        $sql .= " WHERE FOLDER_NAME=?";
+        $params[] = $folder_name;
+        $this->db->execute($sql, $params);
+    }
 
     /**
      * Deletes a subsearch from the subsearch table and removes its

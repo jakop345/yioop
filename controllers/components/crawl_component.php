@@ -1346,7 +1346,7 @@ class CrawlComponent extends Component implements CrawlConstants
         $crawl_model = $parent->model("crawl");
         $source_model = $parent->model("source");
         $possible_arguments = array("addsource", "deletesource",
-            "addsubsearch", "deletesubsearch", "editsource");
+            "addsubsearch", "deletesubsearch", "editsource", "editsubsearch");
         $data = array();
         $data["ELEMENT"] = "searchsources";
         $data['SCRIPT'] = "";
@@ -1384,9 +1384,9 @@ class CrawlComponent extends Component implements CrawlConstants
         $n = NUM_RESULTS_PER_PAGE;
         $data['PER_PAGE'] =
             array($n => $n, 2*$n => 2*$n, 5*$n=> 5*$n, 10*$n=>10*$n);
-        if(isset($_REQUEST['perpage']) &&
-            in_array($_REQUEST['perpage'], array_keys($data['PER_PAGE']))) {
-            $data['PER_PAGE_SELECTED'] = $_REQUEST['perpage'];
+        if(isset($_REQUEST['per_page']) &&
+            in_array($_REQUEST['per_page'], array_keys($data['PER_PAGE']))) {
+            $data['PER_PAGE_SELECTED'] = $_REQUEST['per_page'];
         } else {
             $data['PER_PAGE_SELECTED'] = NUM_RESULTS_PER_PAGE;
         }
@@ -1406,7 +1406,12 @@ class CrawlComponent extends Component implements CrawlConstants
         $data["CURRENT_SOURCE"] = array(
             "name" => "", "type"=> $data['SOURCE_TYPE'], "source_url" => "",
             "thumb_url" => "", "language" => $data['SOURCE_LOCALE_TAG']);
+        $data["CURRENT_SUBSEARCH"] = array(
+            "locale_string" => "", "folder_name" =>"",
+            "index_identifier" => "",
+            "per_page" => $data['PER_PAGE_SELECTED']);
         $data['SOURCE_FORM_TYPE'] = "addsource";
+        $data["SEARCH_FORM_TYPE"] = "addsubsearch";
         if(isset($_REQUEST['arg']) &&
             in_array($_REQUEST['arg'], $possible_arguments)) {
             switch($_REQUEST['arg'])
@@ -1439,6 +1444,88 @@ class CrawlComponent extends Component implements CrawlConstants
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('crawl_component_media_source_added').
                         "</h1>');";
+                break;
+                case "addsubsearch":
+                    $to_clean = array("folder_name", 'index_identifier');
+                    $must_have = $to_clean;
+                    foreach ($to_clean as $clean_me) {
+                        $r[$clean_me] = (isset($_REQUEST[$clean_me])) ?
+                            $parent->clean($_REQUEST[$clean_me], "string" ):"";
+                        if(in_array($clean_me, $must_have) &&
+                            $r[$clean_me] == "" ) {
+                            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                                tl('crawl_component_missing_fields').
+                                "</h1>');";
+                            break 2;
+                        }
+                    }
+                    $source_model->addSubsearch(
+                        $r['folder_name'], $r['index_identifier'],
+                        $data['PER_PAGE_SELECTED']);
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        tl('crawl_component_subsearch_added').
+                        "</h1>');";
+                break;
+                case "deletesource":
+                    if(!isset($_REQUEST['ts'])) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('crawl_component_no_delete_source').
+                            "</h1>');";
+                        break;
+                    }
+                    $timestamp = $parent->clean($_REQUEST['ts'], "string");
+                    $source_model->deleteMediaSource($timestamp);
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        tl('crawl_component_media_source_deleted').
+                        "</h1>');";
+                break;
+
+                case "deletesubsearch":
+                    if(!isset($_REQUEST['fn'])) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('crawl_component_no_delete_source').
+                            "</h1>');";
+                        break;
+                    }
+                    $folder_name = $parent->clean($_REQUEST['fn'], "string");
+                    $source_model->deleteSubsearch($folder_name);
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        tl('crawl_component_subsearch_deleted').
+                        "</h1>');";
+                break;
+                case "editsubsearch":
+                    $data['SEARCH_FORM_TYPE'] = "editsubsearch";
+                    $subsearch = false;
+                    $folder_name = (isset($_REQUEST['fn'])) ?
+                        $parent->clean($_REQUEST['fn'], "string") : "";
+                    if($folder_name) {
+                        $subsearch = $source_model->getSubsearch($folder_name);
+                    }
+                    if(!$subsearch) {
+                        $data['SOURCE_FORM_TYPE'] = "addsubsearch";
+                        break;
+                    }
+                    $data['fn'] = $folder_name;
+                    $update = false;
+                    foreach($data['CURRENT_SUBSEARCH'] as $field => $value) {
+                        $upper_field = strtoupper($field);
+                        if(isset($_REQUEST[$field]) && $field != 'name') {
+                            $subsearch[$upper_field] = $parent->clean(
+                                $_REQUEST[$field], "string");
+                            $data['CURRENT_SUBSEARCH'][$field] =
+                                $subsearch[$upper_field];
+                            $update = true;
+                        } else if (isset($subsearch[$upper_field])){
+                            $data['CURRENT_SUBSEARCH'][$field] =
+                                $subsearch[$upper_field];
+                        }
+                    }
+                    if($update) {
+                        $source_model->updateSubsearch($subsearch);
+                        $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
+                            tl('crawl_component_subsearch_updated').
+                            "</h1>');";
+                    }
                 break;
                 case "editsource":
                     $data['SOURCE_FORM_TYPE'] = "editsource";
@@ -1473,53 +1560,6 @@ class CrawlComponent extends Component implements CrawlConstants
                             tl('crawl_component_media_source_updated').
                             "</h1>');";
                     }
-                break;
-                case "deletesource":
-                    if(!isset($_REQUEST['ts'])) {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('crawl_component_no_delete_source').
-                            "</h1>');";
-                        break;
-                    }
-                    $timestamp = $parent->clean($_REQUEST['ts'], "string");
-                    $source_model->deleteMediaSource($timestamp);
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('crawl_component_media_source_deleted').
-                        "</h1>');";
-                break;
-                case "addsubsearch":
-                    $to_clean = array("foldername", 'indexsource');
-                    $must_have = $to_clean;
-                    foreach ($to_clean as $clean_me) {
-                        $r[$clean_me] = (isset($_REQUEST[$clean_me])) ?
-                            $parent->clean($_REQUEST[$clean_me], "string" ):"";
-                        if(in_array($clean_me, $must_have) &&
-                            $r[$clean_me] == "" ) {
-                            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                                tl('crawl_component_missing_fields').
-                                "</h1>');";
-                            break 2;
-                        }
-                    }
-                    $source_model->addSubsearch(
-                        $r['foldername'], $r['indexsource'],
-                        $data['PER_PAGE_SELECTED']);
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('crawl_component_subsearch_added').
-                        "</h1>');";
-                break;
-                case "deletesubsearch":
-                    if(!isset($_REQUEST['fn'])) {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('crawl_component_no_delete_source').
-                            "</h1>');";
-                        break;
-                    }
-                    $folder_name = $parent->clean($_REQUEST['fn'], "string");
-                    $source_model->deleteSubsearch($folder_name);
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('crawl_component_subsearch_deleted').
-                        "</h1>');";
                 break;
             }
         }

@@ -56,7 +56,7 @@ class SearchsourcesElement extends Element
         $pre_base_url = "?".CSRF_TOKEN."=".$data[CSRF_TOKEN]."&amp;c=admin";
         $base_url = $pre_base_url . "&amp;a=searchSources";
         $localize_url = $pre_base_url . "&amp;a=manageLocales".
-            "&amp;arg=editlocale&amp;selectlocale=".$data['LOCALE_TAG'];
+            "&amp;arg=editstrings&amp;selectlocale=".$data['LOCALE_TAG'];
     ?>
         <div class="current-activity">
         <?php if($data["SOURCE_FORM_TYPE"] == "editsource") {
@@ -173,29 +173,48 @@ class SearchsourcesElement extends Element
         <?php
         } ?>
         </table>
-        <h2><?php e(tl('searchsources_element_add_subsearch'))?></h2>
-        <form id="addSearchSourceForm" method="post" action='#'>
+        <?php if($data["SEARCH_FORM_TYPE"] == "editsubsearch") {
+            ?>
+            <div id='subsearch-section'
+                class='float-opposite'><a href='<?php e($base_url); ?>'><?php
+                e(tl('searchsources_element_addsearch_form')); ?></a></div>
+            <h2><?php e(tl('searchsources_element_edit_subsearch'));?></h2>
+            <?php
+        } else {
+            ?>
+            <h2><?php e(tl('searchsources_element_add_subsearch'));?></h2>
+            <?php
+        }
+        ?>
+        <form id="SearchSourceForm" method="post" action='#'>
         <input type="hidden" name="c" value="admin" />
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" name="a" value="searchSources" />
-        <input type="hidden" name="arg" value="addsubsearch" />
+        <input type="hidden" name="arg" value="<?php 
+            e($data['SEARCH_FORM_TYPE']); ?>" />
         <table class="name-table">
         <tr><td><label for="subsearch-folder-name"><b><?php
             e(tl('searchsources_element_foldername'))?></b></label></td><td>
-            <input type="text" id="subsearch-folder-name" name="foldername"
+            <input type="text" id="subsearch-folder-name" name="folder_name"
+                value="<?php e($data['CURRENT_SUBSEARCH']['folder_name']); ?>"
+                <?php
+                if($data['SEARCH_FORM_TYPE'] == 'editsubsearch') {
+                    e("disabled='disabled'");
+                }
+                ?>
                 maxlength="80" class="wide-field" /></td></tr>
         <tr><td><label for="index-source"><b><?php
             e(tl('searchsources_element_indexsource'))?></b></label></td><td>
             <?php $this->view->helper("options")->render("index-source",
-            "indexsource", $data['SEARCH_LISTS'],
-                ""); ?></td></tr>
+            "index_identifier", $data['SEARCH_LISTS'],
+                $data['CURRENT_SUBSEARCH']['index_identifier']); ?></td></tr>
         <tr>
         <td class="table-label"><label for="per-page"><b><?php
             e(tl('searchsources_element_per_page')); ?></b></label></td>
             <td><?php
-            $this->view->helper("options")->render("per-page", "perpage",
-                $data['PER_PAGE'], $data['PER_PAGE_SELECTED']); ?>
+            $this->view->helper("options")->render("per-page", "per_page",
+                $data['PER_PAGE'], $data['CURRENT_SUBSEARCH']['per_page']); ?>
         </td></tr>
         <tr><td></td><td class="center"><button class="button-box"
             type="submit"><?php e(tl('searchsources_element_submit'));
@@ -215,20 +234,34 @@ class SearchsourcesElement extends Element
         <tr><th><?php e(tl('searchsources_element_dirname'));?></th>
             <th><?php
             e(tl('searchsources_element_index')); ?></th>
-            <th><?php e(tl('searchsources_element_localestring'));
-            ?></th>
-            <th><?php e(tl('searchsources_element_perpage'));
-            ?></th>
-            <th colspan="2"><?php
+            <?php
+            if(!MOBILE) { ?>
+                <th><?php e(tl('searchsources_element_localestring'));
+                ?></th>
+                <th><?php e(tl('searchsources_element_perpage'));
+                ?></th>
+                <?php
+            }
+            ?>
+            <th colspan="3"><?php
                 e(tl('searchsources_element_actions'));?></th></tr>
         <?php foreach($data['SUBSEARCHES'] as $search) {
         ?>
         <tr><td><b><?php e($search['FOLDER_NAME']); ?></b></td>
             <td><?php
                 e("<b>".$data["SEARCH_LISTS"][trim($search['INDEX_IDENTIFIER'])].
-                "</b><br />".$search['INDEX_IDENTIFIER']); ?></td>
-            <td><?php e($search['LOCALE_STRING']);?></td>
-            <td><?php e($search['PER_PAGE']);?></td>
+                "</b><br />".$search['INDEX_IDENTIFIER']); ?></td><?php
+            if(!MOBILE) {
+                ?>
+                <td><?php e($search['LOCALE_STRING']);?></td>
+                <td><?php e($search['PER_PAGE']);?></td><?php
+            }
+            ?>
+            <td><a href="<?php e($base_url."&amp;arg=editsubsearch&amp;fn=".
+                $search['FOLDER_NAME'].$paging1.$paging2.
+                "#subsearch-section"); ?>"><?php
+                e(tl('searchsources_element_editsource'));
+            ?></a></td>
             <td><a href='<?php e($localize_url."#".$search['LOCALE_STRING']);
                 ?>' ><?php
                 e(tl('searchsources_element_localize'));
