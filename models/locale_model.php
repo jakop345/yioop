@@ -360,7 +360,7 @@ class LocaleModel extends Model
      *  Used to update the fields stored in a LOCALE row according to
      *  an array holding new values
      *
-     *  @param array $user updated values for a LOCALE row
+     *  @param array $locale_indo updated values for a LOCALE row
      */
     function updateLocaleInfo($locale_info)
     {

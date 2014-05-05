@@ -108,6 +108,24 @@ class SourceModel extends Model
     }
 
     /**
+     *  Return the media source by the name of the source
+     *  @param string $timestamp of the media source to look up
+     *  @return array associative array with SOURCE_NAME, TYPE, SOURCE_URL,
+     *      THUMB_URL, and LANGUAGE
+     */
+    function getMediaSource($timestamp)
+    {
+        $db = $this->db;
+        $sql = "SELECT * FROM MEDIA_SOURCE WHERE TIMESTAMP = ?";
+        $result = $db->execute($sql, array($timestamp));
+        if(!$result) {
+            return false;
+        }
+        $row = $db->fetchArray($result);
+        return $row;
+    }
+
+    /**
      *  Used to add a new video, rss, or other sources to Yioop
      *
      *  @param string $name
@@ -131,6 +149,30 @@ class SourceModel extends Model
 
         $db->execute($sql, array(time(), $name, $source_type, $source_url,
             $thumb_url, $language));
+    }
+
+    /**
+     *  Used to update the fields stored in a MEDIA_SOURCE row according to
+     *  an array holding new values
+     *
+     *  @param array $source_info updated values for a MEDIA_SOURCE row
+     */
+    function updateMediaSource($source_info)
+    {
+        $timestamp = $source_info['TIMESTAMP'];
+        unset($source_info['TIMESTAMP']);
+        unset($source_info['NAME']);
+        $sql = "UPDATE MEDIA_SOURCE SET ";
+        $comma ="";
+        $params = array();
+        foreach($source_info as $field => $value) {
+            $sql .= "$comma $field=? ";
+            $comma = ",";
+            $params[] = $value;
+        }
+        $sql .= " WHERE TIMESTAMP=?";
+        $params[] = $timestamp;
+        $this->db->execute($sql, $params);
     }
 
     /**

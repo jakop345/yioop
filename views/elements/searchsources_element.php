@@ -59,36 +59,59 @@ class SearchsourcesElement extends Element
             "&amp;arg=editlocale&amp;selectlocale=".$data['LOCALE_TAG'];
     ?>
         <div class="current-activity">
-        <h2><?php e(tl('searchsources_element_add_media_source'))?></h2>
+        <?php if($data["SOURCE_FORM_TYPE"] == "editsource") {
+            ?>
+            <div class='float-opposite'><a href='<?php e($base_url); ?>'><?php
+                e(tl('searchsources_element_addsource_form')); ?></a></div>
+            <h2><?php e(tl('searchsources_element_edit_media_source'));?></h2>
+            <?php
+        } else {
+            ?>
+            <h2><?php e(tl('searchsources_element_add_media_source'));?></h2>
+            <?php
+        }
+        ?>
         <form id="addSearchSourceForm" method="post" action='#'>
         <input type="hidden" name="c" value="admin" />
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" name="a" value="searchSources" />
-        <input type="hidden" name="arg" value="addsource" />
+        <input type="hidden" name="arg" value="<?php
+            e($data['SOURCE_FORM_TYPE'])?>" />
+        <?php
+        if($data['SOURCE_FORM_TYPE'] == "editsource") {
+            ?>
+            <input type="hidden" name="ts" value="<?php
+                e($data['ts'])?>" />
+            <?php
+        }
+        ?>
         <table class="name-table">
         <tr><td><label for="source-type"><b><?php
             e(tl('searchsources_element_sourcetype'))?></b></label></td><td>
             <?php $this->view->helper("options")->render("source-type",
-            "sourcetype", $data['SOURCE_TYPES'],
-                $data['SOURCE_TYPE']); ?></td></tr>
+            "type", $data['SOURCE_TYPES'],
+                $data['CURRENT_SOURCE']['type']); ?></td></tr>
         <tr><td><label for="source-name"><b><?php
             e(tl('searchsources_element_sourcename'))?></b></label></td><td>
-            <input type="text" id="source-name" name="sourcename"
+            <input type="text" id="source-name" name="name"
+                value="<?php e($data['CURRENT_SOURCE']['name']); ?>"
                 maxlength="80" class="wide-field" /></td></tr>
         <tr><td><label for="source-url"><b><?php
             e(tl('searchsources_element_url'))?></b></label></td><td>
-            <input type="text" id="source-url" name="sourceurl"
+            <input type="text" id="source-url" name="source_url"
+                value="<?php e($data['CURRENT_SOURCE']['source_url']); ?>"
                 maxlength="80" class="wide-field" /></td></tr>
         <tr><td><label for="source-thumbnail"><b id="thumb-text"><?php
             e(tl('searchsources_element_thumbnail'))?></b></label></td><td>
-            <input type="text" id="source-thumbnail" name="sourcethumbnail"
+            <input type="text" id="source-thumbnail" name="thumb_url"
+                value="<?php e($data['CURRENT_SOURCE']['thumb_url']); ?>"
                 maxlength="80" class="wide-field" /></td></tr>
         <tr><td><label for="source-locale-tag"><b id="locale-text"><?php
             e(tl('searchsources_element_locale_tag'))?></b></label></td><td>
             <?php $this->view->helper("options")->render("source-locale-tag",
-                "sourcelocaletag", $data['LANGUAGES'],
-                 $data['SOURCE_LOCALE_TAG']); ?></td></tr>
+                "language", $data['LANGUAGES'],
+                 $data['CURRENT_SOURCE']['language']); ?></td></tr>
         <tr><td></td><td class="center"><button class="button-box"
             type="submit"><?php e(tl('searchsources_element_submit'));
             ?></button></td></tr>
@@ -120,15 +143,29 @@ class SearchsourcesElement extends Element
         ?>
         <table class="search-sources-table">
         <tr><th><?php e(tl('searchsources_element_medianame'));?></th>
-            <th><?php e(tl('searchsources_element_mediatype'));?></th><th><?php
-            e(tl('searchsources_element_mediaurls')); ?></th>
-            <th><?php e(tl('searchsources_element_action'));?></th></tr><?php
+            <th><?php e(tl('searchsources_element_mediatype'));?></th><?php
+            if(!MOBILE) {
+                e("<th>".tl('searchsources_element_mediaurls')."</th>");
+            }
+            ?>
+            <th colspan="2"><?php e(tl('searchsources_element_action'));
+                ?></th></tr><?php
         foreach($data['MEDIA_SOURCES'] as $source) {
         ?>
         <tr><td><b><?php e($source['NAME']); ?></b></td>
             <td><?php e($data['SOURCE_TYPES'][$source['TYPE']]); ?></td>
-            <td><?php e($source['SOURCE_URL']."<br />".
+            <?php
+            if(!MOBILE) {
+                ?>
+                <td><?php e($source['SOURCE_URL']."<br />".
                     $source['THUMB_URL']); ?></td>
+                <?php
+            }
+            ?>
+            <td><a href="<?php e($base_url."&amp;arg=editsource&amp;ts=".
+                $source['TIMESTAMP'].$paging1.$paging2); ?>"><?php
+                e(tl('searchsources_element_editmedia'));
+            ?></a></td>
             <td><a href="<?php e($base_url."&amp;arg=deletesource&amp;ts=".
                 $source['TIMESTAMP'].$paging1.$paging2); ?>"><?php
                 e(tl('searchsources_element_deletemedia'));

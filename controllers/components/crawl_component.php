@@ -1346,20 +1346,18 @@ class CrawlComponent extends Component implements CrawlConstants
         $crawl_model = $parent->model("crawl");
         $source_model = $parent->model("source");
         $possible_arguments = array("addsource", "deletesource",
-            "addsubsearch", "deletesubsearch");
+            "addsubsearch", "deletesubsearch", "editsource");
         $data = array();
         $data["ELEMENT"] = "searchsources";
         $data['SCRIPT'] = "";
         $data['SOURCE_TYPES'] = array(-1 => tl('crawl_component_media_kind'),
             "video" => tl('crawl_component_video'),
-            "rss" => tl('crawl_component_rss_feed'),
-            "group" => tl('crawl_component_group_feed'),
-            "page" => tl('crawl_component_static_page'));
+            "rss" => tl('crawl_component_rss_feed'));
         $source_type_flag = false;
-        if(isset($_REQUEST['sourcetype']) &&
-            in_array($_REQUEST['sourcetype'],
+        if(isset($_REQUEST['type']) &&
+            in_array($_REQUEST['type'],
             array_keys($data['SOURCE_TYPES']))) {
-            $data['SOURCE_TYPE'] = $_REQUEST['sourcetype'];
+            $data['SOURCE_TYPE'] = $_REQUEST['type'];
             $source_type_flag = true;
         } else {
             $data['SOURCE_TYPE'] = -1;
@@ -1397,40 +1395,92 @@ class CrawlComponent extends Component implements CrawlConstants
         foreach($locales as $locale) {
             $data["LANGUAGES"][$locale['LOCALE_TAG']] = $locale['LOCALE_NAME'];
         }
-        if(isset($_REQUEST['sourcelocaletag']) &&
-            in_array($_REQUEST['sourcelocaletag'],
+        if(isset($_REQUEST['language']) &&
+            in_array($_REQUEST['language'],
                 array_keys($data["LANGUAGES"]))) {
             $data['SOURCE_LOCALE_TAG'] =
-                $_REQUEST['sourcelocaletag'];
+                $_REQUEST['language'];
         } else {
             $data['SOURCE_LOCALE_TAG'] = DEFAULT_LOCALE;
         }
-
+        $data["CURRENT_SOURCE"] = array(
+            "name" => "", "type"=> $data['SOURCE_TYPE'], "source_url" => "",
+            "thumb_url" => "", "language" => $data['SOURCE_LOCALE_TAG']);
+        $data['SOURCE_FORM_TYPE'] = "addsource";
         if(isset($_REQUEST['arg']) &&
             in_array($_REQUEST['arg'], $possible_arguments)) {
             switch($_REQUEST['arg'])
             {
                 case "addsource":
-                    if(!$source_type_flag) break;
-                    $must_have = array("sourcename", "sourcetype",
-                        'sourceurl');
+                    if(!$source_type_flag) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('crawl_component_no_source_type').
+                            "</h1>');";
+                        break;
+                    }
+                    $must_have = array("name", "type",
+                        'source_url');
                     $to_clean = array_merge($must_have,
-                        array('sourcethumbnail','sourcelocaletag'));
+                        array('thumb_url','language'));
                     foreach ($to_clean as $clean_me) {
                         $r[$clean_me] = (isset($_REQUEST[$clean_me])) ?
                             $parent->clean($_REQUEST[$clean_me], "string" ):"";
                         if(in_array($clean_me, $must_have) &&
-                            $r[$clean_me] == "" ) break 2;
+                            $r[$clean_me] == "" ) {
+                            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                                tl('crawl_component_missing_fields').
+                                "</h1>');";
+                            break 2;
+                        }
                     }
                     $source_model->addMediaSource(
-                        $r['sourcename'], $r['sourcetype'], $r['sourceurl'],
-                        $r['sourcethumbnail'], $r['sourcelocaletag']);
+                        $r['name'], $r['type'], $r['source_url'],
+                        $r['source_url'], $r['language']);
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('crawl_component_media_source_added').
                         "</h1>');";
                 break;
+                case "editsource":
+                    $data['SOURCE_FORM_TYPE'] = "editsource";
+                    $source = false;
+                    $timestamp = (isset($_REQUEST['ts'])) ?
+                        $parent->clean($_REQUEST['ts'], "string") : "";
+                    if($timestamp) {
+                        $source = $source_model->getMediaSource($timestamp);
+                    }
+                    if(!$source) {
+                        $data['SOURCE_FORM_TYPE'] = "addsource";
+                        break;
+                    }
+                    $data['ts'] = $timestamp;
+                    $update = false;
+                    foreach($data['CURRENT_SOURCE'] as $field => $value) {
+                        $upper_field = strtoupper($field);
+                        if(isset($_REQUEST[$field]) && $field != 'name') {
+                            $source[$upper_field] = $parent->clean(
+                                $_REQUEST[$field], "string");
+                            $data['CURRENT_SOURCE'][$field] =
+                                $source[$upper_field];
+                            $update = true;
+                        } else if (isset($source[$upper_field])){
+                            $data['CURRENT_SOURCE'][$field] =
+                                $source[$upper_field];
+                        }
+                    }
+                    if($update) {
+                        $source_model->updateMediaSource($source);
+                        $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
+                            tl('crawl_component_media_source_updated').
+                            "</h1>');";
+                    }
+                break;
                 case "deletesource":
-                    if(!isset($_REQUEST['ts'])) break;
+                    if(!isset($_REQUEST['ts'])) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('crawl_component_no_delete_source').
+                            "</h1>');";
+                        break;
+                    }
                     $timestamp = $parent->clean($_REQUEST['ts'], "string");
                     $source_model->deleteMediaSource($timestamp);
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
@@ -1444,7 +1494,12 @@ class CrawlComponent extends Component implements CrawlConstants
                         $r[$clean_me] = (isset($_REQUEST[$clean_me])) ?
                             $parent->clean($_REQUEST[$clean_me], "string" ):"";
                         if(in_array($clean_me, $must_have) &&
-                            $r[$clean_me] == "" ) break 2;
+                            $r[$clean_me] == "" ) {
+                            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                                tl('crawl_component_missing_fields').
+                                "</h1>');";
+                            break 2;
+                        }
                     }
                     $source_model->addSubsearch(
                         $r['foldername'], $r['indexsource'],
@@ -1454,7 +1509,12 @@ class CrawlComponent extends Component implements CrawlConstants
                         "</h1>');";
                 break;
                 case "deletesubsearch":
-                    if(!isset($_REQUEST['fn'])) break;
+                    if(!isset($_REQUEST['fn'])) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('crawl_component_no_delete_source').
+                            "</h1>');";
+                        break;
+                    }
                     $folder_name = $parent->clean($_REQUEST['fn'], "string");
                     $source_model->deleteSubsearch($folder_name);
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
