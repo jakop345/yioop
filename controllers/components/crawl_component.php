@@ -808,7 +808,6 @@ class CrawlComponent extends Component implements CrawlConstants
         foreach($crawls as $crawl) {
             if(strlen($crawl['DESCRIPTION']) > 0 ) {
                 $data['available_options'][$crawl['CRAWL_TIME']] =
-                    tl('crawl_component_previous_crawl')." ".
                     $crawl['DESCRIPTION'];
             }
         }

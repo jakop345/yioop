@@ -65,6 +65,7 @@ class OptionsHelper extends Helper
      */
     function render($id, $name, $options, $selected, $onchange_submit = false)
     {
+        $word_wrap_len = 28;
     ?>
         <select id="<?php e($id);?>" name="<?php e($name);?>" <?php
             if($onchange_submit) {
@@ -76,6 +77,9 @@ class OptionsHelper extends Helper
         ?>
             <option value="<?php e($value); ?>" <?php
                 if($value== $selected) { e('selected="selected"'); }
+                if(MOBILE && strlen($text) > $word_wrap_len + 3) {
+                    $text = substr($text, 0, $word_wrap_len)."...";
+                }
              ?>><?php e($text); ?></option>
         <?php
         }
