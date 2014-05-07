@@ -460,6 +460,9 @@ class CrawlModel extends ParallelModel implements CrawlConstants
         if(!isset($info["general"]["cache_pages"])) {
             $info["general"]["cache_pages"] = true;
         }
+        if(!isset($info["general"]["summarizer_option"])) {
+            $info["general"]["summarizer_option"] = "";
+            }
         $n = array();
         $n[] = <<<EOT
 ; ***** BEGIN LICENSE BLOCK *****
@@ -496,6 +499,8 @@ EOT;
         }
         $n[] = '[general]';
         $n[] = "crawl_order = '".$info['general']['crawl_order']."';";
+        $n[] = "summarizer_option = '".
+            $info['general']['summarizer_option']."';";
         $n[] = "crawl_type = '".$info['general']['crawl_type']."';";
         $n[] = "crawl_index = '".$info['general']['crawl_index']."';";
         $n[] = 'arc_dir = "'.$info["general"]["arc_dir"].'";';
@@ -611,6 +616,8 @@ EOT;
                 "crawl_index" => array(self::CRAWL_INDEX, ''),
                 "crawl_order" => array(self::CRAWL_ORDER,
                     self::PAGE_IMPORTANCE),
+                "summarizer_option" => array(self::SUMMARIZER_OPTION,
+                    self::BASIC_SUMMARIZER),
                 "arc_dir" => array(self::ARC_DIR, ''),
                 "arc_type" => array(self::ARC_TYPE, ''),
                 "cache_pages" => array(self::CACHE_PAGES, true),

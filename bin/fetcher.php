@@ -313,7 +313,12 @@ class Fetcher implements CrawlConstants
      * @var string
      */
     var $crawl_order;
-
+    /**
+     * Stores the name of the crawler used for crawling.
+     * Possible values are Basic and Centroid
+     * @var string
+     */
+    var $summarizer_option;
     /**
      * Indicates the kind of crawl being performed: self::WEB_CRAWL indicates
      * a new crawl of the web; self::ARCHIVE_CRAWL indicates a crawl of an
@@ -547,6 +552,7 @@ class Fetcher implements CrawlConstants
 
         //we will get the correct crawl order from a queue_server
         $this->crawl_order = self::PAGE_IMPORTANCE;
+        $this->summarizer_option = self::CENTROID_SUMMARIZER;
     }
 
     /**
@@ -1320,6 +1326,7 @@ class Fetcher implements CrawlConstants
             $info[self::CURRENT_SERVER] = $this->current_server;
         }
         $update_fields = array(self::CRAWL_TYPE => "crawl_type",
+            self::SUMMARIZER_OPTION => "summarizer_option",
             self::CRAWL_INDEX => "crawl_index", self::CRAWL_ORDER =>
             'crawl_order', self::CACHE_PAGES => 'cache_pages',
             self::INDEXED_FILE_TYPES => 'indexed_file_types',
@@ -1774,6 +1781,11 @@ class Fetcher implements CrawlConstants
                     $site[self::HASH] = FetchUrl::computePageHash(
                         $site[self::PAGE]);
                 }
+                if(isset($doc_info[self::WORD_CLOUD])) {
+                        $site[self::WORD_CLOUD] = $doc_info[self::WORD_CLOUD];
+                    } else {
+                        $site[self::WORD_CLOUD] = NULL;
+                    }
                 if(isset($doc_info[self::CRAWL_DELAY])) {
                     $site[self::CRAWL_DELAY] = $doc_info[self::CRAWL_DELAY];
                 }
@@ -1843,6 +1855,10 @@ class Fetcher implements CrawlConstants
                 if(isset($site[self::DOC_INFO][self::LINKS])) {
                     $summarized_site_pages[$i][self::LINKS] =
                         $site[self::DOC_INFO][self::LINKS];
+                }
+                if(isset($site[self::DOC_INFO][self::WORD_CLOUD])) {
+                    $summarized_site_pages[$i][self::WORD_CLOUD] =
+                        $site[self::DOC_INFO][self::WORD_CLOUD];
                 }
                 if(isset($site[self::DOC_INFO][self::THUMB])) {
                     $summarized_site_pages[$i][self::THUMB] =

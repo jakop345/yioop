@@ -249,5 +249,9 @@ interface CrawlConstants
     const TOR_PROXY = 'dh';
     const PROXY_SERVERS = 'di';
     const NEEDS_OFFSET_FLAG = 0x7FFFFFFF;
+    const BASIC_SUMMARIZER = 'dk';
+    const CENTROID_SUMMARIZER = 'dl';
+    const SUMMARIZER_OPTION = 'dm';
+    const WORD_CLOUD = 'dn';
 }
 ?>

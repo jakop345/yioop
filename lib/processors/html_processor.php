@@ -55,7 +55,10 @@ require_once BASE_DIR."/lib/processors/text_processor.php";
  * Load so can parse urls
  */
 require_once BASE_DIR."/lib/url_parser.php";
-
+/**
+* Get the centroid summary
+*/
+require_once BASE_DIR."/lib/centroid.php";
 /**
  * For guessing language from charset
  */
@@ -87,6 +90,17 @@ class HtmlProcessor extends TextProcessor
      *  @return array  a summary of the contents of the page
      *
      */
+    function getSeedInfo($use_default = false)
+    {
+        if(file_exists(WORK_DIRECTORY."/crawl.ini") && !$use_default) {
+            $info = parse_ini_with_fallback(WORK_DIRECTORY."/crawl.ini");
+        } else {
+            $info = parse_ini_with_fallback(
+                BASE_DIR."/configs/default_crawl.ini");
+        }
+
+        return $info;
+    }
     function process($page, $url)
     {
         $summary = NULL;
@@ -103,8 +117,20 @@ class HtmlProcessor extends TextProcessor
                 if($summary[self::TITLE] == "") {
                     $summary[self::TITLE] = self::crudeTitle($dom_page);
                 }
-                $summary[self::DESCRIPTION] = self::description($dom,
+                $summarizer = $this->getSeedInfo();
+                $lang = self::lang($dom,
+                    $summary[self::TITLE], $url);
+                if($summarizer['general']['summarizer_option']==
+                        self::CENTROID_SUMMARIZER) {
+                    $summary_cloud =
+                        CentroidSummarizer::getCentroidSummary($dom_page,$lang);
+                    $summary[self::DESCRIPTION] = $summary_cloud[0];
+                    $summary[self::WORD_CLOUD] = $summary_cloud[1];
+                }
+                else {
+                    $summary[self::DESCRIPTION] = self::description($dom,
                     $dom_page);
+                }
                 if(trim($summary[self::DESCRIPTION]) == "") {
                     $summary[self::DESCRIPTION] = self::crudeDescription(
                         $dom_page);

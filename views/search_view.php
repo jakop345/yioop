@@ -245,7 +245,6 @@ class SearchView extends View implements CrawlConstants
                     continue;
                 }
                 ?>
-
                 <h2>
                 <?php
                     if(strpos($link_url, self::GIT_EXTENSION)) { ?>
@@ -280,9 +279,24 @@ class SearchView extends View implements CrawlConstants
                         $data['VIDEO_SOURCES'], $data["OPEN_IN_TABS"]);
                 }
                 ?>
-                <p class="echo-link" <?php e($subtitle); ?>><?php
+                <p><span class="echo-link"<?php e($subtitle); ?>><?php
                     e(UrlParser::simplifyUrl($url, 100)." ");
-                ?></p>
+                ?></span>
+                <?php if(isset($page[self::WORD_CLOUD])) {
+                    $cloud = $page[self::WORD_CLOUD];
+                    $i = 1;
+                    e("<span class='tab'>Word cloud:</span>");
+                        foreach($cloud as $word) {?>
+                        <span class="wordcloud">
+                        <a class='wordcloud<?php e($i)?>'
+                        href="?<?php e(CSRF_TOKEN."=".$data[CSRF_TOKEN]);
+                            ?>&amp;its=<?php e($data['its']);?>
+                            &amp;q=<?php e($word);?>"><?php
+                        e($this->helper("displayresults")->
+                            render($word)."</span></a>");
+                        $i++;
+                        }
+                    }?></p>
                 <?php if(!isset($page[self::ROBOT_METAS]) ||
                     !in_array("NOSNIPPET", $page[self::ROBOT_METAS])) {
                         $description = isset($page[self::DESCRIPTION]) ?

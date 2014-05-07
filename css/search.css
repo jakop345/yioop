@@ -61,7 +61,52 @@ p
 {
     color: green;
 }
+span.tab
+{
+    margin-left:1em;
+    font-weight: bold;
+    color : gray;
+}
 
+.wordcloud .wordcloud1
+{
+    font-size:16pt;
+    color: #008800;
+    text-decoration: none;
+}
+
+.wordcloud .wordcloud2
+{
+    font-size:15pt;
+    color: #009900;
+    text-decoration: none;
+}
+
+.wordcloud .wordcloud3
+{
+    font-size:14pt;
+    color: #00AA00;
+    text-decoration: none;
+}
+
+.wordcloud .wordcloud4
+{
+    font-size:13pt;
+    color: #00BB00;
+    text-decoration: none;
+}
+
+.wordcloud .wordcloud5
+{
+    font-size:12pt;
+    color: #00CC00;
+    text-decoration: none;
+}
+
+.wordcloud:hover
+{
+    text-decoration: underline;
+}
 
 .hidden
 {
@@ -1115,6 +1160,7 @@ ul.in-list li
 /*
   Styles for search and search result pages
  */
+
 .html-ltr .serp
 {
     left: 2.2in;

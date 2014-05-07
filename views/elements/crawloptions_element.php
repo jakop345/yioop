@@ -123,6 +123,13 @@ class CrawloptionsElement extends Element
                     name="restrict_sites_by_url" value="true"
                     onclick="setDisplay('toggle', this.checked)" <?php
                     e($data['TOGGLE_STATE']); ?> /></div>
+        <div class="top-margin"><label for="summarizer"><b><?php
+            e(tl('crawloptions_element_summarizer'))?></b></label><?php
+                $this->view->helper("options")->render("summarizer",
+                "summarizer_option",$data['available_summarizers'],
+                $data['summarizer_option']);
+            ?>
+        </div>
         <div id="toggle">
             <div class="top-margin"><label for="allowed-sites"><b><?php
             e(tl('crawloptions_element_allowed_to_crawl'))?></b></label></div>

@@ -43,6 +43,16 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 class ZhTokenizer
 {
+    /**
+     * Removes the stop words from the page
+     * @param string $page the page to remove stop words from.
+     * @return string $page with no stop words
+     */
+    static function stopwordsRemover($page)
+    {
+        return $page;
+    }
+    
     static function segment($pre_segment)
     {
         return PhraseParser::reverseMaximalMatch($pre_segment, "zh-CN");

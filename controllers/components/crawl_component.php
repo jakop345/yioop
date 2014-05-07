@@ -463,6 +463,19 @@ class CrawlComponent extends Component implements CrawlConstants
                 tl('crawl_component_breadth_first'),
             self::PAGE_IMPORTANCE =>
                 tl('crawl_component_page_importance'));
+        $data['available_summarizers'] = array(
+            self::BASIC_SUMMARIZER =>
+                tl('crawl_component_basic'),
+            self::CENTROID_SUMMARIZER =>
+                tl('crawl_component_centroid'));
+        if(!$no_further_changes && isset($_REQUEST['summarizer_option'])
+            &&  in_array($_REQUEST['summarizer_option'],
+            array_keys($data['available_summarizers']))) {
+            $seed_info['general']['summarizer_option'] =
+                $_REQUEST['summarizer_option'];
+            $update_flag = true;
+        }
+        $data['summarizer_option'] = $seed_info['general']['summarizer_option'];
 
         if(!$no_further_changes && isset($_REQUEST['crawl_order'])
             &&  in_array($_REQUEST['crawl_order'],

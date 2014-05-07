@@ -53,6 +53,11 @@ $PAGE_PROCESSORS =  array_merge($PAGE_PROCESSORS, $add_types);
 require_once BASE_DIR."/lib/processors/page_processor.php";
 
 /**
+* Get the centroid summary
+*/
+require_once BASE_DIR."/lib/centroid.php";
+
+/**
  * So can extract parts of the URL if need to guess lang
  */
 require_once BASE_DIR."/lib/url_parser.php";
@@ -80,14 +85,35 @@ class TextProcessor extends PageProcessor
      * @return array a summary of (title, description,links, and content) of
      *      the information in $page
      */
+    function getSeedInfo($use_default = false)
+    {
+        if(file_exists(WORK_DIRECTORY."/crawl.ini") && !$use_default) {
+            $info = parse_ini_with_fallback(WORK_DIRECTORY."/crawl.ini");
+        } else {
+            $info = parse_ini_with_fallback(
+                BASE_DIR."/configs/default_crawl.ini");
+        }
+
+        return $info;
+    }
     function process($page, $url)
     {
         $summary = NULL;
-
+        $summarizer = $this->getSeedInfo();
         if(is_string($page)) {
             $summary[self::TITLE] = "";
-            $summary[self::DESCRIPTION] = mb_substr($page, 0,
-                self::$max_description_len);
+            $lang = self::calculateLang($page);
+            if($summarizer['general']['summarizer_option']==
+                self::CENTROID_SUMMARIZER) {
+                $summary_cloud =
+                    CentroidSummarizer::getCentroidSummary($page,$lang);
+                $summary[self::DESCRIPTION] = $summary_cloud[0];
+                $summary[self::WORD_CLOUD] = $summary_cloud[1];
+            }
+            else {
+                $summary[self::DESCRIPTION] = mb_substr($page, 0,
+                    self::$max_description_len);
+            }
             $summary[self::LANG] = self::calculateLang(
                 $summary[self::DESCRIPTION]);
             $summary[self::LINKS] = self::extractHttpHttpsUrls($page);
