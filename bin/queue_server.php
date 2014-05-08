@@ -170,6 +170,12 @@ class QueueServer implements CrawlConstants, Join
      */
     var $crawl_order;
     /**
+     * Stores the name of the summarizer used for crawling.
+     * Possible values are Basic and Centroid
+     * @var string
+     */
+    var $summarizer_option;
+    /**
      * Maximum number of bytes to download of a webpage
      * @var int
      */
@@ -334,6 +340,7 @@ class QueueServer implements CrawlConstants, Join
 
         //the next values will be set for real in startCrawl
         $this->crawl_order = self::PAGE_IMPORTANCE;
+        $this->summarizer_option = self::CENTROID_SUMMARIZER;
         $this->restrict_sites_by_url = true;
         $this->allowed_sites = array();
         $this->disallowed_sites = array();

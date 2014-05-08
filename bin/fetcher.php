@@ -314,7 +314,7 @@ class Fetcher implements CrawlConstants
      */
     var $crawl_order;
     /**
-     * Stores the name of the crawler used for crawling.
+     * Stores the name of the summarizer used for crawling.
      * Possible values are Basic and Centroid
      * @var string
      */
