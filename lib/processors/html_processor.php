@@ -122,12 +122,11 @@ class HtmlProcessor extends TextProcessor
                     $summary[self::TITLE], $url);
                 if($summarizer['general']['summarizer_option']==
                         self::CENTROID_SUMMARIZER) {
-                    $summary_cloud =
-                        CentroidSummarizer::getCentroidSummary($dom_page,$lang);
+                    $summary_cloud = CentroidSummarizer::getCentroidSummary(
+                        $dom_page, $lang);
                     $summary[self::DESCRIPTION] = $summary_cloud[0];
                     $summary[self::WORD_CLOUD] = $summary_cloud[1];
-                }
-                else {
+                } else {
                     $summary[self::DESCRIPTION] = self::description($dom,
                     $dom_page);
                 }

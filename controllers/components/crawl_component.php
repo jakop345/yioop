@@ -424,7 +424,6 @@ class CrawlComponent extends Component implements CrawlConstants
                 $seed_info[$property] = $seed_current[$property];
             }
         }
-
         if(!$no_further_changes && isset($_REQUEST['crawl_indexes'])
             && in_array($_REQUEST['crawl_indexes'],
             array_keys($data['available_crawl_indexes']))) {

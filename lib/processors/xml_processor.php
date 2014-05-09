@@ -98,7 +98,7 @@ class XmlProcessor extends TextProcessor
             );
             if(isset($XML_PROCESSORS[$root_name])) {
                 $processor_name = $XML_PROCESSORS[$root_name];
-                $processor = new $processor_name($this->indexing_plugins);
+                $processor = new $processor_name($this->plugin_instances);
                 $summary = $processor->process($page, $url);
             } else {
                 $summary = parent::process($page, $url);
