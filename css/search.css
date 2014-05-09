@@ -61,49 +61,50 @@ p
 {
     color: green;
 }
-span.tab
+
+.word-cloud-spacer
 {
     margin-left:1em;
     font-weight: bold;
     color : gray;
 }
 
-.wordcloud .wordcloud1
+.word-cloud-1
 {
-    font-size:16pt;
-    color: #008800;
+    font-size: 16pt;
+    color: #080;
     text-decoration: none;
 }
 
-.wordcloud .wordcloud2
+.word-cloud-2
 {
-    font-size:15pt;
-    color: #009900;
+    font-size: 15pt;
+    color: #090;
     text-decoration: none;
 }
 
-.wordcloud .wordcloud3
+.word-cloud-3
 {
-    font-size:14pt;
-    color: #00AA00;
+    font-size: 14pt;
+    color: #0A0;
     text-decoration: none;
 }
 
-.wordcloud .wordcloud4
+.word-cloud-4
 {
-    font-size:13pt;
-    color: #00BB00;
+    font-size: 13pt;
+    color: #0B0;
     text-decoration: none;
 }
 
-.wordcloud .wordcloud5
+.word-cloud-5
 {
-    font-size:12pt;
-    color: #00CC00;
+    font-size: 12pt;
+    color: #0C0;
     text-decoration: none;
 }
 
-.wordcloud:hover
+.word-cloud:hover
 {
     text-decoration: underline;
 }

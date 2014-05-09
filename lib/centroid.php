@@ -71,7 +71,7 @@ class CentroidSummarizer
         $formatted_doc = self::formatDoc($doc);
         $stop_obj = PhraseParser::getTokenizer($lang);
         if($stop_obj != NULL) {
-            $doc_stop = $stop_obj -> stopwordsRemover($doc);
+            $doc_stop = $stop_obj->stopwordsRemover($doc);
         } else {
             $doc_stop = $doc;
         }
@@ -103,7 +103,6 @@ class CentroidSummarizer
         $w = array();
         $idf = array();
         $idf_temp = 0;
-
         for($k = 0; $k < $t; $k++) {
             if($nk[$k] == 0) {
                 $idf_temp = 0;
@@ -121,8 +120,9 @@ class CentroidSummarizer
             $nt = preg_match_all('/\b'.$terms[$j].'\b/', $doc_centroid);
             $tfc[$j] = 1 + log($nt);
             $wc[$j] = $tfc[$j] * $idf[$j];
-            if(is_nan($wc[$j]) || is_infinite($wc[$j]))
+            if(is_nan($wc[$j]) || is_infinite($wc[$j])) {
                 $wc[$j] = 0;
+            }
         }
         /* Calculate centroid */
         arsort($wc);
@@ -147,14 +147,10 @@ class CentroidSummarizer
         for($i=0; $i < $n; $i++) {
             $a = $b1 = $b2 = $c1 = $c2 = $d = 0;
             for($k = 0; $k < $t; $k++) {
-                    $tmp = substr_count($sentences[$i], $terms[$k]);
-                    if($tmp > 0) {
-                        $wik =  $idf[$k] * (1 + log($tmp));
-                    } else {
-                        $wik = 0;
-                    }
                     $wck = $wc[$k];
                     $idfk = $idf[$k];
+                    $tmp = substr_count($sentences[$i], $terms[$k]);
+                    $wik = ($tmp > 0) ? $idfk * (1 + log($tmp)) : 0;
                     $a += ($wik * $wck * $idfk);
                     $b1 += ($wik * $wik);
                     $c1 += ($wck * $wck);

@@ -278,25 +278,32 @@ class SearchView extends View implements CrawlConstants
                     $this->helper("videourl")->render($url,
                         $data['VIDEO_SOURCES'], $data["OPEN_IN_TABS"]);
                 }
-                ?>
-                <p><span class="echo-link"<?php e($subtitle); ?>><?php
-                    e(UrlParser::simplifyUrl($url, 100)." ");
-                ?></span>
-                <?php if(isset($page[self::WORD_CLOUD])) {
+                if(!MOBILE && isset($page[self::WORD_CLOUD])) { ?>
+                    <p><span class="echo-link"<?php e($subtitle); ?>><?php
+                        e(UrlParser::simplifyUrl($url, 40)." ");
+                    ?></span><?php
                     $cloud = $page[self::WORD_CLOUD];
                     $i = 1;
-                    e("<span class='tab'>Word cloud:</span>");
-                        foreach($cloud as $word) {?>
-                        <span class="wordcloud">
-                        <a class='wordcloud<?php e($i)?>'
-                        href="?<?php e(CSRF_TOKEN."=".$data[CSRF_TOKEN]);
-                            ?>&amp;its=<?php e($data['its']);?>
-                            &amp;q=<?php e($word);?>"><?php
-                        e($this->helper("displayresults")->
-                            render($word)."</span></a>");
-                        $i++;
+                    e("<span class='word-cloud-spacer'>".
+                        tl('search_view_word_cloud')."</span>");
+                        $len = 0;
+                        foreach($cloud as $word) {
+                            $len += strlen($word);
+                            if($len > 40) { break; }
+                            ?><span class="word-cloud">
+                            <a class='word-cloud-<?php e($i)?>'
+                            href="?<?php e(CSRF_TOKEN."=".$data[CSRF_TOKEN]);
+                                ?>&amp;its=<?php e($data['its']);?>
+                                &amp;q=<?php e($word);?>"><?php
+                            e($this->helper("displayresults")->
+                                render($word)."</span></a>");
+                            $i++;
                         }
-                    }?></p>
+                } else { ?>
+                    <p><span class="echo-link"<?php e($subtitle); ?>><?php
+                        e(UrlParser::simplifyUrl($url, 100)." ");
+                    ?></span><?php
+                }?></p>
                 <?php if(!isset($page[self::ROBOT_METAS]) ||
                     !in_array("NOSNIPPET", $page[self::ROBOT_METAS])) {
                         $description = isset($page[self::DESCRIPTION]) ?
