@@ -70,7 +70,7 @@ class CentroidSummarizer
         */
         $formatted_doc = self::formatDoc($doc);
         $stop_obj = PhraseParser::getTokenizer($lang);
-        if($stop_obj != NULL) {
+        if($stop_obj && method_exists($stop_obj, "stopwordsRemover")) {
             $doc_stop = $stop_obj->stopwordsRemover($doc);
         } else {
             $doc_stop = $doc;
@@ -212,8 +212,24 @@ class CentroidSummarizer
      */
     static function getSentences($content)
     {
-        $content = preg_split("/\.\s|[\n\r]+/", $content, -1,
+        $lines = preg_split("/[\.\!\?。]\s+|[\n\r][\n\r]+/u", $content, -1,
             PREG_SPLIT_NO_EMPTY);
+        $out = array();
+        $sentence = "";
+        foreach($lines as $line) {
+            $sentence .= " " . $line;
+            if(strlen($line) < 2) {
+                continue;
+            }
+            $end = substr($line, -2);
+            if($end[0] != " " && $end[1] != " ") {
+                $out[] = $sentence;
+                $sentence = "";
+            }
+        }
+        if($sentence != "") {
+            $out[] = $sentence;
+        }
         return $content;
     }
     /**
