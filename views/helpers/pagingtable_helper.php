@@ -107,8 +107,10 @@ class PagingtableHelper extends Helper
                 ?>"><?php e(tl('pagingtable_helper_search'));?></a>]<?php
             }?></h2>
         <div>
-            <form  method="get" action='#' >
-            <?php
+        <?php
+            if(isset($data["NO_FORM_TAG"]) && $data["NO_FORM_TAG"]) {
+                e('<form  method="get" action="#" >');
+            }
             $name = isset($data['NAME']) ? $data['NAME'] : "";
             $bound_url = $base_url."&amp;arg=".$data[$d['FORM_TYPE']];
             if(isset($data['browse'])) {
@@ -145,8 +147,10 @@ class PagingtableHelper extends Helper
                     $data[$d['NUM_SHOW']].$data['PAGING']); ?>" >&gt;&gt;</a>
                 <?php
             }
-            ?>
-            </form>
+            if(isset($data["NO_FORM_TAG"]) && $data["NO_FORM_TAG"]) {
+                e('</form>');
+            }
+        ?>
         </div>
         <?php
     }
@@ -186,8 +190,10 @@ class PagingtableHelper extends Helper
         }
         ?>
         <div <?php e($class); ?>>
-            <form  method="get" action='#' >
             <?php
+            if(isset($data["NO_FORM_TAG"]) && $data["NO_FORM_TAG"]) {
+                e('<form  method="get" action="#" >');
+            }
             $name = isset($data['NAME']) ? $data['NAME'] : "";
 
             $bound_url = $base_url."&amp;arg=".$data[$d['FORM_TYPE']];
@@ -232,8 +238,9 @@ class PagingtableHelper extends Helper
                         ?>"><?php e(tl('pagingtable_helper_search'));?></a>]
                 <?php
                 }
-                ?>
-            </form>
+            if(isset($data["NO_FORM_TAG"]) && $data["NO_FORM_TAG"]) {
+                e('</form>');
+            }?>
         </div>
         <?php if(!$top) {
             ?>

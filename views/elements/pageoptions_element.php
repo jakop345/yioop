@@ -147,27 +147,31 @@ class PageOptionsElement extends Element
         <div class="top-margin"><b><?php
             e(tl('pageoptions_element_classifiers_rankers')) ?></b>
        </div>
-       <?php if (!empty($data['CLASSIFIERS'])) { ?>
-           <table class="classifiers-all">
-           <tr>
-           <?php $cnt = 0;
-                 $num_per_column = count($data['CLASSIFIERS']);
-                 if ($num_per_column > 5) {
-                     $num_per_column = ceil($num_per_column / 3);
-                 }
-                 foreach ($data['CLASSIFIERS'] as $label => $class_checked) {
-                     if(isset($data['RANKERS'][$label])) {
-                        $rank_checked = $data['RANKERS'][$label];
-                     } else {
-                        $rank_checked = "";
-                     }
-                     if ($cnt % $num_per_column == 0) {
-                        ?><td><table class="classifiers-table" ><tr><th></th>
-                        <th><?php e(tl('pageoptions_element_use_classify'));
-                        ?></th><th><?php e(tl('pageoptions_element_use_rank'));
-            ?></th></tr><?php
-                     }
-           ?>
+       <?php if (!empty($data['CLASSIFIERS'])) {
+            $data['TABLE_TITLE'] ="";
+            $data['ACTIVITY'] = 'pageOptions';
+            $data['VIEW'] = $this->view;
+            $data['NO_SEARCH'] = true;
+            $data['NO_FORM_TAGS'] = true;
+            $data['FORM_TYPE'] = "";
+            $data['NO_FLOAT_TABLE'] = true;
+            $this->view->helper("pagingtable")->render($data);
+       ?>
+            <table class="classifiers-table" >
+            <tr><th></th>
+                <th><?php e(tl('pageoptions_element_use_classify'));
+                    ?></th>
+                <th><?php e(tl('pageoptions_element_use_rank'));
+                    ?></th>
+            </tr>
+            <?php
+            foreach ($data['CLASSIFIERS'] as $label => $class_checked) {
+                if(isset($data['RANKERS'][$label])) {
+                    $rank_checked = $data['RANKERS'][$label];
+                } else {
+                    $rank_checked = "";
+                }
+                ?>
                 <tr><td><label for="classifier-<?php e($label); ?>-id"><?php
                     e($label); ?>
                 </label></td><td class="check"><input type="checkbox"
@@ -179,18 +183,10 @@ class PageOptionsElement extends Element
                     name="ranker[<?php  e($label); ?>]"
                     id="ranker-<?php e($label) ?>-id" value="true" /></td>
                 </tr>
-           <?php
-                    $cnt++;
-                    if($cnt % $num_per_column == 0) {
-                        ?></table></td><?php
-                    }
-                }?>
             <?php
-                if($cnt % $num_per_column != 0) {
-                    ?></table></td><?php
-                }
+            }
             ?>
-            </tr></table>
+            </table>
         <?php
         } else {
             e("<p class='red'>".
@@ -202,7 +198,7 @@ class PageOptionsElement extends Element
             count($data['INDEXING_PLUGINS']) > 0) { ?>
             <table class="indexing-plugin-table">
                 <tr><th><?php e(tl('pageoptions_element_plugin'));
-                                  ?></th>
+                    ?></th>
                 <th><?php
                     e(tl('pageoptions_element_plugin_include'));
                         ?></th></tr>
@@ -341,7 +337,7 @@ class PageOptionsElement extends Element
         </div>
 
         <div id='testoptionstab'>
-         <h2><?php e(tl('pageoptions_element_test_page'))?></h2>
+        <h2><?php e(tl('pageoptions_element_test_page'))?></h2>
         <div class="top-margin"><b><label for="page-type"><?php
             e(tl('pageoptions_element_page_type'))?></label></b>
             <?php

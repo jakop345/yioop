@@ -1057,6 +1057,9 @@ class CrawlComponent extends Component implements CrawlConstants
                 $data['RANKERS'][$label] = '';
             }
         }
+        $parent->pagingLogic($data, 'CLASSIFIERS', 'CLASSIFIERS',
+            DEFAULT_ADMIN_PAGING_NUM/5, array(), "",
+            array('name' => 'class_label'));
         $seed_info['active_classifiers']['label'] = $active_classifiers;
         $seed_info['active_rankers']['label'] = $active_rankers;
 
@@ -1099,7 +1102,7 @@ class CrawlComponent extends Component implements CrawlConstants
         }
 
         $crawl_model->setSeedInfo($seed_info);
-        if($change == true && $data['option_type'] != 'test_options') {
+        if($change == true &&  $data['option_type'] != 'test_options') {
             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                 tl('crawl_component_page_options_updated')."</h1>')";
         }
