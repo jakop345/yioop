@@ -1170,7 +1170,8 @@ class CrawlComponent extends Component implements CrawlConstants
                 }
             }
             $page_processor = new $processor_name($plugin_processors,
-                $seed_info["general"]["max_description_len"]);
+                $seed_info["general"]["max_description_len"],
+                $seed_info["general"]["summarizer_option"]);
             restore_error_handler();
             $doc_info = $page_processor->handle($_REQUEST['TESTPAGE'],
                 $site[self::URL]);

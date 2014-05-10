@@ -53,6 +53,20 @@ foreach(glob(LOCALE_DIR."/*/resources/tokenizer.php")
 
 class CentroidSummarizer
 {
+
+    /**
+     * Number of bytes in a sentence before it is considered long
+     * We use strlen rather than mbstrlen. This might actually be
+     * a better metric of the potential of a sentence to have info.
+     */
+    const LONG_SENTENCE_LEN = 30;
+
+    /**
+     * Number of sentences in a document before only consider longer
+     * sentences in cenroid
+     */
+    const LONG_SENTENCE_THRESHOLD = 200;
+
     /**
      *  Generates a centroid with which every sentence is ranked with cosine
      *  ranking method and also generates a word cloud.
@@ -216,6 +230,7 @@ class CentroidSummarizer
             PREG_SPLIT_NO_EMPTY);
         $out = array();
         $sentence = "";
+        $count = 0;
         foreach($lines as $line) {
             $sentence .= " " . $line;
             if(strlen($line) < 2) {
@@ -223,14 +238,18 @@ class CentroidSummarizer
             }
             $end = substr($line, -2);
             if($end[0] != " " && $end[1] != " ") {
-                $out[] = $sentence;
+                if($count < self::LONG_SENTENCE_THRESHOLD ||
+                    strlen($sentence) > self::LONG_SENTENCE_LEN) {
+                    $out[] = $sentence;
+                    $count++;
+                }
                 $sentence = "";
             }
         }
         if($sentence != "") {
             $out[] = $sentence;
         }
-        return $content;
+        return $out;
     }
     /**
      *  Formats the sentences to remove all characters except words,
