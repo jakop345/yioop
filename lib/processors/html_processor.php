@@ -90,17 +90,6 @@ class HtmlProcessor extends TextProcessor
      *  @return array  a summary of the contents of the page
      *
      */
-    function getSeedInfo($use_default = false)
-    {
-        if(file_exists(WORK_DIRECTORY."/crawl.ini") && !$use_default) {
-            $info = parse_ini_with_fallback(WORK_DIRECTORY."/crawl.ini");
-        } else {
-            $info = parse_ini_with_fallback(
-                BASE_DIR."/configs/default_crawl.ini");
-        }
-
-        return $info;
-    }
     function process($page, $url)
     {
         $summary = NULL;
@@ -117,11 +106,9 @@ class HtmlProcessor extends TextProcessor
                 if($summary[self::TITLE] == "") {
                     $summary[self::TITLE] = self::crudeTitle($dom_page);
                 }
-                $summarizer = $this->getSeedInfo();
-                $lang = self::lang($dom,
+                $summary[self::LANG] = self::lang($dom,
                     $summary[self::TITLE], $url);
-                if($summarizer['general']['summarizer_option']==
-                        self::CENTROID_SUMMARIZER) {
+                if($this->summarizer_option == self::CENTROID_SUMMARIZER) {
                     $summary_cloud = CentroidSummarizer::getCentroidSummary(
                         $dom_page, $lang);
                     $summary[self::DESCRIPTION] = $summary_cloud[0];
@@ -134,8 +121,6 @@ class HtmlProcessor extends TextProcessor
                     $summary[self::DESCRIPTION] = self::crudeDescription(
                         $dom_page);
                 }
-                $summary[self::LANG] = self::lang($dom,
-                    $summary[self::DESCRIPTION], $url);
                 $summary[self::LINKS] = self::links($dom, $url);
                 if($summary[self::LINKS] == array()) {
                     $summary[self::LINKS] = parent::extractHttpHttpsUrls(
@@ -295,11 +280,10 @@ class HtmlProcessor extends TextProcessor
     {
         $xpath = new DOMXPath($dom);
         $titles = $xpath->evaluate("/html//title");
-
         $title = "";
 
         foreach($titles as $pre_title) {
-            $title .= self::domNodeToString($pre_title);
+                $title .= $pre_title->nodeValue;
         }
         if($title == "") {
             $title_parts = array("/html//h1", "/html//h2", "/html//h3",
@@ -307,7 +291,7 @@ class HtmlProcessor extends TextProcessor
             foreach($title_parts as $part) {
                 $doc_nodes = $xpath->evaluate($part);
                 foreach($doc_nodes as $node) {
-                    $title .= " .. ".self::domNodeToString($node);
+                    $title .= " .. ".$node->nodeValue;
                     if(strlen($title) >
                         self::MAX_TITLE_LEN) { break 2;}
                 }
@@ -494,7 +478,7 @@ class HtmlProcessor extends TextProcessor
                     $len = strlen($url);
                     if(!UrlParser::checkRecursiveUrl($url)  &&
                         $len < MAX_URL_LENGTH && $len > 4) {
-                        $text = self::domNodeToString($href);
+                        $text = $href->nodeValue;
                         if(isset($sites[$url])) {
                             $sites[$url] .=" .. ".
                                 preg_replace("/\s+/", " ", strip_tags($text));

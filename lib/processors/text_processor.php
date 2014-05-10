@@ -85,17 +85,6 @@ class TextProcessor extends PageProcessor
      * @return array a summary of (title, description,links, and content) of
      *      the information in $page
      */
-    function getSeedInfo($use_default = false)
-    {
-        if(file_exists(WORK_DIRECTORY."/crawl.ini") && !$use_default) {
-            $info = parse_ini_with_fallback(WORK_DIRECTORY."/crawl.ini");
-        } else {
-            $info = parse_ini_with_fallback(
-                BASE_DIR."/configs/default_crawl.ini");
-        }
-
-        return $info;
-    }
     function process($page, $url)
     {
         $summary = NULL;
@@ -103,8 +92,7 @@ class TextProcessor extends PageProcessor
         if(is_string($page)) {
             $summary[self::TITLE] = "";
             $lang = self::calculateLang($page);
-            if($summarizer['general']['summarizer_option']==
-                self::CENTROID_SUMMARIZER) {
+            if($this->summarizer_option == self::CENTROID_SUMMARIZER) {
                 $summary_cloud =
                     CentroidSummarizer::getCentroidSummary($page,$lang);
                 $summary[self::DESCRIPTION] = $summary_cloud[0];

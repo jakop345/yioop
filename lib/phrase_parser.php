@@ -86,18 +86,19 @@ class PhraseParser
      * A list of meta words that might be extracted from a query
      * @var array
      */
-    static $meta_words_list = array('link:', 'site:', 'version:',
-            'modified:', 'filetype:', 'info:', '\-', 'os:', 'server:', 'date:',
-            "numlinks:", 'index:', 'i:', 'ip:', 'weight:', 'w:', 'u:', 'time:',
-            'code:', 'lang:', 'media:', 'elink:', 'location:', 'size:', 'host:',
-            'dns:', 'path:', 'robot:', 'safe:', 'guid:', 'class:',
-            'class-score:');
+    static $meta_words_list = array('\-', 'class:', 'class-score:', 'code:',
+            'date:', 'dns:', 'elink:', 'filetype:', 'guid:', 'host:', 'i:',
+            'info:', 'index:', 'ip:', 'link:', 'modified:',
+            'lang:', 'media:', 'location:', 'numlinks:', 'os:',
+            'path:', 'robot:', 'safe:', 'server:', 'site:', 'size:',
+            'time:', 'u:', 'version:','weight:', 'w:'
+            );
 
     /**
      * Those meta words whose values will be encoded as part of word_ids
      * @var array
      */
-    static $materialized_metas = array("media:", "safe:", "class:");
+    static $materialized_metas = array("class:", "media:", "safe:");
 
     /**
      * A list of meta words that might be extracted from a query

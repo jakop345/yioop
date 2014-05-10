@@ -80,9 +80,9 @@ if(!defined('TIME_ZONE')) {
 $COMPONENT_ACTIVITIES = array(
     "accountaccess" => array("signin", "manageAccount", "manageUsers",
         "manageRoles"),
-    "social" => array("manageGroups", "groupFeeds", "mixCrawls"),
     "crawl" => array("manageCrawls", "manageClassifiers", "pageOptions",
         "resultsEditor", "searchSources"),
+    "social" => array("manageGroups", "groupFeeds", "mixCrawls"),
     "system" => array("manageMachines", "manageLocales",
         "serverSettings", "configure")
 );

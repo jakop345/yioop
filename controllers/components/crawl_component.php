@@ -280,6 +280,10 @@ class CrawlComponent extends Component implements CrawlConstants
             $crawl_params[self::INDEXED_FILE_TYPES] =
                 $seed_info['indexed_file_types']['extensions'];
         }
+        if(isset($seed_info['general']['summarizer_option'])) {
+            $crawl_params[self::SUMMARIZER_OPTION] =
+                $seed_info['general']['summarizer_option'];
+        }
         if(isset($seed_info['active_classifiers']['label'])) {
             // Note that 'label' is actually an array of active class labels.
             $crawl_params[self::ACTIVE_CLASSIFIERS] =
@@ -474,8 +478,8 @@ class CrawlComponent extends Component implements CrawlConstants
                 $_REQUEST['summarizer_option'];
             $update_flag = true;
         }
-        $data['summarizer_option'] = $seed_info['general']['summarizer_option'];
-
+        $data['summarizer_option'] =
+            $seed_info['general']['summarizer_option'];
         if(!$no_further_changes && isset($_REQUEST['crawl_order'])
             &&  in_array($_REQUEST['crawl_order'],
                 array_keys($data['available_crawl_orders']))) {
@@ -669,7 +673,7 @@ class CrawlComponent extends Component implements CrawlConstants
                 break;
 
                 case 'search':
-                    $search_array = 
+                    $search_array =
                         $parent->tableSearchRequestHandler($data,
                         array('name'));
                 break;

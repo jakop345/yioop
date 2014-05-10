@@ -63,6 +63,11 @@ abstract class PageProcessor implements CrawlConstants
     var $plugin_instances;
 
     /**
+     * Stores the name of the summarizer used for crawling.
+     * Possible values are self::BASIC and self::CENTROID_SUMMARIZER
+     * @var string
+     var $summarizer_option;
+    /**
      * Max number of chars to extract for description from a page to index.
      * Only words in the description are indexed.
      * @var int
@@ -77,8 +82,10 @@ abstract class PageProcessor implements CrawlConstants
      *      do further processing on the data handles by this page
      *      processor
      */
-    function __construct($plugins = array(), $max_description_len = NULL) {
+    function __construct($plugins = array(), $max_description_len = NULL,
+        $summarizer_option = self::BASIC_SUMMARIZER) {
         $this->plugin_instances = $plugins;
+        $this->summarizer_option = $summarizer_option;
         if($max_description_len != NULL) {
             self::$max_description_len = $max_description_len;
         } else {

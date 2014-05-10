@@ -568,8 +568,9 @@ class FetchController extends Controller implements CrawlConstants
                 $to_copy_fields = array(self::ALLOWED_SITES, self::ARC_DIR,
                     self::ARC_TYPE, self::CRAWL_INDEX, self::CRAWL_TYPE,
                     self::DISALLOWED_SITES, self::INDEXED_FILE_TYPES,
-                    self::PROXY_SERVERS, self::TOR_PROXY,
-                    self::RESTRICT_SITES_BY_URL
+                    self::PROXY_SERVERS, self::RESTRICT_SITES_BY_URL,
+                    self::SUMMARIZER_OPTION,
+                    self::TOR_PROXY
                     );
                 foreach($to_copy_fields as $field) {
                     if(isset($status[$field])) {

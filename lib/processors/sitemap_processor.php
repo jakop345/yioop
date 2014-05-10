@@ -73,6 +73,7 @@ class SitemapProcessor extends TextProcessor
             if($dom !==false) {
                 $summary[self::TITLE] = $url;
                 $summary[self::DESCRIPTION] = "Sitemap of ".$url;
+                $summary[self::LANG] = "en-US";
                 $summary[self::LINKS] = self::links($dom, $url);
                 if(strlen($summary[self::DESCRIPTION] . $summary[self::TITLE])
                     == 0 && count($summary[self::LINKS]) == 0) {

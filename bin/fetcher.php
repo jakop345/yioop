@@ -315,7 +315,7 @@ class Fetcher implements CrawlConstants
     var $crawl_order;
     /**
      * Stores the name of the summarizer used for crawling.
-     * Possible values are Basic and Centroid
+     * Possible values are self::BASIC and self::CENTROID_SUMMARIZER
      * @var string
      */
     var $summarizer_option;
@@ -552,7 +552,7 @@ class Fetcher implements CrawlConstants
 
         //we will get the correct crawl order from a queue_server
         $this->crawl_order = self::PAGE_IMPORTANCE;
-        $this->summarizer_option = self::CENTROID_SUMMARIZER;
+        $this->summarizer_option = self::BASIC_SUMMARIZER;
     }
 
     /**
@@ -634,7 +634,6 @@ class Fetcher implements CrawlConstants
                     crawlLog("MAIN LOOP CASE 4 -- WEB SCHEDULER");
                 }
                 $info = $this->checkScheduler();
-
                 if($info === false) {
                     crawlLog("Cannot connect to name server...".
                         " will try again in ".FETCH_SLEEP_TIME." seconds.");
@@ -645,7 +644,6 @@ class Fetcher implements CrawlConstants
                 crawlLog("MAIN LOOP CASE 5 -- NO CURRENT CRAWL");
                 $info[self::STATUS] = self::NO_DATA_STATE;
             }
-
             /* case(2), case(3) might have set info without
                $info[self::STATUS] being set
              */
@@ -653,13 +651,11 @@ class Fetcher implements CrawlConstants
                 if($info === true) {$info = array();}
                 $info[self::STATUS] = self::CONTINUE_STATE;
             }
-
             if($info[self::STATUS] == self::NO_DATA_STATE) {
                 crawlLog("No data. Sleeping...");
                 sleep(FETCH_SLEEP_TIME);
                 continue;
             }
-
             $tmp_base_name = (isset($info[self::CRAWL_TIME])) ?
                 CRAWL_DIR."/cache/{$prefix}" . self::archive_base_name .
                     $info[self::CRAWL_TIME] : "";
@@ -673,7 +669,6 @@ class Fetcher implements CrawlConstants
                 }
                 $this->to_crawl_again = array();
                 $this->found_sites = array();
-
                 gc_collect_cycles();
                 $this->web_archive = new WebArchiveBundle($tmp_base_name,
                     false);
@@ -682,7 +677,6 @@ class Fetcher implements CrawlConstants
                 $this->sum_seen_description_length = 0;
                 $this->sum_seen_site_link_length = 0;
                 $this->num_seen_sites = 0;
-
                 crawlLog("New name: ".$this->web_archive->dir_name);
                 crawlLog("Switching archive...");
                 if(!isset($info[self::ARC_DATA])) {
@@ -1325,16 +1319,18 @@ class Fetcher implements CrawlConstants
         } else {
             $info[self::CURRENT_SERVER] = $this->current_server;
         }
-        $update_fields = array(self::CRAWL_TYPE => "crawl_type",
-            self::SUMMARIZER_OPTION => "summarizer_option",
-            self::CRAWL_INDEX => "crawl_index", self::CRAWL_ORDER =>
-            'crawl_order', self::CACHE_PAGES => 'cache_pages',
-            self::INDEXED_FILE_TYPES => 'indexed_file_types',
-            self::RESTRICT_SITES_BY_URL => 'restrict_sites_by_url',
+        $update_fields = array(
             self::ALLOWED_SITES => 'allowed_sites',
+            self::CACHE_PAGES => 'cache_pages',
+            self::CRAWL_INDEX => "crawl_index",
+            self::CRAWL_ORDER => 'crawl_order',
+            self::CRAWL_TYPE => "crawl_type",
             self::DISALLOWED_SITES => 'disallowed_sites',
-            self::TOR_PROXY => 'tor_proxy',
-            self::PROXY_SERVERS => 'proxy_servers');
+            self::INDEXED_FILE_TYPES => 'indexed_file_types',
+            self::PROXY_SERVERS => 'proxy_servers',
+            self::RESTRICT_SITES_BY_URL => 'restrict_sites_by_url',
+            self::SUMMARIZER_OPTION => "summarizer_option",
+            self::TOR_PROXY => 'tor_proxy');
         foreach($update_fields as $info_field => $field) {
             if(isset($info[$info_field])) {
                 $this->$field = $info[$info_field];
@@ -1683,10 +1679,12 @@ class Fetcher implements CrawlConstants
                 if(isset($this->plugin_processors[$page_processor])) {
                     $processor = new $page_processor(
                         $this->plugin_processors[$page_processor],
-                        $this->max_description_len);
+                        $this->max_description_len,
+                        $this->summarizer_option);
                 } else {
                     $processor = new $page_processor(array(),
-                        $this->max_description_len);
+                        $this->max_description_len,
+                        $this->summarizer_option);
                 }
             }
 
