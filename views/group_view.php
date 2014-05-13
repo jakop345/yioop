@@ -95,7 +95,7 @@ class GroupView extends View implements CrawlConstants
                 $data['JUST_GROUP_ID']."'>" .
                 tl('group_view_wiki') . "</a>]");
             if($logged_in) {
-                e(" <a href='$other_base_query&a=groupFeeds&just_group_id=".
+                e(" <a href='$other_base_query&just_group_id=".
                     $data['PAGES'][0]["GROUP_ID"]."' >&gt;&gt;</a>");
             }
         } else if(isset($data['JUST_USER_ID'])) {

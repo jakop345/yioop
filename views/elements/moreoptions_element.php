@@ -164,15 +164,41 @@ class MoreoptionsElement extends Element
         </tr>
         </table>
         <?php
+        $token_url = "?".CSRF_TOKEN."=".$data[CSRF_TOKEN];
+        $tools = array();
         if(in_array(REGISTRATION_TYPE, array('no_activation',
             'email_registration', 'admin_activation'))) {
+            $tools[$token_url . "&amp;c=register&amp;a=suggestUrl"] =
+                tl('moreoptions_element_suggest');
+        }
+        $tools[$token_url . "&amp;c=group&amp;a=wiki&amp;arg=pages"] =
+            tl('moreoptions_element_wiki_pages');
+        if($tools != array()) {
              ?>
             <h2 id="tools" class="reduce-top"><?php
                 e(tl('moreoptions_element_tools'))?></h2>
             <table class="reduce-top">
-            <tr><td><ul class='square-list'><li><a href="./?c=register&amp;<?php
-                e(CSRF_TOKEN."=".$data[CSRF_TOKEN])?>&amp;a=suggestUrl"><?php
-                e(tl('moreoptions_element_suggest')); ?></a></li></ul></td></tr>
+            <tr class="align-top">
+            <?php
+            $cur_row = 0;
+            foreach($tools as $tool_url => $tool_name) {
+                if($cur_row == 0) {
+                    e("<td><ul class='square-list'>");
+                    $ul_open = true;
+                }
+                $cur_row++;
+                e("<li><a href='$tool_url'>$tool_name</a></li>");
+                if($cur_row >= $num_rows) {
+                    $ul_open = false;
+                    e("</ul></td>");
+                    $cur_row = 0;
+                }
+            }
+            if($ul_open) {
+                e("</ul></td>");
+            }
+            ?>
+            </tr>
             </table>
             <?php
         }

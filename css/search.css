@@ -639,10 +639,15 @@ body.mobile
 {
     float:left;
 }
-.html-ltr .subsearch ul.out-list li.outer
+
+ul.out-list li.outer
 {
     display: inline;
     list-style-type: none;
+}
+
+.html-ltr .subsearch ul.out-list li.outer
+{
     padding-left: 20px;
 }
 
@@ -1910,37 +1915,43 @@ div..button-group-result
 {
     top:90px;
 }
-.current-activity h2
+.current-activity h2,
+.small-margin-current-activity h2
 {
     margin-top: 0.05in;
     padding-top: 0.05in;
 }
 
-.current-activity input
+.current-activity input,
+.small-margin-current-activity input
 {
     font-size: 16pt;
     position: relative;
     top: 2px;
 }
 
-.current-activity object
+.current-activity object,
+.small-margin-current-activity object
 {
     height: 2in;
     min-width: 6in;
     width: 8in;
 }
 
-.current-activity select
+.current-activity select,
+.small-margin-current-activity slect
 {
     font-size: 16pt;
 }
 
-.mobile .current-activity select
+.mobile .current-activity select,
+.small-margin-current-activity select
 {
     font-size: 12pt;
 }
 
-.current-activity pre
+.current-activity pre,
+.small-margin-current-activity pre
 {
     font-size: 10pt;
 }

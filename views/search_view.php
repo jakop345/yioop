@@ -175,7 +175,10 @@ class SearchView extends View implements CrawlConstants
     }
 
     /**
+     *  Used to draw the results of a query to the Yioop Search Engine
      *
+     *  @param array $data an associative array containing a PAGES field needed
+     *      to render search result
      */
     function renderSearchResults($data)
     { ?>

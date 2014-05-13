@@ -655,4 +655,12 @@ define('GROUP_READ_COMMENT', 3);
  *   read items posted to the group as well as post new items
  */
 define('GROUP_READ_WRITE', 4);
+/**
+ * Maximum length of a post or a comment in a group feed
+ */
+define('MAX_GROUP_POST_LEN', 8192);
+/**
+ * Maximum length of a group wiki page
+ */
+define('MAX_GROUP_PAGE_LEN', 32768);
 ?>

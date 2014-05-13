@@ -67,7 +67,7 @@ class GroupController extends Controller implements CrawlConstants
      * components)
      * @var array
      */
-    var $activities = array("feed", "wiki");
+    var $activities = array("groupFeeds", "wiki");
 
     /**
      *
@@ -80,15 +80,14 @@ class GroupController extends Controller implements CrawlConstants
             return $this->configureRequest();
         }
         if(isset($_SESSION['USER_ID'])) {
-            $user = $_SESSION['USER_ID'];
+            $user_id = $_SESSION['USER_ID'];
             $data['ADMIN'] = 1;
         } else {
-            $user = $_SERVER['REMOTE_ADDR'];
+            $user_id = $_SERVER['REMOTE_ADDR'];
         }
         $data['SCRIPT'] = "";
-        $data[CSRF_TOKEN] = $this->generateCSRFToken($user);
-        $token_okay = $this->checkCSRFToken(CSRF_TOKEN, $user);
-
+        $token_okay = $this->checkCSRFToken(CSRF_TOKEN, $user_id);
+        $data[CSRF_TOKEN] = $this->generateCSRFToken($user_id);
         if(!$token_okay) {
             $keep_fields = array("a","f","just_group_id","just_user_id",
                 "just_thread", "limit", "num");
@@ -108,7 +107,11 @@ class GroupController extends Controller implements CrawlConstants
         } else {
             $view = $data['REFRESH'];
         }
-        if(isset($_REQUEST['f']) &&
+        if($data['ACTIVITY_METHOD'] == "wiki") {
+            if(isset($data["VIEW"]) && !isset($data['REFRESH'])) {
+                $view = $data["VIEW"];
+            }
+        } else if(isset($_REQUEST['f']) &&
             in_array($_REQUEST['f'], array("rss", "json", "serial"))) {
             $this->setupViewFormatOutput($_REQUEST['f'], $view, $data);
         }
@@ -208,6 +211,81 @@ class GroupController extends Controller implements CrawlConstants
     function wiki()
     {
         $data = array();
+        $data["VIEW"] = "wiki";
+        $data["SCRIPT"] = "";
+        $group_model = $this->model("group");
+        $locale_tag = getLocaleTag();
+        $data['CURRENT_LOCALE_TAG'] = $locale_tag;
+        if(isset($_SESSION['USER_ID'])) {
+            $user_id = $_SESSION['USER_ID'];
+            $data['ADMIN'] = 1;
+        } else {
+            $user_id = $_SERVER['REMOTE_ADDR'];
+        }
+        $clean_array = array(
+            "group_id" => "int",
+            "page_name" => "string",
+            "page" => "string"
+        );
+        $missing_fields = false;
+        foreach($clean_array as $field => $type) {
+            if(isset($_REQUEST[$field])) {
+                $$field = $this->clean($_REQUEST[$field], $type);
+            } else {
+                $$field = false;
+                $missing_fields = true;
+            }
+        }
+        var_dump($page);
+        if(isset($_REQUEST['group_id'])) {
+            $group_id = $this->clean($_REQUEST['group_id'], "int");
+
+        } else {
+            $group_id = PUBLIC_GROUP_ID;
+        }
+        $group = $group_model->getGroupById($group_id, $user_id);
+        $data["CAN_EDIT"] = false;
+        $data["MODE"] = "read";
+        if(!$group) {
+            $group_id = PUBLIC_GROUP_ID;
+            $group = $group_model->getGroupById($group_id, $user_id);
+        } else {
+            if($group["OWNER_ID"] == $user_id ||
+                ($group["STATUS"] == ACTIVE_STATUS &&
+                $group["MEMBER_ACCESS"] == GROUP_READ_WRITE)) {
+                $data["CAN_EDIT"] = true;
+                if(isset($_REQUEST["arg"])) {
+                    switch($_REQUEST["arg"])
+                    {
+                        case "edit":
+                            $data["MODE"] = "edit";
+                            if($missing_fields && $page) {
+                                $data['SCRIPT'] .=
+                                    "doMessage('<h1 class=\"red\" >". 
+                                    tl("group_controller_missing_fields").
+                                    "</h1>')";
+                            } else if(!$missing_fields && $page){
+                                $group_model->setPageName($user_id,
+                                    $group_id, $page_name, $page,
+                                    $locale_tag);
+                            }
+                        break;
+                    }
+                }
+            }
+        }
+        if(!$page_name) {
+            $page_name = tl('group_controller_main');
+        }
+        $data["GROUP"] = $group;
+        $data["PAGE_NAME"] = $page_name;
+        $data["PAGE"] = $group_model->getPageByName($group_id, $page_name,
+            $locale_tag, $data["MODE"]);
+        if(!$data["PAGE"] && $locale_tag != DEFAULT_LOCALE) {
+            //fallback to default locale for translation
+            $data["PAGE"] = $group_model->getPageName(
+                $group_id, $page_name, DEFAULT_LOCALE, $data["MODE"]);
+        }
         return $data;
     }
 }

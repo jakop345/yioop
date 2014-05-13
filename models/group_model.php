@@ -71,7 +71,11 @@ class GroupModel extends Model
     var $any_fields = array("access", "register");
 
     /**
-     *  @param mixed $args
+     *  Used to determine the select clause for GROUPS table when do query
+     *  to marshal group objects for the controller mainly in mangeGroups
+     *  @param mixed $args -- $args[1] say whether in browse mode or not
+     *      browse mode is for groups a user could join rather than ones already
+     *      joined
      */
     function selectCallback($args)
     {
@@ -536,7 +540,8 @@ class GroupModel extends Model
      *  @param int $group_id what group the item should be added to
      *  @param int $user_id of user making the post
      *  @param string $title title of the group feed item
-     *  @pararm string $description actual content of the post
+     *  @param string $description actual content of the post
+     *  @return int $id of item added
      */
     function addGroupItem($parent_id, $group_id, $user_id, $title,
         $description)
@@ -548,11 +553,12 @@ class GroupModel extends Model
             DESCRIPTION, PUBDATE) VALUES (?, ?, ?, ?, ?, ? )";
         $db->execute($sql, array($parent_id, $group_id, $user_id, $title,
             $description, $now));
+        $id = $db->insertID("GROUP_ITEM");
         if($parent_id == 0) {
-            $id = $db->insertID("GROUP_ITEM");
             $sql = "UPDATE GROUP_ITEM SET PARENT_ID=? WHERE ID=?";
             $db->execute($sql, array($id, $id));
         }
+        return $id;
     }
 
     /**
@@ -726,5 +732,81 @@ class GroupModel extends Model
         $row = $db->fetchArray($result);
         return $row['NUM'];
     }
+
+    /**
+     *
+     */
+    function setPageName($user_id, $group_id, $page_name, $page, $locale_tag)
+    {
+        $db = $this->db;
+        $pubdate = time();
+        if($page_id = $this->getPageID($group_id, $page_name, $locale_tag)) {
+            $sql = "UPDATE GROUP_PAGE SET PAGE=? WHERE ID = ?";
+            $result = $db->execute($sql, array($page, $page_id));
+        } else {
+            $discuss_thread = $this->addGroupItem(0, $group_id, $user_id, 
+                "++".$page_name, "++".$page_name." ".date("r", $pubdate));
+            $sql = "INSERT INTO GROUP_PAGE (DISCUSS_THREAD, GROUP_ID,
+                TITLE, PAGE, LOCALE_TAG) VALUES (?, ?, ?, ?, ?)";
+            $result = $db->execute($sql, array($discuss_thread, $group_id,
+                $page_name, $page, $locale_tag));
+            $page_id = $db->insertID("GROUP_PAGE");
+        }
+
+        $sql = "INSERT INTO GROUP_PAGE_HISTORY (PAGE_ID, EDITOR_ID,
+            GROUP_ID, TITLE, PAGE, LOCALE_TAG, PUBDATE)
+            VALUES (?, ?, ?, ?, ?, ?, ?)";
+        $result = $db->execute($sql, array($page_id, $user_id, $group_id,
+            $page_name, $page, $locale_tag, $pubdate));
+    }
+
+    /**
+     *  @param int $group_id
+     *  @param string $name
+     *  @param string $locale_tag
+     */
+    function getPageId($group_id, $page_name, $locale_tag)
+    {
+        $db = $this->db;
+        $sql = "SELECT ID FROM GROUP_PAGE WHERE GROUP_ID = ?
+            AND TITLE=? AND LOCALE_TAG= ?";
+        $result = $db->execute($sql, array($group_id, $page_name, $locale_tag));
+        echo "hi";
+        if(!$result) { return false; }
+        $row = $db->fetchArray($result);
+        if($row) {
+            return $row["ID"];
+        }
+        return false;
+    }
+
+    /**
+     *
+     *  @param int $group_id
+     *  @param string $name
+     *  @param string $locale_tag
+     *  @param string mode
+     */
+    function getPageByName($group_id, $name, $locale_tag, $mode)
+    {
+        $db = $this->db;
+        if($mode == "edit") {
+            $sql = "SELECT HP.PAGE AS PAGE FROM GROUP_PAGE GP,
+                GROUP_PAGE_HISTORY HP WHERE GP.GROUP_ID = ?
+                AND GP.TITLE=? AND GP.LOCALE_TAG= ? AND HP.PAGE_ID=GP.ID
+                ORDER BY HP.PUBDATE DESC ".$db->limitOffset(0, 1);
+        } else {
+            $sql = "SELECT PAGE FROM GROUP_PAGE WHERE GROUP_ID = ?
+                AND TITLE=? AND LOCALE_TAG= ?";
+        }
+        $result = $db->execute($sql, array($group_id, $name, $locale_tag));
+        if(!$result) { return false; }
+        $row = $db->fetchArray($result);
+        if(!isset($row["PAGE"])) {
+            return false;
+        }
+        return $row["PAGE"];
+    }
+
 }
 ?>

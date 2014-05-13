@@ -90,7 +90,6 @@ class EditstaticElement extends Element
                 e(tl('editstatic_element_savebutton')); ?></button>
             </div>
             </div>
-
         </form>
         </div>
 

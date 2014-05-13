@@ -411,7 +411,7 @@ abstract class Controller
      * matches the given user and has not expired (1 hour till expires)
      *
      * @param string $token_name attribute of $_REQUEST containing CSRFToken
-     * @param string $user  username
+     * @param string $user  user id
      * @return bool  whether the CSRF token was valid
      */
     function checkCSRFToken($token_name, $user)
@@ -528,7 +528,6 @@ abstract class Controller
                 }
             break;
         }
-
         return $clean_value;
     }
     /**

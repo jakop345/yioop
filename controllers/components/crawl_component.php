@@ -1102,7 +1102,7 @@ class CrawlComponent extends Component implements CrawlConstants
         }
 
         $crawl_model->setSeedInfo($seed_info);
-        if($change == true &&  $data['option_type'] != 'test_options') {
+        if($change == true && $data['option_type'] != 'test_options') {
             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                 tl('crawl_component_page_options_updated')."</h1>')";
         }

@@ -102,7 +102,8 @@ class GroupfeedElement extends Element implements CrawlConstants
                     } else if(isset($data['JUST_GROUP_ID'])){
                         e($data['PAGES'][0][self::SOURCE_NAME]);
                         e(" [".tl('groupfeed_element_feed')."|".
-                            "<a href='?c=group&a=wiki&group_id=".
+                            "<a href='?c=group&".CSRF_TOKEN."=".
+                            $data[CSRF_TOKEN]."&amp;a=wiki&group_id=".
                             $data['JUST_GROUP_ID']."'>" .
                             tl('group_view_wiki') . "</a>]");
                     } else if(isset($data['JUST_USER_ID'])) {
