@@ -291,6 +291,20 @@ class UserModel extends Model
         $db->execute($sql, array($status, $user_id));
     }
 
+    function addUserToUsersTable($username, $password, $firstname='',
+        $lastname='', $email='', $status = ACTIVE_STATUS, $zkp_password='')
+    {
+        $db = $this->db;
+        $sql = "INSERT INTO USERS(FIRST_NAME, LAST_NAME,
+            USER_NAME, EMAIL, PASSWORD, STATUS, HASH,
+            CREATION_TIME,ZKP_PASSWORD) VALUES (
+            ?, ?, ?, ?, ?, ?, ?, ?,?)";
+        $result = $db->execute($sql, array($firstname, $lastname,
+            $username, $email, crawlCrypt($password), $status,
+            crawlCrypt($username.AUTH_KEY.$creation_time),
+            $creation_time,$zkp_password));
+    }
+
     /**
      * Add a user with a given username and password to the list of users
      * that can login to the admin panel
@@ -303,16 +317,18 @@ class UserModel extends Model
      * @return mixed false if operation not successful, user_id otherwise
      */
     function addUser($username, $password, $firstname='', $lastname='',
-        $email='', $status = ACTIVE_STATUS)
+        $email='', $status = ACTIVE_STATUS, $zkp_password='')
     {
         $creation_time = microTimestamp();
         $db = $this->db;
         $sql = "INSERT INTO USERS(FIRST_NAME, LAST_NAME,
-            USER_NAME, EMAIL, PASSWORD, STATUS, HASH, CREATION_TIME) VALUES (
-            ?, ?, ?, ?, ?, ?, ?, ?)";
+            USER_NAME, EMAIL, PASSWORD, STATUS, HASH,
+            CREATION_TIME,ZKP_PASSWORD) VALUES (
+            ?, ?, ?, ?, ?, ?, ?, ?,?)";
         $result = $db->execute($sql, array($firstname, $lastname,
             $username, $email, crawlCrypt($password), $status,
-            crawlCrypt($username.AUTH_KEY.$creation_time), $creation_time));
+            crawlCrypt($username.AUTH_KEY.$creation_time),
+            $creation_time, $zkp_password));
         if(!$user_id = $this->getUserId($username)) {
             return false;
         }

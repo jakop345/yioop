@@ -87,13 +87,13 @@ class AdminController extends Controller implements CrawlConstants
      */
     function processRequest()
     {
+        $profile_model = $this->model("profile");
+        $profile = $profile_model->getProfile(WORK_DIRECTORY);
         $data = array();
-
         if(!PROFILE) {
             return $this->configureRequest();
         }
         $view = "signin";
-
         if(isset($_SESSION['USER_ID'])) {
             $user = $_SESSION['USER_ID'];
         } else {
@@ -102,7 +102,6 @@ class AdminController extends Controller implements CrawlConstants
         $data['SCRIPT'] = "";
         $data[CSRF_TOKEN] = $this->generateCSRFToken($user);
         $token_okay = $this->checkCSRFToken(CSRF_TOKEN, $user);
-
         if($token_okay) {
             if(isset($_SESSION['USER_ID']) && !isset($_REQUEST['u'])) {
                 $data = array_merge($data, $this->processSession());
@@ -116,32 +115,58 @@ class AdminController extends Controller implements CrawlConstants
                     tl('admin_controller_need_cookies')."</h1>');";
                 unset($_SESSION['USER_ID']);
             } else if ($this->checkSignin()){
-                $user_id = $this->model("signin")->getUserId(
-                    $this->clean($_REQUEST['u'], "string"));
-                $session = $this->model("user")->getUserSession($user_id);
-                if(is_array($session)) {
-                    $_SESSION = $session;
+                if (!isset($_SESSION['AUTH_COUNT'])) {
+                    $_SESSION['AUTH_COUNT'] = 0;
                 }
-
-                $_SESSION['USER_ID'] = $user_id;
-                $data[CSRF_TOKEN] = $this->generateCSRFToken(
-                    $_SESSION['USER_ID']);
-                // now don't want to use remote address anymore
-                $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
-                    tl('admin_controller_login_successful')."</h1>')";
-                $data = array_merge($data, $this->processSession());
-                if(isset($data['INACTIVE'])) {
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('admin_controller_account_not_active')."</h1>');";
-                    $view = "signin";
+                if($profile['AUTHENTICATION_MODE'] == NORMAL_AUTHENTICATION) {
+                    $_SESSION['AUTH_COUNT'] = self::FIAT_SHAMIR_ITERATIONS;
+                }
+                if($profile['AUTHENTICATION_MODE'] == ZKP_AUTHENTICATION) {
+                    $_SESSION['AUTH_COUNT']++;
+                }
+                if ($_SESSION['AUTH_COUNT'] != self::FIAT_SHAMIR_ITERATIONS) {
+                   $_SESSION['SALT_VALUE'] = rand(0, 1);
+                   echo $_SESSION['SALT_VALUE'];
+                   return;
+                }
+                $_SESSION['USER_NAME'] = $_REQUEST['u'];
+                if ($_SESSION['AUTH_COUNT'] == self::FIAT_SHAMIR_ITERATIONS) {
+                    $_SESSION['AUTH_COUNT'] = 0;
+                    $user_id = $this->model("signin")->getUserId(
+                        $this->clean($_REQUEST['u'], "string"));
+                    $session = $this->model("user")->getUserSession($user_id);
+                    if(is_array($session)) {
+                        $_SESSION = $session;
+                    }
+                    $_SESSION['USER_ID'] = $user_id;
+                    $data[CSRF_TOKEN] = $this->generateCSRFToken(
+                        $_SESSION['USER_ID']);
+                    // now don't want to use remote address anymore
+                    $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
+                        tl('admin_controller_login_successful')."</h1>')";
+                    $data = array_merge($data, $this->processSession());
+                    if(isset($data['INACTIVE'])) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('admin_controller_account_not_active')."</h1>');";
+                        $view = "signin";
+                        unset($_SESSION['USER_ID']);
+                    }
+                    $view = "admin";
+                    }
+                } else {
+                    if($profile['AUTHENTICATION_MODE'] == ZKP_AUTHENTICATION
+                        && !isset($_SESSION['AUTH_FAILED'])) {
+                        $_SESSION['SALT_VALUE'] = 1;
+                        $_SESSION['AUTH_FAILED'] = -1;
+                        echo $_SESSION['AUTH_FAILED'];
+                        return;
+                    }
+                    $_SESSION['AUTH_COUNT'] = 0;
+                    $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
+                        tl('admin_controller_login_failed')."</h1>');";
                     unset($_SESSION['USER_ID']);
+                    unset($_SESSION['AUTH_FAILED']);
                 }
-                $view = "admin";
-            } else {
-                $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
-                    tl('admin_controller_login_failed')."</h1>');";
-                unset($_SESSION['USER_ID']);
-            }
         } else if($this->checkCSRFToken(CSRF_TOKEN, "config")) {
             $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
                 tl('admin_controller_login_to_config')."</h1>')";
@@ -157,6 +182,14 @@ class AdminController extends Controller implements CrawlConstants
             $data["ADMIN"] = false;
         }
         if($view == 'signin') {
+            if($profile['AUTHENTICATION_MODE'] == ZKP_AUTHENTICATION) {
+                $data['AUTH_ITERATION'] = self::FIAT_SHAMIR_ITERATIONS;
+                $data['FIAT_SHAMIR_MODULUS'] = $profile['FIAT_SHAMIR_MODULUS'];
+                $_SESSION['SALT_VALUE'] = rand(0, 1);
+                $data['INCLUDE_SCRIPTS'] = array("zkp", "big_int", "sha1");
+            } else {
+                 unset($_SESSION['SALT_VALUE']);
+            }
             unset($_SESSION['USER_ID']);
             $data[CSRF_TOKEN] = $this->generateCSRFToken(
                 $_SERVER['REMOTE_ADDR']);
@@ -188,9 +221,23 @@ class AdminController extends Controller implements CrawlConstants
      */
     function checkSignin()
     {
-        $result = $this->model("signin")->checkValidSignin(
-        $this->clean($_REQUEST['u'], "string"),
-        $this->clean($_REQUEST['p'], "string") );
+        $profile_model = $this->model("profile");
+        $profile = $profile_model->getProfile(WORK_DIRECTORY);
+        if($profile['AUTHENTICATION_MODE'] == NORMAL_AUTHENTICATION) {
+            $result = $this->model("signin")->checkValidSignin(
+            $this->clean($_REQUEST['u'], "string"),
+            $this->clean($_REQUEST['p'], "string") );
+        } else {
+            $result = $this->model("signin")->checkValidSigninForZKP(
+            $this->clean($_REQUEST['u'], "string"),
+            $this->clean($_REQUEST['x1'], "string"),
+            $this->clean($_REQUEST['y1'], "string"),
+            $_SESSION['SALT_VALUE'],
+            $profile['FIAT_SHAMIR_MODULUS'] );
+            if(!$result){
+             $_SESSION['AUTH_COUNT'] = 0;
+            }
+        }
         return $result;
     }
 

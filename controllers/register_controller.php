@@ -190,6 +190,8 @@ class RegisterController extends Controller implements CrawlConstants
      */
     function processRequest()
     {
+        $profile_model = $this->model("profile");
+        $profile = $profile_model->getProfile(WORK_DIRECTORY);
         $visitor_model = $this->model("visitor");
         if(isset($_SESSION['USER_ID'])) {
             $user = $_SESSION['USER_ID'];
@@ -224,8 +226,10 @@ class RegisterController extends Controller implements CrawlConstants
             'processAccountData', 'createAccount', $data);
         $data["check_fields"] = array("user");
         unset($data["check_user"]);
-        for($i = 0; $i < self::NUM_CAPTCHA_QUESTIONS; $i++) {
-            $data["check_fields"][] = "question_$i";
+        if($profile['CAPTCHA_MODE'] == TEXT_CAPTCHA) {
+            for($i = 0; $i < self::NUM_CAPTCHA_QUESTIONS; $i++) {
+                $data["check_fields"][] = "question_$i";
+            }
         }
         $this->preactivityPrerequisiteCheck($activity,
             'processRecoverData', 'recoverPassword', $data);
@@ -249,6 +253,21 @@ class RegisterController extends Controller implements CrawlConstants
             }
             $visitor_model->updateVisitor(
                 $_SERVER['REMOTE_ADDR'], "captcha_time_out");
+        }
+        if($profile['AUTHENTICATION_MODE'] == ZKP_AUTHENTICATION) {
+            $_SESSION['SALT_VALUE'] = rand(0, 1);
+            $data['AUTH_ITERATION'] = self::FIAT_SHAMIR_ITERATIONS;
+            $data['FIAT_SHAMIR_MODULUS'] = $profile['FIAT_SHAMIR_MODULUS'];
+            $data['INCLUDE_SCRIPTS'] = array("sha1", "zkp", "big_int");
+        } else {
+            unset($_SESSION['SALT_VALUE']);
+        }
+        if($profile['CAPTCHA_MODE'] == HASH_CAPTCHA) {
+            if(isset($data['INCLUDE_SCRIPTS'])) {
+                array_push($data['INCLUDE_SCRIPTS'], "hash_captcha");
+            } else {
+               $data['INCLUDE_SCRIPTS'] = array("sha1", "hash_captcha");
+            }
         }
         //used to ensure that we have sessions active
         $_SESSION['REMOTE_ADDR'] = $_SERVER['REMOTE_ADDR'];
@@ -281,7 +300,8 @@ class RegisterController extends Controller implements CrawlConstants
      *      or not
      */
     function processAccountData()
-    {
+    {   $profile_model = $this->model("profile");
+        $profile = $profile_model->getProfile(WORK_DIRECTORY);
         $data = array();
         $this->getCleanFields($data);
         $data['SCRIPT'] = "";
@@ -290,16 +310,28 @@ class RegisterController extends Controller implements CrawlConstants
         {
             case 'no_activation':
                 $data['REFRESH'] = "signin";
-                $user_model->addUser($data['USER'], $data['PASSWORD'],
-                    $data['FIRST'], $data['LAST'], $data['EMAIL']);
+                if($profile['AUTHENTICATION_MODE'] == NORMAL_AUTHENTICATION) {
+                    $user_model->addUser($data['USER'], $data['PASSWORD'],
+                        $data['FIRST'], $data['LAST'], $data['EMAIL']);
+                } else {
+                    $user_model->addUser($data['USER'], '',
+                        $data['FIRST'], $data['LAST'], $data['EMAIL'],
+                        ACTIVE_STATUS, $data['PASSWORD']);
+                }
                 $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                     tl('register_controller_account_created')."</h1>')";
             break;
             case 'email_registration':
                 $data['REFRESH'] = "signin";
-                $user_model->addUser($data['USER'], $data['PASSWORD'],
-                    $data['FIRST'], $data['LAST'], $data['EMAIL'],
-                    INACTIVE_STATUS);
+                if($profile['AUTHENTICATION_MODE'] == NORMAL_AUTHENTICATION) {
+                    $user_model->addUser($data['USER'], $data['PASSWORD'],
+                        $data['FIRST'], $data['LAST'], $data['EMAIL'],
+                        INACTIVE_STATUS);
+                } else {
+                    $user_model->addUser($data['USER'], '',
+                        $data['FIRST'], $data['LAST'], $data['EMAIL'],
+                        INACTIVE_STATUS, $data['PASSWORD']);
+                }
                 $user = $user_model->getUser($data['USER']);
                 $server = new MailServer(MAIL_SENDER, MAIL_SERVER,
                     MAIL_SERVERPORT, MAIL_USERNAME, MAIL_PASSWORD,
@@ -328,9 +360,15 @@ class RegisterController extends Controller implements CrawlConstants
             break;
             case 'admin_activation':
                 $data['REFRESH'] = "signin";
-                $user_model->addUser($data['USER'], $data['PASSWORD'],
-                    $data['FIRST'], $data['LAST'], $data['EMAIL'],
-                    INACTIVE_STATUS);
+                if($profile['AUTHENTICATION_MODE'] == NORMAL_AUTHENTICATION) {
+                    $user_model->addUser($data['USER'], $data['PASSWORD'],
+                        $data['FIRST'], $data['LAST'], $data['EMAIL'],
+                        INACTIVE_STATUS);
+                } else {
+                    $user_model->addUser($data['USER'], '',
+                        $data['FIRST'], $data['LAST'], $data['EMAIL'],
+                        INACTIVE_STATUS, $data['PASSWORD']);
+                }
                 $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                     tl('register_controller_account_request_made')."</h1>');";
                 $server = new MailServer(MAIL_SENDER, MAIL_SERVER,
@@ -439,6 +477,8 @@ class RegisterController extends Controller implements CrawlConstants
      */
     function processRecoverData()
     {
+        $profile_model = $this->model("profile");
+        $profile = $profile_model->getProfile(WORK_DIRECTORY);
         $data = array();
         $this->getCleanFields($data);
         $data['SCRIPT'] = "";
@@ -453,11 +493,13 @@ class RegisterController extends Controller implements CrawlConstants
             return $data;
         }
         $session = $user_model->getUserSession($user["USER_ID"]);
-        if(!isset($session['RECOVERY']) ||
-            !isset($session['RECOVERY_ANSWERS'])) {
-            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+        if($profile['CAPTCHA_MODE'] == TEXT_CAPTCHA) {
+            if(!isset($session['RECOVERY']) ||
+                !isset($session['RECOVERY_ANSWERS'])) {
+                $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                 tl('register_controller_account_recover_fail')."</h1>');";
-            return $data;
+                return $data;
+            }
         }
         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
             tl('register_controller_account_recover_email')."</h1>');";
@@ -608,7 +650,7 @@ class RegisterController extends Controller implements CrawlConstants
         $visitor_model = $this->model("visitor");
         $clear = false;
         if($profile['CAPTCHA_MODE'] == HASH_CAPTCHA) {
-            $data['INCLUDE_SCRIPTS'] = array("hashcaptcha");
+            $data['INCLUDE_SCRIPTS'] = array("sha1", "hash_captcha");
         }
         if($profile['CAPTCHA_MODE'] == TEXT_CAPTCHA) {
             $num_captchas = self::NUM_CAPTCHA_QUESTIONS;
@@ -769,8 +811,18 @@ class RegisterController extends Controller implements CrawlConstants
             self::NUM_CAPTCHA_CHOICES; $i++) {
             $data["question_$i"] = "-1";
         }
+        if($profile['AUTHENTICATION_MODE'] == ZKP_AUTHENTICATION) {
+            $data['AUTHENTICATION_MODE'] = ZKP_AUTHENTICATION;
+            $data['INCLUDE_SCRIPTS'] = array("sha1", "zkp"," big_int");
+         } else {
+            $data['AUTHENTICATION_MODE'] = NORMAL_AUTHENTICATION;
+         }
         if($profile['CAPTCHA_MODE'] == HASH_CAPTCHA) {
-            $data['INCLUDE_SCRIPTS'] = array("hashcaptcha");
+            if(isset($data['INCLUDE_SCRIPTS'])) {
+                array_push($data['INCLUDE_SCRIPTS'], "hash_captcha");
+            } else {
+                $data['INCLUDE_SCRIPTS'] = array("hash_captcha", "sha1");
+            }
             $time = time();
             $_SESSION["request_time"] = $time;
             $_SESSION["level"] = self::HASH_CAPTCHA_LEVEL;
@@ -1050,25 +1102,29 @@ class RegisterController extends Controller implements CrawlConstants
             $data["PASSWORD"] = "";
             $data["REPASSWORD"] = "";
         }
-        $num_questions = self::NUM_CAPTCHA_QUESTIONS +
-            self::NUM_RECOVERY_QUESTIONS;
-        $num_captchas = self::NUM_CAPTCHA_QUESTIONS;
-        for($i = 0; $i < $num_questions; $i++) {
-            $field = "question_$i";
-            if(!in_array($field, $fields)) {
-                continue;
-            }
-            $captchas = isset($_SESSION['CAPTCHAS'][$i]) ?
-                $_SESSION['CAPTCHAS'][$i] : array();
-            $recovery = isset($_SESSION['RECOVERY'][$i  - $num_captchas]) ?
-                $_SESSION['RECOVERY'][$i  - $num_captchas] : array();
-            $current_dropdown = ($i< $num_captchas) ?
-                $captchas : $recovery;
-            if(!isset($_REQUEST[$field]) || $_REQUEST[$field] == "-1" ||
-                !in_array($_REQUEST[$field], $current_dropdown)) {
-                $missing[] = $field;
-            } else {
-                $data[$field] = $_REQUEST[$field];
+        $profile_model = $this->model("profile");
+        $profile = $profile_model->getProfile(WORK_DIRECTORY);
+        if($profile['CAPTCHA_MODE'] == TEXT_CAPTCHA) {
+            $num_questions = self::NUM_CAPTCHA_QUESTIONS +
+                self::NUM_RECOVERY_QUESTIONS;
+            $num_captchas = self::NUM_CAPTCHA_QUESTIONS;
+            for($i = 0; $i < $num_questions; $i++) {
+                $field = "question_$i";
+                if(!in_array($field, $fields)) {
+                    continue;
+                }
+                $captchas = isset($_SESSION['CAPTCHAS'][$i]) ?
+                    $_SESSION['CAPTCHAS'][$i] : array();
+                $recovery = isset($_SESSION['RECOVERY'][$i  - $num_captchas]) ?
+                    $_SESSION['RECOVERY'][$i  - $num_captchas] : array();
+                $current_dropdown = ($i< $num_captchas) ?
+                    $captchas : $recovery;
+                if(!isset($_REQUEST[$field]) || $_REQUEST[$field] == "-1" ||
+                    !in_array($_REQUEST[$field], $current_dropdown)) {
+                    $missing[] = $field;
+                } else {
+                    $data[$field] = $_REQUEST[$field];
+                }
             }
         }
         $data['MISSING'] = $missing;

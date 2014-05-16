@@ -98,19 +98,25 @@ $db->execute("INSERT INTO VERSION VALUES (19)");
 
 $creation_time = microTimestamp();
 
+//numerical value of the blank password
+$profile = $profile_model->getProfile(WORK_DIRECTORY);
+$sha1_of_blank_string =  bchexdec(sha1(''));
+//calculating V  = S ^ 2 mod N
+$temp = bcpow($sha1_of_blank_string.'', '2');
+$zkp_password = bcmod($temp,$profile['FIAT_SHAMIR_MODULUS']);
+
 //default account is root without a password
 $sql ="INSERT INTO USERS VALUES (".ROOT_ID.", 'admin', 'admin','root',
         'root@dev.null', '".crawlCrypt('')."', '".ACTIVE_STATUS.
         "', '".crawlCrypt('root'.AUTH_KEY.$creation_time)."','$creation_time',
-        0, 0)";
-
+        0, 0, '$zkp_password')";
 $db->execute($sql);
 // public account is an inactive account for used for public permissions
 //default account is root without a password
 $sql ="INSERT INTO USERS VALUES (".PUBLIC_USER_ID.", 'all', 'all','public',
         'public@dev.null', '".crawlCrypt('')."', '".INACTIVE_STATUS.
         "', '".crawlCrypt('public'.AUTH_KEY.$creation_time)."',
-        '$creation_time', 0, 0)";
+        '$creation_time', 0, 0, '$zkp_password')";
 $db->execute($sql);
 
 //default public group with group id 1
@@ -714,5 +720,24 @@ $db->disconnect();
 if(in_array(DBMS, array('sqlite','sqlite3' ))){
     chmod(CRAWL_DIR."/data/".DB_NAME.".db", 0666);
 }
+
 echo "Create DB succeeded\n";
+
+/**
+ * Convert hexadecimal number to decimal using BC math PHP
+ * library. It is used to convert very large hex value to decimal value
+ *
+ * @param string $hex  hexadecimal number
+ * @return string $dec string representation of decimal number
+ */
+function bchexdec($hex)
+{
+    $dec = 0;
+    $len = strlen($hex);
+    for ($i = 1; $i <= $len; $i++) {
+        $dec = bcadd($dec, bcmul(strval(hexdec($hex[$i - 1])),
+               bcpow('16', strval($len - $i))));
+    }
+    return $dec;
+}
 ?>

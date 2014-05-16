@@ -30,51 +30,7 @@
  * @filesource
  */
 
-/*
- *  To find the nonce for the input parameters given by the server.
- *
- *  @param Object nonce_for_string a DOM element to put the value of a nonce
- *  @param Object random_string a DOM element to get the value of random_string
- *  @param Object time a DOM element to get the value of the time
- *  @param Object level a DOM element to get the value of a level
- */
-function findNonce(nonce_for_string, random_string, time, level)
-{
-    if(elt(random_string).value) {
-        var random_string = elt(random_string).value;
-        var level = elt(level).value;
-        var time = elt(time).value;
-        var nonce = hashStamp(random_string, time, level);
-        var input = elt(nonce_for_string);
-        input.setAttribute('value', nonce);
-        input.setAttribute('type', 'hidden');
-    }
-}
-
-/*
- *  This function calculates the sha1 on the strings until
- *  numeber of a leading zeroes in the sha1 value matches with a level
- *  parameter.
- *
- *  @param String random_string a string sent by the server
- *  @param String time the time sent by the server
- *  @param String level define number of leading zeroes
- *  @return int nonce for which the sha1 of a string
-        produces the level number of a zeroes
- */
-function hashStamp(random_string, time, level)
-{
-    var nonce = -1;
-    var input_string = '';
-    var pattern = new RegExp("^0{"+level+"}");
-    while (!generateSha1(input_string).match(pattern)) {
-        nonce = nonce + 1;
-        input_string = random_string +':'+time + ':' + nonce;
-    }
-    return nonce;
-}
-
-/*
+ /*
  *  To calculate the sha1 on the given String.
  *
  *  @param String input string for the function
@@ -96,7 +52,7 @@ function generateSha1(str)
 
     x[i >> 2] |= 0x80 << (24 - (i % 4) * 8);
     x[n * 16 - 1] = str.toString().length * 8;
-
+    //sha1 constants
     var a = 1732584193;
     var b = -271733879;
     var c = -1732584194;
@@ -127,7 +83,6 @@ function generateSha1(str)
             b = a;
             a = t;
         }
-
         a = safeAdd(a, olda);
         b = safeAdd(b, oldb);
         c = safeAdd(c, oldc);

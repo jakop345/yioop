@@ -66,7 +66,17 @@ class SigninView extends View
         <h1 class="logo"><a href="./?<?php e(CSRF_TOKEN."=".$data[CSRF_TOKEN])
                 ?>"><img src="<?php e($logo); ?>" alt="Yioop!"
                 /></a><span> - <?php e(tl('signin_view_signin')); ?></span></h1>
-        <form method="post" action="#">
+        <?php if (isset($data['AUTH_ITERATION'])) { ?>
+                <form  method="post" id="form1" action="./?c=admin"
+                    onsubmit="generateKeys('form1','username', 'password',
+                    'fiatShamirModulus', '<?php e($_SESSION['SALT_VALUE']); ?>',
+                    <?php e($data['AUTH_ITERATION']); ?>)" >
+                    <input type="hidden" name="fiatShamirModulus"
+                        id="fiatShamirModulus"
+                        value="<?php e($data['FIAT_SHAMIR_MODULUS']) ?>"/>
+        <?php } else {?>
+                <form  id="form1" method="post" action="#">
+        <?php } ?>
         <div class="login">
             <table>
             <tr>
@@ -80,8 +90,9 @@ class SigninView extends View
                 e(tl('signin_view_password')); ?></label>:</b></td><td
                 class="table-input"><input id="password" type="password"
                 class="narrow-field" maxlength="80" name="p" /></td>
-            <td><input type="hidden" name="<?php e(CSRF_TOKEN);?>" value="<?php
-                e($data[CSRF_TOKEN]); ?>" />
+            <td><input type="hidden" name="<?php e(CSRF_TOKEN);?>"
+                    id="<?php e(CSRF_TOKEN);?>" 
+                    value="<?php e($data[CSRF_TOKEN]); ?>" />
             </td>
             </tr>
             <tr><td>&nbsp;</td><td class="center">
@@ -89,9 +100,9 @@ class SigninView extends View
                 e(tl('signin_view_login')); ?></button>
             </td><td>&nbsp;</td></tr>
             </table>
+            <input type="hidden" name="saltValue" id="saltValue" />
         </div>
         </form>
-
         <div class="signin-exit">
             <ul>
                 <?php

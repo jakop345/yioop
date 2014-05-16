@@ -193,7 +193,15 @@ class ManageusersElement extends Element
             e("<h2>".tl('manageusers_element_add_user'). "</h2>");
         }
         ?>
-        <form id="user-form" method="post" action='#' autocomplete="off">
+       <?php if($data['AUTHENTICATION_MODE'] == ZKP_AUTHENTICATION) { ?>
+                <form action="" method="post"
+                    onsubmit="registration('pass-word','retype-password',
+                             'fiatShamirModulus')">
+                <input type="hidden" name="fiatShamirModulus" id="fiatShamirModulus"
+                    value="<?php e($data['FIAT_SHAMIR_MODULUS']) ?>"/>
+       <?php } else { ?>
+               <form id="user-form" method="post" action='#' autocomplete="off">
+       <?php }?>
         <input type="hidden" name="c" value="admin" />
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />

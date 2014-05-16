@@ -246,8 +246,22 @@ class ServersettingsElement extends Element
                 </label></legend>
                     <?php $this->view->helper("options")->render(
                         "captcha-setting", "CAPTCHA_MODE",
-                       $data['CAPTCHA_MODES'],
-                     $data['CAPTCHA_MODE']);
+                         $data['CAPTCHA_MODES'],
+                         $data['CAPTCHA_MODE']);
+                ?>
+            </fieldset>
+            </div>
+            <div class="top-margin">
+            <fieldset>
+                <legend><label
+                for="authentication-mode"><?php
+                e(tl('serversettings_element_authentication_mode'));
+                ?>
+                </label></legend>
+                    <?php $this->view->helper("options")->render(
+                        "authentication-mode", "AUTHENTICATION_MODE",
+                         $data['AUTHENTICATION_MODES'],
+                         $data['AUTHENTICATION_MODE']);
                 ?>
             </fieldset>
             </div>

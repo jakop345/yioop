@@ -78,7 +78,19 @@ class RecoverView extends View
             <form method="post" action="#">
             <input type="hidden" name="c" value="register" />
             <input type="hidden" name="a" value="<?php e($activity); ?>" />
+            <?php if(isset($_SESSION["random_string"])) { ?>
+            <input type='hidden' name='nonce_for_string'
+            id='nonce_for_string' />
+            <input type='hidden' name='random_string' id='random_string'
+                value='<?php e($_SESSION["random_string"]);?>' />
+            <input type='hidden' name='time1' id='time1'
+                value='<?php e($_SESSION["request_time"]);?>' />
+            <input type='hidden' name='level' id='level'
+                value='<?php e($_SESSION["level"]);?>' />
+            <input type='hidden' name='time' id='time'
+                value='<?php e(time());?>'/>
             <?php
+            }
             if(isset($data["RECOVER_COMPLETE"])) { ?>
                 <input type="hidden" name="user" value="<?php
                     e($data['user']); ?>" />
@@ -139,32 +151,39 @@ class RecoverView extends View
                             tl('register_view_account_recovery')
                                 =>$data['RECOVERY']);
                     } else {
-                        $question_sets = array(
-                            tl('register_view_human_check')=>$data['CAPTCHAS']);
+                       if(isset($_SESSION["random_string"])) {
+                            $question_sets = array();
+                        } else {
+                            $question_sets = array(
+                            tl('register_view_human_check')=>
+                            $data['CAPTCHAS']);
+                        }
                     }
-                    $i = 0;
-                    foreach($question_sets as $name => $set) {
-                        $first = true;
-                        $num = count($set);
-                        foreach($set as $question) {
-                            if($first) { ?>
-                                <tr><th class="table-label"
-                                    rowspan='<?php e($num); ?>'><?php
-                                    e($name);
-                                ?></th><td class="table-input border-top">
-                            <?php
-                            } else { ?>
-                                <tr><td class="table-input">
-                            <?php
+                    if(isset($_SESSION["random_string"])) {
+                        $i = 0;
+                        foreach($question_sets as $name => $set) {
+                            $first = true;
+                            $num = count($set);
+                            foreach($set as $question) {
+                                if($first) { ?>
+                                    <tr><th class="table-label"
+                                        rowspan='<?php e($num); ?>'><?php
+                                        e($name);
+                                    ?></th><td class="table-input border-top">
+                                <?php
+                                } else { ?>
+                                    <tr><td class="table-input">
+                                <?php
+                                }
+                                $this->helper("options")->render(
+                                    "question-$i", "question_$i",
+                                    $question, $data["question_$i"]);
+                                $first = false;
+                                e(in_array("question_$i", $missing)
+                                    ?'<span class="red">*</span>':'');
+                                e("</td></tr>");
+                                $i++;
                             }
-                            $this->helper("options")->render(
-                                "question-$i", "question_$i",
-                                $question, $data["question_$i"]);
-                            $first = false;
-                            e(in_array("question_$i", $missing)
-                                ?'<span class="red">*</span>':'');
-                            e("</td></tr>");
-                            $i++;
                         }
                     }
                     ?>
@@ -191,6 +210,15 @@ class RecoverView extends View
         </div>
         </div>
         <div class='tall-landing-spacer'></div>
+        <?php  if(isset($_SESSION["random_string"])) {?>
+        <script type="text/javascript" >
+            document.addEventListener('DOMContentLoaded', function() {
+            var body = tag(body);
+            body.onload = findNonce('nonce_for_string', 'random_string'
+                , 'time', 'level');
+            }, false);
+        </script>
         <?php
+        }
     }
 }

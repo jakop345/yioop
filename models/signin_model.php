@@ -60,7 +60,25 @@ class SigninModel extends Model
     function checkValidSignin($username, $password)
     {
         $db = $this->db;
-        $sql = "SELECT USER_NAME, PASSWORD FROM USERS ".
+        $result = $this->getUserDetails($username);
+        if(!$result) {
+            return false;
+        }
+        $row = $db->fetchArray($result);
+        return ($username == $row['USER_NAME'] &&
+            crawlCrypt($password, $row['PASSWORD']) == $row['PASSWORD']) ;
+    }
+    
+    /**
+     * Get user details from database
+     *
+     * @param string $username username
+     * @return array $result array of user data
+     */
+    function getUserDetails($username)
+    {
+        $db = $this->db;
+        $sql = "SELECT USER_NAME, PASSWORD,ZKP_PASSWORD FROM USERS ".
             "WHERE USER_NAME = ? " . $db->limitOffset(1);
         $i = 0;
         do {
@@ -70,13 +88,29 @@ class SigninModel extends Model
             $result = $db->execute($sql, array($username));
             $i++;
         } while(!$result && $i < 2);
+        return $result;
+    }
+    
+    /**
+     * To verify  username and password in case of ZKP authentication.
+     *
+     * @param string $username username
+     * @param string $database_username  username stored in database
+     * @param string $database_password  password stored in database
+     * @return bool  where the password is that of the given user
+     */
+    function checkValidSigninForZKP($username, $x, $y, $e, $n)
+    {
+        $db = $this->db;
+        $result = $this->getUserDetails($username);
         if(!$result) {
             return false;
         }
         $row = $db->fetchArray($result);
-
-        return ($username == $row['USER_NAME'] &&
-            crawlCrypt($password, $row['PASSWORD']) == $row['PASSWORD']) ;
+        $v = $row['ZKP_PASSWORD'];
+        $rp = bcmul($x, bcmod(bcpow($v, $e), $n));
+        $lp = bcmul($y, $y);
+        return ($username == $row['USER_NAME'] && bccomp($rp, $lp) == 0);
     }
 
     /**
@@ -164,6 +198,21 @@ class SigninModel extends Model
         $sql = "UPDATE USERS SET PASSWORD=? WHERE USER_NAME = ? ";
         $result = $this->db->execute($sql,
             array(crawlCrypt($password), $username) );
+        return $result != false;
+    }
+
+    /**
+     *  Changes the password of a given user in case of ZKP authentication
+     *
+     *  @param string $username username of user to change password of
+     *  @param string $password new password for user
+     *  @return bool update successful or not.
+     */
+    function changePasswordZKP($username, $password)
+    {
+        $sql = "UPDATE USERS SET ZKP_PASSWORD=? WHERE USER_NAME = ? ";
+        $result = $this->db->execute($sql,
+            array($password, $username) );
         return $result != false;
     }
 

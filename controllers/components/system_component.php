@@ -607,6 +607,12 @@ class SystemComponent extends Component
                 HASH_CAPTCHA =>
                    tl('serversettings_element_hash_captcha'),
             );
+        $data['AUTHENTICATION_MODES'] = array (
+                NORMAL_AUTHENTICATION =>
+                   tl('serversettings_element_normal_authentication'),
+                ZKP_AUTHENTICATION =>
+                   tl('serversettings_element_zkp_authentication'),
+            );
         $data['show_mail_info'] = "false";
         if(isset($data['REGISTRATION_TYPE']) &&
             in_array($data['REGISTRATION_TYPE'], array(
@@ -780,6 +786,8 @@ EOD;
                         $profile['AUTH_KEY'] = crawlHash(
                             $data['WORK_DIRECTORY'].time());
                         $data['AUTH_KEY'] = $profile['AUTH_KEY'];
+                        $profile['FIAT_SHAMIR_MODULUS'] =
+                            $this->generateFiatShamirModulus();
                         $robot_instance = str_replace(".", "_",
                             $_SERVER['SERVER_NAME'])."-".time();
                         $profile['ROBOT_INSTANCE'] = $robot_instance;
@@ -1041,6 +1049,43 @@ EOD;
         }
         return $out;
      }
+
+     /**
+      * This method generates Fiat-Shamir modulus. It uses
+      * openssl public key method to generate the public key and
+      * then extract modulus from the public key
+      *
+      * @return string $dec string representation of modulus
+      */
+     function generateFiatShamirModulus()
+     {
+        $config = array(
+            "digest_alg" => "sha256",
+            "public_key_bits" => 1024,
+            "public_key_type" => OPENSSL_KEYTYPE_RSA,
+        );
+        $res=openssl_pkey_new($config);
+        $pub_key=openssl_pkey_get_details($res);
+        return $this->bchexdec(bin2hex($pub_key["rsa"]["n"]));
+    }
+
+    /**
+     * Convert hexadecimal number to decimal using BC math PHP
+     * library. It is used to convert very large hex value to decimal value
+     *
+     * @param string $hex  hexadecimal number
+     * @return string $dec string representation of decimal number
+     */
+    function bchexdec($hex)
+    {
+        $dec = 0;
+        $len = strlen($hex);
+        for ($i = 1; $i <= $len; $i++) {
+            $dec = bcadd($dec, bcmul(strval(hexdec($hex[$i - 1])),
+                        bcpow('16', strval($len - $i))));
+        }
+        return $dec;
+    }
 
 
 }

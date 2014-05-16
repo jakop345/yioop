@@ -128,6 +128,12 @@ define('TEXT_CAPTCHA', 1);
 /** Captcha Mode Possibility*/
 define('HASH_CAPTCHA', 2);
 
+/** Authentication Mode Possibility*/
+define('NORMAL_AUTHENTICATION', 1);
+
+/** Authentication Mode Possibility*/
+define('ZKP_AUTHENTICATION', 2);
+
 if(file_exists(WORK_DIRECTORY.PROFILE_FILE_NAME)) {
     require_once(WORK_DIRECTORY.PROFILE_FILE_NAME);
     define('PROFILE', true);
@@ -158,6 +164,7 @@ if(file_exists(WORK_DIRECTORY.PROFILE_FILE_NAME)) {
     define('PROFILE', false);
     define('DBMS', 'sqlite3');
     define('CAPTCHA_MODE', HASH_CAPTCHA);
+    define('AUTHENTICATION_MODE', NORMAL_AUTHENTICATION);
     define('DEBUG_LEVEL', NO_DEBUG_INFO);
     define('USE_FILECACHE', false);
     define('WEB_ACCESS', true);

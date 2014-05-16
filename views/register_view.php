@@ -73,7 +73,16 @@ class RegisterView extends View
                 src="<?php e($logo); ?>" alt="Yioop!"/></a>
                 <span> - <?php e(tl('register_view_create_account'));
                 ?></span></h1>
-            <form method="post" action="#">
+            <?php if($data['AUTHENTICATION_MODE'] == ZKP_AUTHENTICATION) {  ?>
+                        <form action="" method="post"
+                            onsubmit="registration('password', 'repassword',
+                            'fiatShamirModulus')">
+                        <input type="hidden" name="fiatShamirModulus"
+                            id="fiatShamirModulus"
+                            value="<?php e($data['FIAT_SHAMIR_MODULUS']) ?>"/>
+            <?php } else { ?>
+                        <form method="post" action="#">
+            <?php } ?>
             <input type="hidden" name="c" value="register" />
             <input type="hidden" name="a" value="processAccountData" />
             <?php  if(isset($_SESSION["random_string"])) { ?>
@@ -233,6 +242,7 @@ class RegisterView extends View
         </div>
         </div>
         <div class='tall-landing-spacer'></div>
+         <?php  if(isset($_SESSION["random_string"])) {?>
         <script type="text/javascript" >
             document.addEventListener('DOMContentLoaded', function() {
             var body = tag(body);
@@ -242,5 +252,6 @@ class RegisterView extends View
         </script>
     <?php
         }
+      }
     }
     ?>

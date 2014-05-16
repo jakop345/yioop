@@ -102,6 +102,16 @@ function getPage(tag, url)
 }
 
 /*
+ *  Shorthand for document.createElement()
+ *
+ *  @param String input type element
+ */
+function ce(input)
+{
+    return document.createElement(input);
+}
+
+/*
  *  Shorthand for document.getElementById()
  *
  *  @param String id  the id of the DOM element one wants

@@ -70,6 +70,8 @@ class AccountaccessComponent extends Component
     function manageAccount()
     {
         $parent = $this->parent;
+        $profile_model = $parent->model("profile");
+        $profile = $profile_model->getProfile(WORK_DIRECTORY);
         $signin_model = $parent->model("signin");
         $group_model = $parent->model("group");
         $user_model = $parent->model("user");
@@ -147,9 +149,16 @@ class AccountaccessComponent extends Component
                         return $data;
                     }
                     if(isset($data['EDIT_PASSWORD'])) {
-                        $signin_model->changePassword($username,
-                            $parent->clean($_REQUEST['new_password'],
-                            "string"));
+                        if($profile['AUTHENTICATION_MODE']
+                             == ZKP_AUTHENTICATION) {
+                            $signin_model->changePasswordZKP($username,
+                                $parent->clean($_REQUEST['new_password'],
+                                "string"));
+                        } else {
+                                $signin_model->changePassword($username,
+                                $parent->clean($_REQUEST['new_password'],
+                                "string"));
+                        }
                     }
                     $user = array();
                     $user['USER_ID'] = $user_id;
@@ -184,6 +193,18 @@ class AccountaccessComponent extends Component
     function manageUsers()
     {
         $parent = $this->parent;
+        $profile_model = $parent->model("profile");
+        $profile = $profile_model->getProfile(WORK_DIRECTORY);
+        if($profile['AUTHENTICATION_MODE'] == ZKP_AUTHENTICATION) {
+            $_SESSION['SALT_VALUE'] = rand(0, 1);
+            $_SESSION['AUTH_COUNT'] = 1;
+            $data['INCLUDE_SCRIPTS'] = array("sha1", "zkp", "big_int");
+            $data['AUTHENTICATION_MODE'] = ZKP_AUTHENTICATION;
+            $data['FIAT_SHAMIR_MODULUS'] = $profile['FIAT_SHAMIR_MODULUS'];
+        } else {
+            $data['AUTHENTICATION_MODE'] = NORMAL_AUTHENTICATION;
+            unset($_SESSION['SALT_VALUE']);
+        }
         $signin_model = $parent->model("signin");
         $user_model = $parent->model("user");
         $group_model = $parent->model("group");
@@ -257,13 +278,23 @@ class AccountaccessComponent extends Component
                         $_REQUEST['status']])) {
                         $_REQUEST['status'] = INACTIVE_STATUS;
                     } else {
-                        $user_model->addUser($username,
-                            $parent->clean($_REQUEST['password'], "string"),
-                            $parent->clean($_REQUEST['first_name'], "string"),
-                            $parent->clean($_REQUEST['last_name'], "string"),
-                            $parent->clean($_REQUEST['email'], "string"),
-                            $_REQUEST['status']
+                        if($profile['AUTHENTICATION_MODE'] == ZKP_AUTHENTICATION) {
+                            $user_model->addUser($username, '',
+                                $parent->clean($_REQUEST['first_name'], "string"),
+                                $parent->clean($_REQUEST['last_name'], "string"),
+                                $parent->clean($_REQUEST['email'], "string"),
+                                $_REQUEST['status'],
+                                $parent->clean($_REQUEST['password'], "string")
                             );
+                        } else {
+                            $user_model->addUser($username,
+                                $parent->clean($_REQUEST['password'], "string"),
+                                $parent->clean($_REQUEST['first_name'], "string"),
+                                $parent->clean($_REQUEST['last_name'], "string"),
+                                $parent->clean($_REQUEST['email'], "string"),
+                                $_REQUEST['status']
+                            );
+                        }
                         $data['USER_NAMES'][$username] = $username;
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_user_added').
@@ -292,6 +323,12 @@ class AccountaccessComponent extends Component
                                     $_REQUEST[$field], "string");
                                 if($tmp != $user[$upper_field]) {
                                     $user[$upper_field] = $tmp;
+                                     if($profile['AUTHENTICATION_MODE'] ==
+                                        ZKP_AUTHENTICATION && $upper_field
+                                        == "PASSWORD") {
+                                        $user["ZKP_PASSWORD"] = $tmp;
+                                        $user[$upper_field] ='';
+                                    }
                                     if(!isset($_REQUEST['change_filter'])) {
                                         $update = true;
                                     }
