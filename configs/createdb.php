@@ -58,6 +58,9 @@ require_once BASE_DIR."/models/model.php";
 /** For ProfileModel::createDatabaseTables method*/
 require_once BASE_DIR."/models/profile_model.php";
 
+/** For GroupModel::setPageName method*/
+require_once BASE_DIR."/models/group_model.php";
+
 /** For crawlHash function */
 require_once BASE_DIR."/lib/utility.php";
 
@@ -98,7 +101,8 @@ $creation_time = microTimestamp();
 //default account is root without a password
 $sql ="INSERT INTO USERS VALUES (".ROOT_ID.", 'admin', 'admin','root',
         'root@dev.null', '".crawlCrypt('')."', '".ACTIVE_STATUS.
-        "', '".crawlCrypt('root'.AUTH_KEY.$creation_time)."','$creation_time')";
+        "', '".crawlCrypt('root'.AUTH_KEY.$creation_time)."','$creation_time',
+        0, 0)";
 
 $db->execute($sql);
 // public account is an inactive account for used for public permissions
@@ -106,14 +110,14 @@ $db->execute($sql);
 $sql ="INSERT INTO USERS VALUES (".PUBLIC_USER_ID.", 'all', 'all','public',
         'public@dev.null', '".crawlCrypt('')."', '".INACTIVE_STATUS.
         "', '".crawlCrypt('public'.AUTH_KEY.$creation_time)."',
-        '$creation_time')";
+        '$creation_time', 0, 0)";
 $db->execute($sql);
 
 //default public group with group id 1
 $creation_time = microTimestamp();
 $sql = "INSERT INTO GROUPS VALUES(".PUBLIC_GROUP_ID.",'Public','".
     $creation_time."','".ROOT_ID."', '".PUBLIC_JOIN."', '".GROUP_READ.
-    "')";
+    "', ".NON_VOTING_GROUP.")";
 $db->execute($sql);
 
 $now = time();
@@ -124,12 +128,32 @@ $db->execute("INSERT INTO USER_GROUP VALUES (".ROOT_ID.", ".
     PUBLIC_GROUP_ID.", ".ACTIVE_STATUS.", $now)");
 $db->execute("INSERT INTO USER_GROUP VALUES (".PUBLIC_USER_ID.", ".
     PUBLIC_GROUP_ID.", ".ACTIVE_STATUS.", $now)");
-$public_pages = array("404", "409", "blog", "bot", "privacy",
-    "captcha_time_out", "suggest_day_exceeded", "terms");
-foreach($public_pages as $page) {
-    $sql = "INSERT INTO ACCESS VALUES ('".$page."', '".
-        PUBLIC_GROUP_ID."', 'group')";
-    $db->execute($sql);
+$public_pages = array(
+    "404" => "=Page Not Found=\n\nThe page you requested cannot be found.",
+    "409" => "=Conflict=\n\nYour request would result in an edit conflict,".
+        "so will not be processed.",
+    "blog" => "=Blog=\n\n==Crawl Notes==\n\nThis was an especially ".
+        "interesting crawl...",
+    "bot" => "=Bot=\n\nDescribes the web crawler used with this ".
+        "web site",
+    "captcha_time_out" => "=Captcha/Recover Time Out=\n\n".
+        "==Account Timeout==\n\nA large number of captcha refreshes or ".
+        "recover password requests have been made from this IP address. ".
+        "Please wait until %s to try again.",
+    "privacy" => "=Privacy Policy=\n\nDescribes what information this site ".
+        "collects and retains about users and how it uses that information",
+    "suggest_day_exceeded" => "=One-day Suggest Url Time Out=\n\n".
+        "==Account Timeout==\n\nThe maximum number of URLs that can be ".
+        "submitted from an IP address in one day has been exceeded. Please ".
+        "wait until %s to try again.",
+    "terms" => "=Terms of Service=\n\nPlease write the terms for the services".
+        "provided by this website."
+    );
+$group_model = new GroupModel(DB_NAME, false);
+$group_model->db = $db;
+foreach($public_pages as $page_name => $page_content) {
+    $group_model->setPageName(ROOT_ID, PUBLIC_USER_ID, $page_name,
+        $page_content, "en-US", "Creating Default Page");
 }
 
 /* we insert 1 by 1 rather than comma separate as sqlite

@@ -282,7 +282,8 @@ class GroupfeedElement extends Element implements CrawlConstants
                 elt(id).innerHTML =
                     tmp +
                     '<form action="./" >' + <?php e($hidden_form); ?>
-                    '<input type="hidden" name="c" value="admin" />' +
+                    '<input type="hidden" name="c" value="<?php
+                        e($data['CONTROLLER']) ?>" />' +
                     '<input type="hidden" name="a" value="groupFeeds" />' +
                     '<input type="hidden" name="arg" value="addcomment" />' +
                     '<input type="hidden" name="parent_id" value="' +
@@ -315,7 +316,8 @@ class GroupfeedElement extends Element implements CrawlConstants
                 elt(id).innerHTML =
                     tmp +
                     '<form action="./" >' + <?php e($hidden_form); ?>
-                    '<input type="hidden" name="c" value="admin" />' +
+                    '<input type="hidden" name="c" value="<?php
+                        e($data['CONTROLLER']) ?>" />' +
                     '<input type="hidden" name="a" value="groupFeeds" />' +
                     '<input type="hidden" name="arg" value="newthread" />' +
                     '<input type="hidden" name="group_id" value="' +
@@ -328,7 +330,8 @@ class GroupfeedElement extends Element implements CrawlConstants
                     '<p><b><label for="title-'+ id +'" ><?php
                         e(tl("groupfeed_element_subject"));
                     ?></label></b></p>' +
-                    '<p><input type="text" name="title" value="" '+
+                    '<p><input type="text" id="title-'+ id +'" '+
+                    'name="title" value="" '+
                     ' maxlength="80" class="wide-field"/></p>' +
                     '<p><b><label for="description-'+ id +'" ><?php
                         e(tl("groupfeed_element_post"));
@@ -357,7 +360,8 @@ class GroupfeedElement extends Element implements CrawlConstants
                 elt(id).innerHTML =
                     tmp +
                     '<form action="./" >' +
-                    '<input type="hidden" name="c" value="admin" />' +
+                    '<input type="hidden" name="c" value="<?php
+                        e($data['CONTROLLER']) ?>" />' +
                     '<input type="hidden" name="a" value="groupFeeds" />' +
                     '<input type="hidden" name="arg" value="updatepost" />' +
                     '<input type="hidden" name="post_id" value="' +

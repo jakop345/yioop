@@ -656,6 +656,24 @@ define('GROUP_READ_COMMENT', 3);
  */
 define('GROUP_READ_WRITE', 4);
 /**
+ *  Indicates a group where people can't up and down vote threads
+ */
+define("NON_VOTING_GROUP", 0);
+/**
+ *  Indicates a group where people can up and down vote threads
+ */
+define("VOTING_GROUP", 1);
+/**
+ *   Typical posts to a group feed are on user created threads and
+ *   so are of this type
+ */
+define('STANDARD_GROUP_ITEM', 0);
+/**
+ *   Indicates the thread was created to go alongside the creation of a wiki
+ *   page so that people can discuss the pages contents
+ */
+define('WIKI_GROUP_ITEM', 1);
+/**
  * Maximum length of a post or a comment in a group feed
  */
 define('MAX_GROUP_POST_LEN', 8192);

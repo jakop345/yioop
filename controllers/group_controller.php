@@ -216,13 +216,15 @@ class GroupController extends Controller implements CrawlConstants
             "group_id" => "int",
             "page_name" => "string",
             "page" => "string",
+            "edit_reason" => "string",
             "filter" => 'string',
             "limit" => 'int',
             "num" => 'int',
             "page_id" => 'int',
             "show" => 'int',
             "diff1" => 'int',
-            "diff2" => 'int'
+            "diff2" => 'int',
+            "revert" => 'int'
         );
         $last_care_missing = 3;
         $missing_fields = false;
@@ -273,7 +275,7 @@ class GroupController extends Controller implements CrawlConstants
                     } else if(!$missing_fields && $page){
                         $group_model->setPageName($user_id,
                             $group_id, $page_name, $page,
-                            $locale_tag);
+                            $locale_tag, $edit_reason);
                         $data['SCRIPT'] .=
                             "doMessage('<h1 class=\"red\" >".
                             tl("group_controller_page_saved").
@@ -334,10 +336,12 @@ class GroupController extends Controller implements CrawlConstants
                             CSRF_TOKEN.'='.$data[CSRF_TOKEN].
                             '&amp;arg=history&amp;page_id='.
                             $data['PAGE_ID'];
-                        $out_diff = "--- {$data["PAGE_NAME"]}\t''$diff1''\n";
-                        $out_diff .= "+++ {$data["PAGE_NAME"]}\t''$diff2''\n";
+                        $out_diff = "<div>--- {$data["PAGE_NAME"]}\t".
+                            "''$diff1''\n";
+                        $out_diff .= "<div>+++ {$data["PAGE_NAME"]}\t".
+                            "''$diff2''\n";
                         $out_diff .= diff($page_info1["PAGE"],
-                            $page_info2["PAGE"]);
+                            $page_info2["PAGE"], true);
                         $data["PAGE"] =
                             "<div>&nbsp;</div>".
                             "<div class='black-box back-dark-gray'>".
@@ -347,13 +351,34 @@ class GroupController extends Controller implements CrawlConstants
                             tl("group_controller_diff_page",
                             $data["PAGE_NAME"], date("r", $diff1),
                             date("r", $diff2)) .
-                            "</div>" . "<pre>\n$out_diff\n</pre>\n";
+                            "</div>" . "$out_diff";
+                    } else if(isset($revert)) {
+                        $page_info = $group_model->getHistoryPage(
+                            $page_id, $revert);
+                        if($page_info) {
+                            $group_model->setPageName($user_id,
+                                $group_id, $page_info["PAGE_NAME"], 
+                                $page_info["PAGE"],
+                                $locale_tag,
+                                tl('group_controller_page_revert_to',
+                                date('r', $revert)));
+                            $data['SCRIPT'] .=
+                                "doMessage('<h1 class=\"red\" >".
+                                tl("group_controller_page_reverted").
+                                "</h1>')";
+                        } else {
+                            $data['SCRIPT'] .=
+                                "doMessage('<h1 class=\"red\" >".
+                                tl("group_controller_revert_error").
+                                "</h1>')";
+                        }
                     }
                     if($default_history) {
                         $data["LIMIT"] = $limit;
                         $data["RESULTS_PER_PAGE"] = $num;
-                        list($data["TOTAL_ROWS"], $data["HISTORY"]) = 
-                            $group_model->getPageHistory($page_id, $limit,
+                        list($data["TOTAL_ROWS"], $data["PAGE_NAME"],
+                            $data["HISTORY"]) = 
+                            $group_model->getPageHistoryList($page_id, $limit,
                             $num);
                     }
                     $data['page_id'] = $page_id;

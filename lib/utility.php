@@ -1818,9 +1818,23 @@ function arrayColumnCount($arr, $key_column, $count_column)
  *
  *  @param string $data1 first string to compare
  *  @param string $data2 second string to compare
+ *  @param bool $html whether to output html highlighting
  */
-function diff($data1, $data2)
+function diff($data1, $data2, $html = false)
 {
+    if($html) {
+        $start = "<div>";
+        $start_same = "<div class='light-gray'>";
+        $start1 = "<div class='red'>";
+        $start2 = "<div class='green'>";
+        $end = "</div>";
+    } else {
+        $start = "";
+        $start_same = "";
+        $start1 = "";
+        $start2 = "";
+        $end = "";
+    }
     $lines1 = explode("\n", $data1);
     $lines2 = explode("\n", $data2);
     $num_lines1 = count($lines1);
@@ -1830,8 +1844,9 @@ function diff($data1, $data2)
     $first_diff = 0;
     // trim off the starts and end lines of the strings that are same
     $head_lcs = array();
+    
     while($first_diff < $shorter_len &&
-        $lines1[$first_diff] == $lines2[$first_diff]) {
+        strcmp($lines1[$first_diff], $lines2[$first_diff]) == 0) {
         $head_lcs[] = array($first_diff, $first_diff, $lines1[$first_diff]);
         $first_diff++;
     }
@@ -1840,14 +1855,14 @@ function diff($data1, $data2)
             return "";
         } else {
             $tmp = $lines1;
-            $prefix = "-";
+            $prefix = "$start1-";
             if($num_lines1 == $shorter_len) {
                 $tmp = $lines2;
-                $prefix = "+";
+                $prefix = "$start2+";
             }
-            $out = "@@ -$shorter_len,0 +$shorter_len,$out_len @@\n";
+            $out = "$start@@ -$shorter_len,0 +$shorter_len,$out_len @@$end\n";
             for($i = $shorter_len; $i < $longer_len; $i++) {
-                $out .= $prefix . $tmp[$i]."\n";
+                $out .= $prefix . $tmp[$i]."$end\n";
             }
             return $out;
         }
@@ -1873,38 +1888,53 @@ function diff($data1, $data2)
 
     $previous_first = -1;
     $previous_second = -1;
+    $current_first = 0;
+    $current_second = 0;
     $old_line = "";
     $out_string = "";
-    foreach($lcs as $lcs_item) {
-        list($current_first, $current_second, $line) = $lcs_item;
-        $gap1 = $current_first - $previous_first;
-        $gap2 = $current_second - $previous_second;
-        if($gap1 > 1 || $gap2 > 1) {
-            $gap1++;
-            $gap2++;
-            $out_string .= "@@ -$previous_first,$gap1 ".
-                " +$previous_second,$gap2 @@\n";
-            $out_string .= " ".$old_line."\n";
-            for($i = $previous_first + 1; $i < $current_first; $i++) {
-                $out_string .= "-" . $lines1[$i] . "\n";
-            }
-            for($i = $previous_second + 1; $i < $current_second; $i++) {
-                $out_string .= "+" . $lines2[$i] . "\n";
-            }
-            $out_string .= " ".$line."\n";
-        }
-        $previous_first = $current_first;
-        $previous_second = $current_second;
-        $old_line = $line;
-    }
     if($lcs == array()) {
-        $out_string .= "@@ -0,$num_lines1 ".
-            " +0,$num_lines2 @@\n";
+        $out_string .= "$start@@ -0,$num_lines1 ".
+            " +0,$num_lines2 @@$end\n";
         for($i = 0; $i < $num_lines1; $i++) {
-            $out_string .= "-" . $lines1[$i] . "\n";
+            $out_string .= "$start1-" . $lines1[$i] . "$end\n";
         }
         for($i = 0; $i < $num_lines2; $i++) {
-            $out_string .= "+" . $lines2[$i] . "\n";
+            $out_string .= "$start2+" . $lines2[$i] . "$end\n";
+        }
+    } else {
+        foreach($lcs as $lcs_item) {
+            list($current_first, $current_second, $line) = $lcs_item;
+            $gap1 = $current_first - $previous_first;
+            $gap2 = $current_second - $previous_second;
+            if($gap1 > 1 || $gap2 > 1) {
+                $gap1++;
+                $gap2++;
+                $out_string .= "$start@@ -$previous_first,$gap1 ".
+                    " +$previous_second,$gap2 @@$end\n";
+                $out_string .= "$start_same ".$old_line."$end\n";
+                for($i = $previous_first + 1; $i < $current_first; $i++) {
+                    $out_string .= "$start1-" . $lines1[$i] . "$end\n";
+                }
+                for($i = $previous_second + 1; $i < $current_second; $i++) {
+                    $out_string .= "$start2+" . $lines2[$i] . "$end\n";
+                }
+                $out_string .= "$start_same ".$line."$end\n";
+            }
+            $previous_first = $current_first;
+            $previous_second = $current_second;
+            $old_line = $line;
+        }
+        if($current_first < $num_lines1 - 1 || 
+            $current_second < $num_lines2 - 1) {
+            $gap1 = $num_lines1 - $current_first;
+            $gap2 = $num_lines2 - $current_second;
+            $out_string .= "$start_same ".$line."$end\n";
+            for($i = $current_first + 1; $i < $num_lines1; $i++) {
+                $out_string .= "$start1-" . $lines1[$i] . "$end\n";
+            }
+            for($i = $current_second + 1; $i < $num_lines2; $i++) {
+                $out_string .= "$start2+" . $lines2[$i] . "$end\n";
+            }
         }
     }
     return $out_string;
@@ -1960,12 +1990,20 @@ function computeLCS($lines1, $lines2, $offset = 0)
     return $lcs;
 }
 /**
+ *  Extracts from a table of longest common sequence moves (probably calculated
+ *  by @see computeLCS) and a starting coordinate $i, $j in that table,
+ *  a longest common subsequence
  *
- *  @param array $lcs_moves
- *  @param int $i
- *  @param int $j
- *  @param int $offset an offset to shift over array addresses in output by
- *  @param array &$lcs
+ *  @param array $lcs_moves a table of move computed by computeLCS
+ *  @param int $i a line number in string 1
+ *  @param int $j a line number in string 2
+ *  @param int $offset a number to add to each line number output into $lcs.
+ *      This is useful if we have trimmed off the initially common lines from
+ *      our two strings we are trying to compute the LCS of
+ *  @param array &$lcs an array of triples 
+ *      (index_string1, index_string2, line)
+ *      the indexes indicate the line number in each string, line is the line
+ *      in common the two strings
  */
 function extractLCSFromTable($lcs_moves, $lines, $i, $j, $offset, &$lcs)
 {

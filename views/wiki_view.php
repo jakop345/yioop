@@ -81,6 +81,10 @@ class WikiView extends View
             if($data["MODE"] == $name) { ?>
                 <li class="outer"><b><?php e($translation); ?></b></li>
                 <?php
+            } else if($data["MODE"] == "pages") { ?>
+                <li class="outer"><span class="gray"><?php e($translation);
+                ?></span></li>
+                <?php
             } else {
                 ?>
                 <li class="outer"><a href="<?php e($base_query .
@@ -158,6 +162,9 @@ class WikiView extends View
         }
     }
 
+    /**
+     * @param array $data
+     */
     function renderReadPage($data, $can_edit, $logged_in)
     {
         ?>
@@ -198,7 +205,7 @@ class WikiView extends View
     }
 
     /**
-     *
+     * @param array $data
      */
     function renderEditPageForm($data)
     {
@@ -236,6 +243,13 @@ class WikiView extends View
             <textarea class="tall-text-area" name="page" ><?php
                 e($data['PAGE']);
             ?></textarea>
+            <div class="top-margin">
+            <label for="edit-reason"><b><?php
+            e(tl('wiki_element_edit_reason'));
+            ?></b></label><input type="text" id='edit-reason'
+                name="edit_reason" value=""
+                maxlength="80" class="wide-field"/>
+            </div>
             <div class="top-margin center">
             <button class="button-box" type="submit"><?php
                 e(tl('wiki_element_savebutton')); ?></button>
@@ -246,7 +260,7 @@ class WikiView extends View
     }
 
     /**
-     *
+     * @param array $data
      */
     function renderPages($data)
     {
@@ -278,12 +292,13 @@ class WikiView extends View
     }
 
     /**
-     *
+     * @param array $data
      */
     function renderHistory($data)
     {
         ?>
         <div class="small-margin-current-activity">
+        <div>&nbsp;</div>
         <?php
         $time = time();
         $feed_helper = $this->helper("feeds");
@@ -314,7 +329,12 @@ class WikiView extends View
             e("<a href='$base_query&show={$item['PUBDATE']}'>".
                 date("r", $item["PUBDATE"])."</a>. ");
             e(tl("wiki_view_edited_by", $item["USER_NAME"]));
-            e(tl("wiki_view_page_len", $item["PAGE_LEN"]));
+            if(strlen($item["EDIT_REASON"]) > 0) {
+                e("<i>{$item["EDIT_REASON"]}</i>. ");
+            }
+            e(tl("wiki_view_page_len", $item["PAGE_LEN"])." ");
+            e("[<a href='$base_query&amp;revert=".$item['PUBDATE'].
+                "'>".tl("wiki_view_revert")."</a>].");
             $first = false;
             $next = $item['PUBDATE'];
             ?>

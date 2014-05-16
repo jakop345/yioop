@@ -549,15 +549,15 @@ class GroupModel extends Model
      *  @return int $id of item added
      */
     function addGroupItem($parent_id, $group_id, $user_id, $title,
-        $description)
+        $description, $type= STANDARD_GROUP_ITEM)
     {
         $db = $this->db;
         $join_date = time();
         $now = time();
         $sql = "INSERT INTO GROUP_ITEM (PARENT_ID, GROUP_ID, USER_ID, TITLE,
-            DESCRIPTION, PUBDATE) VALUES (?, ?, ?, ?, ?, ? )";
+            DESCRIPTION, PUBDATE, TYPE) VALUES (?, ?, ?, ?, ?, ?, ? )";
         $db->execute($sql, array($parent_id, $group_id, $user_id, $title,
-            $description, $now));
+            $description, $now, $type));
         $id = $db->insertID("GROUP_ITEM");
         if($parent_id == 0) {
             $sql = "UPDATE GROUP_ITEM SET PARENT_ID=? WHERE ID=?";
@@ -741,7 +741,8 @@ class GroupModel extends Model
     /**
      *
      */
-    function setPageName($user_id, $group_id, $page_name, $page, $locale_tag)
+    function setPageName($user_id, $group_id, $page_name, $page, $locale_tag,
+        $edit_comment = "")
     {
         $db = $this->db;
         $pubdate = time();
@@ -752,19 +753,19 @@ class GroupModel extends Model
             $result = $db->execute($sql, array($parsed_page, $page_id));
         } else {
             $discuss_thread = $this->addGroupItem(0, $group_id, $user_id, 
-                "++".$page_name, "++".$page_name." ".date("r", $pubdate));
+                "++".$page_name, "++".$page_name." ".date("r", $pubdate),
+                WIKI_GROUP_ITEM);
             $sql = "INSERT INTO GROUP_PAGE (DISCUSS_THREAD, GROUP_ID,
                 TITLE, PAGE, LOCALE_TAG) VALUES (?, ?, ?, ?, ?)";
             $result = $db->execute($sql, array($discuss_thread, $group_id,
                 $page_name, $parsed_page, $locale_tag));
             $page_id = $db->insertID("GROUP_PAGE");
         }
-
         $sql = "INSERT INTO GROUP_PAGE_HISTORY (PAGE_ID, EDITOR_ID,
-            GROUP_ID, TITLE, PAGE, LOCALE_TAG, PUBDATE)
-            VALUES (?, ?, ?, ?, ?, ?, ?)";
+            GROUP_ID, TITLE, PAGE, LOCALE_TAG, PUBDATE, EDIT_COMMENT)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         $result = $db->execute($sql, array($page_id, $user_id, $group_id,
-            $page_name, $page, $locale_tag, $pubdate));
+            $page_name, $page, $locale_tag, $pubdate, $edit_comment));
     }
 
     /**
@@ -841,21 +842,25 @@ class GroupModel extends Model
      *  @param string $limit
      *  @param string $num
      */
-    function getPageHistory($page_id, $limit, $num)
+    function getPageHistoryList($page_id, $limit, $num)
     {
         $db = $this->db;
-        $sql = "SELECT COUNT(*) AS TOTAL FROM GROUP_PAGE_HISTORY H, USERS U
+        $sql = "SELECT COUNT(*) AS TOTAL, MIN(H.TITLE) AS PAGE_NAME
+            FROM GROUP_PAGE_HISTORY H, USERS U
             WHERE H.PAGE_ID = ? AND
             U.USER_ID= H.EDITOR_ID";
+        $page_name = "";
         $result = $db->execute($sql, array($page_id));
         if($result) {
             $row = $db->fetchArray($result);
             $total = ($row) ? $row["TOTAL"] : 0;
+            $page_name = ($row) ? $row["PAGE_NAME"] : "";
         }
         $pages = array();
         if($total > 0) {
             $sql = "SELECT H.PUBDATE AS PUBDATE, U.USER_NAME AS USER_NAME,
-                LENGTH(H.PAGE) AS PAGE_LEN FROM GROUP_PAGE_HISTORY H, USERS U
+                LENGTH(H.PAGE) AS PAGE_LEN,
+                H.EDIT_COMMENT AS EDIT_REASON FROM GROUP_PAGE_HISTORY H, USERS U
                 WHERE H.PAGE_ID = ? AND
                 U.USER_ID= H.EDITOR_ID ORDER BY PUBDATE DESC ".
                 $db->limitOffset($limit, $num);
@@ -868,7 +873,7 @@ class GroupModel extends Model
                 unset($pages[$i]); //last one will be null
             }
         }
-        return array($total, $pages);
+        return array($total, $page_name, $pages);
     }
 
     /**
