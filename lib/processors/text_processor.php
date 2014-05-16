@@ -55,7 +55,7 @@ require_once BASE_DIR."/lib/processors/page_processor.php";
 /**
 * Get the centroid summary
 */
-require_once BASE_DIR."/lib/centroid.php";
+require_once BASE_DIR."/lib/centroid_summarizer.php";
 
 /**
  * So can extract parts of the URL if need to guess lang

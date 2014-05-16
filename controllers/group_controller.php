@@ -37,18 +37,8 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 require_once BASE_DIR."/controllers/controller.php";
 /** Loads common constants for web crawling */
 require_once BASE_DIR."/lib/crawl_constants.php";
-/** Need get host for search filter admin */
-require_once BASE_DIR."/lib/url_parser.php";
-/** Used in rule parser test in page options */
-require_once BASE_DIR."/lib/page_rule_parser.php";
-/** Used to create, update, and delete user-trained classifiers. */
-require_once BASE_DIR."/lib/classifiers/classifier.php";
-/** Loads crawl_daemon to manage news_updater */
-require_once BASE_DIR."/lib/crawl_daemon.php";
-/** get processors for different file types */
-foreach(glob(BASE_DIR."/lib/processors/*_processor.php") as $filename) {
-    require_once $filename;
-}
+/** For Wiki Parsing */
+require_once BASE_DIR."/lib/wiki_parser.php";
 /**
  * Controller used to handle admin functionalities such as
  * modify login and password, CREATE, UPDATE,DELETE operations
@@ -225,18 +215,31 @@ class GroupController extends Controller implements CrawlConstants
         $clean_array = array(
             "group_id" => "int",
             "page_name" => "string",
-            "page" => "string"
+            "page" => "string",
+            "filter" => 'string',
+            "limit" => 'int',
+            "num" => 'int',
+            "page_id" => 'int',
+            "show" => 'int',
+            "diff1" => 'int',
+            "diff2" => 'int'
         );
+        $last_care_missing = 3;
         $missing_fields = false;
+        $i = 0;
         foreach($clean_array as $field => $type) {
             if(isset($_REQUEST[$field])) {
                 $$field = $this->clean($_REQUEST[$field], $type);
-            } else {
+            } else if($i < $last_care_missing) {
                 $$field = false;
                 $missing_fields = true;
             }
+            $i++;
         }
-        var_dump($page);
+        if(is_string($page)) {
+                $page = $_REQUEST['page'];
+            $page = str_replace("&#039;", "'", $page);
+        }
         if(isset($_REQUEST['group_id'])) {
             $group_id = $this->clean($_REQUEST['group_id'], "int");
 
@@ -254,37 +257,146 @@ class GroupController extends Controller implements CrawlConstants
                 ($group["STATUS"] == ACTIVE_STATUS &&
                 $group["MEMBER_ACCESS"] == GROUP_READ_WRITE)) {
                 $data["CAN_EDIT"] = true;
-                if(isset($_REQUEST["arg"])) {
-                    switch($_REQUEST["arg"])
-                    {
-                        case "edit":
-                            $data["MODE"] = "edit";
-                            if($missing_fields && $page) {
-                                $data['SCRIPT'] .=
-                                    "doMessage('<h1 class=\"red\" >". 
-                                    tl("group_controller_missing_fields").
-                                    "</h1>')";
-                            } else if(!$missing_fields && $page){
-                                $group_model->setPageName($user_id,
-                                    $group_id, $page_name, $page,
-                                    $locale_tag);
-                            }
-                        break;
+            }
+        }
+        if(isset($_REQUEST["arg"])) {
+            switch($_REQUEST["arg"])
+            {
+                case "edit":
+                    if(!$data["CAN_EDIT"]) { continue; }
+                    $data["MODE"] = "edit";
+                    if($missing_fields && $page) {
+                        $data['SCRIPT'] .=
+                            "doMessage('<h1 class=\" red\" >". 
+                            tl("group_controller_missing_fields").
+                            "</h1>')";
+                    } else if(!$missing_fields && $page){
+                        $group_model->setPageName($user_id,
+                            $group_id, $page_name, $page,
+                            $locale_tag);
+                        $data['SCRIPT'] .=
+                            "doMessage('<h1 class=\"red\" >".
+                            tl("group_controller_page_saved").
+                            "</h1>')";
                     }
-                }
+                break;
+                case "history":
+                    if(!$data["CAN_EDIT"] || !$page_id) { 
+                        continue;
+                    }
+                    $data["MODE"] = "history";
+                    $data["PAGE_NAME"] = "history";
+                    $limit = isset($limit) ? $limit : 0;
+                    $num = (isset($_SESSION["MAX_PAGES_TO_SHOW"])) ?
+                       $_SESSION["MAX_PAGES_TO_SHOW"] :
+                       DEFAULT_ADMIN_PAGING_NUM;
+                    $default_history = true;
+                    if(isset($show)) {
+                        $page_info = $group_model->getHistoryPage(
+                            $page_id, $show);
+                        if($page_info) {
+                            $data["MODE"] = "show";
+                            $default_history = false;
+                            $data["PAGE_NAME"] = $page_info["PAGE_NAME"];
+                            $parser = new WikiParser();
+                            $parsed_page = $parser->parse($page_info["PAGE"]);
+                            $data["PAGE_ID"] = $page_id;
+                            $data[CSRF_TOKEN] = 
+                                $this->generateCSRFToken($user_id);
+                            $history_link = "?c=group&amp;a=wiki&amp;".
+                                CSRF_TOKEN.'='.$data[CSRF_TOKEN].
+                                '&amp;arg=history&amp;page_id='.
+                                $data['PAGE_ID'];
+                            $data["PAGE"] =
+                                "<div>&nbsp;</div>".
+                                "<div class='black-box back-dark-gray'>".
+                                "<div class='float-opposite'>".
+                                "<a href='$history_link'>".
+                                tl("group_controller_back") . "</a></div>".
+                                tl("group_controller_history_page",
+                                $data["PAGE_NAME"], date("r", $show)) .
+                                "</div>" . $parsed_page;
+                            $data["DISCUSS_THREAD"] = 
+                                $page_info["DISCUSS_THREAD"];
+                        }
+                    } else if(isset($diff1) && isset($diff2)) {
+                        $page_info1 = $group_model->getHistoryPage(
+                            $page_id, $diff1);
+                        $page_info2 = $group_model->getHistoryPage(
+                            $page_id, $diff2);
+                        $data["MODE"] = "diff";
+                        $default_history = false;
+                        $data["PAGE_NAME"] = $page_info2["PAGE_NAME"];
+                        $data["PAGE_ID"] = $page_id;
+                        $data[CSRF_TOKEN] = 
+                            $this->generateCSRFToken($user_id);
+                        $history_link = "?c=group&amp;a=wiki&amp;".
+                            CSRF_TOKEN.'='.$data[CSRF_TOKEN].
+                            '&amp;arg=history&amp;page_id='.
+                            $data['PAGE_ID'];
+                        $out_diff = "--- {$data["PAGE_NAME"]}\t''$diff1''\n";
+                        $out_diff .= "+++ {$data["PAGE_NAME"]}\t''$diff2''\n";
+                        $out_diff .= diff($page_info1["PAGE"],
+                            $page_info2["PAGE"]);
+                        $data["PAGE"] =
+                            "<div>&nbsp;</div>".
+                            "<div class='black-box back-dark-gray'>".
+                            "<div class='float-opposite'>".
+                            "<a href='$history_link'>".
+                            tl("group_controller_back") . "</a></div>".
+                            tl("group_controller_diff_page",
+                            $data["PAGE_NAME"], date("r", $diff1),
+                            date("r", $diff2)) .
+                            "</div>" . "<pre>\n$out_diff\n</pre>\n";
+                    }
+                    if($default_history) {
+                        $data["LIMIT"] = $limit;
+                        $data["RESULTS_PER_PAGE"] = $num;
+                        list($data["TOTAL_ROWS"], $data["HISTORY"]) = 
+                            $group_model->getPageHistory($page_id, $limit,
+                            $num);
+                    }
+                    $data['page_id'] = $page_id;
+                break;
+                case "pages":
+                    $data["PAGE_NAME"] = "pages";
+                    $data["MODE"] = "pages";
+                    $limit =isset($limit) ? $limit : 0;
+                    $num = (isset($_SESSION["MAX_PAGES_TO_SHOW"])) ?
+                       $_SESSION["MAX_PAGES_TO_SHOW"] :
+                       DEFAULT_ADMIN_PAGING_NUM;
+                    if(!isset($filter)) {
+                        $filter = "";
+                    }
+                    $data["LIMIT"] = $limit;
+                    $data["RESULTS_PER_PAGE"] = $num;
+                    list($data["TOTAL_ROWS"], $data["PAGES"]) =
+                        $group_model->getPageList(
+                        $group['GROUP_ID'], $locale_tag, $filter, $limit, $num);
+                break;
             }
         }
         if(!$page_name) {
             $page_name = tl('group_controller_main');
         }
         $data["GROUP"] = $group;
-        $data["PAGE_NAME"] = $page_name;
-        $data["PAGE"] = $group_model->getPageByName($group_id, $page_name,
-            $locale_tag, $data["MODE"]);
-        if(!$data["PAGE"] && $locale_tag != DEFAULT_LOCALE) {
-            //fallback to default locale for translation
-            $data["PAGE"] = $group_model->getPageName(
-                $group_id, $page_name, DEFAULT_LOCALE, $data["MODE"]);
+        if(in_array($data["MODE"], array("read", "edit"))) {
+            if(!isset($data["PAGE"]) || !$data['PAGE']) {
+                $data["PAGE_NAME"] = $page_name;
+                $page_info = $group_model->getPageInfoByName($group_id,
+                    $page_name, $locale_tag, $data["MODE"]);
+                $data["PAGE"] = $page_info["PAGE"];
+                $data["PAGE_ID"] = $page_info["ID"];
+                $data["DISCUSS_THREAD"] = $page_info["DISCUSS_THREAD"];
+            }
+            if(!$data["PAGE"] && $locale_tag != DEFAULT_LOCALE) {
+                //fallback to default locale for translation
+                $page_info = $group_model->getPageInfoByName(
+                    $group_id, $page_name, DEFAULT_LOCALE, $data["MODE"]);
+                $data["PAGE"] = $page_info["PAGE"];
+                $data["PAGE_ID"] = $page_info["ID"];
+                $data["DISCUSS_THREAD"] = $page_info["DISCUSS_THREAD"];
+            }
         }
         return $data;
     }

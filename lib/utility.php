@@ -1810,4 +1810,177 @@ function arrayColumnCount($arr, $key_column, $count_column)
     return $out_arr;
 }
 
+/**
+ *  Computes a Unix-style diff of two strings. That is it only
+ *  outputs lines which disagree between the two strings. It outputs +line
+ *  if a line occurs in the second but not first string and -line if a
+ *  line occurs in the first string but not the second.
+ *
+ *  @param string $data1 first string to compare
+ *  @param string $data2 second string to compare
+ */
+function diff($data1, $data2)
+{
+    $lines1 = explode("\n", $data1);
+    $lines2 = explode("\n", $data2);
+    $num_lines1 = count($lines1);
+    $num_lines2 = count($lines2);
+    $shorter_len = min($num_lines1, $num_lines2);
+    $longer_len = max($num_lines1, $num_lines2);
+    $first_diff = 0;
+    // trim off the starts and end lines of the strings that are same
+    $head_lcs = array();
+    while($first_diff < $shorter_len &&
+        $lines1[$first_diff] == $lines2[$first_diff]) {
+        $head_lcs[] = array($first_diff, $first_diff, $lines1[$first_diff]);
+        $first_diff++;
+    }
+    if($first_diff == $shorter_len) {
+        if($num_lines1 == $num_lines2) {
+            return "";
+        } else {
+            $tmp = $lines1;
+            $prefix = "-";
+            if($num_lines1 == $shorter_len) {
+                $tmp = $lines2;
+                $prefix = "+";
+            }
+            $out = "@@ -$shorter_len,0 +$shorter_len,$out_len @@\n";
+            for($i = $shorter_len; $i < $longer_len; $i++) {
+                $out .= $prefix . $tmp[$i]."\n";
+            }
+            return $out;
+        }
+    }
+    $last_diff = 0;
+    $tail_lcs = array();
+    $index1 = $num_lines1 - 1 - $last_diff;
+    $index2 = $num_lines2 - 1 - $last_diff;
+    while($shorter_len - $last_diff > $first_diff && 
+        $lines1[$index1] == $lines2[$index2]) {
+        array_unshift($tail_lcs, array($index1, $index2, $lines1[$index1]));
+        $last_diff++;
+        $index1--;
+        $index2--;
+    }
+    $trim_lines1 = array_slice($lines1, $first_diff, -$last_diff);
+    $trim_lines2 = array_slice($lines2, $first_diff, -$last_diff);
+    /*  To compute a diff, we first compute the
+        LCS = Longest common subsequence of the two string.
+     */
+    $lcs = computeLCS($trim_lines1, $trim_lines2, $first_diff);
+    $lcs = array_merge($head_lcs, $lcs, $tail_lcs);
+
+    $previous_first = -1;
+    $previous_second = -1;
+    $old_line = "";
+    $out_string = "";
+    foreach($lcs as $lcs_item) {
+        list($current_first, $current_second, $line) = $lcs_item;
+        $gap1 = $current_first - $previous_first;
+        $gap2 = $current_second - $previous_second;
+        if($gap1 > 1 || $gap2 > 1) {
+            $gap1++;
+            $gap2++;
+            $out_string .= "@@ -$previous_first,$gap1 ".
+                " +$previous_second,$gap2 @@\n";
+            $out_string .= " ".$old_line."\n";
+            for($i = $previous_first + 1; $i < $current_first; $i++) {
+                $out_string .= "-" . $lines1[$i] . "\n";
+            }
+            for($i = $previous_second + 1; $i < $current_second; $i++) {
+                $out_string .= "+" . $lines2[$i] . "\n";
+            }
+            $out_string .= " ".$line."\n";
+        }
+        $previous_first = $current_first;
+        $previous_second = $current_second;
+        $old_line = $line;
+    }
+    if($lcs == array()) {
+        $out_string .= "@@ -0,$num_lines1 ".
+            " +0,$num_lines2 @@\n";
+        for($i = 0; $i < $num_lines1; $i++) {
+            $out_string .= "-" . $lines1[$i] . "\n";
+        }
+        for($i = 0; $i < $num_lines2; $i++) {
+            $out_string .= "+" . $lines2[$i] . "\n";
+        }
+    }
+    return $out_string;
+}
+
+/**
+ *  Computes the longest common subsequence of two arrays
+ *
+ *  @param array $lines1 an array of lines to compute LCS of
+ *  @param array $lines2 an array of lines to compute LCS of
+ *  @param int $offset an offset to shift over array addresses in output by
+ */
+function computeLCS($lines1, $lines2, $offset = 0)
+{
+    /*
+        add a dummy line so don't have to worry about
+        shifting indices in CLRS pseudo-code implementation
+    */
+    $num_lines1 = count($lines1);
+    $num_lines2 = count($lines2);
+    array_unshift($lines1, 0);
+    array_unshift($lines2, 0);
+    /*
+        LCS = Longest common subsequence of the two string.
+        The code below is based off the pseudo-code in CLRS
+     */
+    $lcs_moves = array();
+    $lcs_values = array();
+    for($i = 1; $i <= $num_lines1; $i++) { //initialize first column
+        $lcs_values[$i][0] = 0;
+    }
+    for($j = 0; $j <= $num_lines2; $j++) { //initialize first column
+        $lcs_values[0][$j] = 0;
+    }
+    $lcs_moves = array();
+    for($i = 1; $i <= $num_lines1; $i++) {
+        for($j = 1; $j <= $num_lines2; $j++) {
+            if($lines1[$i] == $lines2[$j]) {
+                  $lcs_values[$i][$j] = $lcs_values[$i - 1][$j - 1] + 1;
+                  $lcs_moves[$i][$j] = "d"; //diagonal
+            } elseif ($lcs_values[$i - 1][$j] >= $lcs_values[$i][$j - 1]) {
+                $lcs_values[$i][$j] = $lcs_values[$i - 1][$j];
+                $lcs_moves[$i][$j] = "u"; // up
+            } else {
+                $lcs_values[$i][$j] = $lcs_values[$i][$j - 1];
+                $lcs_moves[$i][$j] = "l"; // left
+            }
+        }
+    }
+    $lcs = array();
+    extractLCSFromTable($lcs_moves, $lines1, $num_lines1, $num_lines2,
+        $offset, $lcs);
+    return $lcs;
+}
+/**
+ *
+ *  @param array $lcs_moves
+ *  @param int $i
+ *  @param int $j
+ *  @param int $offset an offset to shift over array addresses in output by
+ *  @param array &$lcs
+ */
+function extractLCSFromTable($lcs_moves, $lines, $i, $j, $offset, &$lcs)
+{
+    if($i == 0 || $j == 0) {
+        return array();
+    }
+    if($lcs_moves[$i][$j] == "d") { //diagonal moves means common to both
+        //sub-case first so forward order
+        extractLCSFromTable($lcs_moves, $lines, $i - 1, $j - 1, $offset, $lcs);
+        $lcs[] = array($i + $offset- 1, $j + $offset - 1, $lines[$i]);
+    } elseif($lcs_moves[$i][$j] == "u") { // up move in matrix
+        extractLCSFromTable($lcs_moves, $lines, $i - 1, $j, $offset, $lcs);
+    } else { // left move in matrix
+        extractLCSFromTable($lcs_moves, $lines, $i, $j - 1, $offset, $lcs);
+    }
+}
+
 ?>

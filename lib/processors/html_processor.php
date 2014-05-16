@@ -58,7 +58,7 @@ require_once BASE_DIR."/lib/url_parser.php";
 /**
 * Get the centroid summary
 */
-require_once BASE_DIR."/lib/centroid.php";
+require_once BASE_DIR."/lib/centroid_summarizer.php";
 /**
  * For guessing language from charset
  */

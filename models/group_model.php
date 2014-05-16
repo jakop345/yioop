@@ -36,6 +36,9 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 require_once BASE_DIR."/models/model.php";
 /** For crawlHash function */
 require_once BASE_DIR."/lib/utility.php";
+/** For formatting wiki */
+require_once BASE_DIR."/lib/wiki_parser.php";
+
 /**
  * This is class is used to handle
  * db results related to Group Administration. Groups are collections of
@@ -327,7 +330,9 @@ class GroupModel extends Model
         $db->execute($sql, $params);
         $sql = "DELETE FROM GROUP_ITEM WHERE GROUP_ID=?";
         $db->execute($sql, $params);
-        $sql = "DELETE FROM USER_GROUP WHERE GROUP_ID=?";
+        $sql = "DELETE FROM GROUP_PAGE WHERE GROUP_ID=?";
+        $db->execute($sql, $params);
+        $sql = "DELETE FROM GROUP_PAGE_HISTORY WHERE GROUP_ID=?";
         $db->execute($sql, $params);
     }
 
@@ -740,16 +745,18 @@ class GroupModel extends Model
     {
         $db = $this->db;
         $pubdate = time();
+        $parser = new WikiParser();
+        $parsed_page = $parser->parse($page);
         if($page_id = $this->getPageID($group_id, $page_name, $locale_tag)) {
             $sql = "UPDATE GROUP_PAGE SET PAGE=? WHERE ID = ?";
-            $result = $db->execute($sql, array($page, $page_id));
+            $result = $db->execute($sql, array($parsed_page, $page_id));
         } else {
             $discuss_thread = $this->addGroupItem(0, $group_id, $user_id, 
                 "++".$page_name, "++".$page_name." ".date("r", $pubdate));
             $sql = "INSERT INTO GROUP_PAGE (DISCUSS_THREAD, GROUP_ID,
                 TITLE, PAGE, LOCALE_TAG) VALUES (?, ?, ?, ?, ?)";
             $result = $db->execute($sql, array($discuss_thread, $group_id,
-                $page_name, $page, $locale_tag));
+                $page_name, $parsed_page, $locale_tag));
             $page_id = $db->insertID("GROUP_PAGE");
         }
 
@@ -771,7 +778,6 @@ class GroupModel extends Model
         $sql = "SELECT ID FROM GROUP_PAGE WHERE GROUP_ID = ?
             AND TITLE=? AND LOCALE_TAG= ?";
         $result = $db->execute($sql, array($group_id, $page_name, $locale_tag));
-        echo "hi";
         if(!$result) { return false; }
         $row = $db->fetchArray($result);
         if($row) {
@@ -787,26 +793,127 @@ class GroupModel extends Model
      *  @param string $locale_tag
      *  @param string mode
      */
-    function getPageByName($group_id, $name, $locale_tag, $mode)
+    function getPageInfoByName($group_id, $name, $locale_tag, $mode)
     {
         $db = $this->db;
         if($mode == "edit") {
-            $sql = "SELECT HP.PAGE AS PAGE FROM GROUP_PAGE GP,
+            $sql = "SELECT HP.PAGE_ID AS ID, HP.PAGE AS PAGE,
+                GP.DISCUSS_THREAD AS DISCUSS_THREAD FROM GROUP_PAGE GP,
                 GROUP_PAGE_HISTORY HP WHERE GP.GROUP_ID = ?
                 AND GP.TITLE=? AND GP.LOCALE_TAG= ? AND HP.PAGE_ID=GP.ID
                 ORDER BY HP.PUBDATE DESC ".$db->limitOffset(0, 1);
         } else {
-            $sql = "SELECT PAGE FROM GROUP_PAGE WHERE GROUP_ID = ?
-                AND TITLE=? AND LOCALE_TAG= ?";
+            $sql = "SELECT ID, PAGE, DISCUSS_THREAD FROM GROUP_PAGE
+                WHERE GROUP_ID = ? AND TITLE=? AND LOCALE_TAG= ?";
         }
         $result = $db->execute($sql, array($group_id, $name, $locale_tag));
+        if(!$result) { return false; }
+        $row = $db->fetchArray($result);
+        if(!$row) {
+            return false;
+        }
+        return $row;
+    }
+
+    /**
+     *
+     *  @param int $page_id
+     *  @param int $pubdate
+     */
+    function getHistoryPage($page_id, $pubdate)
+    {
+        $db = $this->db;
+        $sql = "SELECT HP.PAGE_ID AS ID, HP.PAGE AS PAGE, HP.TITLE AS PAGE_NAME,
+            GP.DISCUSS_THREAD AS DISCUSS_THREAD FROM GROUP_PAGE GP,
+            GROUP_PAGE_HISTORY HP WHERE HP.PAGE_ID = ?
+            AND HP.PUBDATE=? AND HP.PAGE_ID=GP.ID";
+        $result = $db->execute($sql, array($page_id, $pubdate));
         if(!$result) { return false; }
         $row = $db->fetchArray($result);
         if(!isset($row["PAGE"])) {
             return false;
         }
-        return $row["PAGE"];
+        return $row;
+    }
+    /**
+     *
+     *  @param int $page_id
+     *  @param string $limit
+     *  @param string $num
+     */
+    function getPageHistory($page_id, $limit, $num)
+    {
+        $db = $this->db;
+        $sql = "SELECT COUNT(*) AS TOTAL FROM GROUP_PAGE_HISTORY H, USERS U
+            WHERE H.PAGE_ID = ? AND
+            U.USER_ID= H.EDITOR_ID";
+        $result = $db->execute($sql, array($page_id));
+        if($result) {
+            $row = $db->fetchArray($result);
+            $total = ($row) ? $row["TOTAL"] : 0;
+        }
+        $pages = array();
+        if($total > 0) {
+            $sql = "SELECT H.PUBDATE AS PUBDATE, U.USER_NAME AS USER_NAME,
+                LENGTH(H.PAGE) AS PAGE_LEN FROM GROUP_PAGE_HISTORY H, USERS U
+                WHERE H.PAGE_ID = ? AND
+                U.USER_ID= H.EDITOR_ID ORDER BY PUBDATE DESC ".
+                $db->limitOffset($limit, $num);
+            $result = $db->execute($sql, array($page_id));
+            $i = 0;
+            if($result) {
+                while($pages[$i] = $db->fetchArray($result)) {
+                    $i++;
+                }
+                unset($pages[$i]); //last one will be null
+            }
+        }
+        return array($total, $pages);
     }
 
+    /**
+     *
+     *  @param int $group_id
+     *  @param string $locale_tag
+     *  @param string $filter
+     *  @param string $limit
+     *  @param string $num
+     */
+    function getPageList($group_id, $locale_tag, $filter, $limit, $num)
+    {
+        $db = $this->db;
+        $filter_parts = preg_split("/\s+/", $filter);
+        $like = "";
+        foreach($filter_parts as $part) {
+            $part = trim(mb_strtoupper($db->escapeString($part)));
+            if($part != "") {
+                $like .= " AND UPPER(TITLE) LIKE %$part% ";
+            }
+        }
+        $sql = "SELECT COUNT(*) AS TOTAL
+            FROM GROUP_PAGE WHERE GROUP_ID = ? AND
+            LOCALE_TAG= ? $like";
+        $result = $db->execute($sql, array($group_id, $locale_tag));
+        if($result) {
+            $row = $db->fetchArray($result);
+            $total = ($row) ? $row["TOTAL"] : 0;
+        }
+        $pages = array();
+        if($total > 0) {
+            $sql = "SELECT TITLE, SUBSTR(PAGE,0, 100) AS DESCRIPTION
+                FROM GROUP_PAGE WHERE GROUP_ID = ? AND
+                LOCALE_TAG= ? $like ORDER BY TITLE ASC ".
+                $db->limitOffset($limit, $num);
+            $result = $db->execute($sql, array($group_id, $locale_tag));
+            $i = 0;
+            if($result) {
+                while($pages[$i] = $db->fetchArray($result)) {
+                    $i++;
+                }
+                unset($pages[$i]); //last one will be null
+            }
+        }
+        return array($total, $pages);
+    }
 }
 ?>

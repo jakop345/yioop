@@ -24,7 +24,7 @@
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
- * @subpackage iterator
+ * @subpackage library
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
  * @copyright 2009 - 2014
@@ -33,127 +33,19 @@
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
-/**
- *Loads base class for iterating
- */
-require_once BASE_DIR.
-    '/lib/archive_bundle_iterators/text_archive_bundle_iterator.php';
-
-/** Wikipedia is usually bzip2 compressed*/
-require_once BASE_DIR.'/lib/bzip2_block_iterator.php';
+/** Used to load common constants among crawl components */
+require_once BASE_DIR."/lib/crawl_constants.php";
 
 /**
- * Used to define the styles we put on cache wiki pages
- */
-define('WIKI_PAGE_STYLES', <<<EOD
-<style type="text/css">
-table.wikitable
-{
-    background:white;
-    border:1px #aaa solid;
-    border-collapse: scollapse
-    margin:1em 0;
-}
-table.wikitable > tr > th,table.wikitable > tr > td,
-table.wikitable > * > tr > th,table.wikitable > * > tr > td
-{
-    border:1px #aaa solid;
-    padding:0.2em;
-}
-table.wikitable > tr > th,
-table.wikitable > * > tr > th
-{
-    text-align:center;
-    background:white;
-    font-weight:bold
-}
-table.wikitable > caption
-{
-    font-weight:bold;
-}
-</style>
-EOD
-);
-
-/**
- * Used to iterate through a collection of .xml.bz2  media wiki files
- * stored in a WebArchiveBundle folder. Here these media wiki files contain the
- * kinds of documents used by wikipedia. Iteration would be
- * for the purpose making an index of these records
  *
  * @author Chris Pollett
+ *
  * @package seek_quarry
- * @subpackage iterator
- * @see WebArchiveBundle
+ * @subpackage library
  */
-class MediaWikiArchiveBundleIterator extends TextArchiveBundleIterator
-    implements CrawlConstants
+
+class WikiParser implements CrawlConstants
 {
-    /**
-     * Creates a media wiki archive iterator with the given parameters.
-     *
-     * @param string $iterate_timestamp timestamp of the arc archive bundle to
-     *      iterate  over the pages of
-     * @param string $iterate_dir folder of files to iterate over
-     * @param string $result_timestamp timestamp of the arc archive bundle
-     *      results are being stored in
-     * @param string $result_dir where to write last position checkpoints to
-     */
-    function __construct($iterate_timestamp, $iterate_dir,
-            $result_timestamp, $result_dir)
-    {
-        $ini = array( 'compression' => 'bzip2',
-            'file_extension' => 'bz2',
-            'encoding' => 'UTF-8',
-            'start_delimiter' => '@page@');
-        parent::__construct($iterate_timestamp, $iterate_dir,
-            $result_timestamp, $result_dir, $ini);
-        $this->switch_partition_callback_name = "readMediaWikiHeader";
-    }
-
-
-    /**
-     * Estimates the important of the site according to the weighting of
-     * the particular archive iterator
-     * @param $site an associative array containing info about a web page
-     * @return int a 4-bit number based on the log_2 size - 10 of the wiki
-     *      entry (@see nextPage).
-     */
-    function weight(&$site)
-    {
-        return min($site[self::WEIGHT], 15);
-    }
-
-    /**
-     * Reads the siteinfo tag of the mediawiki xml file and extract data that
-     * will be used in constructing page summaries.
-     */
-    function readMediaWikiHeader()
-    {
-        $this->header = array();
-        $site_info = $this->getNextTagData("siteinfo");
-        $found_lang =
-            preg_match('/lang\=\"(.*)\"/', $this->remainder, $matches);
-        if($found_lang) {
-            $this->header['lang'] = $matches[1];
-        }
-        if($site_info === false) {
-            $this->bz2_iterator = NULL;
-            return false;
-        }
-        $dom = new DOMDocument();
-        @$dom->loadXML($site_info);
-        $this->header['sitename'] = $this->getTextContent($dom,
-            "/siteinfo/sitename");
-        $pre_host_name =
-            $this->getTextContent($dom, "/siteinfo/base");
-        $this->header['base_address'] = substr($pre_host_name, 0,
-            strrpos($pre_host_name, "/") + 1);
-        $url_parts = @parse_url($this->header['base_address']);
-        $this->header['ip_address'] = gethostbyname($url_parts['host']);
-        return true;
-    }
-
     /**
      * Used to initialize the arrays of match/replacements used to format
      * wikimedia syntax into HTML (not perfectly since we are only doing
@@ -161,21 +53,9 @@ class MediaWikiArchiveBundleIterator extends TextArchiveBundleIterator
      *
      * @param string $base_address base url for link substitutions
      */
-    function initializeSubstitutions($base_address)
+    function __construct($base_address = "")
     {
         $substitutions = array(
-            array('/{{([^}]*)({{([^{}]*)}})/', '{{$1$3' ),
-            array('/{{([^}]*)({{([^{}]*)}})/', '{{$1$3' ),
-            array('/{{([^}]*)({{([^{}]*)}})/', '{{$1$3' ),
-            array('/{{([^}]*)({{([^{}]*)}})/', '{{$1$3' ),
-            array('/{{([^}]*)({{([^{}]*)}})/', '{{$1$3' ),
-            array('/{{([^}]*)({{([^{}]*)}})/', '{{$1$3' ),
-            array('/\[\[([^\]]*)(\[\[([^\[\]]*)\]\])/', "[[$1$3"),
-            array('/\[\[([^\]]*)(\[\[([^\[\]]*)\]\])/', "[[$1$3"),
-            array('/\[\[([^\]]*)(\[\[([^\[\]]*)\]\])/', "[[$1$3"),
-            array('/\[\[([^\]]*)(\[\[([^\[\]]*)\]\])/', "[[$1$3"),
-            array('/\[\[([^\]]*)(\[\[([^\[\]]*)\]\])/', "[[$1$3"),
-            array('/\[\[([^\]]*)(\[\[([^\[\]]*)\]\])/', "[[$1$3"),
             array('/(\A|\n)=\s*([^=]+)\s*=/',
                 "\n<h1 id='$2'>$2</h1><hr />"),
             array('/(\A|\n)==\s*([^=]+)\s*==/',
@@ -200,34 +80,6 @@ class MediaWikiArchiveBundleIterator extends TextArchiveBundleIterator
             array("/{{\s*Related articles\s*\|(.+?)\|(.+?)}}/si",
                 "<div class='indent'>(<a href=\"".
                 $base_address . "$1\">$1?</a>)</div>"),
-            array("/\[\[Image:(.+?)(right\|)(.+?)\]\]/s",
-                "[[Image:$1$3]]"),
-            array("/\[\[Image:(.+?)(left\|)(.+?)\]\]/s",
-                "[[Image:$1$3]]"),
-            array("/\[\[Image:(.+?)(\|left)\]\]/s",
-                "[[Image:$1]]"),
-            array("/\[\[Image:(.+?)(\|right)\]\]/s",
-                "[[Image:$1]]"),
-            array("/\[\[Image:(.+?)(thumb\|)(.+?)\]\]/s",
-                "[[Image:$1$3]]"),
-            array("/\[\[Image:(.+?)(live\|)(.+?)\]\]/s",
-                "[[Image:$1$3]]"),
-            array("/\[\[Image:(.+?)(\s*\d*\s*(px|in|cm|".
-                "pt|ex|em)\s*\|)(.+?)\]\]/s","[[Image:$1$4]]"),
-            array("/\[\[Image:([^\|]+?)\]\]/s",
-                "(<a href=\"{$base_address}File:$1\" >Image:$1</a>)"),
-            array("/\[\[Image:(.+?)\|(.+?)\]\]/s",
-                "(<a href=\"{$base_address}File:$1\">Image:$2</a>)"),
-            array("/\[\[File:(.+?)\|(right\|)?thumb(.+?)\]\]/s",
-                "(<a href=\"{$base_address}File:$1\">Image:$1</a>)"),
-            array("/{{Redirect2?\|([^{}\|]+)\|([^{}\|]+)\|([^{}\|]+)}}/i",
-                "<div class='indent'>\"$1\". ($2 &rarr;<a href=\"".
-                $base_address."$3\">$3</a>)</div>"),
-            array("/{{Redirect\|([^{}\|]+)}}/i",
-                "<div class='indent'>\"$1\". (<a href=\"".
-                $base_address. "$1_(disambiguation)\">$1???</a>)</div>"),
-            array("/#REDIRECT:\s+\[\[(.+?)\]\]/",
-                "<a href='{$base_address}$1'>$1</a>"),
             array('/\[\[([^\[\]]+?)\|([^\[\]]+?)\]\]/s',
                 "<a href=\"{$base_address}$1\">$2</a>"),
             array('/\[\[([^\[\]]+?)\]\]/s',
@@ -238,14 +90,11 @@ class MediaWikiArchiveBundleIterator extends TextArchiveBundleIterator
             array("/'''''(.+?)'''''/s", "<b><i>$1</i></b>"),
             array("/'''(.+?)'''/s", "<b>$1</b>"),
             array("/''(.+?)''/s", "<i>$1</i>"),
+            array('/{{center\|(.+?)}}/s', "<div class='center'>$1</div>"),
+            array('/{{left\|(.+?)}}/s', "<div class='align-left'>$1</div>"),
+            array('/{{right\|(.+?)}}/s', "<div class='align-right'>$1</div>"),
             array('/{{smallcaps\|(.+?)}}/s', "<small>$1</small>"),
             array('/{{Hatnote\|(.+?)}}/si', "($1)"),
-            array("/{{pp-(.+?)}}/s", ""),
-            array("/{{bot(.*?)}}/si", ""),
-            array('/{{Infobox.*?\n}}/si', ""),
-            array('/{{Clear.*?\n}}/si', ""),
-            array("/{{dablink\|(.+?)}}/si", "($1)"),
-            array("/{{clarify\|(.+?)}}/si", ""),
             array("/{{fraction\|(.+?)\|(.+?)}}/si", "<small>$1/$2</small>"),
             array("/{{lang[\||\-](.+?)\|(.+?)}}/si", "$1 &rarr; $2"),
             array("/{{convert\|(.+?)\|(.+?)\|(.+?)}}/si", "$1$2"),
@@ -282,128 +131,53 @@ class MediaWikiArchiveBundleIterator extends TextArchiveBundleIterator
             array('/(\A|\n);([^:]+):([^\n]+)/',
                 "<dl><dt>$2</dt>\n<dd>$3</dd></dl>\n"),
             array('/(\A|\n)----/', "$1<hr />"),
-            array('/(\A|\n)[ \t]([^\n]+)/', "$1<pre>\n$2</pre>"),
-            array('/(\A|\n):\s+([^\n]+)/', "$1<div class='indent'>$2</div>"),
-            array('/(.+?)(\n\n|\Z)/s', "<div>$1</div>"),
-            array('/<\/pre>\n<pre>/', ""),
-            array('/{{[^}]*}}/s', ""),
+            array('/\r/', ""),
         );
 
         $this->matches = array();
         $this->replaces = array();
+        $this->base_address = $base_address;
         foreach($substitutions as $substitution) {
             list($this->matches[], $this->replaces[]) = $substitution;
         }
     }
 
-    /**
-     * Restores the internal state from the file iterate_status.txt in the
-     * result dir such that the next call to nextPages will pick up from just
-     * after the last checkpoint. We also reset up our regex substitutions
-     *
-     * @return array the data serialized when saveCheckpoint was called
-     */
-    function restoreCheckPoint()
-    {
-        $info = parent::restoreCheckPoint();
-        if(!$this->iterate_dir) { // do on client not name server
-            $this->initializeSubstitutions();
-        }
-        return $info;
-    }
 
     /**
-     * Gets the text content of the first dom node satisfying the
-     * xpath expression $path in the dom document $dom
      *
-     * @param object $dom DOMDocument to get the text from
-     * @param $path xpath expression to find node with text
-     *
-     * @return string text content of the given node if it exists
      */
-    function getTextContent($dom, $path)
+    function parse($document)
     {
-        $xpath = new DOMXPath($dom);
-        $objects = $xpath->evaluate($path);
-        if($objects  && is_object($objects) && $objects->item(0) != NULL ) {
-            return $objects->item(0)->textContent;
+        $toc = $this->makeTableOfContents($document);
+        list($document, $references) = $this->makeReferences($document);
+        $document = preg_replace_callback('/(\A|\n){\|(.*?)\n\|}/s',
+            "makeTableCallback", $document);
+        if(strlen($document) < PAGE_RANGE_REQUEST) {
+            $document = substr($document, 0, PAGE_RANGE_REQUEST);
         }
-        return "";
-    }
-
-
-    /**
-     * Gets the next doc from the iterator
-     * @param bool $no_process do not do any processing on page data
-     * @return array associative array for doc or string if no_process true
-     */
-    function nextPage($no_process = false)
-    {
-        static $minimal_regexes = false;
-        static $first_call = true;
-        if($first_call) {
-            $this->initializeSubstitutions($this->header['base_address']);
-        }
-        $page_info = $this->getNextTagData("page");
-        if($no_process) { return $page_info; }
-        $dom = new DOMDocument();
-        @$dom->loadXML($page_info);
-        $site = array();
-
-        $pre_url = $this->getTextContent($dom, "/page/title");
-        $pre_url = str_replace(" ", "_", $pre_url);
-        $site[self::URL] = $this->header['base_address'].$pre_url;
-        $site[self::IP_ADDRESSES] = array($this->header['ip_address']);
-        $pre_timestamp = $this->getTextContent($dom,
-            "/page/revision/timestamp");
-        $site[self::MODIFIED] = date("U", strtotime($pre_timestamp));
-        $site[self::TIMESTAMP] = time();
-        $site[self::TYPE] = "text/html";
-        $site[self::HEADER] = "mediawiki_bundle_iterator extractor";
-        $site[self::HTTP_CODE] = 200;
-        $site[self::ENCODING] = "UTF-8";
-        $site[self::SERVER] = "unknown";
-        $site[self::SERVER_VERSION] = "unknown";
-        $site[self::OPERATING_SYSTEM] = "unknown";
-        $site[self::PAGE] = "<html lang='".$this->header['lang']."' >\n".
-            "<head><title>$pre_url</title>\n".
-            WIKI_PAGE_STYLES . "\n</head>\n".
-            "<body><h1>$pre_url</h1>\n";
-        $pre_page = $this->getTextContent($dom, "/page/revision/text");
-        $current_hash = crawlHash($pre_page);
-        if($first_call) {
-            $this->saveCheckPoint(); //ensure we remember to advance one on fail
-            $first_call = false;
-        }
-        $toc = $this->makeTableOfContents($pre_page);
-        list($pre_page, $references) = $this->makeReferences($pre_page);
-        $pre_page = preg_replace_callback('/(\A|\n){\|(.*?)\n\|}/s',
-            "makeTableCallback", $pre_page);
-        if(strlen($pre_page) < PAGE_RANGE_REQUEST) {
-            $pre_page = preg_replace($this->matches, $this->replaces,$pre_page);
-        } else {
-            $num_matches = count($this->matches);
-            for($i = 0; $i < $num_matches; $i++) {
-                crawlTimeoutLog("..Doing wiki substitutions..");
-                $pre_page = preg_replace($this->matches[$i],
-                    $this->replaces[$i], $pre_page);
+        $document = preg_replace($this->matches, $this->replaces, $document);
+        $document = preg_replace_callback("/((href=)\"([^\"]+)\")/",
+            "fixLinksCallback", $document);
+        $doc_parts = preg_split("/\n\n+/", $document);
+        $document = "";
+        $space_like = array(" ", "\t");
+        foreach($doc_parts as $part) {
+            if(trim($part) == "") {
+                continue;
+            }
+            $start = substr($part, 0, 2);
+            if(in_array($start[0], $space_like)) {
+                $document .= "\n<pre>\n".ltrim($part)."\n</pre>\n";
+            } else if($start == ": " || $start == ":\t") {
+                $document .= "\n<div class='indent'>\n".substr($part, 2).
+                    "\n</div>\n";
+            } else {
+                $document .= "\n<div>\n".$part. "\n</div>\n";
             }
         }
-        $pre_page = preg_replace("/{{Other uses}}/i",
-                "<div class='indent'>\"$1\". (<a href='".
-                $site[self::URL]. "_(disambiguation)'>$pre_url</a>)</div>",
-                $pre_page);
-        $pre_page = preg_replace_callback("/((href=)\"([^\"]+)\")/",
-            "fixLinksCallback", $pre_page);
-        $pre_page = $this->insertReferences($pre_page, $references);
-        $pre_page = $this->insertTableOfContents($pre_page, $toc);
-        $site[self::PAGE] .= $pre_page;
-        $site[self::PAGE] .= "\n</body>\n</html>";
-
-        $site[self::HASH] = FetchUrl::computePageHash($site[self::PAGE]);
-        $site[self::WEIGHT] = ceil(max(
-            log(strlen($site[self::PAGE]) + 1, 2) - 10, 1));
-        return $site;
+        $document = $this->insertReferences($document, $references);
+        $document = $this->insertTableOfContents($document, $toc);
+        return $document;
     }
 
     /**
@@ -418,8 +192,9 @@ class MediaWikiArchiveBundleIterator extends TextArchiveBundleIterator
     {
         $toc= "";
         $matches = array();
+        $min_sections_for_toc = 4;
         preg_match_all('/(\A|\n)==\s*([^=]+)\s*==/', $page, $matches);
-        if(isset($matches[2]) && count($matches[2] > 2)) {
+        if(isset($matches[2]) && count($matches[2]) >= $min_sections_for_toc) {
             $toc .= "<div style='border: 1px ridge #000; width:280px;".
                 "background-color:#EEF; padding: 3px; margin:6px;'><ol>\n";
             foreach($matches[2] as $section) {
@@ -441,7 +216,7 @@ class MediaWikiArchiveBundleIterator extends TextArchiveBundleIterator
      */
     function makeReferences($page)
     {
-        $base_address = $this->header['base_address'];
+        $base_address = $this->base_address;
         $references= "\n";
         $matches = array();
         preg_match_all('/{{v?cite(.+?)}}/si', $page, $matches);
@@ -696,5 +471,4 @@ function fixLinksCallback($matches)
     $out = $matches[2].'"'.str_replace(" ", "_", $matches[3]).'"';
     return $out;
 }
-
 ?>

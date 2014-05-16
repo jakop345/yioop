@@ -69,27 +69,28 @@ class WikiView extends View
         <div class="subsearch">
         <ul class="out-list">
         <?php
+        $modes = array();
         if($can_edit) {
-            if($data["MODE"] == "edit") {
-                ?><li class="outer"><a href="<?php e($base_query .
-                    '&amp;arg=read&amp;a=wiki');
-                    ?>"><?php e(tl('wiki_view_read'));
-                ?></a></li>
-                <li class="outer"><b><?php e(tl('wiki_view_edit'));
-                    ?></b></li>
-            <?php
+            $modes = array(
+                "read" => tl('wiki_view_read'),
+                "edit" => tl('wiki_view_edit')
+            );
+        }
+        $modes["pages"] = tl('wiki_view_pages');
+        foreach($modes as $name => $translation) { 
+            if($data["MODE"] == $name) { ?>
+                <li class="outer"><b><?php e($translation); ?></b></li>
+                <?php
             } else {
-                ?><li class="outer"><b><?php e(tl('wiki_view_read'));
-                ?></b></li>
+                ?>
                 <li class="outer"><a href="<?php e($base_query .
-                    '&amp;arg=edit&amp;a=wiki');
-                    ?>"><?php e(tl('wiki_view_edit'));
-                ?></a></li>
-            <?php
+                    '&amp;arg='.$name.'&amp;a=wiki&amp;page_name='.
+                    $data['PAGE_NAME']); ?>"><?php
+                    e($translation); ?></a></li>
+                <?php
             }
         }
         ?>
-        <li class="outer"><a href=""><?php e(tl('wiki_view_pages'));?></a></li>
         </ul>
         </div>
         <?php
@@ -105,45 +106,27 @@ class WikiView extends View
             ?></small>
         </h1>
         <?php
-        if($data["MODE"] == "edit") {
-            $this->renderEditPageForm($data);
-        } else {
-            ?>
-            <div class="small-margin-current-activity">
-            <?php
-            if($data["PAGE"]) {
-                e($data["PAGE"]);
-            } else if($can_edit) {
-                e("<h2>".tl("wiki_view_page_no_exist", $data["PAGE_NAME"]).
-                    "</h2>");
-                e("<p>".tl("wiki_view_create_edit")."</p>");
-                e("<p>".tl("wiki_view_use_form_below")."</p>");?>
-                <form id="editpageForm" method="get" action='#'>
-                <input type="hidden" name="c" value="group" />
-                <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
-                    e($data[CSRF_TOKEN]); ?>" />
-                <input type="hidden" name="a" value="wiki" />
-                <input type="hidden" name="arg" value="edit" />
-                <input type="hidden" name="group_id" value="<?php
-                    e($data['GROUP']['GROUP_ID']); ?>" />
-                <input type="text" name="page_name" class="narrow-field"
-                    value="" />
-                <button class="button-box" type="submit"><?php
-                    e(tl('wiki_element_submit')); ?></button>
-                </form>
-                <?php
-            } else if(!$logged_in) {
-                e("<h2>".tl("wiki_view_page_no_exist", $data["PAGE_NAME"]).
-                    "</h2>");
-                e("<p>".tl("wiki_view_signin_edit")."</p>");
-            } else {
-                e("<h2>".tl("wiki_view_page_no_exist", $data["PAGE_NAME"]).
-                    "</h2>");
-            }
-            ?>
-            </div>
-            <?php
+        switch($data["MODE"])
+        {
+            case "edit":
+                $this->renderEditPageForm($data);
+            break;
+
+            case "pages":
+                $this->renderPages($data);
+            break;
+
+            case "history":
+                $this->renderHistory($data);
+            break;
+
+            case "show":
+            case "read":
+            default:
+                $this->renderReadPage($data, $can_edit, $logged_in);
+            break;
         }
+
         if($logged_in) {
         ?>
         <script type="text/javascript">
@@ -175,6 +158,45 @@ class WikiView extends View
         }
     }
 
+    function renderReadPage($data, $can_edit, $logged_in)
+    {
+        ?>
+        <div class="small-margin-current-activity">
+        <?php
+        if($data["PAGE"]) {
+            e($data["PAGE"]);
+        } else if($can_edit) {
+            e("<h2>".tl("wiki_view_page_no_exist", $data["PAGE_NAME"]).
+                "</h2>");
+            e("<p>".tl("wiki_view_create_edit")."</p>");
+            e("<p>".tl("wiki_view_use_form_below")."</p>");?>
+            <form id="editpageForm" method="get" action='#'>
+            <input type="hidden" name="c" value="group" />
+            <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
+                e($data[CSRF_TOKEN]); ?>" />
+            <input type="hidden" name="a" value="wiki" />
+            <input type="hidden" name="arg" value="edit" />
+            <input type="hidden" name="group_id" value="<?php
+                e($data['GROUP']['GROUP_ID']); ?>" />
+            <input type="text" name="page_name" class="narrow-field"
+                value="" />
+            <button class="button-box" type="submit"><?php
+                e(tl('wiki_element_submit')); ?></button>
+            </form>
+            <?php
+        } else if(!$logged_in) {
+            e("<h2>".tl("wiki_view_page_no_exist", $data["PAGE_NAME"]).
+                "</h2>");
+            e("<p>".tl("wiki_view_signin_edit")."</p>");
+        } else {
+            e("<h2>".tl("wiki_view_page_no_exist", $data["PAGE_NAME"]).
+                "</h2>");
+        }
+        ?>
+        </div>
+        <?php
+    }
+
     /**
      *
      */
@@ -184,11 +206,13 @@ class WikiView extends View
         <div class="small-margin-current-activity">
         <div class="float-opposite">
         [<a href="?c=group&amp;a=wiki&amp;<?php
-            e(CSRF_TOKEN."=".$data[CSRF_TOKEN]) ?>&amp;arg=history"
+            e(CSRF_TOKEN.'='.$data[CSRF_TOKEN].'&amp;arg=history&amp;'.
+            'page_id='.$data['PAGE_ID']); ?>"
         ><?php e(tl('wiki_element_history'))?></a>]
-        [<a href="?c=group&amp;a=wiki&amp;<?php
-            e(CSRF_TOKEN."=".$data[CSRF_TOKEN]) ?>&amp;arg=discuss"
-        ><?php e(tl('wiki_element_discuss'))?></a>]
+        [<a href="?c=group&amp;a=groupFeeds&amp;<?php
+            e(CSRF_TOKEN.'='.$data[CSRF_TOKEN].
+            '&amp;just_thread='.$data['DISCUSS_THREAD']);?>" ><?php
+            e(tl('wiki_element_discuss'))?></a>]
         </div>
         <form id="editpageForm" method="post" action='#'>
             <input type="hidden" name="c" value="group" />
@@ -207,7 +231,8 @@ class WikiView extends View
                 ?></b><br />
                 <label for="page-data"><b><?php
                 e(tl('wiki_element_page', $data['PAGE_NAME']));
-                ?></b></label></div>
+                ?></b></label>
+            </div>
             <textarea class="tall-text-area" name="page" ><?php
                 e($data['PAGE']);
             ?></textarea>
@@ -215,8 +240,94 @@ class WikiView extends View
             <button class="button-box" type="submit"><?php
                 e(tl('wiki_element_savebutton')); ?></button>
             </div>
+        </form>
+        </div>
+        <?php
+    }
+
+    /**
+     *
+     */
+    function renderPages($data)
+    {
+        ?>
+        <div class="small-margin-current-activity">
+        <?php
+        $base_query = "?c=group&amp;".CSRF_TOKEN."=".
+            $data[CSRF_TOKEN] . "&amp;group_id=".
+                $data["GROUP"]["GROUP_ID"]."&amp;a=wiki&amp;arg=read";
+        $paging_query = "?c=group&amp;".CSRF_TOKEN."=".
+            $data[CSRF_TOKEN] . "&amp;group_id=".
+                $data["GROUP"]["GROUP_ID"]."&amp;a=wiki&amp;arg=pages";
+        foreach($data['PAGES'] as $page) {
+            ?>
+            <div class='group-result'>
+            <a href="<?php e($base_query.'&amp;page_name='.
+                $page['TITLE']);?>" ><?php e($page["TITLE"]); ?></a></br />
+            <?php e(strip_tags($page["DESCRIPTION"])."..."); ?>
             </div>
+            <div>&nbsp;</div>
             <?php
+        }
+        $this->helper("pagination")->render(
+            $paging_query,
+            $data['LIMIT'], $data['RESULTS_PER_PAGE'], $data['TOTAL_ROWS']);
+        ?>
+        </div>
+        <?php
+    }
+
+    /**
+     *
+     */
+    function renderHistory($data)
+    {
+        ?>
+        <div class="small-margin-current-activity">
+        <?php
+        $time = time();
+        $feed_helper = $this->helper("feeds");
+        $base_query = "?c=group&amp;".CSRF_TOKEN."=".
+            $data[CSRF_TOKEN] . "&amp;group_id=".
+                $data["GROUP"]["GROUP_ID"]."&amp;a=wiki&amp;arg=history&amp;".
+                "page_id=".$data["page_id"];
+        $current = $data['HISTORY'][0]["PUBDATE"];
+        $first = true;
+        foreach($data['HISTORY'] as $item) {
+            ?>
+            <div class='group-result'>
+            <?php
+            if($first && $data['LIMIT'] == 0) { ?>
+                (<b><?php e(tl("wiki_view_diff_current"));
+                    ?></b>| <b><?php e(tl("wiki_view_diff_next")); ?></b>)
+                <?php
+            } else { ?>
+                (<a href="<?php e($base_query.'&amp;diff2='.
+                    $current."&amp;diff1=".$item['PUBDATE']);?>" ><?php
+                    e(tl("wiki_view_diff_current"));
+                    ?></a> | <a href="<?php e($base_query.'&amp;diff2='.
+                    $next."&amp;diff1=".$item['PUBDATE']);?>" ><?php
+                    e(tl("wiki_view_diff_next"));
+                    ?></a>)
+                <?php
+            }
+            e("<a href='$base_query&show={$item['PUBDATE']}'>".
+                date("r", $item["PUBDATE"])."</a>. ");
+            e(tl("wiki_view_edited_by", $item["USER_NAME"]));
+            e(tl("wiki_view_page_len", $item["PAGE_LEN"]));
+            $first = false;
+            $next = $item['PUBDATE'];
+            ?>
+            </div>
+            <div>&nbsp;</div>
+            <?php
+        }
+        $this->helper("pagination")->render(
+            $base_query,
+            $data['LIMIT'], $data['RESULTS_PER_PAGE'], $data['TOTAL_ROWS']);
+        ?>
+        </div>
+        <?php
     }
 }
 ?>
