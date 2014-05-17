@@ -67,6 +67,10 @@ class GroupfeedElement extends Element implements CrawlConstants
         }
             $base_query = $data['PAGING_QUERY']."&amp;".CSRF_TOKEN."=".
                 $data[CSRF_TOKEN];
+            if(isset($data["WIKI_QUERY"])) {
+                $wiki_query = $data["WIKI_QUERY"]."&amp;".CSRF_TOKEN."=".
+                $data[CSRF_TOKEN];
+            }
             $paging_query = $base_query;
             $other_paging_query = $data['OTHER_PAGING_QUERY']."&amp;".
                 CSRF_TOKEN."=".$data[CSRF_TOKEN];
@@ -83,6 +87,10 @@ class GroupfeedElement extends Element implements CrawlConstants
             if($data['SUBTITLE'] != "" && isset($data['ADMIN']) &&
                 $data['ADMIN']) { ?>
                 <div class="float-opposite">
+                <?php if(isset($data["WIKI_PAGE_NAME"])) { ?>
+                <a href="<?php e($wiki_query) ?>"><?php
+                    e(tl('groupfeed_element_wiki_page'))?></a>
+                <?php } ?>
                 <a href="<?php e($base_query) ?>"><?php
                     e(tl('groupfeed_element_back'))?></a>
                 </div>
@@ -96,9 +104,14 @@ class GroupfeedElement extends Element implements CrawlConstants
                     e(tl('groupfeed_element_recent_activity'));
                 } else {
                     if(isset($data['JUST_THREAD'])) {
-                        e(tl('groupfeed_element_thread',
-                            $data['PAGES'][0][self::SOURCE_NAME],
-                            $data['SUBTITLE']));
+                        if(isset($data['WIKI_PAGE_NAME'])) {
+                            e(tl('groupfeed_element_wiki_thread',
+                                $data['WIKI_PAGE_NAME']));
+                        } else {
+                            e(tl('groupfeed_element_thread',
+                                $data['PAGES'][0][self::SOURCE_NAME],
+                                $data['SUBTITLE']));
+                        }
                     } else if(isset($data['JUST_GROUP_ID'])){
                         e($data['PAGES'][0][self::SOURCE_NAME]);
                         e(" [".tl('groupfeed_element_feed')."|".

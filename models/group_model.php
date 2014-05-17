@@ -801,13 +801,31 @@ class GroupModel extends Model
             $sql = "SELECT HP.PAGE_ID AS ID, HP.PAGE AS PAGE,
                 GP.DISCUSS_THREAD AS DISCUSS_THREAD FROM GROUP_PAGE GP,
                 GROUP_PAGE_HISTORY HP WHERE GP.GROUP_ID = ?
-                AND GP.TITLE=? AND GP.LOCALE_TAG= ? AND HP.PAGE_ID=GP.ID
+                AND GP.TITLE = ? AND GP.LOCALE_TAG = ? AND HP.PAGE_ID = GP.ID
                 ORDER BY HP.PUBDATE DESC ".$db->limitOffset(0, 1);
         } else {
             $sql = "SELECT ID, PAGE, DISCUSS_THREAD FROM GROUP_PAGE
-                WHERE GROUP_ID = ? AND TITLE=? AND LOCALE_TAG= ?";
+                WHERE GROUP_ID = ? AND TITLE=? AND LOCALE_TAG = ?";
         }
         $result = $db->execute($sql, array($group_id, $name, $locale_tag));
+        if(!$result) { return false; }
+        $row = $db->fetchArray($result);
+        if(!$row) {
+            return false;
+        }
+        return $row;
+    }
+
+    /**
+     *
+     *  @param int $page_thread_id
+     */
+    function getPageInfoByThread($page_thread_id)
+    {
+        $db = $this->db;
+        $sql = "SELECT GROUP_ID, LOCALE_TAG, TITLE AS PAGE_NAME FROM GROUP_PAGE
+            WHERE DISCUSS_THREAD = ?";
+        $result = $db->execute($sql, array($page_thread_id));
         if(!$result) { return false; }
         $row = $db->fetchArray($result);
         if(!$row) {

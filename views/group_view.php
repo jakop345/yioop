@@ -71,10 +71,15 @@ class GroupView extends View implements CrawlConstants
             e(CSRF_TOKEN."=".$data[CSRF_TOKEN]); ?>"><img
             src="<?php e($logo); ?>" alt="Yioop!" /></a><small> - <?php
         if(isset($data['JUST_THREAD'])) {
-            e("<a href='$base_query&a=groupFeeds&just_group_id=".
-                $data['PAGES'][0]["GROUP_ID"]."' >".
-                $data['PAGES'][0][self::SOURCE_NAME]."</a> : ".
-                $data['SUBTITLE']);
+            if(isset($data['WIKI_PAGE_NAME'])) {
+                e(tl('groupfeed_element_wiki_thread',
+                    $data['WIKI_PAGE_NAME']));
+            } else {
+                e("<a href='$base_query&a=groupFeeds&just_group_id=".
+                    $data['PAGES'][0]["GROUP_ID"]."' >".
+                    $data['PAGES'][0][self::SOURCE_NAME]."</a> : ".
+                    $data['SUBTITLE']);
+            }
             if(!MOBILE) {
                 e(" [<a href='$base_query&f=rss".
                     "&a=groupFeeds&just_thread=".

@@ -790,6 +790,21 @@ class SocialComponent extends Component implements CrawlConstants
                 $pages[$group['JOIN_DATE']] = $page;
             }
         }
+        if($just_thread) {
+            $thread_parent = $group_model->getGroupItem($just_thread);
+            if(isset($thread_parent["TYPE"]) &&
+                $thread_parent["TYPE"] == WIKI_GROUP_ITEM) {
+                $page_info = $group_model->getPageInfoByThread($just_thread);
+                if(isset($page_info["PAGE_NAME"])) {
+                    $data["WIKI_PAGE_NAME"] = $page_info["PAGE_NAME"];
+                    $data["WIKI_QUERY"] = "?c={$data['CONTROLLER']}&amp;".
+                        "a=wiki&amp;arg=edit&amp;page_name=".
+                        $page_info['PAGE_NAME']."&amp;locale_tag=".
+                        $page_info["LOCALE_TAG"]."&amp;group_id=".
+                        $page_info["GROUP_ID"];
+                }
+            }
+        }
         $search_array = array(
             array("parent_id", "=", $just_thread, ""),
             array("group_id", "=", $just_group_id, ""),
