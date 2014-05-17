@@ -81,7 +81,7 @@ class WikiView extends View
             if($data["MODE"] == $name) { ?>
                 <li class="outer"><b><?php e($translation); ?></b></li>
                 <?php
-            } else if($data["MODE"] == "pages") { ?>
+            } else if(!isset($data["PAGE_NAME"]) || $data["PAGE_NAME"]=="") { ?>
                 <li class="outer"><span class="gray"><?php e($translation);
                 ?></span></li>
                 <?php
@@ -291,7 +291,7 @@ class WikiView extends View
             placeholder="<?php e(tl("wiki_view_filter_or_create")); 
             ?>" value="<?php e($data['FILTER'])?>" />
         <button class="button-box" type="submit"><?php
-            e(tl('wiki_element_search')); ?></button>
+            e(tl('wiki_element_go')); ?></button>
         </form>
         <?php
         if($data["FILTER"] != "") {
@@ -333,6 +333,32 @@ class WikiView extends View
                     '&amp;arg=edit&amp;a=wiki&amp;page_name='.
                     $data['PAGE_NAME']); ?>"><?php
             e(tl("wiki_view_back")); ?></a></div>
+        <?php
+        if(count($data['HISTORY']) > 1) { ?>
+            <div>
+            <form id="differenceForm" method="get" action='#'>
+            <input type="hidden" name="c" value="group" />
+            <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
+                e($data[CSRF_TOKEN]); ?>" />
+            <input type="hidden" name="a" value="wiki" />
+            <input type="hidden" name="arg" value="history" />
+            <input type="hidden" name="group_id" value="<?php
+                e($data['GROUP']['GROUP_ID']); ?>" />
+            <input type="hidden" name="page_id" value="<?php 
+                e($data["page_id"]); ?>" />
+            <input type="hidden" name="diff" value="1" />
+            <b><?php e(tl('wiki_view_difference')); ?></b>
+            <input type="text" id="diff-1" name="diff1"
+                value="<?php  e($data['diff1']); ?>" /> -
+            <input type="text" id="diff-2" name="diff2" 
+                value="<?php  e($data['diff2']); ?>" /> 
+            <button class="button-box" type="submit"><?php
+                e(tl('wiki_view_go')); ?></button>
+            </form>
+            </div>
+            <?php
+        }
+        ?>
         <div>&nbsp;</div>
         <?php
         $time = time();
@@ -344,22 +370,23 @@ class WikiView extends View
             ?>
             <div class='group-result'>
             <?php
-            if($first && $data['LIMIT'] == 0) { ?>
-                (<b><?php e(tl("wiki_view_diff_current"));
-                    ?></b>| <b><?php e(tl("wiki_view_diff_next")); ?></b>)
+            if(count($data['HISTORY']) > 1) { ?>
+                (<a href="javascript:updateFirst('<?php
+                        e($item['PUBDATE']); ?>');" ><?php
+                    e(tl("wiki_view_diff_first"));
+                    ?></a> | <a href="javascript:updateSecond('<?php
+                        e($item['PUBDATE']);?>');" ><?php
+                    e(tl("wiki_view_diff_second"));
+                    ?></a>)
                 <?php
             } else { ?>
-                (<a href="<?php e($base_query.'&amp;diff2='.
-                    $current."&amp;diff1=".$item['PUBDATE']);?>" ><?php
-                    e(tl("wiki_view_diff_current"));
-                    ?></a> | <a href="<?php e($base_query.'&amp;diff2='.
-                    $next."&amp;diff1=".$item['PUBDATE']);?>" ><?php
-                    e(tl("wiki_view_diff_next"));
-                    ?></a>)
+                (<b><?php e(tl("wiki_view_diff_first"));
+                    ?></b> | <b><?php e(tl("wiki_view_diff_second"));
+                    ?></b>)
                 <?php
             }
             e("<a href='$base_query&show={$item['PUBDATE']}'>" .
-                date("r",$item["PUBDATE"])."</a>. <b>{$item['PUBDATE']}</b>. ");
+                date("c",$item["PUBDATE"])."</a>. <b>{$item['PUBDATE']}</b>. ");
             e(tl("wiki_view_edited_by", $item["USER_NAME"]));
             if(strlen($item["EDIT_REASON"]) > 0) {
                 e("<i>{$item["EDIT_REASON"]}</i>. ");
@@ -383,6 +410,16 @@ class WikiView extends View
             $data['LIMIT'], $data['RESULTS_PER_PAGE'], $data['TOTAL_ROWS']);
         ?>
         </div>
+        <script type="text/javascript">
+        function updateFirst(val)
+        {
+            elt('diff-1').value=val;
+        }
+        function updateSecond(val)
+        {
+            elt('diff-2').value=val;
+        }
+        </script>
         <?php
     }
 }

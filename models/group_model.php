@@ -656,7 +656,7 @@ class GroupModel extends Model
                 MIN(G.OWNER_ID) AS OWNER_ID,
                 MIN(G.MEMBER_ACCESS) AS MEMBER_ACCESS,
                 MIN(G.GROUP_NAME) AS GROUP_NAME, MIN(P.USER_NAME) AS USER_NAME,
-                MIN(P.USER_ID) AS USER_ID ";
+                MIN(P.USER_ID) AS USER_ID, MIN(GI.TYPE) AS TYPE";
         } else {
             $group_by = "";
             $select = "SELECT DISTINCT GI.ID AS ID,
@@ -665,7 +665,7 @@ class GroupModel extends Model
                 GI.PUBDATE AS PUBDATE, G.OWNER_ID AS OWNER_ID,
                 G.MEMBER_ACCESS AS MEMBER_ACCESS,
                 G.GROUP_NAME AS GROUP_NAME, P.USER_NAME AS USER_NAME,
-                P.USER_ID AS USER_ID ";
+                P.USER_ID AS USER_ID, GI.TYPE AS TYPE ";
         }
         $sql = "$select
             FROM GROUP_ITEM GI, GROUPS G, USER_GROUP UG, USERS P

@@ -222,6 +222,7 @@ class GroupController extends Controller implements CrawlConstants
             "num" => 'int',
             "page_id" => 'int',
             "show" => 'int',
+            "diff" => 'int',
             "diff1" => 'int',
             "diff2" => 'int',
             "revert" => 'int'
@@ -316,12 +317,13 @@ class GroupController extends Controller implements CrawlConstants
                                 "<a href='$history_link'>".
                                 tl("group_controller_back") . "</a></div>".
                                 tl("group_controller_history_page",
-                                $data["PAGE_NAME"], date("r", $show)) .
+                                $data["PAGE_NAME"], date("c", $show)) .
                                 "</div>" . $parsed_page;
                             $data["DISCUSS_THREAD"] = 
                                 $page_info["DISCUSS_THREAD"];
                         }
-                    } else if(isset($diff1) && isset($diff2)) {
+                    } else if(isset($diff) && $diff &&
+                        isset($diff1) && isset($diff2)) {
                         $page_info1 = $group_model->getHistoryPage(
                             $page_id, $diff1);
                         $page_info2 = $group_model->getHistoryPage(
@@ -349,8 +351,8 @@ class GroupController extends Controller implements CrawlConstants
                             "<a href='$history_link'>".
                             tl("group_controller_back") . "</a></div>".
                             tl("group_controller_diff_page",
-                            $data["PAGE_NAME"], date("r", $diff1),
-                            date("r", $diff2)) .
+                            $data["PAGE_NAME"], date("c", $diff1),
+                            date("c", $diff2)) .
                             "</div>" . "$out_diff";
                     } else if(isset($revert)) {
                         $page_info = $group_model->getHistoryPage(
@@ -361,7 +363,7 @@ class GroupController extends Controller implements CrawlConstants
                                 $page_info["PAGE"],
                                 $locale_tag,
                                 tl('group_controller_page_revert_to',
-                                date('r', $revert)));
+                                date('c', $revert)));
                             $data['SCRIPT'] .=
                                 "doMessage('<h1 class=\"red\" >".
                                 tl("group_controller_page_reverted").
@@ -380,6 +382,13 @@ class GroupController extends Controller implements CrawlConstants
                             $data["HISTORY"]) = 
                             $group_model->getPageHistoryList($page_id, $limit,
                             $num);
+                        if((!isset($diff1) || !isset($diff2))) {
+                            $data['diff1'] = $data["HISTORY"][0]["PUBDATE"];
+                            $data['diff2'] = $data["HISTORY"][0]["PUBDATE"];
+                            if(count($data["HISTORY"]) > 1) {
+                                $data['diff2'] = $data["HISTORY"][1]["PUBDATE"];
+                            }
+                        }
                     }
                     $data['page_id'] = $page_id;
                 break;
@@ -391,6 +400,9 @@ class GroupController extends Controller implements CrawlConstants
                        DEFAULT_ADMIN_PAGING_NUM;
                     if(!isset($filter)) {
                         $filter = "";
+                    }
+                    if(isset($page_name)) {
+                        $data['PAGE_NAME'] = $page_name;
                     }
                     $data["LIMIT"] = $limit;
                     $data["RESULTS_PER_PAGE"] = $num;
