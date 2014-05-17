@@ -324,16 +324,20 @@ class WikiView extends View
      */
     function renderHistory($data)
     {
+        $base_query = "?c=group&amp;".CSRF_TOKEN."=".
+            $data[CSRF_TOKEN] . "&amp;group_id=".
+            $data["GROUP"]["GROUP_ID"]."&amp;a=wiki";
         ?>
         <div class="small-margin-current-activity">
+        <div class="float-opposite"><a href="<?php e($base_query .
+                    '&amp;arg=edit&amp;a=wiki&amp;page_name='.
+                    $data['PAGE_NAME']); ?>"><?php
+            e(tl("wiki_view_back")); ?></a></div>
         <div>&nbsp;</div>
         <?php
         $time = time();
         $feed_helper = $this->helper("feeds");
-        $base_query = "?c=group&amp;".CSRF_TOKEN."=".
-            $data[CSRF_TOKEN] . "&amp;group_id=".
-                $data["GROUP"]["GROUP_ID"]."&amp;a=wiki&amp;arg=history&amp;".
-                "page_id=".$data["page_id"];
+        $base_query .= "&amp;arg=history&amp;page_id=".$data["page_id"];
         $current = $data['HISTORY'][0]["PUBDATE"];
         $first = true;
         foreach($data['HISTORY'] as $item) {
@@ -354,8 +358,8 @@ class WikiView extends View
                     ?></a>)
                 <?php
             }
-            e("<a href='$base_query&show={$item['PUBDATE']}'>".
-                date("r", $item["PUBDATE"])."</a>. ");
+            e("<a href='$base_query&show={$item['PUBDATE']}'>" .
+                date("r",$item["PUBDATE"])."</a>. <b>{$item['PUBDATE']}</b>. ");
             e(tl("wiki_view_edited_by", $item["USER_NAME"]));
             if(strlen($item["EDIT_REASON"]) > 0) {
                 e("<i>{$item["EDIT_REASON"]}</i>. ");
