@@ -100,7 +100,8 @@ class AccountaccessComponent extends Component
         $num_shown = count($data['GROUPS']);
         for($i = 0; $i < $num_shown; $i++) {
             $search_array = array(array("group_id", "=",
-                $data['GROUPS'][$i]['GROUP_ID'], ""));
+                $data['GROUPS'][$i]['GROUP_ID'], ""),
+                array("pub_date", "", "", "DESC"));
             $item = $group_model->getGroupItems(0, 1,
                 $search_array, $user_id);
             $data['GROUPS'][$i]['NUM_POSTS'] =

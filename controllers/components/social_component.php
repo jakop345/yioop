@@ -802,11 +802,13 @@ class SocialComponent extends Component implements CrawlConstants
             $limit + $results_per_page, $search_array, $user_id, $for_group);
         $recent_found = false;
         $time = time();
+        $j = 0;
         foreach($group_items as $item) {
             $page = $item;
             $page[self::TITLE] = $page['TITLE'];
             unset($page['TITLE']);
             $description = $page['DESCRIPTION'];
+            //start code for sharing crawl mixes
             preg_match_all("/\[\[([^\:\n]+)\:mix(\d+)\]\]/", $description,
                 $matches);
             $num_matches = count($matches[0]);
@@ -822,6 +824,7 @@ class SocialComponent extends Component implements CrawlConstants
                     $description);
                 $page["NO_EDIT"] = true;
             }
+            //end code for sharing crawl mixes
             $page[self::DESCRIPTION] = $description;
             unset($page['DESCRIPTION']);
             $page[self::SOURCE_NAME] = $page['GROUP_NAME'];
@@ -834,7 +837,8 @@ class SocialComponent extends Component implements CrawlConstants
                 $recent_found = true;
                 $data['SCRIPT'] .= 'doUpdate();';
             }
-            $pages[$item["PUBDATE"]] = $page;
+            $pages[$item["PUBDATE"] . "$j"] = $page;
+            $j++;
         }
         krsort($pages);
         $data['SUBTITLE'] = "";

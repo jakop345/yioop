@@ -415,7 +415,7 @@ class GroupController extends Controller implements CrawlConstants
                     if(!$search_page_info) {
                         list($data["TOTAL_ROWS"], $data["PAGES"]) =
                             $group_model->getPageList(
-                            $group['GROUP_ID'], $locale_tag, $filter, $limit,
+                            $group_id, $locale_tag, $filter, $limit,
                             $num);
                         if($data["TOTAL_ROWS"] == 0) {
                             $data["MODE"] = "read";

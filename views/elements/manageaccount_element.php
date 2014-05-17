@@ -165,7 +165,7 @@ class ManageaccountElement extends Element
                     <b><?php
                     e(tl('manageaccount_element_last_post')); ?></b>
                     <a href="<?php
-                    e($feed_url.'&amp;just_thread_id='.$group['THREAD_ID']); ?>"
+                    e($feed_url.'&amp;just_thread='.$group['THREAD_ID']); ?>"
                     ><?php e($group['ITEM_TITLE']); ?></a>
                     </div>
                 </div>
