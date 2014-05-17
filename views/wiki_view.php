@@ -117,7 +117,7 @@ class WikiView extends View
             break;
 
             case "pages":
-                $this->renderPages($data);
+                $this->renderPages($data, $can_edit, $logged_in);
             break;
 
             case "history":
@@ -262,17 +262,45 @@ class WikiView extends View
     /**
      * @param array $data
      */
-    function renderPages($data)
+    function renderPages($data, $can_edit, $logged_in)
     {
         ?>
         <div class="small-margin-current-activity">
         <?php
         $base_query = "?c=group&amp;".CSRF_TOKEN."=".
             $data[CSRF_TOKEN] . "&amp;group_id=".
-                $data["GROUP"]["GROUP_ID"]."&amp;a=wiki&amp;arg=read";
+                $data["GROUP"]["GROUP_ID"]."&amp;a=wiki";
+        $create_query = $base_query . "&amp;arg=edit&amp;page_name=" .
+            $data["FILTER"];
+        $base_query .= "&amp;arg=read";
         $paging_query = "?c=group&amp;".CSRF_TOKEN."=".
             $data[CSRF_TOKEN] . "&amp;group_id=".
                 $data["GROUP"]["GROUP_ID"]."&amp;a=wiki&amp;arg=pages";
+        e("<h2>".tl("wiki_view_wiki_page_list",
+            $data["GROUP"]["GROUP_NAME"]). "</h2>");
+        ?>
+        <form id="editpageForm" method="get" action='#'>
+        <input type="hidden" name="c" value="group" />
+        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
+            e($data[CSRF_TOKEN]); ?>" />
+        <input type="hidden" name="a" value="wiki" />
+        <input type="hidden" name="arg" value="pages" />
+        <input type="hidden" name="group_id" value="<?php
+            e($data['GROUP']['GROUP_ID']); ?>" />
+        <input type="text" name="filter" class="extra-wide-field"
+            placeholder="<?php e(tl("wiki_view_filter_or_create")); 
+            ?>" value="<?php e($data['FILTER'])?>" />
+        <button class="button-box" type="submit"><?php
+            e(tl('wiki_element_search')); ?></button>
+        </form>
+        <?php
+        if($data["FILTER"] != "") {
+            e("<a href='$create_query'>".tl("wiki_view_create_page",
+                $data['FILTER']) . "</a>");
+        }
+        ?>
+        <div>&nbsp;</div>
+        <?php
         foreach($data['PAGES'] as $page) {
             ?>
             <div class='group-result'>
@@ -333,8 +361,12 @@ class WikiView extends View
                 e("<i>{$item["EDIT_REASON"]}</i>. ");
             }
             e(tl("wiki_view_page_len", $item["PAGE_LEN"])." ");
-            e("[<a href='$base_query&amp;revert=".$item['PUBDATE'].
+            if($first && $data['LIMIT'] == 0) {
+                e("[<b>".tl("wiki_view_revert")."</b>].");
+            } else { 
+                e("[<a href='$base_query&amp;revert=".$item['PUBDATE'].
                 "'>".tl("wiki_view_revert")."</a>].");
+            }
             $first = false;
             $next = $item['PUBDATE'];
             ?>

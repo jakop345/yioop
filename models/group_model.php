@@ -889,16 +889,17 @@ class GroupModel extends Model
         $db = $this->db;
         $filter_parts = preg_split("/\s+/", $filter);
         $like = "";
+        $params = array($group_id, $locale_tag);
         foreach($filter_parts as $part) {
-            $part = trim(mb_strtoupper($db->escapeString($part)));
             if($part != "") {
-                $like .= " AND UPPER(TITLE) LIKE %$part% ";
+                $like .= " AND UPPER(TITLE) LIKE ? ";
+                $params[] = "%$part%";
             }
         }
         $sql = "SELECT COUNT(*) AS TOTAL
             FROM GROUP_PAGE WHERE GROUP_ID = ? AND
             LOCALE_TAG= ? $like";
-        $result = $db->execute($sql, array($group_id, $locale_tag));
+        $result = $db->execute($sql, $params);
         if($result) {
             $row = $db->fetchArray($result);
             $total = ($row) ? $row["TOTAL"] : 0;
@@ -907,9 +908,9 @@ class GroupModel extends Model
         if($total > 0) {
             $sql = "SELECT TITLE, SUBSTR(PAGE,0, 100) AS DESCRIPTION
                 FROM GROUP_PAGE WHERE GROUP_ID = ? AND
-                LOCALE_TAG= ? $like ORDER BY TITLE ASC ".
+                LOCALE_TAG= ? $like ORDER BY UPPER(TITLE) ASC ".
                 $db->limitOffset($limit, $num);
-            $result = $db->execute($sql, array($group_id, $locale_tag));
+            $result = $db->execute($sql, $params);
             $i = 0;
             if($result) {
                 while($pages[$i] = $db->fetchArray($result)) {

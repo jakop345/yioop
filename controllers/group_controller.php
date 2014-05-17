@@ -384,7 +384,6 @@ class GroupController extends Controller implements CrawlConstants
                     $data['page_id'] = $page_id;
                 break;
                 case "pages":
-                    $data["PAGE_NAME"] = "pages";
                     $data["MODE"] = "pages";
                     $limit =isset($limit) ? $limit : 0;
                     $num = (isset($_SESSION["MAX_PAGES_TO_SHOW"])) ?
@@ -395,9 +394,25 @@ class GroupController extends Controller implements CrawlConstants
                     }
                     $data["LIMIT"] = $limit;
                     $data["RESULTS_PER_PAGE"] = $num;
-                    list($data["TOTAL_ROWS"], $data["PAGES"]) =
-                        $group_model->getPageList(
-                        $group['GROUP_ID'], $locale_tag, $filter, $limit, $num);
+                    $data["FILTER"] = $filter;
+                    $search_page_info = false;
+                    if($filter != "") {
+                        $search_page_info = $group_model->getPageInfoByName(
+                            $group_id, $filter, $locale_tag, "read");
+                    }
+                    if(!$search_page_info) {
+                        list($data["TOTAL_ROWS"], $data["PAGES"]) =
+                            $group_model->getPageList(
+                            $group['GROUP_ID'], $locale_tag, $filter, $limit,
+                            $num);
+                        if($data["TOTAL_ROWS"] == 0) {
+                            $data["MODE"] = "read";
+                            $page_name = $filter;
+                        }
+                    } else {
+                        $data["MODE"] = "read";
+                        $page_name = $filter;
+                    }
                 break;
             }
         }
@@ -408,8 +423,12 @@ class GroupController extends Controller implements CrawlConstants
         if(in_array($data["MODE"], array("read", "edit"))) {
             if(!isset($data["PAGE"]) || !$data['PAGE']) {
                 $data["PAGE_NAME"] = $page_name;
-                $page_info = $group_model->getPageInfoByName($group_id,
-                    $page_name, $locale_tag, $data["MODE"]);
+                if(isset($search_page_info) && $search_page_info) {
+                    $page_info = $search_page_info;
+                } else {
+                    $page_info = $group_model->getPageInfoByName($group_id,
+                        $page_name, $locale_tag, $data["MODE"]);
+                }
                 $data["PAGE"] = $page_info["PAGE"];
                 $data["PAGE_ID"] = $page_info["ID"];
                 $data["DISCUSS_THREAD"] = $page_info["DISCUSS_THREAD"];
