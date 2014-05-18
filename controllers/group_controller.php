@@ -80,11 +80,14 @@ class GroupController extends Controller implements CrawlConstants
         $data[CSRF_TOKEN] = $this->generateCSRFToken($user_id);
         if(!$token_okay) {
             $keep_fields = array("a","f","just_group_id","just_user_id",
-                "just_thread", "limit", "num");
+                "just_thread", "limit", "num", "arg", "page_name");
             $request = $_REQUEST;
             $_REQUEST = array();
             foreach($keep_fields as $field) {
                 if(isset($request[$field])) {
+                    if($field == "arg" && $request[$field] != "read") {
+                        continue;
+                    }
                     $_REQUEST[$field] =
                         $this->clean($request[$field], "string");
                 }
@@ -240,12 +243,10 @@ class GroupController extends Controller implements CrawlConstants
             $i++;
         }
         if(is_string($page)) {
-                $page = $_REQUEST['page'];
             $page = str_replace("&#039;", "'", $page);
         }
         if(isset($_REQUEST['group_id'])) {
             $group_id = $this->clean($_REQUEST['group_id'], "int");
-
         } else {
             $group_id = PUBLIC_GROUP_ID;
         }
@@ -262,6 +263,8 @@ class GroupController extends Controller implements CrawlConstants
                 $data["CAN_EDIT"] = true;
             }
         }
+        $read_address = "?c=group&amp;a=wiki&amp;arg=read&amp;group_id=".
+            "$group_id&amp;page_name=";
         if(isset($_REQUEST["arg"])) {
             switch($_REQUEST["arg"])
             {
@@ -278,7 +281,8 @@ class GroupController extends Controller implements CrawlConstants
                             $group_id, $page_name, $page,
                             $locale_tag, $edit_reason,
                             tl('group_controller_page_created', $page_name),
-                            tl('group_controller_page_discuss_here'));
+                            tl('group_controller_page_discuss_here'),
+                            $read_address);
                         $data['SCRIPT'] .=
                             "doMessage('<h1 class=\"red\" >".
                             tl("group_controller_page_saved").
@@ -303,7 +307,7 @@ class GroupController extends Controller implements CrawlConstants
                             $data["MODE"] = "show";
                             $default_history = false;
                             $data["PAGE_NAME"] = $page_info["PAGE_NAME"];
-                            $parser = new WikiParser();
+                            $parser = new WikiParser($read_address);
                             $parsed_page = $parser->parse($page_info["PAGE"]);
                             $data["PAGE_ID"] = $page_id;
                             $data[CSRF_TOKEN] = 
@@ -365,7 +369,7 @@ class GroupController extends Controller implements CrawlConstants
                                 $page_info["PAGE"],
                                 $locale_tag,
                                 tl('group_controller_page_revert_to',
-                                date('c', $revert)));
+                                date('c', $revert)), $read_address);
                             $data['SCRIPT'] .=
                                 "doMessage('<h1 class=\"red\" >".
                                 tl("group_controller_page_reverted").
@@ -459,6 +463,12 @@ class GroupController extends Controller implements CrawlConstants
             if(count($document_parts) > 1) {
                 $head = $document_parts[0];
                 $data["PAGE"] = $document_parts[1];
+            }
+            if($data['MODE'] == "read" && strpos($data["PAGE"], "`") !== false){
+                if(isset($data["INCLUDE_SCRIPTS"])) {
+                    $data["INCLUDE_SCRIPTS"] = array();
+                }
+                $data["INCLUDE_SCRIPTS"][] = "math";
             }
         }
         return $data;

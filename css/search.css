@@ -94,13 +94,64 @@ p
 
 .indent
 {
-    text-indent:0.25in;
+    text-indent: 0.25in;
+}
+
+span.indent1
+{
+    margin-left: 0.25in;
+}
+
+span.indent2
+{
+    margin-left: 0.5in;
+}
+
+span.indent3
+{
+    margin-left: 0.75in;
+}
+
+span.indent4
+{
+    margin-left: 1in;
+}
+
+span.indent5
+{
+    margin-left: 1.25in;
 }
 
 .mobile .indent
 {
-    text-indent:10px;
+    text-indent: 10px;
 }
+
+.mobile span.indent1
+{
+    margin-left: 10px;
+}
+
+.mobile span.indent2
+{
+    margin-left: 20px;
+}
+
+.mobile span.indent3
+{
+    margin-left: 30px;
+}
+
+.mobile span.indent4
+{
+    margin-left: 40px;
+}
+
+.mobile span.indent5
+{
+    margin-left: 50px;
+}
+
 
 .html-ltr .float-opposite
 {

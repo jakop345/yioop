@@ -131,9 +131,15 @@ class WebLayout extends Layout
         <?php
         if(isset($data['INCLUDE_SCRIPTS'])) {
             foreach($data['INCLUDE_SCRIPTS'] as $script_name) {
-                e('<script type="text/javascript"
-                    src="'.$_SERVER["PATH_INFO"].'/scripts/'.
-                    $script_name.'.js" ></script>');
+                if($script_name == "math") {
+                    e('<script type="text/javascript"
+                        src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?'.
+                        'config=TeX-MML-AM_HTMLorMML"></script>');
+                } else {
+                    e('<script type="text/javascript"
+                        src="'.$_SERVER["PATH_INFO"].'/scripts/'.
+                        $script_name.'.js" ></script>');
+                }
             }
         }
         if(isset($data['INCLUDE_LOCALE_SCRIPT'])) {

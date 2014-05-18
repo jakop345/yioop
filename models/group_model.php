@@ -742,11 +742,11 @@ class GroupModel extends Model
      *
      */
     function setPageName($user_id, $group_id, $page_name, $page, $locale_tag,
-        $edit_comment, $thread_title, $tread_description)
+        $edit_comment, $thread_title, $tread_description, $base_address = "")
     {
         $db = $this->db;
         $pubdate = time();
-        $parser = new WikiParser();
+        $parser = new WikiParser($base_address);
         $parsed_page = $parser->parse($page);
         if($page_id = $this->getPageID($group_id, $page_name, $locale_tag)) {
             $sql = "UPDATE GROUP_PAGE SET PAGE=? WHERE ID = ?";

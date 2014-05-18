@@ -108,6 +108,12 @@ class StaticController extends Controller
             $page = "404";
             $page_string = $this->getPage($page);
         }
+        if(strpos($page_string, "`") !== false){
+            if(isset($data["INCLUDE_SCRIPTS"])) {
+                $data["INCLUDE_SCRIPTS"] = array();
+            }
+            $data["INCLUDE_SCRIPTS"][] = "math";
+        }
         $data['page'] = $page;
         $page_parts = explode("END_HEAD_VARS", $page_string);
         $static_view = $this->view("static");
