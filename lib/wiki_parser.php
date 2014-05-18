@@ -81,6 +81,8 @@ class WikiParser implements CrawlConstants
             array("/{{\s*Related articles\s*\|(.+?)\|(.+?)}}/si",
                 "<div class='indent'>(<a href=\"".
                 $base_address . "$1\">$1?</a>)</div>"),
+            array('/\[\[(http[^\s\]]+)\s+\|([^\[\]]+?)\]\]/s',
+                "<a href=\"{$base_address}$1\">$2</a>"),
             array('/\[\[([^\[\]]+?)\|([^\[\]]+?)\]\]/s',
                 "<a href=\"{$base_address}$1\">$2</a>"),
             array('/\[\[([^\[\]]+?)\]\]/s',
