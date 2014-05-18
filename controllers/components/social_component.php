@@ -797,7 +797,7 @@ class SocialComponent extends Component implements CrawlConstants
                 $page_info = $group_model->getPageInfoByThread($just_thread);
                 if(isset($page_info["PAGE_NAME"])) {
                     $data["WIKI_PAGE_NAME"] = $page_info["PAGE_NAME"];
-                    $data["WIKI_QUERY"] = "?c={$data['CONTROLLER']}&amp;".
+                    $data["WIKI_QUERY"] = "?c=group&amp;".
                         "a=wiki&amp;arg=edit&amp;page_name=".
                         $page_info['PAGE_NAME']."&amp;locale_tag=".
                         $page_info["LOCALE_TAG"]."&amp;group_id=".

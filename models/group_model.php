@@ -742,7 +742,7 @@ class GroupModel extends Model
      *
      */
     function setPageName($user_id, $group_id, $page_name, $page, $locale_tag,
-        $edit_comment = "")
+        $edit_comment, $thread_title, $tread_description)
     {
         $db = $this->db;
         $pubdate = time();
@@ -753,7 +753,7 @@ class GroupModel extends Model
             $result = $db->execute($sql, array($parsed_page, $page_id));
         } else {
             $discuss_thread = $this->addGroupItem(0, $group_id, $user_id, 
-                "++".$page_name, "++".$page_name." ".date("r", $pubdate),
+                $thread_title, $tread_description." ".date("r", $pubdate),
                 WIKI_GROUP_ITEM);
             $sql = "INSERT INTO GROUP_PAGE (DISCUSS_THREAD, GROUP_ID,
                 TITLE, PAGE, LOCALE_TAG) VALUES (?, ?, ?, ?, ?)";

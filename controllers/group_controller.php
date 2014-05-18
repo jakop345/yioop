@@ -276,7 +276,9 @@ class GroupController extends Controller implements CrawlConstants
                     } else if(!$missing_fields && $page){
                         $group_model->setPageName($user_id,
                             $group_id, $page_name, $page,
-                            $locale_tag, $edit_reason);
+                            $locale_tag, $edit_reason,
+                            tl('group_controller_page_created', $page_name),
+                            tl('group_controller_page_discuss_here'));
                         $data['SCRIPT'] .=
                             "doMessage('<h1 class=\"red\" >".
                             tl("group_controller_page_saved").

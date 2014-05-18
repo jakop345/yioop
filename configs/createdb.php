@@ -153,7 +153,8 @@ $group_model = new GroupModel(DB_NAME, false);
 $group_model->db = $db;
 foreach($public_pages as $page_name => $page_content) {
     $group_model->setPageName(ROOT_ID, PUBLIC_USER_ID, $page_name,
-        $page_content, "en-US", "Creating Default Page");
+        $page_content, "en-US", "Creating Default Pages",
+        "$page_name Wiki Page Created!", "Discuss the page in this thread!");
 }
 
 /* we insert 1 by 1 rather than comma separate as sqlite

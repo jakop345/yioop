@@ -87,12 +87,16 @@ class GroupfeedElement extends Element implements CrawlConstants
             if($data['SUBTITLE'] != "" && isset($data['ADMIN']) &&
                 $data['ADMIN']) { ?>
                 <div class="float-opposite">
-                <?php if(isset($data["WIKI_PAGE_NAME"])) { ?>
-                <a href="<?php e($wiki_query) ?>"><?php
-                    e(tl('groupfeed_element_wiki_page'))?></a>
+                <?php
+                if(isset($data["WIKI_PAGE_NAME"])) { ?>
+                    [<a href="<?php e($wiki_query) ?>"><?php
+                        e(tl('groupfeed_element_wiki_page'))?></a>]
+                    [<a href="<?php e($base_query) ?>"><?php
+                        e(tl('groupfeed_element_back'))?></a>]
+                <?php } else {?>
+                        <a href="<?php e($base_query) ?>"><?php
+                            e(tl('groupfeed_element_back'))?></a>
                 <?php } ?>
-                <a href="<?php e($base_query) ?>"><?php
-                    e(tl('groupfeed_element_back'))?></a>
                 </div>
             <?php
             }
