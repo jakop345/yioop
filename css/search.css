@@ -1732,7 +1732,8 @@ div.group-result
     width: 320px;
 }
 
-.content p
+.content p,
+.content div
 {
     padding-bottom: 8px;
 }

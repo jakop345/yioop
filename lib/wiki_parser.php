@@ -57,9 +57,9 @@ class WikiParser implements CrawlConstants
     {
         $substitutions = array(
             array('/(\A|\n)=\s*([^=]+)\s*=/',
-                "\n<h1 id='$2'>$2</h1><hr />"),
+                "\n<h1 id='$2'>$2</h1>"),
             array('/(\A|\n)==\s*([^=]+)\s*==/',
-                "\n<h2 id='$2'>$2</h2><hr />"),
+                "\n<h2 id='$2'>$2</h2>"),
             array('/(\A|\n)===\s*([^=]+)\s*===/',
                 "\n<h3 id='$2'>$2</h3>"),
             array('/(\A|\n)====\s*([^=]+)\s*====/',
@@ -148,6 +148,12 @@ class WikiParser implements CrawlConstants
      */
     function parse($document)
     {
+        $document_parts = explode("END_HEAD_VARS", $document);
+        $head = "";
+        if(count($document_parts) > 1) {
+            $head = $document_parts[0];
+            $document = $document_parts[1];
+        }
         $toc = $this->makeTableOfContents($document);
         list($document, $references) = $this->makeReferences($document);
         $document = preg_replace_callback('/(\A|\n){\|(.*?)\n\|}/s',
@@ -177,6 +183,9 @@ class WikiParser implements CrawlConstants
         }
         $document = $this->insertReferences($document, $references);
         $document = $this->insertTableOfContents($document, $toc);
+        if($head != "") {
+            $document = $head . "END_HEAD_VARS" . $document;
+        }
         return $document;
     }
 

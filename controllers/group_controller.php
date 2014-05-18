@@ -455,6 +455,11 @@ class GroupController extends Controller implements CrawlConstants
                 $data["PAGE_ID"] = $page_info["ID"];
                 $data["DISCUSS_THREAD"] = $page_info["DISCUSS_THREAD"];
             }
+            $document_parts = explode("\nEND_HEAD_VARS\n", $data["PAGE"]);
+            if(count($document_parts) > 1) {
+                $head = $document_parts[0];
+                $data["PAGE"] = $document_parts[1];
+            }
         }
         return $data;
     }

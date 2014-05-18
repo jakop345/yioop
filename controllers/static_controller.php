@@ -146,21 +146,20 @@ class StaticController extends Controller
     /**
      *  Used to read in the file containing the static page
      *
-     *  @param string $page name of file less extension to read in
+     *  @param string $page_name name of file less extension to read in
      *  @return string text of static page
      */
-    function getPage($page)
+    function getPage($page_name)
     {
-        $page_file =
-            LOCALE_DIR."/".getLocaleTag()."/pages/".$page.".thtml";
-        $fallback =
-            LOCALE_DIR."/".DEFAULT_LOCALE."/pages/".$page.".thtml";
-        if(file_exists($page_file)) {
-            $page_string = file_get_contents($page_file);
-        } else if (file_exists($fallback)) {
-            $page_string = file_get_contents($fallback);
-        } else {
-            $page_string = "";
+        $locale_tag = getLocaleTag();
+        $page_info = $this->model("group")->getPageInfoByName(
+            PUBLIC_GROUP_ID, $page_name, $locale_tag, "read");
+        $page_string = isset($page_info["PAGE"]) ? $page_info["PAGE"] : "";
+        if(!$page_string && $locale_tag != DEFAULT_LOCALE) {
+            //fallback to default locale for translation
+            $page_info = $group_model->getPageInfoByName(
+                $group_id, $page_name, DEFAULT_LOCALE, "read");
+            $page_string = $page_info["PAGE"];
         }
         return $page_string;
     }
