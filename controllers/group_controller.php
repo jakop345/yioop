@@ -369,7 +369,7 @@ class GroupController extends Controller implements CrawlConstants
                                 $page_info["PAGE"],
                                 $locale_tag,
                                 tl('group_controller_page_revert_to',
-                                date('c', $revert)), $read_address);
+                                date('c', $revert)), "", "", $read_address);
                             $data['SCRIPT'] .=
                                 "doMessage('<h1 class=\"red\" >".
                                 tl("group_controller_page_reverted").

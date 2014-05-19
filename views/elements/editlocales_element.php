@@ -64,22 +64,6 @@ class EditlocalesElement extends Element
         </div>
         <h2><?php e(tl('editlocales_element_edit_locale',
             $data['CURRENT_LOCALE_NAME']))?></h2>
-        <?php if(count($data['STATIC_PAGES']) > 1) {?>
-        <form id="staticPageForm" method="post" action='?'>
-        <input type="hidden" name="c" value="admin" />
-        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
-            e($data[CSRF_TOKEN]); ?>" />
-        <input type="hidden" name="a" value="manageLocales" />
-        <input type="hidden" name="arg" value="editstrings" />
-        <input type="hidden" name="selectlocale" value="<?php
-            e($data['CURRENT_LOCALE_TAG']); ?>" />
-        <div class="top-margin"><b><label for="static-pages"><?php
-            e(tl('editlocales_element_static_pages'))?></label></b>
-            <?php $this->view->helper("options")->render("static-pages",
-            "static_page", $data['STATIC_PAGES'], -1);
-            ?></div>
-        </form>
-        <?php }?>
         <form id="editLocaleForm" method="post" action='?'>
         <input type="hidden" name="c" value="admin" />
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
