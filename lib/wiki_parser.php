@@ -107,7 +107,13 @@ class WikiParser implements CrawlConstants
             array("/&lt;pre&gt;(.+?)&lt;\/pre&gt;/s", "<pre>$1</pre>"),
             array("/&lt;tt&gt;(.+?)&lt;\/tt&gt;/s", "<tt>$1</tt>"),
             array("/&lt;u&gt;(.+?)&lt;\/u&gt;/s", "<u>$1</u>"),
+            array("/&lt;strike&gt;(.+?)&lt;\/strike&gt;/s",
+                "<strike>$1</strike>"),
             array("/&lt;s&gt;(.+?)&lt;\/s&gt;/s", "<s>$1</s>"),
+            array("/&lt;ins&gt;(.+?)&lt;\/ins&gt;/s", "<ins>$1</ins>"),
+            array("/&lt;del&gt;(.+?)&lt;\/del&gt;/s", "<del>$1</del>"),
+            array("/&lt;sub&gt;(.+?)&lt;\/sub&gt;/s", "<sub>$1</sub>"),
+            array("/&lt;sup&gt;(.+?)&lt;\/sup&gt;/s", "<sup>$1</sup>"),
             array("/&lt;math&gt;(.+?)&lt;\/math&gt;/s", "`$1`"),
             array("/&lt;br(\s*\/)?&gt;/", "<br />"),
             array("/&amp;nbsp;/", "&nbsp;"),
@@ -142,11 +148,12 @@ class WikiParser implements CrawlConstants
             array('@</li></li>@', "</li>\n</ol>\n</li>"),
             array('/(\A|\n);([^:]+):([^\n]+)/',
                 "<dl><dt>$2</dt>\n<dd>$3</dd></dl>\n"),
-            array('/(\A|\n):\s/', "<span class='indent1'>&nbsp;</span>"),
-            array('/(\A|\n)::\s/', "<span class='indent2'>&nbsp;</span>"),
-            array('/(\A|\n):::\s/', "<span class='indent3'>&nbsp;</span>"),
-            array('/(\A|\n)::::\s/', "<span class='indent4'>&nbsp;</span>"),
-            array('/(\A|\n)(:)+::::\s/', "<span class='indent5'>&nbsp;</span>"),
+            array('/(\A|\n):\s/', "\n<span class='indent1'>&nbsp;</span>"),
+            array('/(\A|\n)::\s/', "\n<span class='indent2'>&nbsp;</span>"),
+            array('/(\A|\n):::\s/', "\n<span class='indent3'>&nbsp;</span>"),
+            array('/(\A|\n)::::\s/', "\n<span class='indent4'>&nbsp;</span>"),
+            array('/(\A|\n)(:)+::::\s/',
+                "\n<span class='indent5'>&nbsp;</span>"),
             array('/(\A|\n)----/', "$1<hr />"),
             array('/\r/', ""),
         );
@@ -414,7 +421,8 @@ class WikiParser implements CrawlConstants
 function makeTableCallback($matches)
 {
     $table = str_replace("\n!","\n|#",$matches[2]);
-    $table = str_replace("!!","\n||#",$table);
+    $table = str_replace("!!","||#",$table);
+    $table = str_replace("||","\n|",$table);
     $row_data = explode("|", $table);
     $first = true;
     $out = $matches[1];
@@ -425,6 +433,7 @@ function makeTableCallback($matches)
         crawlTimeoutLog("..Making Wiki Tables..");
         if($first) {
             $item = trim(str_replace("\n", " ", $item));
+            $item = str_replace("&quot;", "\"", $item);
             $out .= "<table $item>\n<tr>";
             $first = false;
             $old_line = true;
@@ -514,6 +523,6 @@ function base64EncodeCallback($matches)
  */
 function base64DecodeCallback($matches)
 {
-    return base64_decode($matches[1]);
+    return "<pre>".base64_decode($matches[1])."</pre>";
 }
 ?>

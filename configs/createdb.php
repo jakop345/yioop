@@ -128,27 +128,56 @@ $db->execute("INSERT INTO USER_GROUP VALUES (".ROOT_ID.", ".
     PUBLIC_GROUP_ID.", ".ACTIVE_STATUS.", $now)");
 $db->execute("INSERT INTO USER_GROUP VALUES (".PUBLIC_USER_ID.", ".
     PUBLIC_GROUP_ID.", ".ACTIVE_STATUS.", $now)");
-$public_pages = array(
-    "404" => "=Page Not Found=\n\nThe page you requested cannot be found.",
-    "409" => "=Conflict=\n\nYour request would result in an edit conflict,".
-        "so will not be processed.",
-    "blog" => "=Blog=\n\n==Crawl Notes==\n\nThis was an especially ".
-        "interesting crawl...",
-    "bot" => "=Bot=\n\nDescribes the web crawler used with this ".
-        "web site",
-    "captcha_time_out" => "=Captcha/Recover Time Out=\n\n".
-        "==Account Timeout==\n\nA large number of captcha refreshes or ".
-        "recover password requests have been made from this IP address. ".
-        "Please wait until %s to try again.",
-    "privacy" => "=Privacy Policy=\n\nDescribes what information this site ".
-        "collects and retains about users and how it uses that information",
-    "suggest_day_exceeded" => "=One-day Suggest Url Time Out=\n\n".
-        "==Account Timeout==\n\nThe maximum number of URLs that can be ".
-        "submitted from an IP address in one day has been exceeded. Please ".
-        "wait until %s to try again.",
-    "terms" => "=Terms of Service=\n\nPlease write the terms for the services".
-        "provided by this website."
-    );
+$public_pages = array();
+$public_pages["404"] = <<<EOD
+title=Page Not Found
+description=The page you requested cannot be found on our server
+END_HEAD_VARS
+==The page you requested cannot be found.==
+EOD;
+$public_pages["409"] = <<<EOD
+title=Conflict
+description=Your request would result in an edit conflict.
+END_HEAD_VARS
+==Your request would result in an edit conflict, so will not be processed.==
+EOD;
+$public_pages["captcha_time_out"] = <<<EOD
+title=Captcha/Recover Time Out
+
+END_HEAD_VARS
+==Account Timeout==
+
+A large number of captcha refreshes or recover password requests
+have been made from this IP address. Please wait until
+%s to try again.
+EOD;
+$public_pages["privacy"] = <<<EOD
+title=Privacy Policy
+
+description=Describes what information this site collects and retains about
+users and how it uses that information
+END_HEAD_VARS
+==We are concerned with your privacy==
+EOD;
+$public_pages["register_time_out"] = <<<EOD
+title=Create/Recover Account
+
+END_HEAD_VARS
+
+==Account Timeout==
+
+A number of incorrect captcha responses or recover password requests
+have been made from this IP address. Please wait until
+%s to access this site.
+EOD;
+$public_pages["suggest_day_exceeded"] = <<<EOD
+EOD;
+$public_pages["terms"] = <<<EOD
+=Terms of Service=
+
+Please write the terms for the services provided by this website.
+EOD;
+
 $group_model = new GroupModel(DB_NAME, false);
 $group_model->db = $db;
 foreach($public_pages as $page_name => $page_content) {
