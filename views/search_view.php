@@ -296,9 +296,9 @@ class SearchView extends View implements CrawlConstants
                             ?><span class="word-cloud">
                             <a class='word-cloud-<?php e($i)?>'
                             href="?<?php e(CSRF_TOKEN."=".$data[CSRF_TOKEN]);
-                                ?>&amp;its=<?php e($data['its']);?>
-                                &amp;q=<?php e($word);?>"><?php
-                            e($this->helper("displayresults")->
+                                ?>&amp;its=<?php e($data['its']);
+                                ?>&amp;q=<?php e($word);?>"><?php
+                                e($this->helper("displayresults")->
                                 render($word)."</span></a>");
                             $i++;
                         }
