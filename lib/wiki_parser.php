@@ -53,7 +53,7 @@ class WikiParser implements CrawlConstants
      *
      * @param string $base_address base url for link substitutions
      */
-    function __construct($base_address = "")
+    function __construct($base_address = "", $add_substitutions = array())
     {
         //assume substitutions are applied after htmlentities called on string
         $substitutions = array(
@@ -90,9 +90,10 @@ class WikiParser implements CrawlConstants
             array("/\[(http[^\s\]]+)\s+(.+?)\]/s",
                 "[<a href=\"$1\">$2</a>]"),
             array("/\[(http[^\]\s]+)\s*\]/","(<a href=\"$1\">&rarr;</a>)"),
-            array("/'''''(.+?)'''''/s", "<b><i>$1</i></b>"),
-            array("/'''(.+?)'''/s", "<b>$1</b>"),
-            array("/''(.+?)''/s", "<i>$1</i>"),
+            array("/&#039;&#039;&#039;&#039;&#039;(.+?)".
+                "&#039;&#039;&#039;&#039;&#039;/s", "<b><i>$1</i></b>"),
+            array("/&#039;&#039;&#039;(.+?)&#039;&#039;&#039;/s", "<b>$1</b>"),
+            array("/&#039;&#039;(.+?)&#039;&#039;/s", "<i>$1</i>"),
             array('/{{center\|(.+?)}}/s', "<div class='center'>$1</div>"),
             array('/{{left\|(.+?)}}/s', "<div class='align-left'>$1</div>"),
             array('/{{right\|(.+?)}}/s', "<div class='align-right'>$1</div>"),
@@ -102,6 +103,7 @@ class WikiParser implements CrawlConstants
             array("/{{lang[\||\-](.+?)\|(.+?)}}/si", "$1 &rarr; $2"),
             array("/{{convert\|(.+?)\|(.+?)\|(.+?)}}/si", "$1$2"),
             array("/{{IPA-(.+?)\|(.+?)}}/si", "(IPA $2)"),
+            array("/{{dablink\|(.+?)}}/si", "($1)"),
             array("/&lt;blockquote&gt;(.+?)&lt;\/blockquote&gt;/s",
                 "<blockquote>$1</blockquote>"),
             array("/&lt;pre&gt;(.+?)&lt;\/pre&gt;/s", "<pre>$1</pre>"),
@@ -161,6 +163,9 @@ class WikiParser implements CrawlConstants
         $this->matches = array();
         $this->replaces = array();
         $this->base_address = $base_address;
+        if($add_substitutions != array()) {
+            $substitutions = array_merge($add_substitutions, $substitutions);
+        }
         foreach($substitutions as $substitution) {
             list($this->matches[], $this->replaces[]) = $substitution;
         }
@@ -170,13 +175,16 @@ class WikiParser implements CrawlConstants
     /**
      *
      */
-    function parse($document)
+    function parse($document, $parse_head_vars = true,
+        $handle_big_files = false)
     {
-        $document_parts = explode("END_HEAD_VARS", $document);
         $head = "";
-        if(count($document_parts) > 1) {
-            $head = $document_parts[0];
-            $document = $document_parts[1];
+        if($parse_head_vars) {
+        $document_parts = explode("END_HEAD_VARS", $document);
+            if(count($document_parts) > 1) {
+                $head = $document_parts[0];
+                $document = $document_parts[1];
+            }
         }
         $document = preg_replace_callback(
             "/&lt;nowiki&gt;(.+?)&lt;\/nowiki&gt;/s",
@@ -185,10 +193,25 @@ class WikiParser implements CrawlConstants
         list($document, $references) = $this->makeReferences($document);
         $document = preg_replace_callback('/(\A|\n){\|(.*?)\n\|}/s',
             "makeTableCallback", $document);
-        if(strlen($document) < PAGE_RANGE_REQUEST) {
-            $document = substr($document, 0, PAGE_RANGE_REQUEST);
+        if($handle_big_files) {
+            if(strlen($document) < PAGE_RANGE_REQUEST) {
+                $document = preg_replace($this->matches,
+                    $this->replaces, $document);
+            } else {
+                $num_matches = count($this->matches);
+                for($i = 0; $i < $num_matches; $i++) {
+                    crawlTimeoutLog("..Doing wiki substitutions..");
+                    $document = preg_replace($this->matches[$i],
+                        $this->replaces[$i], $document);
+                }
+            }
+        } else {
+            if(strlen($document) > MAX_GROUP_PAGE_LEN) {
+                $document = substr($document, 0, MAX_GROUP_PAGE_LEN);
+            }
+            $document = 
+                preg_replace($this->matches, $this->replaces, $document);
         }
-        $document = preg_replace($this->matches, $this->replaces, $document);
         $document = preg_replace_callback("/((href=)\"([^\"]+)\")/",
             "fixLinksCallback", $document);
         $doc_parts = preg_split("/\n\n+/", $document);
@@ -210,7 +233,7 @@ class WikiParser implements CrawlConstants
         $document = preg_replace_callback(
             "/&lt;nowiki&gt;(.+?)&lt;\/nowiki&gt;/s",
             "base64DecodeCallback", $document);
-        if($head != "") {
+        if($head != "" && $parse_head_vars) {
             $document = $head . "END_HEAD_VARS" . $document;
         }
         return $document;

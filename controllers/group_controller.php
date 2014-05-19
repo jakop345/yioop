@@ -242,9 +242,6 @@ class GroupController extends Controller implements CrawlConstants
             }
             $i++;
         }
-        if(is_string($page)) {
-            $page = str_replace("&#039;", "'", $page);
-        }
         if(isset($_REQUEST['group_id'])) {
             $group_id = $this->clean($_REQUEST['group_id'], "int");
         } else {

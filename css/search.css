@@ -2315,6 +2315,34 @@ div.group-result
     margin:100px auto;
 }
 
+/**
+ * Styles for wiki tables
+ */
+table.wikitable
+{
+    background:white;
+    border:1px #aaa solid;
+    border-collapse: scollapse
+    margin:1em 0;
+}
+table.wikitable > tr > th,table.wikitable > tr > td,
+table.wikitable > * > tr > th,table.wikitable > * > tr > td
+{
+    border:1px #aaa solid;
+    padding:0.2em;
+}
+table.wikitable > tr > th,
+table.wikitable > * > tr > th
+{
+    text-align:center;
+    background:white;
+    font-weight:bold
+}
+table.wikitable > caption
+{
+    font-weight:bold;
+}
+
 /*
   Styles for the classifiers settings pages
  */
