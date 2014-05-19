@@ -246,6 +246,9 @@ class WikiView extends View
             <textarea class="tall-text-area" name="page" ><?php
                 e($data['PAGE']);
             ?></textarea>
+            <div class="green"><?php
+            e(tl('wiki_element_archive_info'));
+            ?></div>
             <div class="top-margin">
             <label for="edit-reason"><b><?php
             e(tl('wiki_element_edit_reason'));

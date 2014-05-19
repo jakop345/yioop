@@ -916,7 +916,7 @@ class GroupModel extends Model
         }
         $sql = "SELECT COUNT(*) AS TOTAL
             FROM GROUP_PAGE WHERE GROUP_ID = ? AND
-            LOCALE_TAG= ? $like";
+            LOCALE_TAG= ? AND LENGTH(PAGE) > 0 $like";
         $result = $db->execute($sql, $params);
         if($result) {
             $row = $db->fetchArray($result);
@@ -926,7 +926,8 @@ class GroupModel extends Model
         if($total > 0) {
             $sql = "SELECT TITLE, SUBSTR(PAGE,0, 100) AS DESCRIPTION
                 FROM GROUP_PAGE WHERE GROUP_ID = ? AND
-                LOCALE_TAG= ? $like ORDER BY UPPER(TITLE) ASC ".
+                LOCALE_TAG= ? AND LENGTH(PAGE) > 0 
+                $like ORDER BY UPPER(TITLE) ASC ".
                 $db->limitOffset($limit, $num);
             $result = $db->execute($sql, $params);
             $i = 0;

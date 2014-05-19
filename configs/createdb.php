@@ -392,14 +392,14 @@ Captions can be added using the + symbol:
 Finally, you can put a CSS class or style attribute on the first line
 of the table to further control how it looks:
 <nowiki>
-{| style="border: 1px solid black"
+{| class="wikitable"
 |+ My Caption
 !a!!b
 |-
 |c|d
 |}
 </nowiki>
-{| style="border: 1px solid black; background-color:gray"
+{| class="wikitable"
 |+ My Caption
 !a!!b
 |-
@@ -411,12 +411,12 @@ of the table to further control how it looks:
 Math can be included into a wiki document by either using the math tag:
 <nowiki>
 <math>
-\sum_{n=1}^{\infty} n
+\sum_{i=1}^{n} i = \frac{(n+1)(n)}{2}
 </math>
 </nowiki>
 
 <math>
-\sum_{n=1}^{\infty} n
+\sum_{i=1}^{\n} i = \frac{(n+1)(n)}{2}
 </math>
 EOD;
 $group_model = new GroupModel(DB_NAME, false);

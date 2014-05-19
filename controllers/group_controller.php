@@ -230,7 +230,7 @@ class GroupController extends Controller implements CrawlConstants
             "diff2" => 'int',
             "revert" => 'int'
         );
-        $last_care_missing = 3;
+        $last_care_missing = 2;
         $missing_fields = false;
         $i = 0;
         foreach($clean_array as $field => $type) {
@@ -268,12 +268,12 @@ class GroupController extends Controller implements CrawlConstants
                 case "edit":
                     if(!$data["CAN_EDIT"]) { continue; }
                     $data["MODE"] = "edit";
-                    if($missing_fields && $page) {
+                    if($missing_fields) {
                         $data['SCRIPT'] .=
                             "doMessage('<h1 class=\" red\" >". 
                             tl("group_controller_missing_fields").
                             "</h1>')";
-                    } else if(!$missing_fields && $page){
+                    } else if(!$missing_fields && isset($page)) {
                         $group_model->setPageName($user_id,
                             $group_id, $page_name, $page,
                             $locale_tag, $edit_reason,
