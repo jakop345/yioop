@@ -102,7 +102,7 @@ class VisitorModel extends Model
      *  recovery info correctly.
      *
      *  @param string $ip_address ipv4 or ipv6 address to insert or update.
-     *  @param string $page_name name of static page (served by
+     *  @param string $page_name name of page (served by
      *      StaticController) to display if ip is in a timeout period
      *  @param int $start_delay only is used if ip address does not
      *      already have an entry in the VISITOR table in which case it

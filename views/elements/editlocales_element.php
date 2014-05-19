@@ -101,13 +101,6 @@ class EditlocalesElement extends Element
                 e(tl('editlocales_element_submit')); ?></button></div>
         </form>
         </div>
-        <script type="text/javascript">
-        function submitStaticPageForm()
-        {
-            elt('staticPageForm').submit();
-        }
-
-        </script>
     <?php
     }
 }

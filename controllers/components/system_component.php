@@ -427,43 +427,9 @@ class SystemComponent extends Component
                     $data["leftorright"] =
                         (getLocaleDirection() == 'ltr') ? "right": "left";
                     $data["ELEMENT"] = "editlocales";
-                    $data['STATIC_PAGES'][-1]=
-                        tl('system_component_select_staticpages');
-                    $data['STATIC_PAGES'] +=
-                        $locale_model->getStaticPageList($selectlocale);
                     $data['CURRENT_LOCALE_NAME'] =
                         $locale_model->getLocaleName($selectlocale);
                     $data['CURRENT_LOCALE_TAG'] = $selectlocale;
-                    $tmp_pages = $data['STATIC_PAGES'];
-                    array_shift($tmp_pages);
-                    $page_keys = array_keys($tmp_pages);
-                    if(isset($_REQUEST['static_page']) &&
-                        in_array($_REQUEST['static_page'], $page_keys)) {
-                        $data["ELEMENT"] = "editstatic";
-                        $data['STATIC_PAGE'] = $_REQUEST['static_page'];
-                        if(isset($_REQUEST['PAGE_DATA'])) {
-                            $locale_model->setStaticPage(
-                                $_REQUEST['static_page'],
-                                $data['CURRENT_LOCALE_TAG'],
-                                $_REQUEST['PAGE_DATA']);
-                            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                                tl('system_component_staticpage_updated').
-                                "</h1>')";
-                        }
-                        $data['PAGE_NAME'] =
-                            $data['STATIC_PAGES'][$data['STATIC_PAGE']];
-                        $data['PAGE_DATA'] =
-                            $locale_model->getStaticPage(
-                                $_REQUEST['static_page'],
-                                $data['CURRENT_LOCALE_TAG']);
-                        /*since page data can contain tags we clean it
-                          htmlentities it just before displaying*/
-                        $data['PAGE_DATA'] = $parent->clean($data['PAGE_DATA'],
-                            "string");
-                        break;
-                    }
-                    $data['SCRIPT'] .= "selectPage = elt('static-pages');".
-                        "selectPage.onchange = submitStaticPageForm;";
                     if(isset($_REQUEST['STRINGS'])) {
                         $safe_strings = array();
                         foreach($_REQUEST['STRINGS'] as $key => $value) {

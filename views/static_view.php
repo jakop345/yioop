@@ -34,8 +34,8 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- * This View is responsible for drawing the landing page
- * of the Seek Quarry app
+ * This View is responsible for drawing forward-facing wiki pages in
+ * a more static cleaned up way
  *
  * @author Chris Pollett
  * @package seek_quarry
@@ -51,7 +51,7 @@ class StaticView extends View
     var $layout = "web";
 
     /**
-     *  Draws the login web page.
+     *  Draws wiki page in a more static fashion.
      *
      *  @param array $data  contains the static page contents
      *  the view

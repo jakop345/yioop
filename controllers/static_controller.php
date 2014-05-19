@@ -37,7 +37,8 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 require_once BASE_DIR."/controllers/controller.php";
 
 /**
- * This controller is  used by the Yioop web site to display static pages.
+ * This controller is  used by the Yioop web site to display
+ * PUBLIC_GROUP_ID pages more like static forward facing pages.
  *
  * @author Chris Pollett
  * @package seek_quarry
@@ -83,7 +84,7 @@ class StaticController extends Controller
 
 
     /**
-     * This activity is used to display one a static pages used
+     * This activity is used to display one a PUBLIC_GROUP_ID pages used
      * by the Yioop Web Site
      *
      * @return array $data has title and page contents of the static page to
@@ -150,10 +151,11 @@ class StaticController extends Controller
     }
 
     /**
-     *  Used to read in the file containing the static page
+     *  Used to read in a PUBLIC_GROUP_ID wiki page that will be presented
+     *  to non-logged in visitors to the site.
      *
      *  @param string $page_name name of file less extension to read in
-     *  @return string text of static page
+     *  @return string text of page
      */
     function getPage($page_name)
     {

@@ -381,67 +381,6 @@ class LocaleModel extends Model
     }
 
     /**
-     *  Returns a list of the static pages thaat can be localized
-     *
-     *  @param string $locale_tag tag we are going to select static page for
-     *
-     *  @return array of file_path => name of static pages that can be localized
-     */
-    function getStaticPageList($locale_tag = DEFAULT_LOCALE)
-    {
-        $default_dir = LOCALE_DIR."/".DEFAULT_LOCALE."/pages";
-        $pre_pages = glob("$default_dir/*.thtml");
-        $pages = array();
-        foreach($pre_pages as $path) {
-            $type = UrlParser::getDocumentType($path);
-            $name = UrlParser::getDocumentFilename($path);
-            $name = "$name.$type";
-            $pages[$name] = $name;
-        }
-        return $pages;
-    }
-
-    /**
-     * Returns the static page for with the given name translated to the
-     *  given locale_tag
-     *
-     * @param string $page_name name of a static page
-     * @param string $locale_tag the language we want the static page for
-     *
-     * @return string the page data in the given language
-     */
-    function getStaticPage($page_name, $locale_tag)
-    {
-        $filename = LOCALE_DIR."/".$locale_tag."/pages/$page_name";
-        $page = "";
-        if(file_exists($filename)) {
-            $page = file_get_contents($filename);
-        }
-
-        return $page;
-    }
-
-    /**
-      * Save the static page data for with the given name to the
-     *  given locale_tag
-     *
-     * @param string $page_name name of a static page
-     * @param string $locale_tag the language we want the static page for
-     * @param string $data to save
-     */
-    function setStaticPage($page_name, $locale_tag, $data)
-    {
-        $dirname = LOCALE_DIR."/".$locale_tag."/pages";
-        if(!file_exists($dirname)) {
-            mkdir($dirname);
-            $this->db->setWorldPermissionsRecursive($dirname);
-        }
-
-        $filename = "$dirname/$page_name";
-        file_put_contents($filename, $data);
-    }
-
-    /**
      * For each translatable identifier string (either static from a
      * configure ini file, or dynamic from the db)
      * return its name together with its translation into the given locale
@@ -648,9 +587,6 @@ class LocaleModel extends Model
      * then these strings are merged with existing extracted strings for each
      * locale as well as their translations (if an extract string has a
      * translation the translation is untouched by this process).
-     * Static pages which exist in Yioop's locales dir but not in the
-     * WORK_DIRECTORY locale dir are also copied. Existing static pages are not
-     * modified.
      *
      * @param array $force_folders which locale subfolders should be forced
      *      updated to the fallback dir's version
@@ -676,9 +612,6 @@ class LocaleModel extends Model
      *  locale it merges out the current general_ini and strings data.
      *  It deletes identifiers that are not in strings, it adds new identifiers
      *  and it leaves existing identifier translation pairs untouched.
-     *  Static pages which exist in Yioop's locales dir but not in the
-     *  WORK_DIRECTORY locale dir are also copied. Existing static pages are not
-     *  modified.
      *
      * @param array $general_ini  data that would typically come from the
      *      general.ini file
@@ -719,9 +652,6 @@ class LocaleModel extends Model
      * (this might have existing translations),  as well as new translation
      * data that might come from a localizer via a web form and
      * combines these to produce a new configure.ini file
-     * Static pages which exist in Yioop's locales dir but not in the
-     * WORK_DIRECTORY locale dir are also copied. Existing static pages are not
-     * modified.
      *
      * @param array $general_ini data from the general.ini file
      * @param array $strings line array data extracted from files in
@@ -746,13 +676,6 @@ class LocaleModel extends Model
         if(file_exists($fallback_path . '/configure.ini')) {
             $fallback_configure = parse_ini_with_fallback(
                 $fallback_path . '/configure.ini');
-        }
-        if(file_exists($fallback_path.'/pages')) {
-            if(in_array("pages", $force_folders)) {
-                rename($cur_path.'/pages', $cur_path.'/pages'.time().'old');
-            }
-            $this->updateLocaleSubFolder($cur_path.'/pages',
-                $fallback_path.'/pages', array("thtml"));
         }
         if(file_exists($fallback_path.'/resources')) {
             if(in_array("resources", $force_folders)) {
