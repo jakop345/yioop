@@ -191,6 +191,9 @@ class WikiView extends View
                 e(tl('wiki_element_submit')); ?></button>
             </form>
             <?php
+            e("<p><a href='?c=group&amp;group_id=".PUBLIC_GROUP_ID.
+                "&amp;arg=read&amp;a=wiki&amp;page_name=Syntax'>".
+                tl("wiki_view_syntax_summary")."</a>.</p>");
         } else if(!$logged_in) {
             e("<h2>".tl("wiki_view_page_no_exist", $data["PAGE_NAME"]).
                 "</h2>");

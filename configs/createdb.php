@@ -177,7 +177,248 @@ $public_pages["terms"] = <<<EOD
 
 Please write the terms for the services provided by this website.
 EOD;
+$public_pages["Syntax"] = <<<EOD
+=Yioop Wiki Syntax=
 
+Wiki syntax is a lightweight way to markup a text document so that
+it can be formatted and drawn nicely by Yioop.
+This page briefly describes the wiki syntax supported by Yioop. 
+
+==Headings==
+In wiki syntax headings of documents and sections are written as follows:
+
+<nowiki>
+=Level1=
+==Level2==
+===Level3===
+====Level4====
+=====Level5=====
+======Level6======
+</nowiki>
+
+and would look like:
+
+=Level1=
+==Level2==
+===Level3===
+====Level4====
+=====Level5=====
+======Level6======
+
+==Paragraphs==
+In Yioop two new lines indicates a new paragraph. You can control
+the indent of a paragraph by putting colons followed by a space in front of it:
+
+<nowiki>
+: some indent
+
+:: a little more
+
+::: even more
+
+:::: that's sorta crazy
+</nowiki>
+
+which looks like:
+
+: some indent
+
+:: a little more
+
+::: even more
+
+:::: that's sorta crazy
+
+==Horizontal Rule==
+Sometimes it is convenient to separate paragraphs or sections with a horizontal rule.
+This can be done by placing four hyphens on a line by themselves:
+<nowiki>
+----
+</nowiki>
+This results in a line that looks like:
+----
+
+==Text Formatting Within Paragraphs==
+Within a paragraph it is often convenient to make some text bold, italics, underlined, etc. Below is
+a quick summary of how to do this:
+===Wiki Markup===
+{|
+|<nowiki>''italic''</nowiki>|''italic''
+|-
+|<nowiki>'''bold'''</nowiki>|'''bold'''
+|-
+|<nowiki>'''''bold and italic'''''</nowiki>|'''''bold and italic'''''
+|}
+
+===HTML Tags===
+Yioop also supports several html tags such as:
+{|
+|<nowiki><del>delete</del></nowiki>|<del>delete</del>
+|-
+|<nowiki><ins>insert</ins></nowiki>|<ins>insert</ins>
+|-
+|<nowiki><s>strike through</s> or 
+<strike>strike through</strike> </nowiki>|<s>strike through</s>
+|-
+|<nowiki><sup>superscript</sup> and 
+<sub>subscript</sub></nowiki>|<sup>superscript</sup> and 
+<sub>subscript</sub>
+|-
+|<nowiki><tt>typewriter</tt></nowiki>|<tt>typewriter</tt>
+|-
+|<nowiki><u>underline</u></nowiki>|<u>underline</u>
+|}
+
+===Spacing within Paragraphs===
+The HTML entity
+<nowiki>&nbsp;</nowiki> 
+can be used to create a non-breaking space. The tag
+<nowiki><br></nowiki>
+can be used to produce a line break.
+==Preformatted Text==
+You can force text to be formatted as you typed it rather
+than using the layout mechanism of the browser using the
+<nowiki><pre>preformatted text tag.</pre></nowiki>
+Alternatively, a sequence of lines all beginning with a
+space character will also be treated as preformatted.
+
+==Lists==
+The Yioop Wiki Syntax supported of ways of listing items:
+bulleted/unordered list, numbered/ordered lists, and
+definition lists. Below are some examples:
+
+===Unordered Lists===
+<nowiki>
+* Item1
+** SubItem1
+** SubItem2
+*** SubSubItem1
+* Item 2
+* Item 3
+</nowiki>
+would be drawn as:
+* Item1
+** SubItem1
+** SubItem2
+*** SubSubItem1
+* Item 2
+* Item 3
+
+===Ordered Lists===
+<nowiki>
+# Item1
+## SubItem1
+## SubItem2
+### SubSubItem1
+# Item 2
+# Item 3
+</nowiki>
+# Item1
+## SubItem1
+## SubItem2
+### SubSubItem1
+# Item 2
+# Item 3
+
+===Mixed Lists===
+<nowiki>
+# Item1
+#* SubItem1
+#* SubItem2
+#*# SubSubItem1
+# Item 2
+# Item 3
+</nowiki>
+# Item1
+#* SubItem1
+#* SubItem2
+#*# SubSubItem1
+# Item 2
+# Item 3
+
+===Definition Lists===
+<nowiki>
+;Term 1: Definition of Term 1
+;Term 2: Definition of Term 2
+</nowiki>
+;Term 1: Definition of Term 1
+;Term 2: Definition of Term 2
+
+==Tables==
+A table begins with {`|`  and ends with `|`}. Cells are separated with | and
+rows are separatec with |- as can be seen in the following
+example:
+<nowiki>
+{|
+|a||b
+|-
+|c||d
+|}
+</nowiki>
+{|
+|a||b
+|-
+|c||d
+|}
+Heading for columns and rows can be made by using an exclamation point, !, rather than
+a vertical bar |. For example,
+<nowiki>
+{|
+!a!!b
+|-
+|c|d
+|}
+</nowiki>
+{|
+!a!!b
+|-
+|c|d
+|}
+Captions can be added using the + symbol:
+<nowiki>
+{|
+|+ My Caption
+!a!!b
+|-
+|c|d
+|}
+</nowiki>
+{|
+|+ My Caption
+!a!!b
+|-
+|c|d
+|}
+Finally, you can put a CSS class or style attribute on the first line
+of the table to further control how it looks:
+<nowiki>
+{| style="border: 1px solid black"
+|+ My Caption
+!a!!b
+|-
+|c|d
+|}
+</nowiki>
+{| style="border: 1px solid black; background-color:gray"
+|+ My Caption
+!a!!b
+|-
+|c|d
+|}
+
+==Math==
+
+Math can be included into a wiki document by either using the math tag:
+<nowiki>
+<math>
+\sum_{n=1}^{\infty} n
+</math>
+</nowiki>
+
+<math>
+\sum_{n=1}^{\infty} n
+</math>
+EOD;
 $group_model = new GroupModel(DB_NAME, false);
 $group_model->db = $db;
 foreach($public_pages as $page_name => $page_content) {
