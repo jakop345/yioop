@@ -92,6 +92,13 @@ class PageOptionsElement extends Element
             <?php $this->view->helper("options")->render("page-range-request",
             "page_range_request", $data['SIZE_VALUES'], $data['PAGE_SIZE']);
             ?></div>
+        <div class="top-margin"><label for="summarizer"><b><?php
+            e(tl('pageoptions_element_summarizer'))?></b></label><?php
+                $this->view->helper("options")->render("summarizer",
+                "summarizer_option",$data['available_summarizers'],
+                $data['summarizer_option']);
+            ?>
+        </div>
         <div class="top-margin"><b><label for="max-description-len"><?php
             e(tl('pageoptions_element_max_description'))?></label></b>
             <?php $this->view->helper("options")->render("max-description-len",

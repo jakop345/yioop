@@ -466,27 +466,6 @@ class CrawlComponent extends Component implements CrawlConstants
                 tl('crawl_component_breadth_first'),
             self::PAGE_IMPORTANCE =>
                 tl('crawl_component_page_importance'));
-        $data['available_summarizers'] = array(
-            self::BASIC_SUMMARIZER =>
-                tl('crawl_component_basic'),
-            self::CENTROID_SUMMARIZER =>
-                tl('crawl_component_centroid'));
-        if(!$no_further_changes && isset($_REQUEST['summarizer_option'])
-            &&  in_array($_REQUEST['summarizer_option'],
-            array_keys($data['available_summarizers']))) {
-            $seed_info['general']['summarizer_option'] =
-                $_REQUEST['summarizer_option'];
-            $update_flag = true;
-        }
-        $data['summarizer_option'] =
-            $seed_info['general']['summarizer_option'];
-        if(!$no_further_changes && isset($_REQUEST['crawl_order'])
-            &&  in_array($_REQUEST['crawl_order'],
-                array_keys($data['available_crawl_orders']))) {
-            $seed_info['general']['crawl_order'] =
-                $_REQUEST['crawl_order'];
-            $update_flag = true;
-        }
         $data['crawl_order'] = $seed_info['general']['crawl_order'];
 
         if(!$no_further_changes && isset($_REQUEST['posted'])) {
@@ -840,6 +819,9 @@ class CrawlComponent extends Component implements CrawlConstants
         $data['LEN_VALUES'] = array(2000=>2000, 10000=>10000, 50000=>50000,
             100000=>100000, 500000=>500000, 1000000=>1000000,
             5000000=>5000000, 10000000=>10000000);
+        $data['available_summarizers'] = array(
+            self::BASIC_SUMMARIZER => tl('crawl_component_basic'),
+            self::CENTROID_SUMMARIZER =>  tl('crawl_component_centroid'));
         if(!isset($seed_info["indexed_file_types"]["extensions"])) {
             $seed_info["indexed_file_types"]["extensions"] =
                 $INDEXED_FILE_TYPES;
@@ -877,7 +859,6 @@ class CrawlComponent extends Component implements CrawlConstants
                 $seed_info['active_classifiers'] = array();
                 $seed_info['active_classifiers']['label'] = array();
             }
-            $update_flag = true;
             $loaded = true;
         } else {
             $seed_info = $crawl_model->getSeedInfo();
@@ -892,6 +873,14 @@ class CrawlComponent extends Component implements CrawlConstants
                 $seed_info["general"]["page_range_request"] =
                     $_REQUEST["page_range_request"];
             }
+            if(isset($_REQUEST['summarizer_option'])
+                && in_array($_REQUEST['summarizer_option'],
+                array_keys($data['available_summarizers']))) {
+                $seed_info['general']['summarizer_option'] =
+                    $_REQUEST['summarizer_option'];
+            }
+            $data['summarizer_option'] =
+                $seed_info['general']['summarizer_option'];
             if(isset($_REQUEST["max_description_len"]) &&
                 in_array($_REQUEST["max_description_len"],$data['LEN_VALUES'])){
                 $seed_info["general"]["max_description_len"] =
@@ -908,7 +897,6 @@ class CrawlComponent extends Component implements CrawlConstants
                 $seed_info['page_rules']['rule'] =
                     $parent->convertStringCleanArray(
                     $_REQUEST['page_rules'], 'rule');
-                    $update_flag = true;
             }
         }
         if(!isset($seed_info["general"]["page_recrawl_frequency"])) {
