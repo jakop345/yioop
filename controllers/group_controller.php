@@ -40,9 +40,9 @@ require_once BASE_DIR."/lib/crawl_constants.php";
 /** For Wiki Parsing */
 require_once BASE_DIR."/lib/wiki_parser.php";
 /**
- * Controller used to handle admin functionalities such as
- * modify login and password, CREATE, UPDATE,DELETE operations
- * for users, roles, locale, and crawls
+ * Controller used to handle user group activities outside of
+ *  the admin panel setting. This either could be because the admin panel
+ *  is "collapsed" or because the request concerns a wiki page.
  *
  * @author Chris Pollett
  * @package seek_quarry
@@ -60,7 +60,9 @@ class GroupController extends Controller implements CrawlConstants
     var $activities = array("groupFeeds", "wiki");
 
     /**
-     *
+     *  Used to process requests related to user group activities outside of
+     *  the admin panel setting. This either could be because the admin panel
+     *  is "collapsed" or because the request concerns a wiki page.
      */
     function processRequest()
     {
@@ -244,6 +246,14 @@ class GroupController extends Controller implements CrawlConstants
         }
         if(isset($_REQUEST['group_id'])) {
             $group_id = $this->clean($_REQUEST['group_id'], "int");
+        } else if(isset($page_id)) {
+            $page_info = $group_model->getPageInfoByPageId($page_id);
+            if(isset($page_info["GROUP_ID"])) {
+                $group_id = $page_info["GROUP_ID"];
+                unset($page_info);
+            } else {
+                $group_id = PUBLIC_GROUP_ID;
+            }
         } else {
             $group_id = PUBLIC_GROUP_ID;
         }

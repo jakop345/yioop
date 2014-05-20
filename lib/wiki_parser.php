@@ -36,6 +36,9 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 /** Used to load common constants among crawl components */
 require_once BASE_DIR."/lib/crawl_constants.php";
 
+/** For close dangling tags */
+require_once BASE_DIR."/lib/processors/text_processor.php";
+
 /**
  *
  * @author Chris Pollett
@@ -174,6 +177,9 @@ class WikiParser implements CrawlConstants
 
     /**
      *
+     *  @param string $document
+     *  @param bool $parse_head_vars
+     *  @param bool $handle_big_files
      */
     function parse($document, $parse_head_vars = true,
         $handle_big_files = false)
@@ -194,7 +200,7 @@ class WikiParser implements CrawlConstants
         $document = preg_replace_callback('/(\A|\n){\|(.*?)\n\|}/s',
             "makeTableCallback", $document);
         if($handle_big_files) {
-            if(strlen($document) < PAGE_RANGE_REQUEST) {
+            if(strlen($document) < MAX_GROUP_PAGE_LEN) {
                 $document = preg_replace($this->matches,
                     $this->replaces, $document);
             } else {
@@ -206,8 +212,8 @@ class WikiParser implements CrawlConstants
                 }
             }
         } else {
-            if(strlen($document) > MAX_GROUP_PAGE_LEN) {
-                $document = substr($document, 0, MAX_GROUP_PAGE_LEN);
+            if(strlen($document) > 0.9*MAX_GROUP_PAGE_LEN) {
+                $document = substr($document, 0, 0.9*MAX_GROUP_PAGE_LEN);
             }
             $document = 
                 preg_replace($this->matches, $this->replaces, $document);
@@ -235,6 +241,12 @@ class WikiParser implements CrawlConstants
             "base64DecodeCallback", $document);
         if($head != "" && $parse_head_vars) {
             $document = $head . "END_HEAD_VARS" . $document;
+        }
+        if(!$handle_big_files && strlen($document) > 0.9*MAX_GROUP_PAGE_LEN) {
+            $document = substr($document, 0, 0.9*MAX_GROUP_PAGE_LEN);
+            TextProcessor::closeDanglingTags($document);
+            $document .="...";
+
         }
         return $document;
     }

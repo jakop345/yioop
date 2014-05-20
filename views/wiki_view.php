@@ -47,11 +47,9 @@ class WikiView extends View
     var $layout = "web";
 
     /**
-     * Renders the list of admin activities and draws the current activity
-     * Renders the Javascript to autologout after an hour
+     * Renders 
      *
-     * @param array $data  what is contained in this array depend on the current
-     * admin activity. The $data['ELEMENT'] says which activity to render
+     * @param array $data  
      */
     function renderView($data) 
     {
@@ -208,7 +206,10 @@ class WikiView extends View
     }
 
     /**
-     * @param array $data
+     * Used to drawn the form that let's someone edit a wiki page
+     *
+     * @param array $data fields contain data about the page being
+     *  edited. In particular, PAGE contains the raw page data
      */
     function renderEditPageForm($data)
     {
@@ -326,6 +327,8 @@ class WikiView extends View
     }
 
     /**
+     * Used to draw the revision history page for a wiki document
+     *
      * @param array $data
      */
     function renderHistory($data)

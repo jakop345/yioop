@@ -836,6 +836,24 @@ class GroupModel extends Model
 
     /**
      *
+     *  @param int $page_thread_id
+     */
+    function getPageInfoByPageId($page_id)
+    {
+        $db = $this->db;
+        $sql = "SELECT GROUP_ID, LOCALE_TAG, TITLE AS PAGE_NAME FROM GROUP_PAGE
+            WHERE ID = ?";
+        $result = $db->execute($sql, array($page_id));
+        if(!$result) { return false; }
+        $row = $db->fetchArray($result);
+        if(!$row) {
+            return false;
+        }
+        return $row;
+    }
+
+    /**
+     *
      *  @param int $page_id
      *  @param int $pubdate
      */
