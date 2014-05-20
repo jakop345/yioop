@@ -91,6 +91,8 @@ class WebLayout extends Layout
             href="<?php e($path_info); ?>favicon.ico" />
         <link rel="stylesheet" type="text/css"
             href="<?php e($path_info); ?>/css/search.css" />
+            <link rel="stylesheet" type="text/css"
+                  href="<?php e($path_info); ?>/css/editor.css" />
         <link rel="search" type="application/opensearchdescription+xml"
             href="<?php e(NAME_SERVER."yioopbar.xml");?>"
             title="Content search" />
@@ -125,7 +127,66 @@ class WebLayout extends Layout
 
         </div>
         <?php
-        } ?>
+        }
+        // Temp changes for testing.
+        $data["INCLUDE_SCRIPTS"][] = "wikify";
+
+        //set up an array of translation for javascript-land
+        $data['SCRIPT'] .= "tl = {".
+                'wiki_js_search_size_small :"'.
+                tl('wiki_js_search_size_small') .
+                '",' . 'wiki_js_search_size_medium :"'.
+                tl('wiki_js_search_size_medium').'",'.
+                'wiki_js_search_size_large :"'.
+                tl('wiki_js_search_size_large').'",'.
+                'wiki_js_search_size :"'.
+                tl('wiki_js_search_size').'",'.
+                'wiki_js_prompt_heading :"'.
+                tl('wiki_js_prompt_heading').'",'.
+                'wiki_js_example_placeholder :"'.
+                tl('wiki_js_example_placeholder').'",'.
+                'wiki_js_table_title_placeholder :"'.
+                tl('wiki_js_table_title_placeholder').'",'.
+                'wiki_js_formbtn_submit :"'.
+                tl('wiki_js_formbtn_submit').'",'.
+                'wiki_js_formbtn_cancel :"'.
+                tl('wiki_js_formbtn_cancel').'",'.
+                'wiki_js_bold :"'.
+                tl('wiki_js_bold') .
+                '",' . 'wiki_js_italic :"'.
+                tl('wiki_js_italic').'",'.
+                'wiki_js_underline :"'.
+                tl('wiki_js_underline').'",'.
+                'wiki_js_strike :"'.
+                tl('wiki_js_strike').'",'.
+                'wiki_js_heading1 :"'.
+                tl('wiki_js_heading1').'",'.
+                'wiki_js_heading2 :"'.
+                tl('wiki_js_heading2').'",'.
+                'wiki_js_heading3 :"'.
+                tl('wiki_js_heading3').'",'.
+                'wiki_js_heading4 :"'.
+                tl('wiki_js_heading4').'",'.
+                'wiki_js_bullet :"'.
+                tl('wiki_js_bullet').'",'.
+                'wiki_js_enum :"'.
+                tl('wiki_js_enum').'",'.
+                'wiki_js_nowiki :"'.
+                tl('wiki_js_nowiki').'",'.
+                'wiki_js_prompt_search_size :"'.
+                tl('wiki_js_prompt_search_size').'",'.
+                'wiki_js_prompt_for_table_cols :"'.
+                tl('wiki_js_prompt_for_table_cols').'",'.
+                'wiki_js_prompt_for_table_rows :"'.
+                tl('wiki_js_prompt_for_table_rows').'",'.
+                'wiki_js_enter_link_title_placeholder :"'.
+                tl('wiki_js_enter_link_title_placeholder').'",'.
+                'wiki_js_enter_link_placeholder :"'.
+                tl('wiki_js_enter_link_placeholder').'"'.
+                '};';
+        $data['SCRIPT'] .= " editorizeAll();";
+
+        ?>
 
         <script type="text/javascript" src="./scripts/basic.js" ></script>
         <?php

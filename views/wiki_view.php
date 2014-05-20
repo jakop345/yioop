@@ -244,7 +244,7 @@ class WikiView extends View
                 e(tl('wiki_element_page', $data['PAGE_NAME']));
                 ?></b></label>
             </div>
-            <textarea class="tall-text-area" name="page" ><?php
+            <textarea id="tall-text-area" class="tall-text-area" name="page" ><?php
                 e($data['PAGE']);
             ?></textarea>
             <div class="green"><?php
