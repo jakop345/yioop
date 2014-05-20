@@ -108,7 +108,8 @@ function guessLocaleFromString($phrase_string, $locale_tag = NULL)
 {
     $query_string = $phrase_string;
     $locale_tag = ($locale_tag == NULL) ? getLocaleTag() : $locale_tag;
-    $phrase_string = mb_ereg_replace(PUNCT."|[0-9]|\s", "", $phrase_string);
+    $sub = preg_quote(PUNCT."|[0-9]|\s");
+    $phrase_string = preg_replace('/'.$sub.'/u', "", $phrase_string);
     $phrase_string = mb_convert_encoding($phrase_string, "UTF-32", "UTF-8");
     $len = strlen($phrase_string);
     $guess['zh-CN'] = 0;
@@ -322,7 +323,7 @@ function getLocaleTag()
     global $locale, $locale_tag;
     if(!$locale) {
         $locale_tag = guessLocale();
-        setLocaleObject($locale_tag);
+        return $locale_tag;
     }
     return $locale->getLocaleTag();
 }

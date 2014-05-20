@@ -271,7 +271,7 @@ Yioop also supports several html tags such as:
 
 ===Spacing within Paragraphs===
 The HTML entity
-<nowiki>&nbsp;</nowiki> 
+<nowiki> </nowiki> 
 can be used to create a non-breaking space. The tag
 <nowiki><br></nowiki>
 can be used to produce a line break.
@@ -360,7 +360,7 @@ example:
 |-
 |c||d
 |}
-Heading for columns and rows can be made by using an exclamation point, !, rather than
+Headings for columns and rows can be made by using an exclamation point, !, rather than
 a vertical bar |. For example,
 <nowiki>
 {|
@@ -389,7 +389,7 @@ Captions can be added using the + symbol:
 |-
 |c|d
 |}
-Finally, you can put a CSS class or style attribute on the first line
+Finally, you can put a CSS class or style attributes (or both) on the first line
 of the table to further control how it looks:
 <nowiki>
 {| class="wikitable"
@@ -405,18 +405,31 @@ of the table to further control how it looks:
 |-
 |c|d
 |}
+Within a cell attributes like align, valign, styles, and class can be used. For example,
+<nowiki>
+{|
+| style="text-align:right;"| a| b
+|-
+| lalala | lalala
+|}
+</nowiki>
+{|
+| style="text-align:right;"| a| b
+|-
+| lalala | lalala
+|}
 
 ==Math==
 
 Math can be included into a wiki document by either using the math tag:
 <nowiki>
 <math>
-\sum_{i=1}^{n} i = \frac{(n+1)(n)}{2}
+\sum_{i=1}^{n} i = frac{(n+1)(n)}{2}
 </math>
 </nowiki>
 
 <math>
-\sum_{i=1}^{\n} i = \frac{(n+1)(n)}{2}
+\sum_{i=1}^{n} i = frac{(n+1)(n)}{2}
 </math>
 EOD;
 $group_model = new GroupModel(DB_NAME, false);

@@ -103,7 +103,8 @@ function addRegexDelimiters($expression)
 
 /**
  * Yioop replacement for parse_ini_file($name, true) in case
- * parse_ini_file is on the disable_functions list. This function
+ * parse_ini_file is on the disable_functions list. Name has underscores
+ * to match original function. This function
  * checks if parse_ini_file is disabled on not. If not, it just
  * calls parse_ini_file; otherwise, it simulates it enough so
  * that configure.ini files used for string translations can be read.
@@ -135,18 +136,18 @@ function parse_ini_with_fallback($file)
             if($name_space) {
                 if($matches[3] == '[]') {
                     $ini[$name_space][$matches[2]][] =
-                        get_ini_assign_match($matches);
+                        getIniAssignMatch($matches);
                 } else {
                     $ini[$name_space][$matches[1]] =
-                        get_ini_assign_match($matches);
+                        getIniAssignMatch($matches);
                 }
             } else {
                 if($matches[3] == '[]') {
                     $ini[$name_space][$matches[2]][] =
-                        get_ini_assign_match($matches);
+                        getIniAssignMatch($matches);
                 } else {
                     $ini[$matches[1]] =
-                        get_ini_assign_match($matches);
+                        getIniAssignMatch($matches);
                 }
             }
         }
@@ -163,7 +164,7 @@ function parse_ini_with_fallback($file)
  *      parse_ini_with_fallback
  * @return mixed value of ini file assignment
  */
-function get_ini_assign_match($matches)
+function getIniAssignMatch($matches)
 {
     if(isset($matches[6])) {
         return $matches[6];
@@ -674,7 +675,7 @@ function unpackInt($str)
     return false;
 }
 
-}
+}// end extension_loaded check
 
 /**
  * Packs an int into a 4 char string
@@ -1606,7 +1607,7 @@ function deleteFileOrDir($file_or_dir)
  * 777 all files in a folder
  *
  * @param string $file the filename or directory name to be chmod
- * @see DatasourceManager::etWorldPermissionsRecursive()
+ * @see DatasourceManager::setWorldPermissionsRecursive()
  */
 function setWorldPermissions($file)
 {
@@ -1810,6 +1811,38 @@ function arrayColumnCount($arr, $key_column, $count_column)
     return $out_arr;
 }
 
+/**
+ *  Given the contents of a start XML/HMTL tag strips out all the attributes
+ *  non listed in $safe_attribute_list
+ *
+ *  @param string $start_tag_contents the contents of an HTML/XML tag. I.e.,
+ *      if the tag was &lt;tag stuff&gt; then $start_tag_contents could be stuff
+ *  @param array $safe_attribute_list a list of attributes which should be kept
+ *  @return string containing only safe attributes and their values
+ */
+ function stripAttributes($start_tag_contents, $safe_attribute_list = array())
+ {
+    $out = "";
+    if($safe_attribute_list != array()) {
+        $safe_regex = '/(?:(?:\A|\s+)(?:';
+        $first = "";
+        foreach($safe_attribute_list as $attribute) {
+            $safe_regex .= $first . $attribute;
+            $first = "|";
+        }
+        $safe_regex .= ')\s*=\s*(?:"[^"]+"|'."'[^']+'))/";
+        preg_match_all($safe_regex, $start_tag_contents, $matches);
+        if(isset($matches[0])) {
+            foreach($matches[0] as $attribute) {
+                $out .= " ".$attribute;
+            }
+            if($out) {
+                $out = trim($out);
+            }
+        }
+    }
+    return $out;
+ }
 /**
  *  Computes a Unix-style diff of two strings. That is it only
  *  outputs lines which disagree between the two strings. It outputs +line

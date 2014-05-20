@@ -149,5 +149,4 @@ abstract class PageProcessor implements CrawlConstants
      */
     abstract function process($page, $url);
 }
-
 ?>

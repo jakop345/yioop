@@ -450,14 +450,18 @@ function makeTableCallback($matches)
     $first = true;
     $out = $matches[1];
     $state = "";
+    $skip = false;
     $type = "td";
     $old_type = "td";
+    $table_cell_attributes = array("align", "colspan", "style", "scope",
+        "rowspace", "valign");
     foreach($row_data as $item) {
         crawlTimeoutLog("..Making Wiki Tables..");
         if($first) {
             $item = trim(str_replace("\n", " ", $item));
             $item = str_replace("&quot;", "\"", $item);
-            $out .= "<table $item>\n<tr>";
+            $item = stripAttributes($item, array('id', 'class', 'style'));
+            $out .= "<table $item >\n<tr>";
             $first = false;
             $old_line = true;
             continue;
@@ -481,13 +485,15 @@ function makeTableCallback($matches)
             $item = substr($item, 1);
         }
         $trim_item = trim($item);
-        $start = substr($trim_item, 0, 5);
-        if($start == "align" || $start== "colsp" ||$start == "style" ||
-            $start == "scope" ||  $start== "rowsp"|| $start == "valig") {
+        $attribute_trim = str_replace("\n", " ", $trim_item);
+        $attribute_trim = str_replace("&quot;", "\"", $attribute_trim);
+        if(!$skip && $state = trim(
+            stripAttributes($attribute_trim, $table_cell_attributes))) {
             $old_type = $type;
-            $state = str_replace("\n", " ", $trim_item);
+            $skip = true;
             continue;
         }
+        $skip = false;
         if($out[strlen($out) - 2] != "r") {
             $out .= "</$old_type>";
         }

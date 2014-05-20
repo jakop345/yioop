@@ -79,7 +79,14 @@ class PdoManager extends DatasourceManager
         $db_password = DB_PASSWORD, $db_name = DB_NAME)
     {
         //assuming db_name is part of $db_host
-        $this->pdo = new PDO($db_host, $db_user, $db_password);
+        crawlLog($db_host." ".$db_user." ".$db_password);
+        try {
+            $this->pdo = new PDO($db_host, $db_user, $db_password);
+        } catch (PDOException $e) {
+            $this->pdo = false;
+            crawlLog('Connection failed: ' . $e->getMessage());
+        }
+
         $this->to_upper_dbms = false;
         if(stristr($db_host, 'PGSQL')) {
             $this->to_upper_dbms = 'PGSQL';

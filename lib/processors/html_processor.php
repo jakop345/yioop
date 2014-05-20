@@ -115,7 +115,7 @@ class HtmlProcessor extends TextProcessor
                     $summary[self::WORD_CLOUD] = $summary_cloud[1];
                 } else {
                     $summary[self::DESCRIPTION] = self::description($dom,
-                    $dom_page);
+                        $dom_page);
                 }
                 if(trim($summary[self::DESCRIPTION]) == "") {
                     $summary[self::DESCRIPTION] = self::crudeDescription(
@@ -345,7 +345,6 @@ class HtmlProcessor extends TextProcessor
         $metas = $xpath->evaluate("/html//meta");
 
         $description = "";
-
         //look for a meta tag with a description
         foreach($metas as $meta) {
             if(stristr($meta->getAttribute('name'), "description")) {
@@ -406,7 +405,6 @@ class HtmlProcessor extends TextProcessor
             }
             if($first_len > 3 * $add_len) break;
         }
-
         $description = preg_replace("/(\s)+/u", " ",  $description);
 
         return $description;
@@ -560,7 +558,7 @@ class HtmlProcessor extends TextProcessor
      */
     static function domNodeToString($node)
     {
-        $text = $node->C14N();
+        $text = $node->ownerDocument->saveHTML($node);
         $text = html_entity_decode($text);
         $text = preg_replace('/\</', ' <', $text);
         return strip_tags($text);
