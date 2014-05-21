@@ -55,9 +55,36 @@ class GroupfeedElement extends Element implements CrawlConstants
     function render($data)
     {
         $is_admin = ($data["CONTROLLER"] == "admin");
+        $logged_in = isset($data["ADMIN"]) && $data["ADMIN"];
+        $arrows = ($is_admin) ? "&lt;&lt;" : "&gt;&gt;";
         $is_status = isset($data['STATUS']);
-        if(!$is_status) {
-        ?>
+        $base_query = $data['PAGING_QUERY']."&amp;".CSRF_TOKEN."=".
+            $data[CSRF_TOKEN];
+        if(isset($data["WIKI_QUERY"])) {
+            $wiki_query = $data["WIKI_QUERY"]."&amp;".CSRF_TOKEN."=".
+            $data[CSRF_TOKEN];
+        }
+        $paging_query = $base_query;
+        $other_paging_query = $data['OTHER_PAGING_QUERY']."&amp;".
+            CSRF_TOKEN."=".$data[CSRF_TOKEN];
+        if(isset($data['ADD_PAGING_QUERY'])) {
+            $paging_query .= $data['ADD_PAGING_QUERY'];
+            $other_paging_query .= $data['ADD_PAGING_QUERY'];
+        }
+        if(isset($data['LIMIT'])) {
+            $other_paging_query .= "&limit=".$data['LIMIT'];
+        }
+        if(isset($data['RESULTS_PER_PAGE'])) {
+            $other_paging_query .= "&num=".$data['RESULTS_PER_PAGE'];
+        }
+        if(!$is_status) { 
+            if($is_admin || $logged_in) { ?>
+                <div class="float-same" style="position:relative; top:10px;">[<a
+                href="<?php e($other_paging_query) ?>" ><?php 
+                e($arrows); ?></a>]</div>
+            <?php
+            }
+            ?>
             <div id="feedstatus" <?php if($is_admin) {
                 e(' class="current-activity" ');
                 } else {
@@ -65,187 +92,166 @@ class GroupfeedElement extends Element implements CrawlConstants
                 }?> >
         <?php
         }
-            $base_query = $data['PAGING_QUERY']."&amp;".CSRF_TOKEN."=".
-                $data[CSRF_TOKEN];
-            if(isset($data["WIKI_QUERY"])) {
-                $wiki_query = $data["WIKI_QUERY"]."&amp;".CSRF_TOKEN."=".
-                $data[CSRF_TOKEN];
-            }
-            $paging_query = $base_query;
-            $other_paging_query = $data['OTHER_PAGING_QUERY']."&amp;".
-                CSRF_TOKEN."=".$data[CSRF_TOKEN];
-            if(isset($data['ADD_PAGING_QUERY'])) {
-                $paging_query .= $data['ADD_PAGING_QUERY'];
-                $other_paging_query .= $data['ADD_PAGING_QUERY'];
-            }
-            if(isset($data['LIMIT'])) {
-                $other_paging_query .= "&limit=".$data['LIMIT'];
-            }
-            if(isset($data['RESULTS_PER_PAGE'])) {
-                $other_paging_query .= "&num=".$data['RESULTS_PER_PAGE'];
-            }
-            if($data['SUBTITLE'] != "" && isset($data['ADMIN']) &&
-                $data['ADMIN']) { ?>
-                <div class="float-opposite">
-                <?php
-                if(isset($data["WIKI_PAGE_NAME"])) { ?>
-                    [<a href="<?php e($wiki_query) ?>"><?php
-                        e(tl('groupfeed_element_wiki_page'))?></a>]
-                    [<a href="<?php e($base_query) ?>"><?php
-                        e(tl('groupfeed_element_back'))?></a>]
-                <?php } else {?>
-                        <a href="<?php e($base_query) ?>"><?php
-                            e(tl('groupfeed_element_back'))?></a>
-                <?php } ?>
-                </div>
+        if($data['SUBTITLE'] != "" && $logged_in) { ?>
+            <div class="float-opposite">
             <?php
-            }
-            if($is_admin) {
-                ?>
-                <h2><?php
-                    e("<a href='$other_paging_query'>&lt;&lt;</a>");
-                if($data['SUBTITLE'] == "") {
-                    e(tl('groupfeed_element_recent_activity'));
-                } else {
-                    if(isset($data['JUST_THREAD'])) {
-                        if(isset($data['WIKI_PAGE_NAME'])) {
-                            e(tl('groupfeed_element_wiki_thread',
-                                $data['WIKI_PAGE_NAME']));
-                        } else {
-                            e(tl('groupfeed_element_thread',
-                                $data['PAGES'][0][self::SOURCE_NAME],
-                                $data['SUBTITLE']));
-                        }
-                    } else if(isset($data['JUST_GROUP_ID'])){
-                        e($data['PAGES'][0][self::SOURCE_NAME]);
-                        e(" [".tl('groupfeed_element_feed')."|".
-                            "<a href='?c=group&".CSRF_TOKEN."=".
-                            $data[CSRF_TOKEN]."&amp;a=wiki&group_id=".
-                            $data['JUST_GROUP_ID']."'>" .
-                            tl('group_view_wiki') . "</a>]");
-                    } else if(isset($data['JUST_USER_ID'])) {
-                        e(tl('groupfeed_element_user',
-                            $data['PAGES'][0]["USER_NAME"]));
+            if(isset($data["WIKI_PAGE_NAME"])) { ?>
+                [<a href="<?php e($wiki_query) ?>"><?php
+                    e(tl('groupfeed_element_wiki_page'))?></a>]
+                [<a href="<?php e($base_query) ?>"><?php
+                    e(tl('groupfeed_element_back'))?></a>]
+            <?php } else {?>
+                    <a href="<?php e($base_query) ?>"><?php
+                        e(tl('groupfeed_element_back'))?></a>
+            <?php } ?>
+            </div>
+        <?php
+        }
+        if($is_admin) {
+            ?>
+            <h2><?php
+            if($data['SUBTITLE'] == "") {
+                e(tl('groupfeed_element_recent_activity'));
+            } else {
+                if(isset($data['JUST_THREAD'])) {
+                    if(isset($data['WIKI_PAGE_NAME'])) {
+                        e(tl('groupfeed_element_wiki_thread',
+                            $data['WIKI_PAGE_NAME']));
                     } else {
-                        e("[{$data['SUBTITLE']}]");
+                        e(tl('groupfeed_element_thread',
+                            $data['PAGES'][0][self::SOURCE_NAME],
+                            $data['SUBTITLE']));
                     }
+                } else if(isset($data['JUST_GROUP_ID'])){
+                    e($data['PAGES'][0][self::SOURCE_NAME]);
+                    e(" [".tl('groupfeed_element_feed')."|".
+                        "<a href='?c=group&".CSRF_TOKEN."=".
+                        $data[CSRF_TOKEN]."&amp;a=wiki&group_id=".
+                        $data['JUST_GROUP_ID']."'>" .
+                        tl('group_view_wiki') . "</a>]");
+                } else if(isset($data['JUST_USER_ID'])) {
+                    e(tl('groupfeed_element_user',
+                        $data['PAGES'][0]["USER_NAME"]));
+                } else {
+                    e("[{$data['SUBTITLE']}]");
                 }
-                ?>
-                </h2>
-                <?php
             }
             ?>
-            <div>
-            &nbsp;
-            </div>
+            </h2>
             <?php
-            $open_in_tabs = $data['OPEN_IN_TABS'];
-            $time = time();
-            $can_comment = array(GROUP_READ_COMMENT, GROUP_READ_WRITE);
-            if(isset($data['PAGES'][0]["MEMBER_ACCESS"]) &&
-                in_array($data['PAGES'][0]["MEMBER_ACCESS"], $can_comment)) {
-                if(isset($data['JUST_THREAD'])) {
-                    ?>
-                    <div class='button-group-result'>
-                    <button class="button-box" onclick='comment_form(<?php
-                            e("\"add-comment\", ".
-                                "{$data['PAGES'][0]['PARENT_ID']},".
-                                "{$data['PAGES'][0]['GROUP_ID']}"); ?>)'><?php
-                            e(tl('groupfeed_element_comment'));?></button>
-                    <div id='add-comment'></div>
-                    </div>
-                    <?php
-                } else if(isset($data['JUST_GROUP_ID']) &&
-                    $data['PAGES'][0]["MEMBER_ACCESS"] == GROUP_READ_WRITE) {
-                    ?>
-                    <div class='button-group-result'>
-                    <button class="button-box" onclick='start_thread_form(<?php
-                            e("\"add-comment\", ".
-                                "{$data['PAGES'][0]['GROUP_ID']}"); ?>)'><?php
-                            e(tl('groupfeed_element_start_thread'));?></button>
-                    <div id='add-comment'></div>
-                    </div>
-                    <?php
-                }
+        }
+        ?>
+        <div>
+        &nbsp;
+        </div>
+        <?php
+        $open_in_tabs = $data['OPEN_IN_TABS'];
+        $time = time();
+        $can_comment = array(GROUP_READ_COMMENT, GROUP_READ_WRITE);
+        if(isset($data['PAGES'][0]["MEMBER_ACCESS"]) &&
+            in_array($data['PAGES'][0]["MEMBER_ACCESS"], $can_comment)) {
+            if(isset($data['JUST_THREAD'])) {
+                ?>
+                <div class='button-group-result'>
+                <button class="button-box" onclick='comment_form(<?php
+                        e("\"add-comment\", ".
+                            "{$data['PAGES'][0]['PARENT_ID']},".
+                            "{$data['PAGES'][0]['GROUP_ID']}"); ?>)'><?php
+                        e(tl('groupfeed_element_comment'));?></button>
+                <div id='add-comment'></div>
+                </div>
+                <?php
+            } else if(isset($data['JUST_GROUP_ID']) &&
+                $data['PAGES'][0]["MEMBER_ACCESS"] == GROUP_READ_WRITE) {
+                ?>
+                <div class='button-group-result'>
+                <button class="button-box" onclick='start_thread_form(<?php
+                        e("\"add-comment\", ".
+                            "{$data['PAGES'][0]['GROUP_ID']}"); ?>)'><?php
+                        e(tl('groupfeed_element_start_thread'));?></button>
+                <div id='add-comment'></div>
+                </div>
+                <?php
             }
-            foreach($data['PAGES'] as $page) {
-                $pub_date = $page['PUBDATE'];
-                $pub_date = $this->view->helper("feeds")->getPubdateString(
-                    $time, $pub_date);
-                $encode_source = urlencode(
-                    urlencode($page[self::SOURCE_NAME]));
+        }
+        foreach($data['PAGES'] as $page) {
+            $pub_date = $page['PUBDATE'];
+            $pub_date = $this->view->helper("feeds")->getPubdateString(
+                $time, $pub_date);
+            $encode_source = urlencode(
+                urlencode($page[self::SOURCE_NAME]));
+            ?>
+            <div class='group-result'>
+            <?php
+            $subsearch = (isset($data["SUBSEARCH"])) ? $data["SUBSEARCH"] :
+                "";
+            if($page["MEMBER_ACCESS"] == GROUP_READ_WRITE &&
+                $page['USER_ID'] != "" && isset($_SESSION['USER_ID']) &&
+                ($page['USER_ID'] == $_SESSION['USER_ID'] ||
+                $_SESSION['USER_ID'] == ROOT_ID) && 
+                $page['TYPE'] != WIKI_GROUP_ITEM) {
                 ?>
-                <div class='group-result'>
-                <?php
-                $subsearch = (isset($data["SUBSEARCH"])) ? $data["SUBSEARCH"] :
-                    "";
-                if($page["MEMBER_ACCESS"] == GROUP_READ_WRITE &&
-                    $page['USER_ID'] != "" && isset($_SESSION['USER_ID']) &&
-                    ($page['USER_ID'] == $_SESSION['USER_ID'] ||
-                    $_SESSION['USER_ID'] == ROOT_ID) && 
-                    $page['TYPE'] != WIKI_GROUP_ITEM) {
-                    ?>
-                    <div class="float-opposite" ><?php
-                    if(!isset($page['NO_EDIT'])) {
-                        ?>[<a href="javascript:update_post_form(<?php
-                        e($page['ID']); ?>)"><?php
-                        e(tl('groupfeed_element_edit')); ?></a>]<?php
-                    }
-                    ?>
-                    [<a href="<?php e($paging_query.'&amp;arg=deletepost&amp;'.
-                        "post_id=".$page['ID']); ?>" title="<?php
-                        e(tl('groupfeed_element_delete')); ?>">X</a>]
-                    </div>
-                <?php
+                <div class="float-opposite" ><?php
+                if(!isset($page['NO_EDIT'])) {
+                    ?>[<a href="javascript:update_post_form(<?php
+                    e($page['ID']); ?>)"><?php
+                    e(tl('groupfeed_element_edit')); ?></a>]<?php
                 }
                 ?>
-                <div id='result-<?php e($page['ID']); ?>'>
-                <h2><a href="<?php e($base_query . "&amp;just_thread=".
-                    $page['PARENT_ID']);?>" rel="nofollow"
-                    id='title<?php e($page['ID']);?>' <?php
-                    if($open_in_tabs) { ?> target="_blank" <?php }
-                    ?>><?php e($page[self::TITLE]); ?></a><?php
-                    if(isset($page['NUM_POSTS'])) {
-                        e(tl('groupfeed_element_num_posts',
-                            $page['NUM_POSTS']));
-                    }
-                    ?>.
-                <a class="gray-link" rel='nofollow' href="<?php e($base_query.
-                    "&amp;just_group_id=".$page['GROUP_ID']);?>" ><?php
-                    e($page[self::SOURCE_NAME]."</a>"
-                    ."<span class='gray'> - $pub_date</span>");
-                 ?></h2>
-                <p>
-                <a class="echo-link" rel='nofollow' href="<?php e($base_query.
-                    "&amp;just_user_id=".$page['USER_ID']);?>" ><?php
-                    e($page['USER_NAME']); ?></a></p>
-                <?php
-                $description = isset($page[self::DESCRIPTION]) ?
-                    $page[self::DESCRIPTION] : "";?>
-                <div id='description<?php e($page['ID']);?>' ><?php
-                    e($description); ?></div>
-                <div class="float-opposite">
-                    <?php if(in_array($page["MEMBER_ACCESS"], $can_comment) &&
-                        !isset($data['JUST_THREAD'])){ ?>
-                        <a href='javascript:comment_form(<?php
-                        e("{$page['ID']}, {$page['PARENT_ID']}, ".
-                            "{$page['GROUP_ID']}"); ?>)'><?php
-                        e(tl('groupfeed_element_comment'));?></a>.<?php
-                        if(!isset($data['JUST_GROUP_ID']) &&
-                            $page["MEMBER_ACCESS"] == GROUP_READ_WRITE) {
-                        ?>
-                            <a href='javascript:start_thread_form(<?php
-                            e("{$page['ID']},".
-                                "{$page['GROUP_ID']}"); ?>)'><?php
-                                e(tl('groupfeed_element_start_thread'));?></a>.
-                        <?php
-                        }
-                    }
+                [<a href="<?php e($paging_query.'&amp;arg=deletepost&amp;'.
+                    "post_id=".$page['ID']); ?>" title="<?php
+                    e(tl('groupfeed_element_delete')); ?>">X</a>]
+                </div>
+            <?php
+            }
+            ?>
+            <div id='result-<?php e($page['ID']); ?>'>
+            <h2><a href="<?php e($base_query . "&amp;just_thread=".
+                $page['PARENT_ID']);?>" rel="nofollow"
+                id='title<?php e($page['ID']);?>' <?php
+                if($open_in_tabs) { ?> target="_blank" <?php }
+                ?>><?php e($page[self::TITLE]); ?></a><?php
+                if(isset($page['NUM_POSTS'])) {
+                    e(tl('groupfeed_element_num_posts',
+                        $page['NUM_POSTS']));
+                }
+                ?>.
+            <a class="gray-link" rel='nofollow' href="<?php e($base_query.
+                "&amp;just_group_id=".$page['GROUP_ID']);?>" ><?php
+                e($page[self::SOURCE_NAME]."</a>"
+                ."<span class='gray'> - $pub_date</span>");
+             ?></h2>
+            <p>
+            <a class="echo-link" rel='nofollow' href="<?php e($base_query.
+                "&amp;just_user_id=".$page['USER_ID']);?>" ><?php
+                e($page['USER_NAME']); ?></a></p>
+            <?php
+            $description = isset($page[self::DESCRIPTION]) ?
+                $page[self::DESCRIPTION] : "";?>
+            <div id='description<?php e($page['ID']);?>' ><?php
+                e($description); ?></div>
+            <div class="float-opposite">
+                <?php if(in_array($page["MEMBER_ACCESS"], $can_comment) &&
+                    !isset($data['JUST_THREAD'])){ ?>
+                    <a href='javascript:comment_form(<?php
+                    e("{$page['ID']}, {$page['PARENT_ID']}, ".
+                        "{$page['GROUP_ID']}"); ?>)'><?php
+                    e(tl('groupfeed_element_comment'));?></a>.<?php
+                    if(!isset($data['JUST_GROUP_ID']) &&
+                        $page["MEMBER_ACCESS"] == GROUP_READ_WRITE) {
                     ?>
-                </div>
-                </div>
-                <div id='<?php e($page["ID"]); ?>'></div>
-                </div>
+                        <a href='javascript:start_thread_form(<?php
+                        e("{$page['ID']},".
+                            "{$page['GROUP_ID']}"); ?>)'><?php
+                            e(tl('groupfeed_element_start_thread'));?></a>.
+                    <?php
+                    }
+                }
+                ?>
+            </div>
+            </div>
+            <div id='<?php e($page["ID"]); ?>'></div>
+            </div>
             <div>
             &nbsp;
             </div>
@@ -253,8 +259,7 @@ class GroupfeedElement extends Element implements CrawlConstants
             } //end foreach
             ?>
             <?php
-            $this->view->helper("pagination")->render(
-                $paging_query,
+            $this->view->helper("pagination")->render($paging_query,
                 $data['LIMIT'], $data['RESULTS_PER_PAGE'], $data['TOTAL_ROWS']);
             ?>
         </div>
