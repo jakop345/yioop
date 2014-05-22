@@ -151,6 +151,16 @@ A large number of captcha refreshes or recover password requests
 have been made from this IP address. Please wait until
 %s to try again.
 EOD;
+$public_pages["bot"] = <<<EOD
+title=Bot
+
+description=Describes the web crawler used with this
+web site
+END_HEAD_VARS
+==My Web Crawler==
+
+Please Describe Your Robot
+EOD;
 $public_pages["privacy"] = <<<EOD
 title=Privacy Policy
 

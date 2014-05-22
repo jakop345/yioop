@@ -56,7 +56,7 @@ function yioop_error_handler($errno, $errstr, $errfile, $errline,
     $type = (isset($error_types[$errno])) ? $error_types[$errno]:
         "PHP OTHER ERROR";
     echo "<pre>\n";
-    echo "$type $errstr";// at line $errline in $errfile\n";
+    echo "$type $errstr at line $errline in $errfile\n";
     $backtrace = debug_backtrace();
     array_shift($backtrace);
     $i = 0;
@@ -69,9 +69,8 @@ function yioop_error_handler($errno, $errstr, $errfile, $errline,
         if(isset($call['function'])) {
             $function .= $call['function'];
         }
-        echo "  $in_or_called $function, line $errline".
+        echo "  $in_or_called $function, line {$call['line']}".
             " in {$call['file']} \n";
-        $errline = $call['line'];
         $in_or_called = "called from";
         $i++;
         if($i >= $num_lines_of_backtrace) {break; }

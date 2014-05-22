@@ -55,7 +55,7 @@ class ProfileModel extends Model
         'IN_LINK','IP_LINK', 'LINK_WEIGHT', 'MAIL_PASSWORD', 'MAIL_SECURITY',
         'MAIL_SENDER', 'MAIL_SERVER', 'MAIL_SERVERPORT', 'MAIL_USERNAME',
         'MEMCACHE_SERVERS', 'MIN_RESULTS_TO_GROUP', 'NAME_SERVER', 'NEWS_MODE',
-        'PROXY_SERVERS', 'REGISTRATION_TYPE', 'ROBOT_DESCRIPTION',
+        'PROXY_SERVERS', 'REGISTRATION_TYPE',
         'ROBOT_INSTANCE', 'RSS_ACCESS', 'SERVER_ALPHA', 'SIGNIN_LINK',
         'SIMILAR_LINK', 'SUBSEARCH_LINK', 'TITLE_WEIGHT', 'TOR_PROXY',
         'USE_FILECACHE', 'USE_MAIL_PHP', 'USE_MEMCACHE', 'USE_PROXY',
@@ -524,16 +524,7 @@ EOT;
         $profile_string = @file_get_contents($work_directory.PROFILE_FILE_NAME);
 
         foreach($this->profile_fields as $field) {
-            if($field != 'ROBOT_DESCRIPTION') {
-                $profile[$field] = $this->matchDefine($field, $profile_string);
-            }
-        }
-
-        $robot_path = LOCALE_DIR."/".DEFAULT_LOCALE."/pages/bot.thtml";
-
-        if(file_exists($robot_path)) {
-            $profile['ROBOT_DESCRIPTION'] =
-                file_get_contents($robot_path);
+            $profile[$field] = $this->matchDefine($field, $profile_string);
         }
         return $profile;
     }

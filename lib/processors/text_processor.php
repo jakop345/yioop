@@ -45,7 +45,9 @@ $add_types = array(
     "text/x-java-source" => "TextProcessor",
     "text/tab-separated-values" => "TextProcessor"
 );
-$PAGE_PROCESSORS =  array_merge($PAGE_PROCESSORS, $add_types);
+
+$PAGE_PROCESSORS =  (isset($PAGE_PROCESSORS)) ?
+    array_merge($PAGE_PROCESSORS, $add_types) : $add_types;
 
 /**
  * Load the base class

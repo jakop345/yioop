@@ -668,6 +668,7 @@ EOD;
     {
         $parent = $this->parent;
         $profile_model = $parent->model("profile");
+        $group_model = $parent->model("group");
         $data = array();
         $profile = array();
 
@@ -902,16 +903,17 @@ EOD;
         }
         $data['advanced'] = "false";
         if($data['PROFILE']) {
-            if(!isset($data['ROBOT_DESCRIPTION']) ||
-                strlen($data['ROBOT_DESCRIPTION']) == 0) {
-                $data['ROBOT_DESCRIPTION'] =
-                    tl('system_component_describe_robot');
-            } else {
-                //since the description might contain tags we apply htmlentities
-                $data['ROBOT_DESCRIPTION'] =
-                    $parent->clean($data['ROBOT_DESCRIPTION'], "string");
+            $locale_tag = getLocaleTag();
+            if(isset($_REQUEST['ROBOT_DESCRIPTION'])) {
+                $robot_description =
+                    $parent->clean($_REQUEST['ROBOT_DESCRIPTION'], "string");
+                $group_model->setPageName(ROOT_ID, PUBLIC_GROUP_ID,
+                    "bot", $robot_description, $locale_tag, "", "", "", "");
             }
-
+            $robot_info = $group_model->getPageInfoByName(
+                 PUBLIC_GROUP_ID, "bot", $locale_tag, "edit");
+            $data['ROBOT_DESCRIPTION'] = isset($robot_info["PAGE"]) ?
+                $robot_info["PAGE"] : tl('system_component_describe_robot');
             if(isset($_REQUEST['advanced']) && $_REQUEST['advanced']=='true') {
                 $data['advanced'] = "true";
             }
