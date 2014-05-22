@@ -72,6 +72,25 @@ class EditlocalesElement extends Element
         <input type="hidden" name="arg" value="editstrings" />
         <input type="hidden" name="selectlocale" value="<?php
             e($data['CURRENT_LOCALE_TAG']); ?>" />
+        <div class="slight-pad">
+        <label for="show-strings"><b><?php e(tl('editlocales_element_show'));
+        ?></b></label><?php $this->view->helper("options")->render(
+            "show-strings","show",  $data['show_strings'],
+            $data['show'], true); ?>
+        <label for="string-filter"><b><?php e(tl('editlocales_element_filter'));
+        ?></b></label><input type="text" id="string-filter" name="filter"
+            value="<?php e($data['filter']); ?>" maxlength="10"
+            onchange="this.form.submit()"
+            class="narrow-field" /> <button class="button-box"
+            type="submit"><?php
+                e(tl('editlocales_element_go')); ?></button>
+        </div>
+        <?php
+        if($data['STRINGS'] == array()) {
+            e("<h3 class='red'>". tl('editlocales_element_no_matching').
+                "</h3>");
+        }
+        ?>
         <table class="translate-table">
         <?php
         $mobile_tr = (MOBILE) ? "</tr><tr>" : "";

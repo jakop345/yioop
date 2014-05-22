@@ -108,7 +108,7 @@ function guessLocaleFromString($phrase_string, $locale_tag = NULL)
 {
     $query_string = $phrase_string;
     $locale_tag = ($locale_tag == NULL) ? getLocaleTag() : $locale_tag;
-    $sub = preg_quote(PUNCT."|[0-9]|\s");
+    $sub = PUNCT."|[0-9]|\s";
     $phrase_string = preg_replace('/'.$sub.'/u', "", $phrase_string);
     $phrase_string = mb_convert_encoding($phrase_string, "UTF-32", "UTF-8");
     $len = strlen($phrase_string);

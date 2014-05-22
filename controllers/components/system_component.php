@@ -352,6 +352,7 @@ class SystemComponent extends Component
             "tb-lr" => "tb-lr"
         );
         $data['FORM_TYPE'] = "addlocale";
+        $paging = true;
         if(isset($_REQUEST['arg']) &&
             in_array($_REQUEST['arg'], $possible_arguments)) {
             $clean_fields = array('localename', 'localetag', 'writingmode',
@@ -424,6 +425,7 @@ class SystemComponent extends Component
 
                 case "editstrings":
                     if(!isset($selectlocale)) break;
+                    $paging = false;
                     $data["leftorright"] =
                         (getLocaleDirection() == 'ltr') ? "right": "left";
                     $data["ELEMENT"] = "editlocales";
@@ -449,6 +451,32 @@ class SystemComponent extends Component
                         $locale_model->getStringData($selectlocale);
                     $data['DEFAULT_STRINGS'] =
                         $locale_model->getStringData(DEFAULT_LOCALE);
+                    $data['show'] = "all";
+                    $data["show_strings"] = 
+                        array("all" => tl('system_component_all_strings'),
+                            "missing" => tl('system_component_missing_strings')
+                        );
+                    if(isset($_REQUEST['show']) && 
+                        $_REQUEST['show'] == "missing") {
+                        $data["show"]= "missing";
+                        foreach($data['STRINGS'] as $string_id => $translation){
+                            if($translation != "") {
+                                unset($data['STRINGS'][$string_id]);
+                                unset($data['DEFAULT_STRINGS'][$string_id]);
+                            }
+                        }
+                    }
+                    $data["filter"] = "";
+                    if(isset($_REQUEST['filter']) && $_REQUEST['filter']) {
+                        $filter = $parent->clean($_REQUEST['filter'], "string");
+                        $data["filter"] = $filter;
+                        foreach($data['STRINGS'] as $string_id => $translation){
+                            if(strpos($string_id, $filter) === false) {
+                                unset($data['STRINGS'][$string_id]);
+                                unset($data['DEFAULT_STRINGS'][$string_id]);
+                            }
+                        }
+                    }
                 break;
                 case "search":
                     $search_array = $parent->tableSearchRequestHandler($data,
@@ -456,8 +484,10 @@ class SystemComponent extends Component
                 break;
             }
         }
-        $parent->pagingLogic($data, $locale_model,
-            "LOCALES", DEFAULT_ADMIN_PAGING_NUM, $search_array);
+        if($paging) {
+            $parent->pagingLogic($data, $locale_model,
+                "LOCALES", DEFAULT_ADMIN_PAGING_NUM, $search_array);
+        }
         return $data;
     }
 

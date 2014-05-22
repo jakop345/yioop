@@ -783,7 +783,10 @@ EOT;
     function lookupTranslation($new_configure, $old_configure,
         $fallback_configure, $string_id, $default_value = "")
     {
-        if($this->isTranslated($new_configure, $string_id)) {
+        $new_translation = $this->isTranslated($new_configure, $string_id);
+        $old_translation = $this->isTranslated($old_configure, $string_id);
+        if($new_translation || ( isset($new_configure[$string_id]) &&
+            $new_configure[$string_id] === "" && $old_translation )) {
             $translation = $new_configure[$string_id];
         } else if($this->isTranslated($old_configure, $string_id)) {
             $translation = $old_configure[$string_id];
