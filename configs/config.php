@@ -82,7 +82,7 @@ $COMPONENT_ACTIVITIES = array(
         "manageRoles"),
     "crawl" => array("manageCrawls", "manageClassifiers", "pageOptions",
         "resultsEditor", "searchSources"),
-    "social" => array("manageGroups", "groupFeeds", "mixCrawls"),
+    "social" => array("manageGroups", "groupFeeds", "mixCrawls", "wiki"),
     "system" => array("manageMachines", "manageLocales",
         "serverSettings", "configure")
 );

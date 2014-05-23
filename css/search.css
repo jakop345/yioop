@@ -178,6 +178,10 @@ span.indent5
     text-align: right;
 }
 
+.align-left
+{
+    text-align: left;
+}
 
 .blockquote
 {
