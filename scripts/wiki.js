@@ -30,8 +30,12 @@
  * @filesource
  */
 /**
- * The editor automatically renders the editor buttons using this object as 
- * configuration data. below is a valid list of button names
+ * This script adds buttons to textareas on a page which when clicked insert
+ * the relevant way to format something using wiki syntax.
+ *
+ * The editor automatically renders the editor buttons using the following list
+ * of button names for configuration. These can be set on the data-buttons
+ * attribute of the textarea
  * {
  * "wikibtn-bold"
  * "wikibtn-italic"

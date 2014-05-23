@@ -245,7 +245,7 @@ class WikiView extends View
                 ?></b></label>
             </div>
             <textarea id="wiki-page" class="tall-text-area" name="page"
-                ><?php
+                data-buttons='all,!wikibtn-search' ><?php
                 e($data['PAGE']);
             ?></textarea>
             <div class="green"><?php
