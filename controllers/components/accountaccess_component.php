@@ -195,7 +195,7 @@ class AccountaccessComponent extends Component
             $_SESSION['AUTH_COUNT'] = 1;
             $data['INCLUDE_SCRIPTS'] = array("sha1", "zkp", "big_int");
             $data['AUTHENTICATION_MODE'] = ZKP_AUTHENTICATION;
-            $data['FIAT_SHAMIR_MODULUS'] = $profile['FIAT_SHAMIR_MODULUS'];
+            $data['FIAT_SHAMIR_MODULUS'] = FIAT_SHAMIR_MODULUS;
         } else {
             $data['AUTHENTICATION_MODE'] = NORMAL_AUTHENTICATION;
             unset($_SESSION['SALT_VALUE']);

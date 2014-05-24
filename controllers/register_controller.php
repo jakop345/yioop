@@ -255,7 +255,7 @@ class RegisterController extends Controller implements CrawlConstants
         if(AUTHENTICATION_MODE == ZKP_AUTHENTICATION) {
             $_SESSION['SALT_VALUE'] = rand(0, 1);
             $data['AUTH_ITERATION'] = FIAT_SHAMIR_ITERATIONS;
-            $data['FIAT_SHAMIR_MODULUS'] = $profile['FIAT_SHAMIR_MODULUS'];
+            $data['FIAT_SHAMIR_MODULUS'] = FIAT_SHAMIR_MODULUS;
             $data['INCLUDE_SCRIPTS'] = array("sha1", "zkp", "big_int");
         } else {
             unset($_SESSION['SALT_VALUE']);
@@ -346,9 +346,14 @@ class RegisterController extends Controller implements CrawlConstants
                     $user['EMAIL']."&time=".$user['CREATION_TIME'].
                     "&hash=".urlencode(crawlCrypt($user['HASH']));
                 $server->send($subject, MAIL_SENDER, $data['EMAIL'], $message);
-                $num_questions = self::NUM_CAPTCHA_QUESTIONS +
-                    self::NUM_RECOVERY_QUESTIONS;
-                $start = self::NUM_CAPTCHA_QUESTIONS;
+                if(AUTHENTICATION_MODE == NORMAL_AUTHENTICATION) {
+                    $num_questions = self::NUM_CAPTCHA_QUESTIONS +
+                        self::NUM_RECOVERY_QUESTIONS;
+                    $start = self::NUM_CAPTCHA_QUESTIONS;
+                } else {
+                    $num_questions =  self::NUM_RECOVERY_QUESTIONS;
+                    $start = 0;
+                }
                 for($i = $start; $i < $num_questions; $i++) {
                     $j = $i - $start;
                     $_SESSION["RECOVERY_ANSWERS"][$j] =
