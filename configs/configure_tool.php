@@ -342,7 +342,7 @@ class ConfigureTool
             "SUBSEARCH_LINK"  => "Subsearch Links",
             "SIGNIN_LINK" => "Sign-in Links", "CACHE_LINK" => "Cache Link",
             "SIMILAR_LINK" => "Similar Link", "IN_LINK" => "Inlinks",
-            "IP_LINK"=> "IP Links");
+            "IP_LINK"=> "IP Links", "USE_WORDNET"=> "WordNet");
         $items = array();
         foreach($settings as $setting => $setting_string) {
             $toggle = ($data[$setting]) ? "On" : "Off";

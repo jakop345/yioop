@@ -253,5 +253,7 @@ interface CrawlConstants
     const CENTROID_SUMMARIZER = 'dl';
     const SUMMARIZER_OPTION = 'dm';
     const WORD_CLOUD = 'dn';
+    const BM25_SCORE ='do';
+    const WORDNET_SIMILAR_WORDS='dp';
 }
 ?>

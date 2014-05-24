@@ -955,7 +955,8 @@ class CrawlComponent extends Component implements CrawlConstants
         } else {
             $parent->updateProfileFields($data, $profile,
                 array('IP_LINK','CACHE_LINK', 'SIMILAR_LINK', 'IN_LINK',
-                    'SIGNIN_LINK', 'SUBSEARCH_LINK','WORD_SUGGEST'));
+                    'SIGNIN_LINK', 'SUBSEARCH_LINK','WORD_SUGGEST',
+                    'USE_WORDNET', 'WORDNET_EXEC'));
         }
         $weights = array('TITLE_WEIGHT' => 4,
             'DESCRIPTION_WEIGHT' => 1, 'LINK_WEIGHT' => 2,

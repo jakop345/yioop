@@ -59,8 +59,9 @@ class ProfileModel extends Model
         'PROXY_SERVERS', 'REGISTRATION_TYPE', 'ROBOT_INSTANCE',
         'RSS_ACCESS', 'SERVER_ALPHA', 'SIGNIN_LINK', 'SIMILAR_LINK',
         'SUBSEARCH_LINK', 'TITLE_WEIGHT', 'TOR_PROXY', 'USE_FILECACHE',
-        'USE_MAIL_PHP', 'USE_MEMCACHE', 'USE_PROXY', 'USER_AGENT_SHORT',
-        'WEB_URI', 'WEB_ACCESS', 'WORD_SUGGEST'
+        'USE_MAIL_PHP', 'USE_MEMCACHE', 'USE_PROXY', 'USE_WORDNET',
+        'USER_AGENT_SHORT', 'WEB_URI', 'WEB_ACCESS', 'WORD_SUGGEST',
+        'WORDNET_EXEC'
         );
     /**
      *  {@inheritdoc}
@@ -177,6 +178,9 @@ EOT;
                     $profile[$field] = "";
             }
 
+            if($field == "WORDNET_EXEC") {
+                $profile[$field] = str_replace('\\', '/', $profile[$field]);
+            }
             if($field == "NEWS_MODE" && $profile[$field] == "") {
                 $profile[$field] = "news_off";
             }

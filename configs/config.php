@@ -205,6 +205,8 @@ if(file_exists(WORK_DIRECTORY.PROFILE_FILE_NAME)) {
     define('SIMILAR_LINK', true);
     define('IN_LINK', true);
     define('IP_LINK', true);
+    define('USE_WORDNET', false);
+    define('WORDNET_EXEC', '');
     define('SIGNIN_LINK', true);
     define('NEWS_MODE', 'news_off');
     /** BM25F weight for title text */

@@ -308,8 +308,24 @@ class PageOptionsElement extends Element
                 e("checked='checked'");}?>
             /></td>
         </tr>
+        <tr><td><label for="use-wordnet"><?php
+            e(tl('pageoption_element_wordnet_feature')); ?></label></td>
+        <td><input id='use-wordnet' type="checkbox"
+            name="USE_WORDNET" value="true"
+            onclick="document.getElementById('wordnet-exec')
+            .disabled=!this.checked;"
+            <?php if(isset($data['USE_WORDNET']) && $data['USE_WORDNET']){
+                e("checked='checked'");}?>
+            /></td>
+        </tr>
         </table></td>
         </tr></table>
+        <h2><label for="wordnet-exec"><?php
+            e(tl('pageoption_element_wordnet_exec')); ?></label>
+        <br/><input type="text" id="wordnet-exec"
+            name="WORDNET_EXEC" class="extra-wide-field"
+            value="<?php e($data['WORDNET_EXEC']); ?>" />
+        </h2>
         <h2><?php e(tl('pageoptions_element_ranking_factors'))?></h2>
         <table class="weights-table" >
         <tr><th><label for="title-weight"><?php

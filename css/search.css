@@ -1194,7 +1194,13 @@ ul.in-list li
     top: -0.8in;
     width: 8in;
 }
-
+.html-ltr .wordnet-serp-results
+{
+    left: 2.2in;
+    position: relative;
+    top: -0.9in;
+    width: 8in;
+}
 .html-rtl .serp
 {
     position: relative;
@@ -1233,7 +1239,16 @@ ul.in-list li
     position: relative;
     top: -1in;
 }
-
+.html-ltr .wordnet
+{
+    color: #666;
+    font-size: 13pt;
+    font-weight: bold;
+    left: -0.2in;
+    position: relative;
+    top: -0.8in;
+    width: 8in;
+}
 .result
 {
     clear: both;

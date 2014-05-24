@@ -196,7 +196,27 @@ class SearchView extends View implements CrawlConstants
                 $data['TOTAL_ROWS']));
             }
         ?></h2>
-        <div class="serp-results">
+        <div id="wordnet-words" class="wordnet">
+        <?php
+            $similar_words = $data['WORDNET_SIMILAR_WORDS'];
+            if(count($similar_words) > 0) {
+                e(tl('search_view_wordnet_results'));
+                foreach ($similar_words as $word) {
+                    e("<br/>");
+                    ?><span><a href="?<?php e(CSRF_TOKEN."=".$data[CSRF_TOKEN]);
+                    ?>&amp;its=<?php e($data['its']);?>
+                    &amp;q=<?php e($word);?>"><?php
+                        e($word); ?></a></span>
+                    <?php
+                }
+            }
+            ?>
+        </div>
+        <?php if(count($similar_words) > 0) { ?>
+            <div class="wordnet-serp-results"> <?php
+        } else { ?>
+            <div class="serp-results">
+        <?php } ?>
             <?php
             foreach($data['PAGES'] as $page) {
                 if(isset($page[self::URL])) {
@@ -381,6 +401,8 @@ class SearchView extends View implements CrawlConstants
                 if(MOBILE && $aux_link_flag) {e("<br />");}
                 if(isset($page[self::SCORE])) {
                     ?><span title="<?php
+                    e(tl('search_view_bm25score',
+                        number_format($page[self::BM25_SCORE], 2))."\n");
                     e(tl('search_view_rank',
                         number_format($page[self::DOC_RANK], 2))."\n");
                     e(tl('search_view_relevancy',

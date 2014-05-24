@@ -52,6 +52,10 @@ require_once BASE_DIR."/lib/phrase_parser.php";
 require_once(BASE_DIR."/lib/file_cache.php");
 
 /**
+ * Load Calculate WordnetScore Calculator class  in case used
+ */
+require_once(BASE_DIR."/lib/calculate_wordnet_score.php");
+/**
  * Load iterators to get docs out of index archive
  */
 foreach(glob(BASE_DIR."/lib/index_bundle_iterators/*_iterator.php")
@@ -89,6 +93,13 @@ class PhraseModel extends ParallelModel
      * @var string
      */
     var $programming_language_map;
+
+    /**
+     * A indicator to indicate availability of lexicon files for
+     * part-of-speech tagging
+     * @var lexicon_flag
+     */
+    var $lexicon_flag = 0;
 
    /**
      * A indicator to indicate source code files
@@ -426,6 +437,10 @@ class PhraseModel extends ParallelModel
         if(isset($out_results['HARD_QUERY'])) {
             $results['HARD_QUERY'] = $out_results['HARD_QUERY'];
         }
+        if(isset($out_results['WORDNET_SIMILAR_WORDS'])){
+            $results['WORDNET_SIMILAR_WORDS'] =
+                    $out_results['WORDNET_SIMILAR_WORDS'];
+        }
         if(count($results) == 0) {
             $results = NULL;
         }
@@ -461,6 +476,10 @@ class PhraseModel extends ParallelModel
         if($raw == 0) {
             $output = $this->formatPageResults($results, $format_words,
                 $description_length);
+             if(USE_WORDNET && $this->lexicon_flag) {
+                $output['WORDNET_SIMILAR_WORDS'] =
+                    $results['WORDNET_SIMILAR_WORDS'];
+             }
         } else {
             $output = $results;
         }
@@ -1343,6 +1362,60 @@ class PhraseModel extends ParallelModel
         $results['TIME'] = time();
         if(USE_CACHE && $save_timestamp_name == "") {
             $CACHE->set($summary_hash, $results);
+        }
+        $lang = guessLocaleFromString($original_query);
+        if(file_exists(LOCALE_DIR . "/".
+                $lang ."/resources/lexicon.txt")) {
+            $this->lexicon_flag = 1;
+        }
+        if(USE_WORDNET && (WORDNET_EXEC != "") && $lang == "en-US"
+                && $this->lexicon_flag) {
+            $results_wordnet_score = self::sortByWordNetScore($results,
+                $original_query, $lang);
+            $results = $results_wordnet_score;
+        }
+        return $results;
+    }
+    /**
+     * If user selects Wordnet feature in page options then only
+     * do WordNet processing. Also user has to specify the WordNet directory
+     *
+     * @param array $results document summaries
+     * @param String User original query
+     * @return array results document summaries sorted by wordnet score
+     */
+    function sortByWordNetScore($results, $original_query, $lang)
+    {
+        /* If user selects Wordnet feature in page options then only
+         * do WordNet processing. Also user has to specify the WordNet directory
+         */
+        //Code added to sort the pages as per the WordNet score
+        $temp_pages = array();
+        $temp_summary = array();
+        $temp_pages = $results['PAGES'];
+            for($i = 0; $i < count($temp_pages); $i++) {
+                $temp_summary[$i] = $temp_pages[$i][self::DESCRIPTION];
+            }
+        $index_name = $this->index_name;
+        $threshold = 10;
+        $word =
+        PhraseParser::getSimilarWords($original_query, $index_name,
+                     $lang, $threshold);
+        $results['WORDNET_SIMILAR_WORDS'] = $word;
+        if(!empty($word)) {
+            $score_bm25 = WordNetScoreCalculator::getScore($temp_summary,
+                    $word);
+            //Store the BM25 score for each page in result array
+            for($i = 0; $i < count($score_bm25); $i++) {
+                $temp_pages[$i][self::BM25_SCORE] = $score_bm25[$i];
+                orderCallback($temp_pages[$i], $temp_pages[$i],
+                    self::BM25_SCORE);
+            }
+            if(array_sum($score_bm25) != 0){
+                usort($temp_pages, "orderCallback");
+            }
+            $results['PAGES'] = $temp_pages;
+            //Code added to sort the pages as per the BM25 score
         }
         return $results;
     }

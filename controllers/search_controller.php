@@ -747,6 +747,9 @@ class SearchController extends Controller implements CrawlConstants
         $data['RAW'] = $raw;
         $data['PAGES'] = (isset($phrase_results['PAGES'])) ?
              $phrase_results['PAGES']: array();
+        $data['WORDNET_SIMILAR_WORDS'] =
+            (isset($phrase_results['WORDNET_SIMILAR_WORDS'])) ?
+             $phrase_results['WORDNET_SIMILAR_WORDS']: array();
         $data['SAVE_POINT'] = (isset($phrase_results["SAVE_POINT"])) ?
              $phrase_results["SAVE_POINT"]: array( 0 => 1);
         if(isset($phrase_results["HARD_QUERY"])) {
