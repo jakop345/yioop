@@ -60,7 +60,7 @@ function findNonce(nonce_for_string, random_string, time, level)
  *  @param String time the time sent by the server
  *  @param String level define number of leading zeroes
  *  @return int nonce for which the sha1 of a string
-        produces the level number of a zeroes
+ *      produces the level number of a zeroes
  */
 function hashStamp(random_string, time, level)
 {

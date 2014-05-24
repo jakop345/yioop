@@ -67,15 +67,17 @@ class SigninView extends View
                 ?>"><img src="<?php e($logo); ?>" alt="Yioop!"
                 /></a><span> - <?php e(tl('signin_view_signin')); ?></span></h1>
         <?php if (isset($data['AUTH_ITERATION'])) { ?>
-                <form  method="post" id="form1" action="./?c=admin"
-                    onsubmit="generateKeys('form1','username', 'password',
-                    'fiatShamirModulus', '<?php e($_SESSION['SALT_VALUE']); ?>',
-                    <?php e($data['AUTH_ITERATION']); ?>)" >
-                    <input type="hidden" name="fiatShamirModulus"
-                        id="fiatShamirModulus"
-                        value="<?php e($data['FIAT_SHAMIR_MODULUS']) ?>"/>
+                <form  method="post" id="zkp-form" action="#"
+                    onsubmit="generateKeys('zkp-form','username', <?php
+                    ?>'password', 'fiat-shamir-modulus', '<?php
+                    e($_SESSION['SALT_VALUE']); ?>', <?php 
+                    e($data['AUTH_ITERATION']); ?>)" >
+                <input type="hidden" name="fiat_shamir_modulus"
+                    id="fiat-shamir-modulus"
+                    value="<?php e($data['FIAT_SHAMIR_MODULUS']) ?>"/>
+                <input type="hidden" id="salt-value" name="salt_value" />
         <?php } else {?>
-                <form  id="form1" method="post" action="#">
+                <form method="post" action="#">
         <?php } ?>
         <div class="login">
             <table>
@@ -91,16 +93,16 @@ class SigninView extends View
                 class="table-input"><input id="password" type="password"
                 class="narrow-field" maxlength="80" name="p" /></td>
             <td><input type="hidden" name="<?php e(CSRF_TOKEN);?>"
-                    id="<?php e(CSRF_TOKEN);?>" 
-                    value="<?php e($data[CSRF_TOKEN]); ?>" />
+                    id="CSRF-TOKEN" value="<?php e($data[CSRF_TOKEN]); ?>" />
+                <input type="hidden" name="c" value="admin" />
             </td>
             </tr>
             <tr><td>&nbsp;</td><td class="center">
-            <button  type="submit" name="c" value="admin"><?php
+            <button  type="submit" ><?php
                 e(tl('signin_view_login')); ?></button>
             </td><td>&nbsp;</td></tr>
             </table>
-            <input type="hidden" name="saltValue" id="saltValue" />
+
         </div>
         </form>
         <div class="signin-exit">

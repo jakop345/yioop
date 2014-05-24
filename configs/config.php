@@ -134,6 +134,11 @@ define('NORMAL_AUTHENTICATION', 1);
 /** Authentication Mode Possibility*/
 define('ZKP_AUTHENTICATION', 2);
 
+/** If ZKP Authentication via Fiat Shamir Protocol used how many iterations
+    to do
+ */
+define('FIAT_SHAMIR_ITERATIONS', 20);
+
 if(file_exists(WORK_DIRECTORY.PROFILE_FILE_NAME)) {
     require_once(WORK_DIRECTORY.PROFILE_FILE_NAME);
     define('PROFILE', true);

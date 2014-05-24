@@ -251,29 +251,6 @@ function filterButtons(id)
         editor_buttons[id] = editor_all_buttons[id];
     }
 }
-
-/**
- * Utility function to create a DOM element, given an element name and an object
- * with attributes as key value pairs.
- *
- * @param String element_name is the tagname of the element to be
- *      created and returned.
- * @param Object attributes is a Javascript object of attributes sent
- *      as key value pairs.
- * @return Element
- */
-function createElement(element_name, attributes)
-{
-    var element_x = document.createElement(element_name);
-
-    for (var property in attributes) {
-        if (attributes.hasOwnProperty(property)) {
-            element_x.setAttribute(property, attributes[property]);
-        }
-    }
-    return element_x;
-}
-
 /**
  * This function returns the selected text from text_area.
  * The returned Object has properties for
@@ -679,7 +656,7 @@ function fillChars(c, n)
  */
 function createTableForm(id)
 {
-    var wiki_prompt_for_table = createElement("div", {});
+    var wiki_prompt_for_table = ce("div");
     var table_form =
         '<div class="wiki-popup-content">' +
         '<h2 class="center">'+tl['wiki_js_add_wiki_table']+'</h2>' +
@@ -717,7 +694,7 @@ function createTableForm(id)
  */
 function createHyperlinkForm(id)
 {
-    var wiki_prompt_for_hyperlink = createElement("div", {});
+    var wiki_prompt_for_hyperlink = ce("div");
     wiki_prompt_for_hyperlink.innerHTML = 
         '<div class="wiki-popup-content">' +
         '<h2 class="center">'+tl['wiki_js_add_hyperlink']+'</h2>' +
@@ -744,7 +721,7 @@ function createHyperlinkForm(id)
  */
 function createSearchWidgetForm(id)
 {
-    var search_elt = createElement("div", {});
+    var search_elt = ce("div");
     search_form = '<div class="wiki-popup-content">'+
         '<h2 class="center">' + tl['wiki_js_add_search'] + '</h2>' +
         '<div class="center"><form>' +

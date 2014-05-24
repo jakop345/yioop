@@ -253,6 +253,5 @@ interface CrawlConstants
     const CENTROID_SUMMARIZER = 'dl';
     const SUMMARIZER_OPTION = 'dm';
     const WORD_CLOUD = 'dn';
-    const FIAT_SHAMIR_ITERATIONS = 10;
 }
 ?>

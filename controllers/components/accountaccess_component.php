@@ -70,8 +70,6 @@ class AccountaccessComponent extends Component
     function manageAccount()
     {
         $parent = $this->parent;
-        $profile_model = $parent->model("profile");
-        $profile = $profile_model->getProfile(WORK_DIRECTORY);
         $signin_model = $parent->model("signin");
         $group_model = $parent->model("group");
         $user_model = $parent->model("user");
@@ -149,13 +147,12 @@ class AccountaccessComponent extends Component
                         return $data;
                     }
                     if(isset($data['EDIT_PASSWORD'])) {
-                        if($profile['AUTHENTICATION_MODE']
-                             == ZKP_AUTHENTICATION) {
+                        if(AUTHENTICATION_MODE == ZKP_AUTHENTICATION) {
                             $signin_model->changePasswordZKP($username,
                                 $parent->clean($_REQUEST['new_password'],
                                 "string"));
                         } else {
-                                $signin_model->changePassword($username,
+                            $signin_model->changePassword($username,
                                 $parent->clean($_REQUEST['new_password'],
                                 "string"));
                         }
@@ -192,10 +189,8 @@ class AccountaccessComponent extends Component
      */
     function manageUsers()
     {
-        $parent = $this->parent;
-        $profile_model = $parent->model("profile");
-        $profile = $profile_model->getProfile(WORK_DIRECTORY);
-        if($profile['AUTHENTICATION_MODE'] == ZKP_AUTHENTICATION) {
+        $parent = $this->parent;;
+        if(AUTHENTICATION_MODE == ZKP_AUTHENTICATION) {
             $_SESSION['SALT_VALUE'] = rand(0, 1);
             $_SESSION['AUTH_COUNT'] = 1;
             $data['INCLUDE_SCRIPTS'] = array("sha1", "zkp", "big_int");
@@ -278,23 +273,21 @@ class AccountaccessComponent extends Component
                         $_REQUEST['status']])) {
                         $_REQUEST['status'] = INACTIVE_STATUS;
                     } else {
-                        if($profile['AUTHENTICATION_MODE'] == ZKP_AUTHENTICATION) {
-                            $user_model->addUser($username, '',
-                                $parent->clean($_REQUEST['first_name'], "string"),
-                                $parent->clean($_REQUEST['last_name'], "string"),
-                                $parent->clean($_REQUEST['email'], "string"),
-                                $_REQUEST['status'],
-                                $parent->clean($_REQUEST['password'], "string")
-                            );
+                        $norm_password = "";
+                        $zkp_password = "";
+                        if(AUTHENTICATION_MODE == ZKP_AUTHENTICATION) {
+                            $zkp_password = 
+                                $parent->clean($_REQUEST['password'], "string");
                         } else {
-                            $user_model->addUser($username,
-                                $parent->clean($_REQUEST['password'], "string"),
-                                $parent->clean($_REQUEST['first_name'], "string"),
-                                $parent->clean($_REQUEST['last_name'], "string"),
-                                $parent->clean($_REQUEST['email'], "string"),
-                                $_REQUEST['status']
-                            );
+                            $norm_password = 
+                                $parent->clean($_REQUEST['password'], "string");
                         }
+                        $user_model->addUser($username, $norm_password,
+                            $parent->clean($_REQUEST['first_name'], "string"),
+                            $parent->clean($_REQUEST['last_name'], "string"),
+                            $parent->clean($_REQUEST['email'], "string"),
+                            $_REQUEST['status'], $zkp_password
+                        );
                         $data['USER_NAMES'][$username] = $username;
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_user_added').
@@ -323,7 +316,7 @@ class AccountaccessComponent extends Component
                                     $_REQUEST[$field], "string");
                                 if($tmp != $user[$upper_field]) {
                                     $user[$upper_field] = $tmp;
-                                     if($profile['AUTHENTICATION_MODE'] ==
+                                     if(AUTHENTICATION_MODE ==
                                         ZKP_AUTHENTICATION && $upper_field
                                         == "PASSWORD") {
                                         $user["ZKP_PASSWORD"] = $tmp;

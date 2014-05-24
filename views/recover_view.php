@@ -155,8 +155,8 @@ class RecoverView extends View
                             $question_sets = array();
                         } else {
                             $question_sets = array(
-                            tl('register_view_human_check')=>
-                            $data['CAPTCHAS']);
+                                tl('register_view_human_check') =>
+                                $data['CAPTCHAS'] );
                         }
                     }
                     if(isset($_SESSION["random_string"])) {

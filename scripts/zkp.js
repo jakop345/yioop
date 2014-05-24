@@ -21,7 +21,7 @@
  *
  *  END LICENSE
  *
- * @author Chris Pollett chris@pollett.org
+ * @author Akash Patel (edited by Chris Pollett chris@pollett.org)
  * @package seek_quarry
  * @subpackage javascript
  * @license http://www.gnu.org/licenses/ GPL3
@@ -33,12 +33,13 @@
 /*
  *  Returns RSA like modulus.
  *
- *  @param Object fiatShamirModulus id of the fiatShamirModulus dom object
- *  @return BigInteger RSA like modulus.
+ *  @param String id identifier of a hidden input field containing the
+ *      modulus to use in the Fiat Shamir Protocol
+ *  @return BigInt RSA-like modulus.
  */
-function getN(fiatShamirModulus)
+function getN(id)
 {
-    var n = elt(fiatShamirModulus).value;
+    var n = elt(id).value;
     return str2BigInt(n, 10, 0);
 }
 
@@ -46,35 +47,36 @@ function getN(fiatShamirModulus)
  *  Generates Fiat shamir parameters such as x and y and append
  *  with the input form
  *
- *  @param Object form1 id of the form
+ *  @param Object fiat_shamir_id id of the form
  *  @param String sha1 of the user password
  *  @param int e random value sent by the server. Either 0 or 1.
  *  @param String user_name id of the form
- *  @param String fiat shamir modulus
+ *  @param String modulus_id identifier of hidden field with modulus to use in
+ *      Fiat Shamir
  */
-function dynamicForm(form1, sha1, e, user_name, fiatShamirModulus)
+function dynamicForm(zkp_form_id, sha1, e, user_name, modulus_id)
 {
-    var form = elt(form1);
-    var n = getN(fiatShamirModulus);
+    var zkp_form = elt(zkp_form_id);
+    var n = getN(modulus_id);
     var r = getR();
     var x = multMod(r, r, n);
     var y = getY(sha1, e, r, n);
     var input_x = ce('input');
     input_x.type = 'hidden';
-    input_x.name = 'x1';
+    input_x.name = 'x';
     input_x.value = bigInt2Str(x, 10);
     var input_y = ce('input');
     input_y.type = 'hidden';
-    input_y.name = 'y1';
+    input_y.name = 'y';
     input_y.value = bigInt2Str(y, 10);
     var input_username = ce('input');
     input_username.type = 'hidden';
     input_username.name = 'u';
     input_username.value = user_name;
-    form.appendChild(input_x);
-    form.appendChild(input_y);
-    form.appendChild(input_username);
-    form.submit();
+    zkp_form.appendChild(input_x);
+    zkp_form.appendChild(input_y);
+    zkp_form.appendChild(input_username);
+    zkp_form.submit();
 }
 
 /*
@@ -104,14 +106,14 @@ function getY(sha1, e, r, n)
 }
 
 /*
- *  Generates random number and convert into BigInteger.
+ *  Generates random number and converts it into BigInteger.
  *
  *  @return BigInteger final_r random BigInteger
  */
 function getR()
 {
     var r = Math.floor((Math.random() * 21474) + 1);
-    r = r.toString();;
+    r = r.toString();
     var final_r = str2BigInt(r, 10, 0);
     return final_r;
 }
@@ -121,59 +123,63 @@ function getR()
  *  with the input form. This method calls first time when user
  *  provides user name and password
  *
- *  @param Object form1 id of the form
- *  @param String username username provided by user
- *  @param String password1 password provided by user
+ *  @param Object zkp_form_id identifier of the form with zkp data
+ *  @param String username_id identifier of the form element with the username
+ *  @param String password_id identifier of the form element with the password
  *  @param int e random value send by the server. Either 0 or 1.
  *  @param int auth_count number of Fiat-Shamir iterations
  */
-function generateKeys(form1, username, password1, fiatShamirModulus, e, auth_count)
+function generateKeys(zkp_form_id, username_id, password_id,
+    modulus_id, e, auth_count)
 {
-    var password = elt(password1).value;
-    var u = elt(username).value;
-    var token = elt('YIOOP_TOKEN').value;
+    var password = elt(password_id).value;
+    var u = elt(username_id).value;
+    var token_object = elt('CSRF-TOKEN');
+    var token = token_object.value;
+    var token_name = token_object.name;
     var sha1 = generateSha1(password);
-    var n = new getN(fiatShamirModulus);
+    var n = new getN(modulus_id);
     for (var i = 0; i < auth_count - 1; i++) {
         var r = getR();
         var x = multMod(r, r, n);
         var y = getY(sha1, e, r, n);
-        var x1 = bigInt2Str(x, 10);
-        var y1 = bigInt2Str(y, 10);
-        sendFiatShamirParameters(x1, y1, u, token);
-        var e_temp = elt("saltValue").value;
+        var x_string = bigInt2Str(x, 10);
+        var y_string = bigInt2Str(y, 10);
+        sendFiatShamirParameters(x_string, y_string, u, token, token_name);
+        var e_temp = elt("salt-value").value;
         e_temp = e_temp + '';
         e = parseInt(e_temp);
-        if(e == -1){
+        if(e == -1) {
             e = 1;
             break;
         }
     }
-    elt(password1).value = null;
-    dynamicForm(form1, sha1, e, u, fiatShamirModulus);
+    elt(password_id).value = null;
+    dynamicForm(zkp_form_id, sha1, e, u, modulus_id);
 }
 
 /*
- *  Make AJAX request to the server. This method sends Fiat-Shamir
- *  parameters and receives parameter e from server
+ *  Sends Fiat-Shamir via AJAX parameters and receives parameter e from server
  *
- *  @param BigInt x1 Fiat-Shamir parameter x
- *  @param BigInt y1 Fiat-Shamir parameter y
+ *  @param BigInt x Fiat-Shamir parameter x
+ *  @param BigInt y Fiat-Shamir parameter y
  *  @param String u username provided by user
  *  @param String token CSRF token sent by the server
+ *  @param String token_name name to use for CSRF token
  */
-function sendFiatShamirParameters(x1, y1, u, token)
+function sendFiatShamirParameters(x, y, u, token, token_name)
 {
     var http = new XMLHttpRequest();
-    var url = "./?c=admin";
-    var params = "x1=" + x1 + "&y1=" + y1 +"&u=" + u + "&YIOOP_TOKEN=" + token;
-    http.open("POST", url, false);
+    var url = "./";
+    var params = "c=admin&x=" + x + "&y=" + y +"&u=" + u +
+        "&"+token_name+"=" + token;
+    http.open("post", url, false);
     http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     http.setRequestHeader("Content-length", params.length);
     http.setRequestHeader("Connection", "close");
     http.onreadystatechange = function () {
         if (http.readyState == 4 && http.status == 200) {
-            elt("saltValue").value = http.responseText;
+            elt("salt-value").value = http.responseText;
         }
     }
     http.send(params);
@@ -183,17 +189,18 @@ function sendFiatShamirParameters(x1, y1, u, token)
  *  This function is used during create account module and when
  *  authentication mode is ZKP.
  *
- *  @param String password password provided by user
- *  @param String repassword repassword provided by user
+ *  @param String password_id
+ *  @param String repassword_id
+ *  @param String 
  */
-function registration(password, repassword, fiatShamirModulus)
+function registration(password_id, repassword_id, modulus_id)
 {
-    var password1 = elt(password);
-    var repassword1 = elt(repassword);
-    var sha1 = generateSha1(password1.value);
+    var password = elt(password_id);
+    var repassword = elt(repassword_id);
+    var sha1 = generateSha1(password.value);
     var x = str2BigInt(sha1, 16, 0);
-    var n = getN(fiatShamirModulus);
+    var n = getN(modulus_id);
     var z = multMod(x, x, n);
-    password1.value = bigInt2Str(z, 10);
-    repassword1.value = bigInt2Str(z, 10);
+    password.value = bigInt2Str(z, 10);
+    repassword.value = bigInt2Str(z, 10);
 }

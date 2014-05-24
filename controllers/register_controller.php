@@ -190,8 +190,6 @@ class RegisterController extends Controller implements CrawlConstants
      */
     function processRequest()
     {
-        $profile_model = $this->model("profile");
-        $profile = $profile_model->getProfile(WORK_DIRECTORY);
         $visitor_model = $this->model("visitor");
         if(isset($_SESSION['USER_ID'])) {
             $user = $_SESSION['USER_ID'];
@@ -226,7 +224,7 @@ class RegisterController extends Controller implements CrawlConstants
             'processAccountData', 'createAccount', $data);
         $data["check_fields"] = array("user");
         unset($data["check_user"]);
-        if($profile['CAPTCHA_MODE'] == TEXT_CAPTCHA) {
+        if(CAPTCHA_MODE == TEXT_CAPTCHA) {
             for($i = 0; $i < self::NUM_CAPTCHA_QUESTIONS; $i++) {
                 $data["check_fields"][] = "question_$i";
             }
@@ -254,7 +252,7 @@ class RegisterController extends Controller implements CrawlConstants
             $visitor_model->updateVisitor(
                 $_SERVER['REMOTE_ADDR'], "captcha_time_out");
         }
-        if($profile['AUTHENTICATION_MODE'] == ZKP_AUTHENTICATION) {
+        if(AUTHENTICATION_MODE == ZKP_AUTHENTICATION) {
             $_SESSION['SALT_VALUE'] = rand(0, 1);
             $data['AUTH_ITERATION'] = self::FIAT_SHAMIR_ITERATIONS;
             $data['FIAT_SHAMIR_MODULUS'] = $profile['FIAT_SHAMIR_MODULUS'];
@@ -262,7 +260,7 @@ class RegisterController extends Controller implements CrawlConstants
         } else {
             unset($_SESSION['SALT_VALUE']);
         }
-        if($profile['CAPTCHA_MODE'] == HASH_CAPTCHA) {
+        if(CAPTCHA_MODE == HASH_CAPTCHA) {
             if(isset($data['INCLUDE_SCRIPTS'])) {
                 array_push($data['INCLUDE_SCRIPTS'], "hash_captcha");
             } else {
@@ -300,8 +298,7 @@ class RegisterController extends Controller implements CrawlConstants
      *      or not
      */
     function processAccountData()
-    {   $profile_model = $this->model("profile");
-        $profile = $profile_model->getProfile(WORK_DIRECTORY);
+    {
         $data = array();
         $this->getCleanFields($data);
         $data['SCRIPT'] = "";
@@ -310,7 +307,7 @@ class RegisterController extends Controller implements CrawlConstants
         {
             case 'no_activation':
                 $data['REFRESH'] = "signin";
-                if($profile['AUTHENTICATION_MODE'] == NORMAL_AUTHENTICATION) {
+                if(AUTHENTICATION_MODE == NORMAL_AUTHENTICATION) {
                     $user_model->addUser($data['USER'], $data['PASSWORD'],
                         $data['FIRST'], $data['LAST'], $data['EMAIL']);
                 } else {
@@ -323,7 +320,7 @@ class RegisterController extends Controller implements CrawlConstants
             break;
             case 'email_registration':
                 $data['REFRESH'] = "signin";
-                if($profile['AUTHENTICATION_MODE'] == NORMAL_AUTHENTICATION) {
+                if(AUTHENTICATION_MODE == NORMAL_AUTHENTICATION) {
                     $user_model->addUser($data['USER'], $data['PASSWORD'],
                         $data['FIRST'], $data['LAST'], $data['EMAIL'],
                         INACTIVE_STATUS);
@@ -360,7 +357,7 @@ class RegisterController extends Controller implements CrawlConstants
             break;
             case 'admin_activation':
                 $data['REFRESH'] = "signin";
-                if($profile['AUTHENTICATION_MODE'] == NORMAL_AUTHENTICATION) {
+                if(AUTHENTICATION_MODE == NORMAL_AUTHENTICATION) {
                     $user_model->addUser($data['USER'], $data['PASSWORD'],
                         $data['FIRST'], $data['LAST'], $data['EMAIL'],
                         INACTIVE_STATUS);
@@ -477,8 +474,6 @@ class RegisterController extends Controller implements CrawlConstants
      */
     function processRecoverData()
     {
-        $profile_model = $this->model("profile");
-        $profile = $profile_model->getProfile(WORK_DIRECTORY);
         $data = array();
         $this->getCleanFields($data);
         $data['SCRIPT'] = "";
@@ -493,7 +488,7 @@ class RegisterController extends Controller implements CrawlConstants
             return $data;
         }
         $session = $user_model->getUserSession($user["USER_ID"]);
-        if($profile['CAPTCHA_MODE'] == TEXT_CAPTCHA) {
+        if(CAPTCHA_MODE == TEXT_CAPTCHA) {
             if(!isset($session['RECOVERY']) ||
                 !isset($session['RECOVERY_ANSWERS'])) {
                 $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
@@ -644,8 +639,6 @@ class RegisterController extends Controller implements CrawlConstants
      */
     function suggestUrl()
     {
-        $profile_model = $this->model("profile");
-        $profile = $profile_model->getProfile(WORK_DIRECTORY);
         $data["REFRESH"] = "suggest";
         $visitor_model = $this->model("visitor");
         $clear = false;
@@ -660,7 +653,7 @@ class RegisterController extends Controller implements CrawlConstants
         }
         if(!isset($_SESSION['BUILD_TIME']) || !isset($_REQUEST['build_time'])||
             $_SESSION['BUILD_TIME'] != $_REQUEST['build_time']) {
-            if($profile['CAPTCHA_MODE'] == HASH_CAPTCHA) {
+            if(CAPTCHA_MODE == HASH_CAPTCHA) {
                 $time = time();
                 $_SESSION["request_time"] = $time;
                 $_SESSION["level"] = self::HASH_CAPTCHA_LEVEL;
@@ -676,7 +669,7 @@ class RegisterController extends Controller implements CrawlConstants
             $data['build_time'] = time();
             $_SESSION['BUILD_TIME'] = $data['build_time'];
         }
-        if($profile['CAPTCHA_MODE'] == TEXT_CAPTCHA) {
+        if(CAPTCHA_MODE == TEXT_CAPTCHA) {
             for($i = 0; $i < $num_captchas; $i++) {
                 $data["question_$i"] = "-1";
                 if($clear && isset($_REQUEST["question_$i"])) {
@@ -704,7 +697,7 @@ class RegisterController extends Controller implements CrawlConstants
         }
         $missing = array();
         $save = isset($_REQUEST['arg']) && $_REQUEST['arg'];
-        if($profile['CAPTCHA_MODE'] == TEXT_CAPTCHA) {
+        if(CAPTCHA_MODE == TEXT_CAPTCHA) {
             for($i = 0; $i < $num_captchas; $i++) {
             $field = "question_$i";
             $captchas = isset($_SESSION['CAPTCHAS'][$i]) ?
@@ -738,7 +731,7 @@ class RegisterController extends Controller implements CrawlConstants
                     tl('register_controller_error_fields')."</h1>');";
                 return $data;
             }
-            if($profile['CAPTCHA_MODE'] == HASH_CAPTCHA) {
+            if(CAPTCHA_MODE == HASH_CAPTCHA) {
                 if(!$this->validateHashCode()) {
                     $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
                     tl('register_controller_failed_hashcode')."</h1>');";
@@ -747,7 +740,7 @@ class RegisterController extends Controller implements CrawlConstants
                     return $data;
                 }
             }
-            if($profile['CAPTCHA_MODE'] == TEXT_CAPTCHA) {
+            if(CAPTCHA_MODE == TEXT_CAPTCHA) {
                 if(!$this->checkCaptchaAnswers()) {
                     $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
                     tl('register_controller_failed_human')."</h1>');";
@@ -800,8 +793,6 @@ class RegisterController extends Controller implements CrawlConstants
      */
     function setupQuestionViewData()
     {
-        $profile_model = $this->model("profile");
-        $profile = $profile_model->getProfile(WORK_DIRECTORY);
         $data = array();
         $fields = $this->register_fields;
         foreach($fields as $field) {
@@ -811,13 +802,13 @@ class RegisterController extends Controller implements CrawlConstants
             self::NUM_CAPTCHA_CHOICES; $i++) {
             $data["question_$i"] = "-1";
         }
-        if($profile['AUTHENTICATION_MODE'] == ZKP_AUTHENTICATION) {
+        if(AUTHENTICATION_MODE == ZKP_AUTHENTICATION) {
             $data['AUTHENTICATION_MODE'] = ZKP_AUTHENTICATION;
             $data['INCLUDE_SCRIPTS'] = array("sha1", "zkp"," big_int");
          } else {
             $data['AUTHENTICATION_MODE'] = NORMAL_AUTHENTICATION;
          }
-        if($profile['CAPTCHA_MODE'] == HASH_CAPTCHA) {
+        if(CAPTCHA_MODE == HASH_CAPTCHA) {
             if(isset($data['INCLUDE_SCRIPTS'])) {
                 array_push($data['INCLUDE_SCRIPTS'], "hash_captcha");
             } else {
@@ -828,7 +819,7 @@ class RegisterController extends Controller implements CrawlConstants
             $_SESSION["level"] = self::HASH_CAPTCHA_LEVEL;
             $_SESSION["random_string"] = md5( $time . AUTH_KEY );
         }
-        if($profile['CAPTCHA_MODE'] == TEXT_CAPTCHA) {
+        if(CAPTCHA_MODE == TEXT_CAPTCHA) {
             unset($_SESSION["request_time"]);
             unset($_SESSION["level"] );
             unset($_SESSION["random_string"] );
@@ -1102,9 +1093,7 @@ class RegisterController extends Controller implements CrawlConstants
             $data["PASSWORD"] = "";
             $data["REPASSWORD"] = "";
         }
-        $profile_model = $this->model("profile");
-        $profile = $profile_model->getProfile(WORK_DIRECTORY);
-        if($profile['CAPTCHA_MODE'] == TEXT_CAPTCHA) {
+        if(CAPTCHA_MODE == TEXT_CAPTCHA) {
             $num_questions = self::NUM_CAPTCHA_QUESTIONS +
                 self::NUM_RECOVERY_QUESTIONS;
             $num_captchas = self::NUM_CAPTCHA_QUESTIONS;

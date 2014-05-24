@@ -297,12 +297,12 @@ class UserModel extends Model
         $db = $this->db;
         $sql = "INSERT INTO USERS(FIRST_NAME, LAST_NAME,
             USER_NAME, EMAIL, PASSWORD, STATUS, HASH,
-            CREATION_TIME,ZKP_PASSWORD) VALUES (
+            CREATION_TIME, ZKP_PASSWORD) VALUES (
             ?, ?, ?, ?, ?, ?, ?, ?,?)";
         $result = $db->execute($sql, array($firstname, $lastname,
             $username, $email, crawlCrypt($password), $status,
             crawlCrypt($username.AUTH_KEY.$creation_time),
-            $creation_time,$zkp_password));
+            $creation_time, $zkp_password));
     }
 
     /**
@@ -323,7 +323,7 @@ class UserModel extends Model
         $db = $this->db;
         $sql = "INSERT INTO USERS(FIRST_NAME, LAST_NAME,
             USER_NAME, EMAIL, PASSWORD, STATUS, HASH,
-            CREATION_TIME,ZKP_PASSWORD) VALUES (
+            CREATION_TIME, ZKP_PASSWORD) VALUES (
             ?, ?, ?, ?, ?, ?, ?, ?,?)";
         $result = $db->execute($sql, array($firstname, $lastname,
             $username, $email, crawlCrypt($password), $status,

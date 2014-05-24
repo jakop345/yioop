@@ -49,13 +49,14 @@ require_once(BASE_DIR.'/lib/url_parser.php');
  */
 class ProfileModel extends Model
 {
-     var $profile_fields = array('API_ACCESS', 'AUTH_KEY', 'AUTHENTICATION_MODE',
-        'CACHE_LINK', 'CAPTCHA_MODE','DEBUG_LEVEL', 'DESCRIPTION_WEIGHT',
-        'DB_HOST', 'DBMS', 'DB_NAME','DB_PASSWORD', 'DB_USER', 'DEFAULT_LOCALE',
-        'FIAT_SHAMIR_MODULUS', 'GROUP_ITEM', 'IN_LINK','IP_LINK', 'LINK_WEIGHT',
-        'MAIL_PASSWORD', 'MAIL_SECURITY','MAIL_SENDER', 'MAIL_SERVER', 'MAIL_SERVERPORT',
-        'MAIL_USERNAME', 'MEMCACHE_SERVERS', 'MIN_RESULTS_TO_GROUP', 'NAME_SERVER',
-        'NEWS_MODE', 'PROXY_SERVERS', 'REGISTRATION_TYPE', 'ROBOT_INSTANCE',
+     var $profile_fields = array('API_ACCESS', 'AUTH_KEY',
+        'AUTHENTICATION_MODE', 'CACHE_LINK', 'CAPTCHA_MODE','DEBUG_LEVEL',
+        'DESCRIPTION_WEIGHT', 'DB_HOST', 'DBMS', 'DB_NAME','DB_PASSWORD',
+        'DB_USER', 'DEFAULT_LOCALE', 'FIAT_SHAMIR_MODULUS', 'GROUP_ITEM',
+        'IN_LINK','IP_LINK', 'LINK_WEIGHT', 'MAIL_PASSWORD', 'MAIL_SECURITY',
+        'MAIL_SENDER', 'MAIL_SERVER', 'MAIL_SERVERPORT', 'MAIL_USERNAME',
+        'MEMCACHE_SERVERS', 'MIN_RESULTS_TO_GROUP', 'NAME_SERVER', 'NEWS_MODE',
+        'PROXY_SERVERS', 'REGISTRATION_TYPE', 'ROBOT_INSTANCE',
         'RSS_ACCESS', 'SERVER_ALPHA', 'SIGNIN_LINK', 'SIMILAR_LINK',
         'SUBSEARCH_LINK', 'TITLE_WEIGHT', 'TOR_PROXY', 'USE_FILECACHE',
         'USE_MAIL_PHP', 'USE_MEMCACHE', 'USE_PROXY', 'USER_AGENT_SHORT',
@@ -180,7 +181,13 @@ EOT;
                 $profile[$field] = "news_off";
             }
             if($field == "WEB_URI") {
-                $profile[$field] = UrlParser::getPath($_SERVER['REQUEST_URI']);
+                if(isset($_SERVER['REQUEST_URI'])) {
+                    $profile[$field] =
+                        UrlParser::getPath($_SERVER['REQUEST_URI']);
+                } else {
+                    $profile[$field] = UrlParser::getPath(NAME_SERVER);
+
+                }
             }
             if($field == "ROBOT_DESCRIPTION") continue;
             if($field != "DEBUG_LEVEL") {

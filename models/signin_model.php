@@ -68,7 +68,6 @@ class SigninModel extends Model
         return ($username == $row['USER_NAME'] &&
             crawlCrypt($password, $row['PASSWORD']) == $row['PASSWORD']) ;
     }
-    
     /**
      * Get user details from database
      *
@@ -92,12 +91,15 @@ class SigninModel extends Model
     }
     
     /**
-     * To verify  username and password in case of ZKP authentication.
+     * To verify  username and password in case of ZKP authentication
+     * via the Fiat Shamir protocol
      *
-     * @param string $username username
-     * @param string $database_username  username stored in database
-     * @param string $database_password  password stored in database
-     * @return bool  where the password is that of the given user
+     * @param string $username which login to verify
+     * @param string $x
+     * @param string $y
+     * @param string $e exponent to use
+     * @param string $n modulus to use for Fiat Shamir
+     * @return bool
      */
     function checkValidSigninForZKP($username, $x, $y, $e, $n)
     {
@@ -211,11 +213,8 @@ class SigninModel extends Model
     function changePasswordZKP($username, $password)
     {
         $sql = "UPDATE USERS SET ZKP_PASSWORD=? WHERE USER_NAME = ? ";
-        $result = $this->db->execute($sql,
-            array($password, $username) );
+        $result = $this->db->execute($sql, array($password, $username) );
         return $result != false;
     }
-
 }
-
 ?>
