@@ -254,7 +254,7 @@ class RegisterController extends Controller implements CrawlConstants
         }
         if(AUTHENTICATION_MODE == ZKP_AUTHENTICATION) {
             $_SESSION['SALT_VALUE'] = rand(0, 1);
-            $data['AUTH_ITERATION'] = self::FIAT_SHAMIR_ITERATIONS;
+            $data['AUTH_ITERATION'] = FIAT_SHAMIR_ITERATIONS;
             $data['FIAT_SHAMIR_MODULUS'] = $profile['FIAT_SHAMIR_MODULUS'];
             $data['INCLUDE_SCRIPTS'] = array("sha1", "zkp", "big_int");
         } else {
