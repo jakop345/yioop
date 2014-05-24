@@ -194,7 +194,7 @@ class ManageusersElement extends Element
         }
         ?>
        <?php if($data['AUTHENTICATION_MODE'] == ZKP_AUTHENTICATION) { ?>
-                <form action="" method="post"
+                <form action="#" method="post"
                     onsubmit="registration('pass-word','retype-password',
                     'fiat-shamir-modulus')">
                 <input type="hidden" name="fiat_shamir_modulus" 
