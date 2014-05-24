@@ -77,11 +77,11 @@ class ManageaccountElement extends Element
                 e($edit_or_no_text); ?></a>]</small></h2>
             <?php
             if(isset($data['EDIT_PASSWORD']) &&
-                $data['AUTHENTICATION_MODE'] == ZKP_AUTHENTICATION) { ?>
+                AUTHENTICATION_MODE == ZKP_AUTHENTICATION) { ?>
                 <form action="#" method="post"
                     onsubmit="registration('new-password','retype-password',
                     'fiat-shamir-modulus')">
-                <input type="hidden" name="fiat_shamir_modulus" 
+                <input type="hidden" name="fiat_shamir_modulus"
                     id="fiat-shamir-modulus"
                     value="<?php e($data['FIAT_SHAMIR_MODULUS']) ?>"/>
                 <?php 
@@ -90,7 +90,6 @@ class ManageaccountElement extends Element
                     autocomplete="off">
             <?php
             }?>
-            <form id="changeUserForm" method="post" action='#'>
             <input type="hidden" name="c" value="admin" />
             <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
                 e($data[CSRF_TOKEN]); ?>" />

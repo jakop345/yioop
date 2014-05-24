@@ -88,6 +88,9 @@ class AccountaccessComponent extends Component
             if($_REQUEST['edit_pass'] == "true") {
                 $data['EDIT_USER'] = true;
                 $data['EDIT_PASSWORD'] = true;
+                $data['AUTHENTICATION_MODE'] = AUTHENTICATION_MODE;
+                $data['FIAT_SHAMIR_MODULUS'] = FIAT_SHAMIR_MODULUS;
+                $data['INCLUDE_SCRIPTS'] = array("sha1", "zkp", "big_int");
             } else {
                 $data['EDIT_USER'] = true;
             }
@@ -126,9 +129,9 @@ class AccountaccessComponent extends Component
             {
                 case "updateuser":
                     if(isset($data['EDIT_PASSWORD']) &&
-                        (!isset($_REQUEST['re_type_password']) ||
+                        (!isset($_REQUEST['retype_password']) ||
                         !isset($_REQUEST['new_password']) ||
-                        $_REQUEST['re_type_password'] !=
+                        $_REQUEST['retype_password'] !=
                             $_REQUEST['new_password'])){
                         $data["MESSAGE"] =
                             tl('accountaccess_component_passwords_dont_match');
