@@ -176,6 +176,9 @@ function addBigIntToInt(x, n)
  * To convert the string into the BigInt
  * Pad the array with leading zeros so that it has at least min_size elements.
  * The array will always have at least one leading zero, unless base=-1
+ * If base is less than 36 we use the digit_str below to convert (say for hex
+ * or decimal numbers). Otherwise, we assume the base is 256 and just use 
+ * charCode
  *
  * @param String s input string
  * @param int base base of the output number
@@ -189,8 +192,10 @@ function str2BigInt(s, base, min_size)
         '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
     var k = s.length;
     var x = int2BigInt(0, base * k, 0);
+    
     for (i = 0; i < k; i++) {
-        d = digits_str.indexOf(s.substring(i, i + 1), 0);
+        d = (base > 36) ? s.charCodeAt(i) :
+            digits_str.indexOf(s.substring(i, i + 1), 0);
         if (base <= 36 && d >= 36) {
             d -= 26; //lower to upper
         }

@@ -108,19 +108,40 @@ function getY(sha1, e, r, n)
 /*
  *  Generates random number and converts it into BigInteger in provided range
  *
- *  @param BigInt range. Random lenber be from 0 to range - 1
+ *  @param BigInt range. Random number be from 0 to range - 1
  *  @return BigInteger final_r random BigInteger
  */
 function getR(range)
 {
     var len = range.length;
-    var r = "";
-    var digit;
-    for(var i = 0; i < len; i++) {
-        digit  = Math.floor((Math.random() * 10) + 1);
-        r += digit.toString();
+    var random_words;
+    var got_r = false;
+    if (window.crypto && window.crypto.getRandomValues) {
+        random_words = new Int32Array(Math.floor(len/4) + 1);
+        window.crypto.getRandomValues(random_words);
+
+    } else if (window.msCrypto && window.msCrypto.getRandomValues) {
+        random_words = new Int32Array(Math.floor(len/4) + 1);
+        window.msCrypto.getRandomValues(random_words);
+    } else { 
+        /*  if you're in this case you are using an old browser and someone
+            might be able to fool you (still hard)
+         */
+        var r = "";
+        var digit;
+        for(var i = 0; i < len; i++) {
+            digit  = Math.floor((Math.random() * 10) + 1);
+            r += digit.toString();
+        }
+        r = str2BigInt(r, 10, 0);
+        got_r = true;
     }
-    r = str2BigInt(r, 10, 0);
+    if(!got_r) {
+        for(var i = 0; i < random_words.length; i++) {
+            r += random_words[i].toString();
+        }
+        r = str2BigInt(r, 256, 0);
+    }
     var final_r = bigMod(r, range);
     return final_r;
 }
