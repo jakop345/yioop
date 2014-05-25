@@ -72,10 +72,14 @@ require_once BASE_DIR."/lib/index_manager.php";
 require_once BASE_DIR."/lib/suffix_tree.php";
 
 /**
+ * So know which part of speech tagger to use
+ */
+require_once BASE_DIR."/lib/locale_functions.php";
+/**
  * Get the part of speech tagging for given sentence
  */
 require_once LOCALE_DIR . "/".getLocaleTag().
-        "/resources/part_of_speech_tagging.php";
+    "/resources/part_of_speech_tagging.php";
 
 /**
  * Get the similar words from wordnet for given query

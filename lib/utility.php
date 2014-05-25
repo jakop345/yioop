@@ -2062,14 +2062,94 @@ function extractLCSFromTable($lcs_moves, $lines, $i, $j, $offset, &$lcs)
       */
      function generateFiatShamirModulus()
      {
-        $config = array(
-            "digest_alg" => "sha256",
-            "public_key_bits" => 1024,
-            "public_key_type" => OPENSSL_KEYTYPE_RSA,
-        );
-        $res = openssl_pkey_new($config);
-        $pub_key = openssl_pkey_get_details($res);
-        return bchexdec(bin2hex($pub_key["rsa"]["n"]));
+        if(function_exists("openssl_pkey_new")) {
+            $config = array(
+                "digest_alg" => "sha256",
+                "public_key_bits" => 1024,
+                "public_key_type" => OPENSSL_KEYTYPE_RSA,
+            );
+            $res = openssl_pkey_new($config);
+            $pub_key = openssl_pkey_get_details($res);
+            $tmp = bchexdec(bin2hex($pub_key["rsa"]["n"]));
+        } else {
+            $num_bits = 256;
+            $num_digits = ceil($num_bits * log10(2));
+            $p = randProbablyPrime($num_digits);
+            $q = randProbablyPrime($num_digits);
+            $tmp = bcmul($p, $q);
+        }
+        return $tmp;
+    }
+
+    /**
+     *
+     */
+    function randProbablyPrime($len)
+    {
+        $accuracy = 30;
+        $bound = str_pad("", $len, "9");
+        do {
+            $num = bcrand("0", $bound);
+        } while(!probablyPrime($num, $accuracy));
+        return $num;
+    }
+    /**
+     *
+     */
+    function probablyPrime($num, $accuracy)
+    {
+        if(bccomp($num, "2") == 0 || bccomp($num, "3") == 0)
+            return true;
+        if (bccomp($num, "2") < 0 || bcmod($num, "2") == 0) {
+            return false;
+        }
+        $num_less_one = bcsub($num, 1);
+        $d = $num_less_one;
+        $s = 0;
+        while (bcmod($d, "2") == 0) {
+            $d = bcdiv($d, "2");
+            $s++;
+        }
+        for ($i = 0; $i < $accuracy; $i++) {
+            $a = bcrand("2", $num_less_one);
+            $x = bcpowmod($a, $d, $num);
+            if (bccomp($x, "1") == 0 || bccomp($x, $num_less_one) == 0) {
+                continue;
+            }
+            for ($j = 1; $j < $s; $j++) {
+                $x = bcmod(bcmul($x, $x), $num);
+                if (bccomp($x, "1") == 0)
+                    return false;
+                if (bccomp($x, $num_less_one) == 0)
+                    continue 2;
+            }
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     *
+     */
+    function bcrand($low, $high)
+    {
+        $range = bcsub($high, $low);
+        if(bccomp($range, "0") <= 0) {
+            return "0";
+        }
+        $len = strlen($range);
+        if(function_exists("openssl_random_pseudo_bytes")) {
+            $tmp = openssl_random_pseudo_bytes($len);
+            $tmp = bchexdec(bin2hex($tmp));
+        } else {
+            $tmp = "";
+            for($i = 0; $i < $len; $i++) {
+                $tmp .= mt_rand(0, 9);
+            }
+        }
+        $rand_in_range = bcmod($tmp, $range);
+        $out = bcadd($rand_in_range, $low);
+        return $out;
     }
 
     /**
