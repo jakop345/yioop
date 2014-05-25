@@ -58,7 +58,7 @@ function dynamicForm(zkp_form_id, sha1, e, user_name, modulus_id)
 {
     var zkp_form = elt(zkp_form_id);
     var n = getN(modulus_id);
-    var r = getR();
+    var r = getR(n);
     var x = multMod(r, r, n);
     var y = getY(sha1, e, r, n);
     var input_x = ce('input');
@@ -106,15 +106,22 @@ function getY(sha1, e, r, n)
 }
 
 /*
- *  Generates random number and converts it into BigInteger.
+ *  Generates random number and converts it into BigInteger in provided range
  *
+ *  @param BigInt range. Random lenber be from 0 to range - 1
  *  @return BigInteger final_r random BigInteger
  */
-function getR()
+function getR(range)
 {
-    var r = Math.floor((Math.random() * 21474) + 1);
-    r = r.toString();
-    var final_r = str2BigInt(r, 10, 0);
+    var len = range.length;
+    var r = "";
+    var digit;
+    for(var i = 0; i < len; i++) {
+        digit  = Math.floor((Math.random() * 10) + 1);
+        r += digit.toString();
+    }
+    r = str2BigInt(r, 10, 0);
+    var final_r = bigMod(r, range);
     return final_r;
 }
 
@@ -140,12 +147,12 @@ function generateKeys(zkp_form_id, username_id, password_id,
     var sha1 = generateSha1(password);
     var n = new getN(modulus_id);
     for (var i = 0; i < auth_count - 1; i++) {
-        var r = getR();
+        var r = getR(n);
         var x = multMod(r, r, n);
         var y = getY(sha1, e, r, n);
         var x_string = bigInt2Str(x, 10);
         var y_string = bigInt2Str(y, 10);
-        sendFiatShamirParameters(x_string, y_string, u, token, token_name);
+        sendFiatShamirParameters(x_string, y_string, u, token, token_name, i);
         var e_temp = elt("salt-value").value;
         e_temp = e_temp + '';
         e = parseInt(e_temp);
@@ -166,13 +173,15 @@ function generateKeys(zkp_form_id, username_id, password_id,
  *  @param String u username provided by user
  *  @param String token CSRF token sent by the server
  *  @param String token_name name to use for CSRF token
+ *  @param String round_num on the server this is used only to see if 0
+ *      in which case it restarts the count
  */
-function sendFiatShamirParameters(x, y, u, token, token_name)
+function sendFiatShamirParameters(x, y, u, token, token_name, round_num)
 {
     var http = new XMLHttpRequest();
     var url = "./";
     var params = "c=admin&x=" + x + "&y=" + y +"&u=" + u +
-        "&"+token_name+"=" + token;
+        "&"+token_name+"=" + token + "&round_num=" + round_num;
     http.open("post", url, false);
     http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     http.setRequestHeader("Content-length", params.length);

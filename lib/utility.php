@@ -312,7 +312,7 @@ function unpackPosting($posting, &$offset, $dedelta = true)
     } else {
         $doc_index--;
     }
-    if(isset($delta_list[0])){
+    if(isset($delta_list[0])) {
         $delta_list[0]--;
     }
 
@@ -2053,120 +2053,134 @@ function extractLCSFromTable($lcs_moves, $lines, $i, $j, $offset, &$lcs)
     }
 }
 
-     /**
-      * This method generates Fiat-Shamir modulus. It uses
-      * openssl public key method to generate the public key and
-      * then extract modulus from the public key
-      *
-      * @return string $dec string representation of modulus
-      */
-     function generateFiatShamirModulus()
-     {
-        if(function_exists("openssl_pkey_new")) {
-            $config = array(
-                "digest_alg" => "sha256",
-                "public_key_bits" => 1024,
-                "public_key_type" => OPENSSL_KEYTYPE_RSA,
-            );
-            $res = openssl_pkey_new($config);
-            $pub_key = openssl_pkey_get_details($res);
-            $tmp = bchexdec(bin2hex($pub_key["rsa"]["n"]));
-        } else {
-            $num_bits = 256;
-            $num_digits = ceil($num_bits * log10(2));
-            $p = randProbablyPrime($num_digits);
-            $q = randProbablyPrime($num_digits);
-            $tmp = bcmul($p, $q);
-        }
-        return $tmp;
+/**
+ * This method generates Fiat-Shamir modulus. It uses
+ * openssl public key method to generate the public key and
+ * then extract modulus from the public key
+ *
+ * @return string $dec string representation of modulus
+ */
+ function generateFiatShamirModulus()
+ {
+    if(function_exists("openssl_pkey_new")) {
+        $config = array(
+            "digest_alg" => "sha256",
+            "public_key_bits" => 1024,
+            "public_key_type" => OPENSSL_KEYTYPE_RSA,
+        );
+        $res = openssl_pkey_new($config);
+        $pub_key = openssl_pkey_get_details($res);
+        $tmp = bchexdec(bin2hex($pub_key["rsa"]["n"]));
+    } else {
+        $num_bits = 256;
+        $num_digits = ceil($num_bits * log10(2));
+        $p = randProbablyPrime($num_digits);
+        $q = randProbablyPrime($num_digits);
+        $tmp = bcmul($p, $q);
     }
+    return $tmp;
+}
 
-    /**
-     *
-     */
-    function randProbablyPrime($len)
-    {
-        $accuracy = 30;
-        $bound = str_pad("", $len, "9");
-        do {
-            $num = bcrand("0", $bound);
-        } while(!probablyPrime($num, $accuracy));
-        return $num;
-    }
-    /**
-     *
-     */
-    function probablyPrime($num, $accuracy)
-    {
-        if(bccomp($num, "2") == 0 || bccomp($num, "3") == 0)
-            return true;
-        if (bccomp($num, "2") < 0 || bcmod($num, "2") == 0) {
-            return false;
-        }
-        $num_less_one = bcsub($num, 1);
-        $d = $num_less_one;
-        $s = 0;
-        while (bcmod($d, "2") == 0) {
-            $d = bcdiv($d, "2");
-            $s++;
-        }
-        for ($i = 0; $i < $accuracy; $i++) {
-            $a = bcrand("2", $num_less_one);
-            $x = bcpowmod($a, $d, $num);
-            if (bccomp($x, "1") == 0 || bccomp($x, $num_less_one) == 0) {
-                continue;
-            }
-            for ($j = 1; $j < $s; $j++) {
-                $x = bcmod(bcmul($x, $x), $num);
-                if (bccomp($x, "1") == 0)
-                    return false;
-                if (bccomp($x, $num_less_one) == 0)
-                    continue 2;
-            }
-            return false;
-        }
+/**
+ *  Returns a random prime of the given length in decimal
+ *
+ *  @param int $len length of prime to generate in terms of base 10 digits
+ *  @param int $accuracy the resulting number will be prime with prob
+ *      1 - 1/2^($accuracy)
+ *  @return string a big prime
+ */
+function randProbablyPrime($len, $accuracy = 30)
+{
+    $bound = str_pad("", $len, "9");
+    do {
+        $num = bcrand("0", $bound);
+    } while(!probablyPrime($num, $accuracy));
+    return $num;
+}
+/**
+ *  Check if a big num is a prime or not
+ *
+ *  @param string big number to check coded as a long string in decimal
+ *  @param int $accuracy the resulting number will be prime with prob
+ *      1 - 1/2^($accuracy)
+ *  @param bool whether it is prime or not
+ */
+function probablyPrime($num, $accuracy)
+{
+    if(bccomp($num, "2") == 0 || bccomp($num, "3") == 0)
         return true;
+    if (bccomp($num, "2") < 0 || bcmod($num, "2") == 0) {
+        return false;
     }
+    $num_less_one = bcsub($num, 1);
+    $d = $num_less_one;
+    $s = 0;
+    while (bcmod($d, "2") == 0) {
+        $d = bcdiv($d, "2");
+        $s++;
+    }
+    for ($i = 0; $i < $accuracy; $i++) {
+        $a = bcrand("2", $num_less_one);
+        $x = bcpowmod($a, $d, $num);
+        if (bccomp($x, "1") == 0 || bccomp($x, $num_less_one) == 0) {
+            continue;
+        }
+        for ($j = 1; $j < $s; $j++) {
+            $x = bcmod(bcmul($x, $x), $num);
+            if (bccomp($x, "1") == 0)
+                return false;
+            if (bccomp($x, $num_less_one) == 0)
+                continue 2;
+        }
+        return false;
+    }
+    return true;
+}
 
-    /**
-     *
-     */
-    function bcrand($low, $high)
-    {
-        $range = bcsub($high, $low);
-        if(bccomp($range, "0") <= 0) {
-            return "0";
-        }
-        $len = strlen($range);
-        if(function_exists("openssl_random_pseudo_bytes")) {
-            $tmp = openssl_random_pseudo_bytes($len);
-            $tmp = bchexdec(bin2hex($tmp));
-        } else {
-            $tmp = "";
-            for($i = 0; $i < $len; $i++) {
-                $tmp .= mt_rand(0, 9);
-            }
-        }
-        $rand_in_range = bcmod($tmp, $range);
-        $out = bcadd($rand_in_range, $low);
-        return $out;
+/**
+ * Generates a random big number between the two big number $low and $high
+ *
+ * @param string $low a decimal coded big num lower bounding the desired
+ *      range (inclusive)
+ * @param string $high a decimal coded big num upper bounding the desired
+ *      range (exclusive)
+ */
+function bcrand($low, $high)
+{
+    $range = bcsub($high, $low);
+    if(bccomp($range, "0") <= 0) {
+        return "0";
     }
+    $len = strlen($range);
+    if(function_exists("openssl_random_pseudo_bytes")) {
+        $tmp = openssl_random_pseudo_bytes($len);
+        $tmp = bchexdec(bin2hex($tmp));
+    } else {
+        $tmp = "";
+        for($i = 0; $i < $len; $i++) {
+            $tmp .= mt_rand(0, 9);
+        }
+    }
+    $rand_in_range = bcmod($tmp, $range);
+    $out = bcadd($rand_in_range, $low);
+    return $out;
+}
 
-    /**
-     * Convert hexadecimal number to decimal using BC math PHP
-     * library. It is used to convert very large hex value to decimal value
-     *
-     * @param string $hex  hexadecimal number
-     * @return string $dec string representation of decimal number
-     */
-    function bchexdec($hex)
-    {
-        $dec = 0;
-        $len = strlen($hex);
-        for ($i = 1; $i <= $len; $i++) {
-            $dec = bcadd($dec, bcmul(strval(hexdec($hex[$i - 1])),
-                bcpow('16', strval($len - $i))));
-        }
-        return $dec;
+/**
+ * Convert hexadecimal number to decimal using BC math PHP
+ * library. It is used to convert very large hex value to decimal value
+ *
+ * @param string $hex  hexadecimal number
+ * @return string $dec string representation of decimal number
+ */
+function bchexdec($hex)
+{
+    $dec = 0;
+    $len = strlen($hex);
+    for ($i = 1; $i <= $len; $i++) {
+        $dec = bcadd($dec, bcmul(strval(hexdec($hex[$i - 1])),
+            bcpow('16', strval($len - $i))));
     }
+    return $dec;
+}
 ?>

@@ -22,6 +22,7 @@
  * END LICENSE
  *
  * @author Akash Patel (edited by Chris Pollett chris@pollett.org)
+ *      Ideas adapted Leemon Baird's bigint.js
  * @package seek_quarry
  * @subpackage javascript
  * @license http://www.gnu.org/licenses/ GPL3
@@ -73,7 +74,7 @@ function trimBigInt(x, k)
         i--;
     }
     var y = new Array(i + k);
-    copyBigIntToBigInt(y, x);
+    copyBigIntFromBigInt(y, x);
     return y;
 }
 
@@ -89,7 +90,7 @@ function expandBigInt(x, n)
 {
     var bits = (x.length > n ? x.length : n) * bits_per_element;
     var result = int2BigInt(0, bits, 0);
-    copyBigIntToBigInt(result, x);
+    copyBigIntFromBigInt(result, x);
     return result;
 }
 
@@ -99,15 +100,16 @@ function expandBigInt(x, n)
  *
  * @param int t input number
  * @param int bits expected number of bits
- * @param int minSize minimum size of the BigInt.
+ * @param int min_size minimum size of the BigInt.
  * @return Array stores the BigInt in bits_per_element-bit chunks,
  *     little endian
  */
-function int2BigInt(t, bits, minSize)
+function int2BigInt(t, bits, min_size)
 {
-    var size_of_array = Math.ceil(bits / bits_per_element) + 1;
+    var size_of_array = Math.max(
+        Math.ceil(bits / bits_per_element) + 1, min_size);
     var buffer = new Array(size_of_array);
-    copyBigIntToInt(buffer, t);
+    copyBigIntFromInt(buffer, t);
     return buffer;
 }
 
@@ -119,30 +121,29 @@ function int2BigInt(t, bits, minSize)
  * @param BigInt bits expected number of bits
  * @return BigInt result
  */
-function copyBigIntToBigInt(x, y)
+function copyBigIntFromBigInt(x, y)
 {
-    var length = x.length < y.length ? x.length : y.length;
-    for (var i = 0; i < length; i++){
+    var len = (x.length < y.length) ? x.length : y.length;
+    for (var i = 0; i < len; i++) {
         x[i] = y[i];
     }
-    for (var i = length; i < x.length ; i++){
+    for (var i = len; i < x.length ; i++) {
         x[i] = 0;
     }
 }
 
 /*
- * To copy one BigInt to another int
+ * Makes a Big Integer out of the supplied int
  *
  * @param BigInt x input number
- * @param    int n input number
+ * @param int n input number
  * @return BigInt result
  */
-function copyBigIntToInt(x,n)
+function copyBigIntFromInt(x, n)
 {
-    var i, c;
-    for (c = n,i = 0; i < x.length; i++) {
-        x[i] = c & mask;
-        c >>= bits_per_element;
+    for (var i = 0; i < x.length; i++) {
+        x[i] = n & mask;
+        n >>= bits_per_element;
     }
 }
 
@@ -173,12 +174,12 @@ function addBigIntToInt(x, n)
 
 /*
  * To convert the string into the BigInt
- * Pad the array with leading zeros so that it has at least minSize elements.
+ * Pad the array with leading zeros so that it has at least min_size elements.
  * The array will always have at least one leading zero, unless base=-1
  *
  * @param String s input string
  * @param int base base of the output number
- * @param int minSize minimum size of the BigInt
+ * @param int min_size minimum size of the BigInt
  * @return BigInt
  */
 function str2BigInt(s, base, min_size)
@@ -188,10 +189,10 @@ function str2BigInt(s, base, min_size)
         '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
     var k = s.length;
     var x = int2BigInt(0, base * k, 0);
-     for (i = 0; i < k; i++) {
+    for (i = 0; i < k; i++) {
         d = digits_str.indexOf(s.substring(i, i + 1), 0);
         if (base <= 36 && d >= 36) {
-            d -= 26;
+            d -= 26; //lower to upper
         }
         if (d >= base || d < 0) {
             break;
@@ -199,15 +200,19 @@ function str2BigInt(s, base, min_size)
         multInt(x, base);
         addBigIntToInt(x, d);
     }
-    for (k = x.length; k > 0 && !x[k-1]; k --);
-    k = min_size > k+1 ? min_size : k+1;
+    k = x.length;
+    while(k > 0 && !x[k - 1]) {
+         k--;
+    }
+    k = min_size > k + 1 ? min_size : k + 1;
     y = new Array(k);
     kk = k < x.length ? k : x.length;
     for (i = 0; i < kk; i++){
         y[i] = x[i];
     }
-    for (;i < k;i++) {
-        y[i] = 0;
+    // copy rest as 0
+    for (j = i; j < k; j++) {
+        y[j] = 0;
     }
     return y;
 }
@@ -230,11 +235,11 @@ function bigInt2Str(x, base)
     if (temp_array.length != x.length){
         temp_array = dup(x);
     } else {
-        copyBigIntToBigInt(temp_array, x);
+        copyBigIntFromBigInt(temp_array, x);
     }
     while (!isZero(temp_array)) {
-            t = divInt(temp_array, base);    //t=s6 % base; s6=floor(s6/base);
-            s = digits_str.substring(t, t+1) + s;
+            t = divInt(temp_array, base);    //t=s % base; s=floor(s/base);
+            s = digits_str.substring(t, t + 1) + s;
         }
      if (s.length == 0){
         s = "0";
@@ -250,8 +255,8 @@ function bigInt2Str(x, base)
  */
 function dup(x)
 {
-    var buffer = new Array(x.length);
-    copyBigIntToBigInt(buffer, x);
+    var buffer = new Array();
+    copyBigIntFromBigInt(buffer, x);
     return buffer;
 }
 
@@ -269,7 +274,7 @@ function isZero(x) {
 }
 
 /*
- * To do x=floor(x/n) for BigInt x and integer n, and
+ * To do x = floor(x/n) for BigInt x and integer n, and
  *
  * @param BigInt x numerator
  * @param int n denomenator
@@ -336,13 +341,13 @@ function mult(x, y)
 function multEquals(x, y)
 {
     var result = new Array(2 * x.length);
-    copyBigIntToInt(result, 0);
+    copyBigIntFromInt(result, 0);
     for (var i = 0; i< y.length; i++) {
         if (y[i]) {
             linearCombShift(result, x, y[i], i);
         }
     }
-    copyBigIntToBigInt(x, result);
+    copyBigIntFromBigInt(x, result);
 }
 
 /*
@@ -359,7 +364,7 @@ function linearCombShift(x, y, b, ys)
     var i, c, k;
     k = x.length < ys + y.length ? x.length : ys + y.length;
     for(c = 0,i = ys; i < k; i++) {
-        c += x[i] + b * y[i-ys];
+        c += x[i] + b * y[i - ys];
         x[i] = c & mask;
         c >>= bits_per_element;
     }
@@ -376,23 +381,32 @@ function linearCombShift(x, y, b, ys)
  * @param BigInt x Dividend
  * @param BigInt y Divisor
  * @param BigInt q to store the quotient
- * @param integer r to store the reminder
+ * @param BigInt r to store the reminder
  */
 function divide(x, y, q, r)
 {
     var kx, ky;
     var i, j, y1, y2, c, a, b;
-    copyBigIntToBigInt(r, x);
-    for(ky = y.length; y[ky - 1] == 0; ky--); // find first non-zero position
+    var tmp, out_check;
+    copyBigIntFromBigInt(r, x);
+    ky = y.length;
+    while(y[ky - 1] == 0) { // find first non-zero position
+        ky--;
+    }
     b = y[ky - 1];
-    for (a = 0; b; a++)
-    b >>= 1;
+    a = 0;
+    while(b > 0) {
+        b >>= 1;
+        a++;
+    }
     a = bits_per_element - a;
     leftShift(y, a);
     leftShift(r, a);
-    for (kx = r.length; r[kx-1] == 0 && kx > ky; kx--);
-        // find first non-zero position
-    copyBigIntToInt(q, 0);
+    kx = r.length;
+    while(r[kx - 1] == 0 && kx > ky) { // find first non-zero position
+        kx--;
+    }
+    copyBigIntFromInt(q, 0, x.length);
     while (!greaterShift(y, r, kx - ky)) {
         subShift(r, y, kx-ky);
         q[kx - ky]++;
@@ -410,8 +424,17 @@ function divide(x, y, q, r)
             y1 =c + q[i-ky] * y[ky-1];
             c = y1 >> bits_per_element;
             y1 = y1 & mask;
-            if (c == r[i] ? y1 == r[i - 1] ? y2 >
-                (i > 1 ? r[i - 2] : 0) : y1 > r[i - 1] : c > r[i]) {
+            if(c == r[i]) {
+                if(y1 == r[i - 1]) {
+                    tmp = (i > 1) ? r[i - 2] : 0
+                    out_check = (y2 > tmp);
+                } else {
+                    out_check = (y1 > r[i - 1]);
+                }
+            } else {
+                out_check = (c > r[i]);
+            }
+            if(out_check) {
                 q[i - ky]--;
             } else {
                 break;
@@ -447,8 +470,8 @@ function leftShift(x, n)
         n %= bits_per_element;
     }
     if (!n) { return; }
-    for (i = x.length - 1; i > 0; i--) {
-    x[i] = mask & ((x[i] << n) | (x[i-1] >> (bits_per_element - n)));
+    for(i = x.length - 1; i > 0; i--) {
+        x[i] = mask & ((x[i] << n) | (x[i-1] >> (bits_per_element - n)));
     }
     x[i] = mask & (x[i] << n);
 }
@@ -499,13 +522,13 @@ function negative(x)
 function addShift(x, y, ys)
 {
     var i, sum;
-    length = x.length < ys + y.length ? x.length : ys + y.length;
-    for (c = 0,i = ys; i < length; i++) {
+    len = x.length < ys + y.length ? x.length : ys + y.length;
+    for(i = ys; i < len; i++) {
         sum += x[i] + y[i-ys];
         x[i] = sum & mask;
         sum >>= bits_per_element;
     }
-    for (i = length;sum && i < x.length; i++) {
+    for(i = len; sum && i < x.length; i++) {
         sum += x[i];
         x[i] = sum & mask;
         sum >>= bits_per_element;
@@ -524,7 +547,7 @@ function addShift(x, y, ys)
 function greaterShift(x, y, shift)
 {
     var i;
-    var length = ((x.length + shift) < y.length) ? (x.length + shift):y.length;
+    var len = ((x.length + shift) < y.length) ? (x.length + shift):y.length;
     for (i = y.length - 1 - shift; i < x.length && i >= 0; i++)
     {
         if (x[i] > 0) {
@@ -537,7 +560,7 @@ function greaterShift(x, y, shift)
             return 0;
         }
     }
-    for (i = length-1; i >= shift; i--)
+    for (i = len - 1; i >= shift; i--)
     {
         if (x[i-shift] > y[i]) {
             return 1;
@@ -549,7 +572,7 @@ function greaterShift(x, y, shift)
 }
 
 /*
- * To left shift the y by given number of bits and performs
+ * To left shift y by given number of bits and performs
  * subtraction operation. The result is stored in x
  *
  * @param BigInt x BigInt number
@@ -559,13 +582,13 @@ function greaterShift(x, y, shift)
 function subShift(x, y, ys)
 {
     var i, sum;
-    var length = x.length < ys + y.length ? x.length : ys + y.length;
-    for (c = 0,i = ys; i < length; i++) {
-        sum += x[i] - y[i-ys];
+    var len = x.length < ys + y.length ? x.length : ys + y.length;
+    for (i = ys; i < len; i++) {
+        sum += x[i] - y[i - ys];
         x[i] = sum & mask;
         sum >>= bits_per_element;
     }
-    for (i = length; sum && i < x.length; i++) {
+    for (i = len; sum && i < x.length; i++) {
         sum += x[i];
         x[i] = sum & mask;
         sum >>= bits_per_element;
@@ -579,7 +602,7 @@ function subShift(x, y, ys)
  * @param integer n modulus
  * @return result which equals x mod n
  */
-function mod(x, n)
+function bigMod(x, n)
 {
     var ans = dup(x);
     modCalculation(ans, n);
@@ -591,20 +614,14 @@ function mod(x, n)
  * Computes x mod n with the result stored in x
  *
  * @param BigInt x argument to mod
- * @param integer n modulus
+ * @param BigInt n modulus
  */
 function modCalculation(x, n)
 {
     var dividend = new Array(0);
     var divisor = new Array(0);
-    if (dividend.length != x.length){
-        dividend = dup(x);
-    } else {
-        copyBigIntToBigInt(dividend, x);
-    }
-    if (divisor.length != x.length){
-        divisor = dup(x);
-    }
+    dividend = dup(x);
+    divisor = dup(x);
     divide(dividend, n, divisor, x);
 }
 
@@ -620,7 +637,7 @@ function trim(x, k)
     var i, y;
     for (i= x.length; i > 0 && !x[i-1]; i--);
     y = new Array(i + k);
-    copyBigIntToBigInt(y, x);
+    copyBigIntFromBigInt(y, x);
     return y;
 }
 
@@ -651,14 +668,14 @@ function multMod(x, y, n)
  function multModOperation(x, y, n)
  {
     var input_number = new Array(2 * x.length);
-    copyBigIntToInt(input_number, 0);
-    for (var i=0; i< y.length; i++){
+    copyBigIntFromInt(input_number, 0);
+    for (var i = 0; i < y.length; i++){
         if (y[i]) {
             linearCombShift(input_number, x, y[i], i);
         }
     }
     modCalculation(input_number, n);
-    copyBigIntToBigInt(x, input_number);
+    copyBigIntFromBigInt(x, input_number);
 }
 
 /*
@@ -673,6 +690,6 @@ function expand(x, n)
 {
     var ans = int2BigInt(0,
         (x.length > n ? x.length : n) * bits_per_element, 0);
-    copyBigIntToBigInt(ans, x);
+    copyBigIntFromBigInt(ans, x);
     return ans;
 }

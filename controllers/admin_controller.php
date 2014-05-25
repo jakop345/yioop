@@ -113,7 +113,9 @@ class AdminController extends Controller implements CrawlConstants
                     tl('admin_controller_need_cookies')."</h1>');";
                 unset($_SESSION['USER_ID']);
             } else if ($this->checkSignin()){
-                if (!isset($_SESSION['AUTH_COUNT'])) {
+                if (!isset($_SESSION['AUTH_COUNT']) ||
+                    isset($_REQUEST['round_num']) &&
+                    $_REQUEST['round_num'] == 0) {
                     $_SESSION['AUTH_COUNT'] = 0;
                 }
                 if(AUTHENTICATION_MODE == ZKP_AUTHENTICATION) {
