@@ -177,20 +177,20 @@ class BTree
      * Returns key-value pair in the B-Tree based on key
      * @param int $key is the key for whicht the key-value pair is to be
      * found
-     * @return array key-value pair associated with $key or null if the
+     * @return array key-value pair associated with $key or NULL if the
      * key-value pair is not found in the tree.
      */
     function findValue($key)
     {
         list($node, $flag, $pos) = $this->search($this->root, $key);
-        if($pos !== null) {
+        if($pos !== NULL) {
             if($flag == 1) {
                 return $node->keys[$pos];
             } else {
-                return null;
+                return NULL;
             }
         } else {
-            return null;
+            return NULL;
         }
     }
 
@@ -206,7 +206,7 @@ class BTree
     {
         $flag = -1;
         if(empty($node->keys)) {
-            return array($node, $flag, null);
+            return array($node, $flag, NULL);
         } else {
             list($flag, $pos) = $this->binarySearch($node->keys, $key);
             if($flag == 1) {
@@ -809,7 +809,7 @@ class BTNode
         $this->id = -1;
         $this->is_leaf = true;
         $this->count = 0;
-        $this->keys = null;
-        $this->links = null;
+        $this->keys = NULL;
+        $this->links = NULL;
     }
 }

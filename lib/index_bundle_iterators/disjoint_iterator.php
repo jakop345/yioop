@@ -212,12 +212,12 @@ class DisjointIterator extends IndexBundleIterator
      *      next block must all have $doc_offsets larger than or equal to
      *      this value
      */
-    function advance($gen_doc_offset = null)
+    function advance($gen_doc_offset = NULL)
     {
         $no_change = true;
         //num_docs can change when advance() called so that's why we recompute
         $total_num_docs = 0;
-        if($gen_doc_offset !== null) {
+        if($gen_doc_offset !== NULL) {
             for($i = 0; $i < $this->num_iterators; $i++) {
                 $cur_gen_doc_offset = $this->index_bundle_iterators[
                     $i]->currentGenDocOffsetWithWord();

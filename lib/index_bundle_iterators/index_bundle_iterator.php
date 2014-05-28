@@ -111,7 +111,7 @@ abstract class IndexBundleIterator implements CrawlConstants
      *      next block must all have $doc_offsets larger than or equal to
      *      this value
      */
-    abstract function advance($gen_doc_offset = null);
+    abstract function advance($gen_doc_offset = NULL);
 
     /**
      * Gets the doc_offset and generation for the next document that

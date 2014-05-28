@@ -1454,7 +1454,7 @@ class IndexShard extends PersistentStructure implements
                 $this->words .= $word_id . $out;
             }
         }
-        if($fh != null) {
+        if($fh != NULL) {
             fwrite($fh, $this->words);
         }
         $this->words_len = strlen($this->words);

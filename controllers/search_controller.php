@@ -1843,7 +1843,7 @@ class SearchController extends Controller implements CrawlConstants
                 $date_time_string =
                     formatDateByLocale($cache_time, $locale_type);
                 $time_components = explode(" ", $date_time_string);
-                $time_ds[$time_components[2]][$time_components[0]] = null;
+                $time_ds[$time_components[2]][$time_components[0]] = NULL;
             }
         }
         //Populate data structure
@@ -1861,7 +1861,7 @@ class SearchController extends Controller implements CrawlConstants
                 $temp = "$time_components[0] $time_components[1] ".
                         "$time_components[3] $url $cache_time";
                 if($time_ds[$time_components[2]][$time_components[0]]
-                    === null) {
+                    === NULL) {
                     $time_ds[$time_components[2]][$time_components[0]] =
                         array($temp);
                 } else {

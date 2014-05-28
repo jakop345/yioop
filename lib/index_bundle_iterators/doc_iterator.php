@@ -281,7 +281,7 @@ class DocIterator extends IndexBundleIterator
      *      next block must all have $doc_offsets larger than or equal to
      *      this value
      */
-    function advance($gen_doc_offset = null)
+    function advance($gen_doc_offset = NULL)
     {
         $this->advanceSeenDocs();
         if($this->current_offset < $this->next_offset) {
@@ -294,7 +294,7 @@ class DocIterator extends IndexBundleIterator
             $this->advanceGeneration();
             $this->next_offset = $this->current_offset;
         }
-        if($gen_doc_offset !== null) {
+        if($gen_doc_offset !== NULL) {
             if($this->current_generation < $gen_doc_offset[0]) {
                 $this->advanceGeneration($gen_doc_offset[0]);
                 $this->next_offset = $this->current_offset;
@@ -321,9 +321,9 @@ class DocIterator extends IndexBundleIterator
      *
      * @param int $generation generation to advance beyond
      */
-    function advanceGeneration($generation = null)
+    function advanceGeneration($generation = NULL)
     {
-        if($generation === null) {
+        if($generation === NULL) {
             $generation = $this->current_generation + 1;
         }
         $this->current_generation = $generation;

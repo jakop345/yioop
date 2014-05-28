@@ -311,21 +311,20 @@ class PageOptionsElement extends Element
         <tr><td><label for="use-wordnet"><?php
             e(tl('pageoption_element_wordnet_feature')); ?></label></td>
         <td><input id='use-wordnet' type="checkbox"
-            name="USE_WORDNET" value="true"
-            onclick="document.getElementById('wordnet-exec')
-            .disabled=!this.checked;"
+            name="USE_WORDNET" value="true" onclick="setDisplay('wordnet', <?php
+            ?> this.checked)"
             <?php if(isset($data['USE_WORDNET']) && $data['USE_WORDNET']){
                 e("checked='checked'");}?>
             /></td>
         </tr>
         </table></td>
         </tr></table>
-        <h2><label for="wordnet-exec"><?php
-            e(tl('pageoption_element_wordnet_exec')); ?></label>
-        <br/><input type="text" id="wordnet-exec"
-            name="WORDNET_EXEC" class="extra-wide-field"
-            value="<?php e($data['WORDNET_EXEC']); ?>" />
-        </h2>
+        <table id="wordnet"><tr><th><label for="wordnet-exec"><?php
+            e(tl('pageoption_element_wordnet_exec')); ?></label></th><td>
+            <input type="text" id="wordnet-exec"
+            name="WORDNET_EXEC" class="wide-field"
+            value="<?php e($data['WORDNET_EXEC']); ?>" /></td><tr>
+        </table>
         <h2><?php e(tl('pageoptions_element_ranking_factors'))?></h2>
         <table class="weights-table" >
         <tr><th><label for="title-weight"><?php
@@ -434,6 +433,11 @@ class PageOptionsElement extends Element
         }
         ?>
         <script type="text/javascript">
+        <?php
+        if(!isset($data['USE_WORDNET']) || !$data['USE_WORDNET']){
+            e("document.getElementById('wordnet').style.display='none';\n");
+        } 
+        ?>
         function switchTab(newtab, oldtab, oldtab2)
         {
             setDisplay(newtab, true);

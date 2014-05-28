@@ -138,7 +138,7 @@ class ConfigureTool
     function configureMenu()
     {
         $this->banner();
-        $data = $this->admin->configure();
+        $data = $this->admin->component("system")->configure();
         e("Checking Yioop configuration...".
             "\n===============================\n");
         $check_status = str_replace("<br />", "\n", $data["SYSTEM_CHECK"]);
@@ -160,7 +160,7 @@ class ConfigureTool
     function workDirectory()
     {
         $this->banner();
-        $data = $this->admin->configure();
+        $data = $this->admin->component("system")->configure();
         $directory = (isset($data["WORK_DIRECTORY"]) &&
             $data["WORK_DIRECTORY"] != "") ? $data["WORK_DIRECTORY"]
             : "No value set yet.";
@@ -184,7 +184,7 @@ class ConfigureTool
     function rootPassword()
     {
         $this->banner();
-        $data = $this->admin->configure();
+        $data = $this->admin->component("system")->configure();
         if($data["PROFILE"] != 1) {
             $_REQUEST["MESSAGE"] = "Work directory needs to be set/created!";
             return "configureMenu";
@@ -208,7 +208,7 @@ class ConfigureTool
     function defaultLocale()
     {
         $this->banner();
-        $data = $this->admin->configure();
+        $data = $this->admin->component("system")->configure();
         if($data["PROFILE"] != 1) {
             $_REQUEST["MESSAGE"] = "Work directory needs to be set/created!";
             return "configureMenu";
@@ -244,7 +244,7 @@ class ConfigureTool
     function debugDisplay()
     {
         $this->banner();
-        $data = $this->admin->configure();
+        $data = $this->admin->component("system")->configure();
         if($data["PROFILE"] != 1) {
             $_REQUEST["MESSAGE"] = "Work directory needs to be set/created!";
             return "configureMenu";
@@ -291,7 +291,7 @@ class ConfigureTool
     function searchAccess()
     {
         $this->banner();
-        $data = $this->admin->configure();
+        $data = $this->admin->component("system")->configure();
         if($data["PROFILE"] != 1) {
             $_REQUEST["MESSAGE"] = "Work directory needs to be set/created!";
             return "configureMenu";
@@ -330,7 +330,7 @@ class ConfigureTool
     function searchPageElementLinks()
     {
         $this->banner();
-        $data = $this->admin->configure();
+        $data = $this->admin->component("system")->configure();
         if($data["PROFILE"] != 1) {
             $_REQUEST["MESSAGE"] = "Work directory needs to be set/created!";
             return "configureMenu";
@@ -374,7 +374,7 @@ class ConfigureTool
     function nameServer()
     {
         $this->banner();
-        $data = $this->admin->configure();
+        $data = $this->admin->component("system")->configure();
         if($data["PROFILE"] != 1) {
             $_REQUEST["MESSAGE"] = "Work directory needs to be set/created!";
             return "configureMenu";
@@ -443,7 +443,7 @@ class ConfigureTool
     function robotSetUp()
     {
         $this->banner();
-        $data = $this->admin->configure();
+        $data = $this->admin->component("system")->configure();
         if($data["PROFILE"] != 1) {
             $_REQUEST["MESSAGE"] = "Work directory needs to be set/created!";
             return "configureMenu";
@@ -515,7 +515,16 @@ class ConfigureTool
         switch($choice)
         {
             case "confirm":
-                $data = $this->admin->$admin_method();
+                $component = "system";
+                foreach($COMPONENT_ACTIVITIES as $available_component => 
+                    $activities) {
+                    if(in_array($admin_method, $activities)) {
+                        $component = $available_component;
+                        break;
+                    }
+                }
+                if(in_array($COMPONENT_ACTIVITIES["accountaccess"]) )
+                $data = $this->admin->$component->$admin_method();
                 $_SERVER = array();
                 $_SESSION = array();
                 $_REQUEST = array();

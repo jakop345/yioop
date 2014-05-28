@@ -504,7 +504,7 @@ class IntersectIterator extends IndexBundleIterator
      *      next block must all have $doc_offsets larger than or equal to
      *      this value
      */
-    function advance($gen_doc_offset = null)
+    function advance($gen_doc_offset = NULL)
     {
         $this->current_block_fresh = false;
         $this->seen_docs += 1;

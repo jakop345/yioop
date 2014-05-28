@@ -186,7 +186,7 @@ class CentroidSummarizer
         ksort($sum_array);
         /* Printing Summary */
         $summary = '';
-        $d = null;
+        $d = NULL;
         foreach($sum_array as $key => $value) {
             $summary .= "$sentences[$key]".". ";
         }
@@ -207,7 +207,7 @@ class CentroidSummarizer
      */
     static function summarySentenceCount($sentences, $sim)
     {
-        $top = null;
+        $top = NULL;
         $count = 0;
         foreach($sim as $key => $value)
         {

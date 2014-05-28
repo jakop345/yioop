@@ -203,7 +203,7 @@ class CrawlstatusView extends View
         $data['ACTIVITY'] = 'manageCrawls';
         $data['VIEW'] = $this;
         $data['NO_FLOAT_TABLE'] = true;
-        $data['FORM_TYPE'] = null;
+        $data['FORM_TYPE'] = NULL;
         $data['NO_SEARCH'] = true;
         $this->helper("pagingtable")->render($data);
         if(isset($data['RECENT_CRAWLS']) && count($data['RECENT_CRAWLS']) > 0) {

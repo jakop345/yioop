@@ -69,7 +69,7 @@ class QueueServerTest extends UnitTest
     function tearDown()
     {
         // get rid of the queue_server from previous test case
-        $this->test_objects['Q_SERVER'] = null;
+        $this->test_objects['Q_SERVER'] = NULL;
     }
 
     /**

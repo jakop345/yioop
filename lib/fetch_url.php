@@ -178,7 +178,7 @@ class FetchUrl implements CrawlConstants
         $start = time();
 
         //Wait for responses
-        $running=null;
+        $running = NULL;
         $memory_limit = metricToInt(ini_get("memory_limit")) * 0.7;
         do {
             $mrc = curl_multi_exec($agent_handler, $running);
@@ -290,7 +290,7 @@ class FetchUrl implements CrawlConstants
           ETag from URL
          */
         $if_none_match = "If-None-Match";
-        $etag = null;
+        $etag = NULL;
         if(USE_ETAG_EXPIRES && stristr($url, "ETag:")) {
             $etag_parts = preg_split("/ETag\:/i", $url);
             $etag_data = explode(" ", $etag_parts[1]);
@@ -345,7 +345,7 @@ class FetchUrl implements CrawlConstants
             $url_with_ip_if_possible = $url;
         }
         $headers[] = 'Expect:';
-        if(USE_ETAG_EXPIRES && $etag !== null) {
+        if(USE_ETAG_EXPIRES && $etag !== NULL) {
             $etag_header = $if_none_match.": ".$etag;
             $headers[] = $etag_header;
         }

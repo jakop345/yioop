@@ -155,7 +155,7 @@ define('NUM_VALS', 25);
 
         //Lookup deleted keys
         foreach($leaf_keys as $key) {
-            $this->assertEqual(null,
+            $this->assertEqual(NULL,
                 $this->test_objects['FILE1']->findValue($key),
                 'Key successfully deleted from leaf node');
         }
@@ -181,7 +181,7 @@ define('NUM_VALS', 25);
         for($i = 1;$i <= NUM_VALS - 10; $i++) {
             $internal_key = $this->test_objects['FILE1']->root->keys[0][0];
             $this->test_objects['FILE1']->remove($internal_key);
-            $this->assertEqual(null,
+            $this->assertEqual(NULL,
                 $this->test_objects['FILE1']->findValue($internal_key),
                 'Key deleted successfully from internal node');
         }
@@ -218,7 +218,7 @@ define('NUM_VALS', 25);
 
         //Lookup values
         foreach($deleted as $deleted_key) {
-            $this->assertEqual(null,
+            $this->assertEqual(NULL,
                 $this->test_objects['FILE1']->findValue($deleted_key),
                 'Deleted Value not found');
         }

@@ -40,21 +40,18 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 if(!defined("POST_PROCESSING") && !defined("LOG_TO_FILES")) {
     define("LOG_TO_FILES", false);
 }
-
 /** For base class*/
 require_once BASE_DIR."/models/parallel_model.php";
 /** For extractPhrases* methods */
 require_once BASE_DIR."/lib/phrase_parser.php";
-
 /**
  * Load FileCache class in case used
  */
 require_once(BASE_DIR."/lib/file_cache.php");
-
 /**
- * Load Calculate WordnetScore Calculator class  in case used
+ * Load Wordnet class in case used
  */
-require_once(BASE_DIR."/lib/calculate_wordnet_score.php");
+require_once(BASE_DIR."/lib/wordnet.php");
 /**
  * Load iterators to get docs out of index archive
  */
@@ -62,7 +59,6 @@ foreach(glob(BASE_DIR."/lib/index_bundle_iterators/*_iterator.php")
     as $filename) {
     require_once $filename;
 }
-
 /**
  *
  * This is class is used to handle
@@ -81,27 +77,17 @@ class PhraseModel extends ParallelModel
      *  @var array
      */
     var $additional_meta_words;
-
     /**
      * Used to hold query statistics about the current query
      * @var array
      */
     var $query_info;
-
     /**
      * Used to hold extension of programming language which is used the language
      * @var string
      */
     var $programming_language_map;
-
     /**
-     * A indicator to indicate availability of lexicon files for
-     * part-of-speech tagging
-     * @var lexicon_flag
-     */
-    var $lexicon_flag = 0;
-
-   /**
      * A indicator to indicate source code files
      * @var string
      */
@@ -476,7 +462,7 @@ class PhraseModel extends ParallelModel
         if($raw == 0) {
             $output = $this->formatPageResults($results, $format_words,
                 $description_length);
-             if(USE_WORDNET && $this->lexicon_flag) {
+             if(USE_WORDNET && isset($results['WORDNET_SIMILAR_WORDS'])) {
                 $output['WORDNET_SIMILAR_WORDS'] =
                     $results['WORDNET_SIMILAR_WORDS'];
              }
@@ -1364,12 +1350,8 @@ class PhraseModel extends ParallelModel
             $CACHE->set($summary_hash, $results);
         }
         $lang = guessLocaleFromString($original_query);
-        if(file_exists(LOCALE_DIR . "/".
-                $lang ."/resources/lexicon.txt")) {
-            $this->lexicon_flag = 1;
-        }
-        if(USE_WORDNET && (WORDNET_EXEC != "") && $lang == "en-US"
-                && $this->lexicon_flag) {
+        if(USE_WORDNET && WORDNET_EXEC != "" &&
+            file_exists(LOCALE_DIR . "/en-US/resources/lexicon.txt")) {
             $results_wordnet_score = self::sortByWordNetScore($results,
                 $original_query, $lang);
             $results = $results_wordnet_score;
@@ -1381,7 +1363,7 @@ class PhraseModel extends ParallelModel
      * do WordNet processing. Also user has to specify the WordNet directory
      *
      * @param array $results document summaries
-     * @param String User original query
+     * @param string $original query
      * @return array results document summaries sorted by wordnet score
      */
     function sortByWordNetScore($results, $original_query, $lang)
@@ -1398,20 +1380,19 @@ class PhraseModel extends ParallelModel
             }
         $index_name = $this->index_name;
         $threshold = 10;
-        $word =
-        PhraseParser::getSimilarWords($original_query, $index_name,
-                     $lang, $threshold);
+        $word = WordNet::getSimilarWords($original_query, $index_name, $lang,
+            $threshold);
         $results['WORDNET_SIMILAR_WORDS'] = $word;
         if(!empty($word)) {
-            $score_bm25 = WordNetScoreCalculator::getScore($temp_summary,
-                    $word);
+            $wordnet_score = WordNet::getScore($temp_summary, $word);
             //Store the BM25 score for each page in result array
-            for($i = 0; $i < count($score_bm25); $i++) {
-                $temp_pages[$i][self::BM25_SCORE] = $score_bm25[$i];
+            $num_scores = count($wordnet_score);
+            for($i = 0; $i < $num_scores; $i++) {
+                $temp_pages[$i][self::WORDNET_SCORE] = $wordnet_score[$i];
                 orderCallback($temp_pages[$i], $temp_pages[$i],
-                    self::BM25_SCORE);
+                    self::WORDNET_SCORE);
             }
-            if(array_sum($score_bm25) != 0){
+            if(array_sum($wordnet_score) != 0){
                 usort($temp_pages, "orderCallback");
             }
             $results['PAGES'] = $temp_pages;

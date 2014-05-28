@@ -287,15 +287,15 @@ class ItTokenizer
         if((self::$r1_start = self::r1(self::$buffer)) != -1)
             self::$r1_string = substr(self::$buffer,self::$r1_start);
         else
-            self::$r1_string = null;
+            self::$r1_string = NULL;
         if((self::$r2_start = self::r2(self::$buffer)) != -1)
             self::$r2_string = substr(self::$buffer,self::$r2_start);
         else
-            self::$r2_string = null;
+            self::$r2_string = NULL;
         if((self::$rv_start = self::rv(self::$buffer)) != -1)
             self::$rv_string = substr(self::$buffer,self::$rv_start);
         else
-            self::$rv_string = null;
+            self::$rv_string = NULL;
     }
 
     /**
@@ -327,7 +327,7 @@ class ItTokenizer
     static function maxSuffix($string,$suffixes)
     {
         $max_length = 0;
-        $max_suffix = null;
+        $max_suffix = NULL;
 
         foreach($suffixes as $suffix){
             $pos = strrpos($string,$suffix);
@@ -417,7 +417,7 @@ class ItTokenizer
         //Find the maximum length suffix in the string
         $max_suffix = self::maxSuffix(self::$rv_string,$suffixes);
 
-        if($max_suffix != null){
+        if($max_suffix != NULL){
             $sub_string = substr(self::$rv_string,0,-strlen($max_suffix));
 
             foreach($phrases as $phrase){

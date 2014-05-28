@@ -267,8 +267,8 @@ class ParallelModel extends Model implements CrawlConstants
      */
     function nonNetworkGetCrawlItems($lookups)
     {
-        $summary_offset = null;
-        $generation = null;
+        $summary_offset = NULL;
+        $generation = NULL;
         $summaries = array();
         $db = $this->db;
         foreach($lookups as $lookup => $lookup_info) {

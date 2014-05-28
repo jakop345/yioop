@@ -89,7 +89,7 @@ class MachinestatusView extends View
             $data['TABLE_TITLE'] = "";
             $data['ACTIVITY'] = 'manageMachines';
             $data['VIEW'] = $this;
-            $data['FORM_TYPE'] = null;
+            $data['FORM_TYPE'] = NULL;
             $data['NO_SEARCH'] = true;
             $data['NO_FLOAT_TABLE'] = true;
             $this->helper("pagingtable")->render($data);

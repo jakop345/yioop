@@ -2360,7 +2360,7 @@ class QueueServer implements CrawlConstants, Join
                 crawlTimeoutLog("..Still Writing fetch schedule %s".
                     " of %s.", $k, $num_sites);
                 $k++;
-                $extracted_etag = null;
+                $extracted_etag = NULL;
                 list($url, $weight, $delay) = $site;
 
                 $key = crawlHash($url, true);
@@ -2374,7 +2374,7 @@ class QueueServer implements CrawlConstants, Join
                   processed by the fetcher.
                  */
                     $value = $this->web_queue->etag_btree->findValue($key);
-                    if($value !== null) {
+                    if($value !== NULL) {
                         $cache_validation_data = $value[1];
                         if($cache_validation_data['etag'] !== -1 &&
                             $cache_validation_data['expires'] !== -1) {
@@ -2406,7 +2406,7 @@ class QueueServer implements CrawlConstants, Join
                     $url .= "###".urlencode($dns_lookup);
                 }
 
-                if($extracted_etag !== null) {
+                if($extracted_etag !== NULL) {
                     $url .= $extracted_etag;
                 }
 

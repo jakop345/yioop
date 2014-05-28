@@ -245,7 +245,7 @@ class WordIterator extends IndexBundleIterator
                 $this->empty = false;
             }
         }
-        $this->current_doc_offset = null;
+        $this->current_doc_offset = NULL;
         $this->results_per_block = $results_per_block;
         $this->current_block_fresh = false;
         if($this->dictionary_info !== false || $this->feed_info !== false) {
@@ -321,7 +321,7 @@ class WordIterator extends IndexBundleIterator
         $this->generation_pointer = 0;
         $this->count_block = 0;
         $this->seen_docs = 0;
-        $this->current_doc_offset = null;
+        $this->current_doc_offset = NULL;
     }
 
 
@@ -440,9 +440,9 @@ class WordIterator extends IndexBundleIterator
      *      next block must all have $doc_offsets larger than or equal to
      *      this value
      */
-    function advance($gen_doc_offset = null)
+    function advance($gen_doc_offset = NULL)
     {
-        if($gen_doc_offset != null) { //only advance if $gen_doc_offset bigger
+        if($gen_doc_offset != NULL) { //only advance if $gen_doc_offset bigger
             $cur_gen_doc_offset = $this->currentGenDocOffsetWithWord();
             if($cur_gen_doc_offset == -1 ||
                 $this->genDocOffsetCmp($cur_gen_doc_offset,
@@ -451,7 +451,7 @@ class WordIterator extends IndexBundleIterator
             }
         }
         $this->advanceSeenDocs();
-        $this->current_doc_offset = null;
+        $this->current_doc_offset = NULL;
         if($this->current_offset < $this->next_offset) {
             $this->current_offset = $this->next_offset;
         } else {
@@ -465,7 +465,7 @@ class WordIterator extends IndexBundleIterator
             $this->advanceGeneration();
             $this->next_offset = $this->current_offset;
         }
-        if($gen_doc_offset !== null) {
+        if($gen_doc_offset !== NULL) {
             if($this->current_generation < $gen_doc_offset[0]) {
                 $this->advanceGeneration($gen_doc_offset[0]);
                 $this->next_offset = $this->current_offset;
@@ -512,13 +512,13 @@ class WordIterator extends IndexBundleIterator
      *
      * @param int $generation generation to advance beyond
      */
-    function advanceGeneration($generation = null)
+    function advanceGeneration($generation = NULL)
     {
         if($this->using_feeds && $this->use_feeds) {
             $this->using_feeds = false;
             $this->generation_pointer = -1;
         }
-        if($generation === null) {
+        if($generation === NULL) {
             $generation = $this->current_generation;
         }
         do {
@@ -544,7 +544,7 @@ class WordIterator extends IndexBundleIterator
      *  and generation; -1 on fail
      */
     function currentGenDocOffsetWithWord() {
-        if($this->current_doc_offset !== null) {
+        if($this->current_doc_offset !== NULL) {
             return array($this->current_generation, $this->current_doc_offset);
         }
         $feeds = $this->using_feeds && $this->use_feeds && !$this->feed_empty;

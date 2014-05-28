@@ -163,7 +163,7 @@ class SearchView extends View implements CrawlConstants
                 e(tl('search_view_more_statistics')); ?></a>]
             <?php
             }
-            ?></div><?php  $this->element("footer")->render($data);?>
+            ?></div><?php $this->element("footer")->render($data);?>
 
         </div>
         <?php
@@ -196,10 +196,11 @@ class SearchView extends View implements CrawlConstants
                 $data['TOTAL_ROWS']));
             }
         ?></h2>
-        <div id="wordnet-words" class="wordnet">
         <?php
-            $similar_words = $data['WORDNET_SIMILAR_WORDS'];
-            if(count($similar_words) > 0) {
+        $similar_words = $data['WORDNET_SIMILAR_WORDS'];
+        if(count($similar_words) > 0 && !MOBILE) { ?>
+            <div id="wordnet-words" class="wordnet">
+            <?php
                 e(tl('search_view_wordnet_results'));
                 foreach ($similar_words as $word) {
                     e("<br/>");
@@ -209,10 +210,11 @@ class SearchView extends View implements CrawlConstants
                         e($word); ?></a></span>
                     <?php
                 }
-            }
             ?>
-        </div>
-        <?php if(count($similar_words) > 0) { ?>
+            </div>
+        <?php
+        }
+        if(count($similar_words) > 0 && !MOBILE) { ?>
             <div class="wordnet-serp-results"> <?php
         } else { ?>
             <div class="serp-results">
@@ -302,7 +304,7 @@ class SearchView extends View implements CrawlConstants
                         $data['VIDEO_SOURCES'], $data["OPEN_IN_TABS"]);
                 }
                 if(!MOBILE && isset($page[self::WORD_CLOUD])) { ?>
-                    <p><span class="echo-link"<?php e($subtitle); ?>><?php
+                    <p><span class="echo-link" <?php e($subtitle); ?>><?php
                         e(UrlParser::simplifyUrl($url, 40)." ");
                     ?></span><?php
                     $cloud = $page[self::WORD_CLOUD];
@@ -319,11 +321,11 @@ class SearchView extends View implements CrawlConstants
                                 ?>&amp;its=<?php e($data['its']);
                                 ?>&amp;q=<?php e($word);?>"><?php
                                 e($this->helper("displayresults")->
-                                render($word)."</span></a>");
+                                render($word)."</a></span>");
                             $i++;
                         }
                 } else { ?>
-                    <p><span class="echo-link"<?php e($subtitle); ?>><?php
+                    <p><span class="echo-link" <?php e($subtitle); ?>><?php
                         e(UrlParser::simplifyUrl($url, 100)." ");
                     ?></span><?php
                 }?></p>
@@ -401,14 +403,17 @@ class SearchView extends View implements CrawlConstants
                 if(MOBILE && $aux_link_flag) {e("<br />");}
                 if(isset($page[self::SCORE])) {
                     ?><span title="<?php
-                    e(tl('search_view_bm25score',
-                        number_format($page[self::BM25_SCORE], 2))."\n");
                     e(tl('search_view_rank',
                         number_format($page[self::DOC_RANK], 2))."\n");
                     e(tl('search_view_relevancy',
                         number_format($page[self::RELEVANCE], 2) )."\n");
                     e(tl('search_view_proximity',
                         number_format($page[self::PROXIMITY], 2) )."\n");
+                    if(isset($page[self::WORDNET_SCORE]) &&
+                        $page[self::WORDNET_SCORE] > 0) {
+                        e(tl('search_view_wordnet_score',
+                            number_format($page[self::WORDNET_SCORE], 2))."\n");
+                    }
                     if(isset($page[self::USER_RANKS])) {
                         foreach($page[self::USER_RANKS] as $label => $score) {
                             e($label.":".number_format($score/6553.6, 2)."\n");
