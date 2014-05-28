@@ -1255,7 +1255,7 @@ ul.in-list li
     font-weight: bold;
     left: -0.2in;
     position: relative;
-    top: -1.2in;
+    top: -0.8in;
     width: 8in;
 }
 .html-rtl .wordnet
@@ -1265,7 +1265,7 @@ ul.in-list li
     font-weight: bold;
     right: -0.2in;
     position: relative;
-    top: -1.2in;
+    top: -0.8in;
     width: 8in;
 }
 .result

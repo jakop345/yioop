@@ -459,10 +459,10 @@ class PhraseModel extends ParallelModel
                 }
             }
         }
-        if($raw == 0) {
+        if($raw == 0 && $results['TOTAL_ROWS'] > 0) {
             $output = $this->formatPageResults($results, $format_words,
                 $description_length);
-             if(USE_WORDNET && isset($results['WORDNET_SIMILAR_WORDS'])) {
+             if(USE_WORDNET && isset($results['WORDNET_SIMILAR_WORDS']) ) {
                 $output['WORDNET_SIMILAR_WORDS'] =
                     $results['WORDNET_SIMILAR_WORDS'];
              }
@@ -1351,7 +1351,7 @@ class PhraseModel extends ParallelModel
         }
         $lang = guessLocaleFromString($original_query);
         if(USE_WORDNET && WORDNET_EXEC != "" &&
-            file_exists(LOCALE_DIR . "/en-US/resources/lexicon.txt")) {
+            file_exists(LOCALE_DIR . "/en-US/resources/lexicon.txt.gz")) {
             $results_wordnet_score = self::sortByWordNetScore($results,
                 $original_query, $lang);
             $results = $results_wordnet_score;
