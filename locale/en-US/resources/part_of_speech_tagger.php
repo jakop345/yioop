@@ -54,25 +54,44 @@ class PartOfSpeechTagger
                 LOCALE_DIR . "/en-US/resources/lexicon.txt.gz"));
         }
         preg_match_all("/[\w\d]+/", $text, $matches);
+        $tokens = $matches[0];
         $nouns = array('NN', 'NNS');
         $verbs = array('VBD', 'VBP', 'VB');
         $result = array();
         $previous = array('token' => -1, 'tag' => -1);
         $previous_token = -1;
-        foreach($matches[0] as $token) {
-            $tag_list = array();
-            // default to a common noun
-            $current = array('token' => $token, 'tag' => 'NN');
-            // remove trailing full stops
+        sort($tokens);
+        $dictionary = array();
+        /*
+            Notice we sorted the tokens, and notice how we use $cur_pos
+            so only advance forward through $lex_string. So the
+            run time of this is bound by at most one scan of $lex_string
+         */
+        $cur_pos = 0;
+        foreach($tokens as $token) {
             $token = strtolower(rtrim($token, "."));
-            $token_pos = stripos($lex_string, "\n".$token." ");
+            $token_pos = stripos($lex_string, "\n".$token." ", $cur_pos);
             if($token_pos !== false) {
                 $token_pos++;
                 $cur_pos = stripos($lex_string, "\n", $token_pos);
                 $line = trim(substr($lex_string, $token_pos,
                     $cur_pos - $token_pos));
                 $tag_list = explode(' ', $line);
-                $current['tag'] = $tag_list[1];
+                $dictionary[strtolower(rtrim($token, "."))] =
+                    array_slice($tag_list, 1);
+                $cur_pos++;
+            }
+        }
+        // now using our dictionary we tag
+        foreach($matches[0] as $token) {
+            $tag_list = array();
+            // default to a common noun
+            $current = array('token' => $token, 'tag' => 'NN');
+            // remove trailing full stops
+            $token = strtolower(rtrim($token, "."));
+            if(isset($dictionary[$token])) {
+                $tag_list = $dictionary[$token];
+                $current['tag'] = $tag_list[0];
             }
             // Converts verbs after 'the' to nouns
             if($previous['tag'] == 'DT' && in_array($current['tag'], $verbs)) {
@@ -125,9 +144,11 @@ class PartOfSpeechTagger
         return $result;
     }
     /**
+     * Takes an array of pairs (token, tag) that came from phrase
+     * and builds a new phrase where terms look like token~tag.
      * 
-     * @param array $tagged_tokens 
-     * @return $tagged_phrase
+     * @param array $tagged_tokens array of pairs as might come from tagTokenize
+     * @return $tagged_phrase a phrase with terms in the format token~tag
      */
     static function taggedTokensToString($tagged_tokens)
     {
@@ -149,9 +170,12 @@ class PartOfSpeechTagger
         return $tagged_phrase;
     }
     /**
-     * 
-     * @param $phrase text to add parts speech tags to
-     * @return $output_string with part of speech processed on query input
+     * Takes a phrase and tags each term in it with its part of speech.
+     * So each term in the original phrase gets mapped to term~part_of_speech
+     *
+     * @param string $phrase text to add parts speech tags to
+     * @return string $tagged_phrase phrase where each term has ~part_of_speech
+     *      appended
      */
     static function tagPhrase($phrase)
     {
