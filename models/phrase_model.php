@@ -1126,7 +1126,8 @@ class PhraseModel extends ParallelModel
                     $has_changeable_results = false;
                     $seen_times = array();
                     foreach($results['PAGES'] as $page) {
-                        if(in_array($page[self::CRAWL_TIME], $seen_times)) {
+                        if(!isset($page[self::CRAWL_TIME]) || 
+                            in_array($page[self::CRAWL_TIME], $seen_times)) {
                             continue;
                         }
                         $seen_times[] = $page[self::CRAWL_TIME];

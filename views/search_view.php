@@ -182,8 +182,9 @@ class SearchView extends View implements CrawlConstants
      */
     function renderSearchResults($data)
     { ?>
-        <div id="spell-check" class="spell"><span class="hidden"
-        >123</span></div>
+        <div <?php if(WORD_SUGGEST) { e('id="spell-check"'); } ?> 
+            class="spell"><span class="hidden"
+        >&nbsp;</span></div>
         <h2 class="serp-stats"><?php
             if(MOBILE) {
             } else {
@@ -198,7 +199,8 @@ class SearchView extends View implements CrawlConstants
         ?></h2>
         <?php
         $similar_words = $data['THESAURUS_VARIANTS'];
-        if(count($similar_words) > 0 && !MOBILE) { ?>
+        $use_thesaurus = WORD_SUGGEST && count($similar_words) > 0 && !MOBILE;
+        if($use_thesaurus) { ?>
             <div class="thesaurus">
             <?php
                 e(tl('search_view_thesaurus_results'));
@@ -213,7 +215,7 @@ class SearchView extends View implements CrawlConstants
             </div>
         <?php
         }
-        if(count($similar_words) > 0 && !MOBILE) { ?>
+        if($use_thesaurus) { ?>
             <div class="thesaurus-serp-results"> <?php
         } else { ?>
             <div class="serp-results">

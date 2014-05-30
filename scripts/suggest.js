@@ -721,8 +721,9 @@ function spellCheck()
     if (document.getElementsByClassName) {
         referenceNode = document.getElementsByClassName("serp")[0];
     }
-    if (referenceNode) {
+    if(referenceNode) {
         var corrected_spell = elt("spell-check");
+        if(!corrected_spell) {return; }
         var csrf_token = elt("csrf-token").value;
         var its_value = elt("its-value").value;
 
