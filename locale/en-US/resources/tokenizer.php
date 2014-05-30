@@ -351,6 +351,12 @@ class EnTokenizer
     /**
      * Takes a phrase and tags each term in it with its part of speech.
      * So each term in the original phrase gets mapped to term~part_of_speech
+     * This tagger is based on a Brill tagger. It makes uses a lexicon
+     * consisting of words from the Brown corpus together with a list of
+     * part of speech tags that that word had in the Brown Corpus. These are
+     * used to get an initial part of speech (in word was not present than
+     * we assume it is a noun). From this a fixed set of rules is used to modify
+     * the initial tag if necessary.
      *
      * @param string $phrase text to add parts speech tags to
      * @return string $tagged_phrase phrase where each term has ~part_of_speech
