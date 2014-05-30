@@ -49,7 +49,12 @@ require_once(BASE_DIR.'/lib/url_parser.php');
  */
 class ProfileModel extends Model
 {
-     var $profile_fields = array('API_ACCESS', 'AUTH_KEY',
+    /**
+     *  These are fields whose values might be set in a Yioop instance
+     *  profile.php file
+     *  @var array
+     */
+    var $profile_fields = array('API_ACCESS', 'AUTH_KEY',
         'AUTHENTICATION_MODE', 'CACHE_LINK', 'CAPTCHA_MODE','DEBUG_LEVEL',
         'DESCRIPTION_WEIGHT', 'DB_HOST', 'DBMS', 'DB_NAME','DB_PASSWORD',
         'DB_USER', 'DEFAULT_LOCALE', 'FIAT_SHAMIR_MODULUS', 'GROUP_ITEM',
@@ -61,6 +66,17 @@ class ProfileModel extends Model
         'SUBSEARCH_LINK', 'TITLE_WEIGHT', 'TOR_PROXY', 'USE_FILECACHE',
         'USE_MAIL_PHP', 'USE_MEMCACHE', 'USE_PROXY',
         'USER_AGENT_SHORT', 'WEB_URI', 'WEB_ACCESS', 'WORD_SUGGEST'
+        );
+    /**
+     * These are the database tables used by Yioop
+     * @var array
+     */
+    var $database_tables = array( 'ACTIVE_FETCHER', 'ACTIVITY', 'CRAWL_MIXES',
+        'CURRENT_WEB_INDEX', 'FEED_ITEM', 'GROUP_ITEM', 'GROUP_ITEM_VOTE',
+        'GROUP_PAGE', 'GROUP_PAGE_HISTORY', 'GROUPS', 'LOCALE', 'MACHINE',
+        'MEDIA_SOURCE', 'MIX_COMPONENTS', 'ROLE', 'ROLE_ACTIVITY', 'SUBSEARCH',
+        'TRANSLATION', 'TRANSLATION_LOCALE', 'USERS', 'USER_GROUP', 'USER_ROLE',
+        'USER_SESSION', 'VISITOR', 'VERSION'
         );
     /**
      *  {@inheritdoc}
