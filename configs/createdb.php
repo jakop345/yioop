@@ -71,18 +71,12 @@ $dbinfo = array("DBMS" => DBMS, "DB_HOST" => DB_HOST, "DB_USER" => DB_USER,
     "DB_PASSWORD" => DB_PASSWORD, "DB_NAME" => DB_NAME);
 if(!in_array(DBMS, array('sqlite', 'sqlite3'))) {
     $db = new $db_class();
-    //we deliberately set DN_NAME blank so just connect to DBMS not DB.
-    $host = str_ireplace("dbname=".$dbinfo['DB_NAME'],"",
-    DB_HOST); // to get rid of database from dsn postgres
-    $host = str_ireplace("database=".$dbinfo['DB_NAME'],"",
-        $host); // informix, ibm (use connection string DSN)
-    $host = str_replace(";;",";", $host);
-    $db->connect($host, DB_USER, DB_PASSWORD, "");
+    $db->connect(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
     /*  postgres doesn't let you drop a database while connected to it so drop
         tables instead first
      */
     foreach($profile_model->database_tables as $table) {
-        $db->execute("DELETE FROM TABLE ".$table);
+        $db->execute("DELETE FROM ".$table);
     }
     $db->execute("DROP DATABASE IF EXISTS ".DB_NAME);
     $db->execute("CREATE DATABASE ".DB_NAME);
