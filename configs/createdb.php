@@ -76,7 +76,7 @@ if(!in_array(DBMS, array('sqlite', 'sqlite3'))) {
         tables instead first
      */
     foreach($profile_model->database_tables as $table) {
-        $db->execute("DELETE FROM ".$table);
+        $db->execute("DROP TABLE ".$table);
     }
     $db->execute("DROP DATABASE IF EXISTS ".DB_NAME);
     $db->execute("CREATE DATABASE ".DB_NAME);
