@@ -458,7 +458,7 @@ class PhraseModel extends ParallelModel
             $results['TOTAL_ROWS'] > 0) {
             $output = $this->formatPageResults($results, $format_words,
                 $description_length);
-             if(USE_WORDNET && isset($out_results['THESAURUS_VARIANTS']) ) {
+             if(isset($out_results['THESAURUS_VARIANTS']) ) {
                 $output['THESAURUS_VARIANTS'] =
                     $out_results['THESAURUS_VARIANTS'];
              }
