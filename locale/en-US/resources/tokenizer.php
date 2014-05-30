@@ -382,7 +382,11 @@ class EnTokenizer
     {
         switch (self::$buffer[$i])
         {
-            case 'a': case 'e': case 'i': case 'o': case 'u':
+            case 'a':
+            case 'e':
+            case 'i':
+            case 'o':
+            case 'u':
                 return false;
             case 'y':
                 return ($i== 0 ) ? true : !self::cons($i - 1);
