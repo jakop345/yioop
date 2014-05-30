@@ -32,7 +32,6 @@
 
 /*
     search.css
-
     Main stylesheet for Yioop search engine
  */
 
@@ -1194,7 +1193,7 @@ ul.in-list li
     top: -0.8in;
     width: 8in;
 }
-.html-ltr .wordnet-serp-results
+.html-ltr .thesaurus-serp-results
 {
     left: 2.2in;
     position: relative;
@@ -1202,7 +1201,7 @@ ul.in-list li
     width: 8in;
 }
 
-.html-rtl .wordnet-serp-results
+.html-rtl .thesaurus-serp-results
 {
     right: 2.2in;
     position: relative;
@@ -1248,7 +1247,7 @@ ul.in-list li
     position: relative;
     top: -1in;
 }
-.html-ltr .wordnet
+.html-ltr .thesaurus
 {
     color: #666;
     font-size: 14pt;
@@ -1258,7 +1257,7 @@ ul.in-list li
     top: -0.8in;
     width: 8in;
 }
-.html-rtl .wordnet
+.html-rtl .thesaurus
 {
     color: #666;
     font-size: 14pt;

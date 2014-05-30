@@ -58,6 +58,14 @@ class ZhTokenizer
         return PhraseParser::reverseMaximalMatch($pre_segment, "zh-CN");
     }
 
+    /**
+     *  A word segmenter.
+     *  Such a segmenter on input thisisabunchofwords would output
+     *  this is a bunch of words
+     *
+     *  @param string $pre_segment  before segmentation
+     *  @return string with words separated by space
+     */
     static function stem($word)
     {
         return false;

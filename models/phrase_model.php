@@ -49,9 +49,9 @@ require_once BASE_DIR."/lib/phrase_parser.php";
  */
 require_once(BASE_DIR."/lib/file_cache.php");
 /**
- * Load Wordnet class in case used
+ * Load thesaurus class in case used
  */
-require_once(BASE_DIR."/lib/wordnet.php");
+require_once(BASE_DIR."/lib/thesaurus.php");
 /**
  * Load iterators to get docs out of index archive
  */
@@ -415,17 +415,12 @@ class PhraseModel extends ParallelModel
              */
             $results['SAVE_POINT'] = $out_results['SAVE_POINT'];
         }
-
         if(isset($results['PAGES'])){
             ksort($results['PAGES']);
             $results["PAGES"] = array_values($results["PAGES"]);
         }
         if(isset($out_results['HARD_QUERY'])) {
             $results['HARD_QUERY'] = $out_results['HARD_QUERY'];
-        }
-        if(isset($out_results['WORDNET_SIMILAR_WORDS'])){
-            $results['WORDNET_SIMILAR_WORDS'] =
-                    $out_results['WORDNET_SIMILAR_WORDS'];
         }
         if(count($results) == 0) {
             $results = NULL;
@@ -459,12 +454,13 @@ class PhraseModel extends ParallelModel
                 }
             }
         }
-        if($raw == 0 && $results['TOTAL_ROWS'] > 0) {
+        if($raw == 0 && isset($results['TOTAL_ROWS']) &&
+            $results['TOTAL_ROWS'] > 0) {
             $output = $this->formatPageResults($results, $format_words,
                 $description_length);
-             if(USE_WORDNET && isset($results['WORDNET_SIMILAR_WORDS']) ) {
-                $output['WORDNET_SIMILAR_WORDS'] =
-                    $results['WORDNET_SIMILAR_WORDS'];
+             if(USE_WORDNET && isset($out_results['THESAURUS_VARIANTS']) ) {
+                $output['THESAURUS_VARIANTS'] =
+                    $out_results['THESAURUS_VARIANTS'];
              }
         } else {
             $output = $results;
@@ -1346,15 +1342,16 @@ class PhraseModel extends ParallelModel
         }
         $results['PAGES'] = & $out_pages;
         $results['TIME'] = time();
+        $lang = guessLocaleFromString($original_query);
+        $tokenizer = PhraseParser::getTokenizer($lang);
+        if($tokenizer && method_exists($tokenizer, "scoredThesaurusMatches")
+            && method_exists($tokenizer, "tagPartsOfSpeechPhrase")
+            && isset($tokenizer->use_thesaurus)) {
+            $results = $this->sortByThesaurusScore($results, $original_query,
+                $lang);
+        }
         if(USE_CACHE && $save_timestamp_name == "") {
             $CACHE->set($summary_hash, $results);
-        }
-        $lang = guessLocaleFromString($original_query);
-        if(USE_WORDNET && WORDNET_EXEC != "" &&
-            file_exists(LOCALE_DIR . "/en-US/resources/lexicon.txt.gz")) {
-            $results_wordnet_score = self::sortByWordNetScore($results,
-                $original_query, $lang);
-            $results = $results_wordnet_score;
         }
         return $results;
     }
@@ -1366,37 +1363,30 @@ class PhraseModel extends ParallelModel
      * @param string $original query
      * @return array results document summaries sorted by wordnet score
      */
-    function sortByWordNetScore($results, $original_query, $lang)
+    function sortByThesaurusScore($results, $original_query, $lang)
     {
-        /* If user selects Wordnet feature in page options then only
-         * do WordNet processing. Also user has to specify the WordNet directory
-         */
-        //Code added to sort the pages as per the WordNet score
-        $temp_pages = array();
-        $temp_summary = array();
-        $temp_pages = $results['PAGES'];
-            for($i = 0; $i < count($temp_pages); $i++) {
-                $temp_summary[$i] = $temp_pages[$i][self::DESCRIPTION];
-            }
+        $summaries = array();
+        $pages = $results['PAGES'];
+        foreach($pages as $page) {
+            $summaries[] = $page[self::DESCRIPTION];
+        }
         $index_name = $this->index_name;
-        $threshold = 10;
-        $word = WordNet::getSimilarWords($original_query, $index_name, $lang,
-            $threshold);
-        $results['WORDNET_SIMILAR_WORDS'] = $word;
-        if(!empty($word)) {
-            $wordnet_score = WordNet::getScore($temp_summary, $word);
+        $phrases = Thesaurus::getSimilarPhrases($original_query, $index_name,
+            $lang);
+        $results['THESAURUS_VARIANTS'] = $phrases;
+        if(!empty($phrases)) {
+            $thesaurus_scores = Thesaurus::scorePhrasesSummaries($phrases,
+                $summaries);
             //Store the BM25 score for each page in result array
-            $num_scores = count($wordnet_score);
+            $num_scores = count($thesaurus_scores);
             for($i = 0; $i < $num_scores; $i++) {
-                $temp_pages[$i][self::WORDNET_SCORE] = $wordnet_score[$i];
-                orderCallback($temp_pages[$i], $temp_pages[$i],
-                    self::WORDNET_SCORE);
+                $pages[$i][self::THESAURUS_SCORE] = $thesaurus_scores[$i];
+                orderCallback($pages[$i], $pages[$i], self::THESAURUS_SCORE);
             }
-            if(array_sum($wordnet_score) != 0){
-                usort($temp_pages, "orderCallback");
+            if(array_sum($thesaurus_scores) != 0) {
+                usort($pages, "orderCallback");
             }
-            $results['PAGES'] = $temp_pages;
-            //Code added to sort the pages as per the BM25 score
+            $results['PAGES'] = $pages;
         }
         return $results;
     }

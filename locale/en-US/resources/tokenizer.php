@@ -31,8 +31,20 @@
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
+/* If you would like to use wordnet for thesaurus reordering of query results
+   define the following variable in your configs/local_config.php file with
+   the path to the WordNet executable.
+ */
+if(!defined("WORDNET_EXEC")) {
+    define("WORDNET_EXEC", "");
+}
+
 /**
- * My stab at implementing the Porter Stemmer algorithm
+ * This class has a colloection of methods for English locale specific
+ * tokenization. In particular, it has a stemmer, a stop word remover (for
+ * use mainly in word cloud creation), and a part of speech tagger (if
+ * thesaurus reordering used). The stemmer is my stab at implementing the
+ * Porter Stemmer algorithm
  * presented http://tartarus.org/~martin/PorterStemmer/def.txt
  * The code is based on the non-thread safe C version given by Martin Porter.
  * Since PHP is single-threaded this should be okay.
@@ -45,10 +57,8 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @package seek_quarry
  * @subpackage locale
  */
-
 class EnTokenizer
 {
-
     /**
      * Words we don't want to be stemmed
      * @var array
@@ -85,12 +95,109 @@ class EnTokenizer
      */
     static $j;
 
+    function __construct()
+    {
+        if(WORDNET_EXEC != "") {
+            $this->use_thesaurus = true;
+        }
+    }
+
     /**
+     *  Stub function which could be used for a word segmenter.
+     *  Such a segmenter on input thisisabunchofwords would output
+     *  this is a bunch of words
      *
+     *  @param string $pre_segment  before segmentation
+     *  @return string should return string with words separated by space
+     *      in this case does nothing
      */
     static function segment($pre_segment)
     {
         return $pre_segment;
+    }
+
+    /**
+     * Computes similar words and scores from WordNet output based on word type.
+     *
+     * @param string $term term to find related thesaurus terms
+     * @param string $word_type is the type of word such as "NN" (noun), 
+     *      "VB" (verb), "AJ" (adjective), or "AV" (adverb) 
+     *      (all other types will be ignored)
+     * @param string $whole_query the original query $term came from
+     * @return array a sequence of
+     *      (score => array of thesaurus terms) associations. The score 
+     *      representing one word sense of term
+     */
+    static function scoredThesaurusMatches($term, $word_type,
+        $whole_query)
+    {
+        $word_map = array("VB" => "verb", "NN" => "noun", "AJ" => "adj",
+            "AV" => "adv");
+        //Gets overview of senses of term[$i] into data
+        exec(WORDNET_EXEC . " $term -over", $data);
+        if(!$data || ! isset($word_map[$word_type])) { return NULL; }
+        $full_name = $word_map[$word_type];
+        $lexicon_output = implode("\n", $data);
+        $sense_parts = preg_split("/\bThe\s$full_name".'[^\n]*\n\n/',
+            $lexicon_output);
+        if(!isset($sense_parts[1])) {return NULL; }
+        list($sense, ) = preg_split("/\bOverview\sof\s/", $sense_parts[1]);
+        $definitions_for_sense = preg_split("/\d+\.\s/", $sense, -1,
+            PREG_SPLIT_NO_EMPTY);
+        $num_definitions = count($definitions_for_sense);
+        $sentence = array();
+        $similar_phrases = array();
+        $avg_scores = array();
+        for($i = 0; $i < $num_definitions; $i++) {
+            //get sentence fragments examples of using that definition
+            preg_match_all('/\"(.*?)\"/', $definitions_for_sense[$i], $matches);
+            // to separate out the words
+            preg_match('/[\w+\s\,\.\']+\s\-+/', $definitions_for_sense[$i],
+                $match_word);
+            $thesaurus_phrases = preg_split("/\s*\,\s*/",
+                strtolower(rtrim(trim($match_word[0]), "-")));
+            //remove orginal term from thesaurus phrases if present
+            $m = 0;
+            foreach($thesaurus_phrases as $thesaurus_phrase) {
+                $tphrase = trim($thesaurus_phrase);
+                if($tphrase == trim($term)) {
+                    unset($thesaurus_phrases[$m]);
+                }
+                $m++;
+            }
+            $thesaurus_phrases = array_filter($thesaurus_phrases);
+            if($thesaurus_phrases == array()) {continue;}
+            $num_example_sentences = count($matches[1]);
+            $score = array();
+            for($j = 0; $j < $num_example_sentences; $j++) {
+                $query_parts = explode(' ', strtolower($whole_query));
+                $example_sentence_parts = explode(' ',
+                    strtolower($matches[1][$j]));
+                $score[$j] = PhraseParser::getCosineRank($query_parts,
+                    $example_sentence_parts);
+                /*  If Cosine similarity is zero then go for
+                 *  intersection similarity ranking
+                 */
+                if($score[$j] == 0) {
+                    $score[$j] = PhraseParser::getIntersection($query_parts,
+                        $example_sentence_parts);
+                }
+            }
+            /*  We use the rounded average of the above times 100 as a score
+                score for a definition. To avoid ties we store in the low
+                order digits 99 - the definition it was
+             */
+            if ($num_example_sentences > 0) {
+                $definition_score = 
+                    100*round(100*(array_sum($score) / $num_example_sentences))
+                        + (99 - $i);
+            } else {
+                $definition_score = 99 - $i;
+            }
+            $similar_phrases[$definition_score] = $thesaurus_phrases;
+        }
+        krsort($similar_phrases);
+        return $similar_phrases;
     }
     /**
      * Removes the stop words from the page
@@ -242,6 +349,24 @@ class EnTokenizer
     }
 
     /**
+     * Takes a phrase and tags each term in it with its part of speech.
+     * So each term in the original phrase gets mapped to term~part_of_speech
+     *
+     * @param string $phrase text to add parts speech tags to
+     * @return string $tagged_phrase phrase where each term has ~part_of_speech
+     *      appended
+     */
+    static function tagPartsOfSpeechPhrase($phrase)
+    {
+        preg_match_all("/[\w\d]+/", $phrase, $matches);
+        $tokens = $matches[0];
+        $tagged_tokens = self::tagTokenizePartOfSpeech($phrase);
+        $tagged_phrase  = self::taggedPartOfSpeechTokensToString(
+            $tagged_tokens);
+        return $tagged_phrase;
+    }
+
+    /**
      * Checks to see if the ith character in the buffer is a consonant
      *
      * @param int $i the character to check
@@ -259,6 +384,8 @@ class EnTokenizer
                 return true;
         }
     }
+
+    //private methods for stemming
 
     /**
      * m() measures the number of consonant sequences between 0 and j. if c is
@@ -618,6 +745,153 @@ class EnTokenizer
             self::doublec(self::$k) && self::m() > 1) self::$k--;
     }
 
+    //private methods for part of speech taggin
 
+    /**
+     *  Split input text into terms and output an array with one element
+     *  per term, that element consisting of array with the term token 
+     *  and the part of speech tag.
+     *
+     *  @param string $text string to tag and tokenize
+     *  @return array of pairs of the form( "token" => token_for_term,
+     *      "tag"=> part_of_speech_tag_for_term) for one each token in $text
+     */
+    private static function tagTokenizePartOfSpeech($text)
+    {
+        static $lex_string = NULL;
+        if(!$lex_string) {
+            $lex_string = gzdecode(file_get_contents(
+                LOCALE_DIR . "/en-US/resources/lexicon.txt.gz"));
+        }
+        preg_match_all("/[\w\d]+/", $text, $matches);
+        $tokens = $matches[0];
+        $nouns = array('NN', 'NNS', 'NNP');
+        $verbs = array('VBD', 'VBP', 'VB');
+        $result = array();
+        $previous = array('token' => -1, 'tag' => -1);
+        $previous_token = -1;
+        sort($tokens);
+        $dictionary = array();
+        /*
+            Notice we sorted the tokens, and notice how we use $cur_pos
+            so only advance forward through $lex_string. So the
+            run time of this is bound by at most one scan of $lex_string
+         */
+        $cur_pos = 0;
+        foreach($tokens as $token) {
+            $token = strtolower(rtrim($token, "."));
+            $token_pos = stripos($lex_string, "\n".$token." ", $cur_pos);
+            if($token_pos !== false) {
+                $token_pos++;
+                $cur_pos = stripos($lex_string, "\n", $token_pos);
+                $line = trim(substr($lex_string, $token_pos,
+                    $cur_pos - $token_pos));
+                $tag_list = explode(' ', $line);
+                $dictionary[strtolower(rtrim($token, "."))] =
+                    array_slice($tag_list, 1);
+                $cur_pos++;
+            }
+        }
+        // now using our dictionary we tag
+        $i = 0;
+        $tag_list = array();
+        foreach($matches[0] as $token) {
+            $prev_tag_list = $tag_list;
+            $tag_list = array();
+            // default to a common noun
+            $current = array('token' => $token, 'tag' => 'NN');
+            // remove trailing full stops
+            $token = strtolower(rtrim($token, "."));
+            if(isset($dictionary[$token])) {
+                $tag_list = $dictionary[$token];
+                $current['tag'] = $tag_list[0];
+            }
+            // Converts verbs after 'the' to nouns
+            if($previous['tag'] == 'DT' && in_array($current['tag'], $verbs)) {
+                $current['tag'] = 'NN';
+            }
+            // Convert noun to number if . appears
+            if($current['tag'][0] == 'N' && strpos($token, '.') !== false) {
+                $current['tag'] = 'CD';
+            }
+            $ends_with = substr($token, -2);
+            switch($ends_with)
+            {
+                case 'ed':
+                    // Convert noun to past particle if ends with 'ed'
+                    if($current['tag'][0] == 'N') { $current['tag'] = 'VBN'; }
+                break;
+                case 'ly':
+                    // Anything that ends 'ly' is an adverb
+                    $current['tag'] = 'RB';
+                break;
+                case 'al':
+                    // Common noun to adjective if it ends with al
+                    if(in_array($current['tag'], $nouns)) {
+                        $current['tag'] = 'JJ';
+                    }
+                break;
+            }
+            // Noun to verb if the word before is 'would'
+            if($current['tag'] == 'NN' && $previous_token == 'would') {
+                $current['tag'] = 'VB';
+            }
+            // Convert common noun to gerund
+            if(in_array($current['tag'], $nouns) &&
+                substr($token, -3) == 'ing') { $current['tag'] = 'VBG'; }
+            //nouns followed by adjectives
+            if(in_array($previous['tag'], $nouns) &&
+                $current['tag'] == 'JJ' && in_array('JJ', $prev_tag_list)) {
+                $result[$i - 1]['tag'] = 'JJ';
+                $current['tag'] = 'NN';
+            }
+            /* If we get noun noun, and the second can be a verb,
+             * convert to verb; if noun noun and previous could be an
+             * adjective convert to adjective
+             */
+            if(in_array($previous['tag'], $nouns) &&
+                in_array($current['tag'], $nouns) ) {
+                if(in_array('VBN', $tag_list)) {
+                    $current['tag'] = 'VBN';
+                } else if(in_array('VBZ', $tag_list)) {
+                    $current['tag'] = 'VBZ';
+                } else if(in_array('JJ', $prev_tag_list)) {
+                    $result[$i - 1]['tag'] = 'JJ';
+                }
+            }
+            $result[$i] = $current;
+            $i++;
+            $previous = $current;
+            $previous_token = $token;
+        }
+        return $result;
+    }
+
+    /**
+     * Takes an array of pairs (token, tag) that came from phrase
+     * and builds a new phrase where terms look like token~tag.
+     * 
+     * @param array $tagged_tokens array of pairs as might come from tagTokenize
+     * @return $tagged_phrase a phrase with terms in the format token~tag
+     */
+    private static function taggedPartOfSpeechTokensToString($tagged_tokens)
+    {
+        $tagged_phrase = "";
+        $simplified_parts_of_speech = array(
+            "NN" => "NN", "NNS" => "NN", "NNP" => "NN", "NNPS" => "NN",
+            "PRP" => "NN", 'PRP$' => "NN", "WP" => "NN",
+            "VB" => "VB", "VBD" => "VB", "VBN" => "VB", "VBP" => "VB",
+            "VBZ" => "VB",
+            "JJ" => "AJ", "JJR" => "AJ", "JJS" => "AJ",
+            "RB" => "AV", "RBR" => "AV", "RBS" => "AV", "WRB" => "AV"
+        );
+        foreach($tagged_tokens as $t) {
+            $tag = trim($t['tag']);
+            $tag = (isset($simplified_parts_of_speech[$tag])) ?
+                $simplified_parts_of_speech[$tag] : $tag;
+            $tagged_phrase .= $t['token'] . "~" . $tag .  " ";
+        }
+        return $tagged_phrase;
+    }
 }
 ?>

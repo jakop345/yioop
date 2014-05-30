@@ -197,17 +197,16 @@ class SearchView extends View implements CrawlConstants
             }
         ?></h2>
         <?php
-        $similar_words = $data['WORDNET_SIMILAR_WORDS'];
+        $similar_words = $data['THESAURUS_VARIANTS'];
         if(count($similar_words) > 0 && !MOBILE) { ?>
-            <div id="wordnet-words" class="wordnet">
+            <div class="thesaurus">
             <?php
-                e(tl('search_view_wordnet_results'));
+                e(tl('search_view_thesaurus_results'));
                 foreach ($similar_words as $word) {
-                    e("<br/>");
+                    e("<br />");
                     ?><span><a href="?<?php e(CSRF_TOKEN."=".$data[CSRF_TOKEN]);
-                    ?>&amp;its=<?php e($data['its']);?>
-                    &amp;q=<?php e($word);?>"><?php
-                        e($word); ?></a></span>
+                    ?>&amp;its=<?php e($data['its']);?>&amp;q=<?php 
+                        e($word);?>"><?php e($word); ?></a></span>
                     <?php
                 }
             ?>
@@ -215,7 +214,7 @@ class SearchView extends View implements CrawlConstants
         <?php
         }
         if(count($similar_words) > 0 && !MOBILE) { ?>
-            <div class="wordnet-serp-results"> <?php
+            <div class="thesaurus-serp-results"> <?php
         } else { ?>
             <div class="serp-results">
         <?php } ?>
@@ -409,10 +408,10 @@ class SearchView extends View implements CrawlConstants
                         number_format($page[self::RELEVANCE], 2) )."\n");
                     e(tl('search_view_proximity',
                         number_format($page[self::PROXIMITY], 2) )."\n");
-                    if(isset($page[self::WORDNET_SCORE]) &&
-                        $page[self::WORDNET_SCORE] > 0) {
-                        e(tl('search_view_wordnet_score',
-                            number_format($page[self::WORDNET_SCORE], 2))."\n");
+                    if(isset($page[self::THESAURUS_SCORE]) &&
+                        $page[self::THESAURUS_SCORE] > 0) {
+                        e(tl('search_view_thesaurus_score',
+                            number_format($page[self::THESAURUS_SCORE], 2))."\n");
                     }
                     if(isset($page[self::USER_RANKS])) {
                         foreach($page[self::USER_RANKS] as $label => $score) {

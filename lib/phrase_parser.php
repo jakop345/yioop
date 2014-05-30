@@ -1010,7 +1010,69 @@ class PhraseParser
         $link_meta_ids[] = "link:all";
         return $link_meta_ids;
     }
-
+    /**
+     *  Computes the Cosine-similarity of two phrases
+     *
+     *  @param array $phrase1 first input phrase as array of terms
+     *  @param array $phrase2 second input phrase as array of terms
+     *  @return float Cosine-similarity of the phrases
+     */
+    static function getCosineRank($phrase1, $phrase2)
+    {
+        $result = 0;
+        $term_vector1 = array();
+        $term_vector2 = array();
+        $unique_terms = array_unique(array_merge($phrase1, $phrase2));
+        foreach ($phrase1 as $term) {
+            if(!isset($term_vector1[$term])) {
+                $term_vector1[$term] = 0;
+            }
+            $term_vector1[$term]++;
+        }
+        $norm1 = 0;
+        foreach ($phrase1 as $term) {
+            $norm1 += $term_vector1[$term]*$term_vector1[$term];
+        }
+        $norm1 = sqrt($norm1);
+        foreach ($phrase2 as $term) {
+            if(!isset($term_vector2[$term])) {
+                $term_vector2[$term] = 0;
+            }
+            $term_vector2[$term]++;
+        }
+        $norm2 = 0;
+        foreach ($phrase2 as $term) {
+            $norm2 += $term_vector2[$term]*$term_vector2[$term];
+        }
+        $norm2 = sqrt($norm2);
+        foreach($unique_terms as $term) {
+            $inner_prod_term = 
+                (isset($term_vector1[$term]) && isset($term_vector2[$term])) ?
+                $term_vector1[$term] * $term_vector2[$term]: 0;
+            $result += $inner_prod_term;
+        }
+        $score = ($norm1 * $norm2 > 0) ?
+            $result / sqrt($norm1 * $norm2) : 0;
+        return $score;
+    }
+    /**
+     *  Computes the ratio of the number of terms shared by two phrases
+     *  divided by the average number of terms in a pair of phrases.
+     *
+     *  @param array $terms1 first input phrase as array of terms
+     *  @param array $terms2 second input phrase as array of terms
+     *  @return float the above described ratio
+     */
+    static function getIntersection($terms1, $terms2)
+    {
+        $total_terms = count($terms1) + count($terms2);
+        if ($total_terms == 0) {
+            return 0;
+        }
+        $num_intersect = count(array_intersect($terms1, $terms2));
+        $avg_num_terms = $total_terms / 2;
+        return $num_intersect / $avg_num_terms;
+    }
     /**
      * Used to split a string of text in the language given by $locale into
      * space separated words. Ex: "acontinuousstringofwords" becomes
