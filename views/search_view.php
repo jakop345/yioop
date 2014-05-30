@@ -201,7 +201,7 @@ class SearchView extends View implements CrawlConstants
         $similar_words = $data['THESAURUS_VARIANTS'];
         $use_thesaurus = WORD_SUGGEST && count($similar_words) > 0 && !MOBILE;
         if($use_thesaurus) { ?>
-            <div class="thesaurus">
+            <div id="thesaurus-results" class="thesaurus">
             <?php
                 e(tl('search_view_thesaurus_results'));
                 foreach ($similar_words as $word) {

@@ -723,7 +723,12 @@ function spellCheck()
     }
     if(referenceNode) {
         var corrected_spell = elt("spell-check");
-        if(!corrected_spell) {return; }
+        var thesaurus_results = elt("thesaurus-results");
+        /* corrected_spell might not be present if WORD_SUGGEST off
+           If there are already thesaurus results we don't want to
+           clutter the top area so also don't suggest
+         */
+        if(!corrected_spell || thesaurus_results) {return; }
         var csrf_token = elt("csrf-token").value;
         var its_value = elt("its-value").value;
 
