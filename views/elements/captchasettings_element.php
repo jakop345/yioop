@@ -80,7 +80,9 @@ class CaptchasettingsElement extends Element
             ?>
                 <div id="text-captcha-container"
                     class="text-captcha-container" >
-                    <h2>Add Captcha/Recovery Question:</h2>
+                    <h2><?php 
+                        e(tl('captchasettings_element_add_captcha_recovery')); 
+                    ?></h2>
                     <form id="text-captcha-container-add" 
                         class="text-captcha-container-add" 
                         method="post" action="">
@@ -102,7 +104,7 @@ class CaptchasettingsElement extends Element
                                 $data['CAPTCHA_POSSIBILITIES'], 
                                 $data['CAPTCHA_POSSIBILITIES']);?>
                             </li>
-                            <li><label for="locale-selection">
+                            <li><label for="captcha-locale">
                             <?php 
                             e(tl('captchasettings_element_captcha_language')); 
                             ?></label>
@@ -127,17 +129,23 @@ class CaptchasettingsElement extends Element
                                     name="CAPTCHA_CHOICES_INPUT"></li>
                             <li><input type="hidden" name="arg" 
                                     value="addtextcaptcha" />
-             				    <input type="submit" value= 
-             				        'Add To Database' 
+             				    <input type="submit"   
              				        id="text-captcha-add-to-database" 
-             				        name="text_captcha_add_to_database">
+             				        name="text_captcha_add_to_database" 
+             				        value="<?php
+             				        e(tl(
+             				       'captchasettings_element_add_to_database'));
+             				        ?>"/>
              				</li>
                         </ul>
                         <input type="hidden" name="CAPTCHA_MODE" 
                                     value="text_captcha"/></form>
                         <form name="updateTextCaptchaForm" method="post" 
                                 action =""> 
-         		    	    <h2>Current Question:</h2>
+         		    	    <h2>
+         		    	    <?php 
+                            e(tl('captchasettings_element_current_question')); 
+                            ?></h2>
                             <select multiple="multiple" 
                                 class="text-captcha-input" 
                                 name="text_captcha_delete_questions[]">    	    	     
@@ -157,10 +165,16 @@ class CaptchasettingsElement extends Element
                             </select>
                             <input type="hidden" name="arg" 
                                 value="updatetextcaptcha" />
-         				    <input type="submit" value='Delete From Database' 
-         				        name="actiondelete"/>
-                            <input type="submit" value='Edit'  
-                                name="actionedit"/>
+         				    <input type="submit" value="<?php
+         				       e(tl(
+         				      'captchasettings_element_delete_from_database'));
+         				       ?>" 
+         				       name="actiondelete"/>
+                            <input type="submit" value="<?php
+            				    e(tl(
+            				  'captchasettings_element_edit_database'));
+            				    ?>"  
+                               name="actionedit"/>
                        </form> 
                        <?php 
                        if(isset($data['EDIT_CAPTCHA_MAPS'])) {
