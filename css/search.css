@@ -2489,3 +2489,12 @@ table.wikitable > caption
     width: 260px;
     padding-top: 10px;
 }
+
+.text-captcha-container .question-update-input {
+    width: 50%;
+}
+
+.text-captcha-container .choices-update-input {
+    width: 50%;
+}
+

@@ -78,13 +78,13 @@ class CaptchasettingsElement extends Element
             <?php
                 if ($selected_value == TEXT_CAPTCHA) {
             ?>
-                <div id="text-captcha-container">
-                    <h4>Add Captcha/Recovery Question:</h4>
+                <div id="text-captcha-container"
+                    class="text-captcha-container" >
+                    <h2>Add Captcha/Recovery Question:</h2>
                     <form id="text-captcha-container-add" 
                         class="text-captcha-container-add" 
                         method="post" action="">
-                        <ul><li><label id="captcha-type" 
-                            for="captcha-type"><?php 
+                        <ul><li><label for="captcha-type"><?php 
                             e(tl('captchasettings_element_captcha_type')); 
                             ?></label>
                             <?php $this->view->helper("options")->render(
@@ -92,8 +92,7 @@ class CaptchasettingsElement extends Element
                                 $data['CAPTCHA_TYPE'], 
                                 $data['CAPTCHA_TYPE']);?>
                             </li>
-                            <li><label id="captcha-possibilities" 
-                            for="captcha-possibilities">
+                            <li><label for="captcha-possibilities">
                             <?php 
                             e(tl(
                             'captchasettings_element_captcha_possibilities')); 
@@ -103,7 +102,7 @@ class CaptchasettingsElement extends Element
                                 $data['CAPTCHA_POSSIBILITIES'], 
                                 $data['CAPTCHA_POSSIBILITIES']);?>
                             </li>
-                            <li><label id="locale-selection">
+                            <li><label for="locale-selection">
                             <?php 
                             e(tl('captchasettings_element_captcha_language')); 
                             ?></label>
@@ -111,7 +110,7 @@ class CaptchasettingsElement extends Element
                                 "captcha-locale", "CAPTCHA_LOCALE", 
                                 $data['LANGUAGES'], "en-US");?>
                             </li>
-                            <li><label id="captcha-question-input-label"><?php
+                            <li><label for="captcha-question-input-label"><?php
                                 e(tl(
                                 'captchasettings_element_captcha_question'));
                                 ?></label>
@@ -119,7 +118,7 @@ class CaptchasettingsElement extends Element
                                     id="captcha-question-input" 
                                     name="CAPTCHA_QUESTION_INPUT">
                             </li>
-                            <li><label id="captcha-choices-input-label"><?php
+                            <li><label for="captcha-choices-input-label"><?php
                                 e(tl(
                                 'captchasettings_element_captcha_choices'));
                                 ?></label>
@@ -138,7 +137,7 @@ class CaptchasettingsElement extends Element
                                     value="text_captcha"/></form>
                         <form name="updateTextCaptchaForm" method="post" 
                                 action =""> 
-         		    	    <h4>Current Question:</h4>
+         		    	    <h2>Current Question:</h2>
                             <select multiple="multiple" 
                                 class="text-captcha-input" 
                                 name="text_captcha_delete_questions[]">    	    	     
@@ -155,15 +154,16 @@ class CaptchasettingsElement extends Element
                                     }
                                 }               
                                 ?>
-                        </select>
-                        <input type="hidden" name="arg" 
-                            value="updatetextcaptcha" />
-         				<input type="submit" value='Delete From Database' 
-         				    name="actiondelete"/>
-                        <input type="submit" value='Edit'  
-                            name="actionedit"/>
+                            </select>
+                            <input type="hidden" name="arg" 
+                                value="updatetextcaptcha" />
+         				    <input type="submit" value='Delete From Database' 
+         				        name="actiondelete"/>
+                            <input type="submit" value='Edit'  
+                                name="actionedit"/>
                        </form> 
-                    <?php if(isset($data['EDIT_CAPTCHA_MAPS'])) {
+                       <?php 
+                       if(isset($data['EDIT_CAPTCHA_MAPS'])) {
                         $question_choice_rowid_map = 
                             $data['EDIT_CAPTCHA_MAPS']
                             ['question_choice_rowid_map'];
@@ -174,16 +174,16 @@ class CaptchasettingsElement extends Element
                             $question_rowid => $choices_rowid) {
                             e('<div>');
                             e('<div>');
-                            e('Question:<input name="updateField['.
+                            e('Question <input name="updateField['.
                                 $question_rowid.']" value="'.
                                 $rowid_translation_map[$question_rowid].'" 
-                                style="width:80%">');
+                                class="question-update-input">');
                             e('</div>');
                             e('<div>');
-                            e('Choices:<input name="updateField['.
+                            e('Choices <input name="updateField['.
                                 $choices_rowid.']" value="'.
                                 $rowid_translation_map[$choices_rowid].'" 
-                                style="width:80%">');
+                                class="choices-update-input">');
                             e('</div>');
                             e('</div>');
                         }

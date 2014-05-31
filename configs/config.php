@@ -82,7 +82,7 @@ $COMPONENT_ACTIVITIES = array(
         "manageRoles"),
     "crawl" => array("manageCrawls", "manageClassifiers", "pageOptions",
         "resultsEditor", "searchSources"),
-    "social" => array("manageGroups", "groupFeeds", "mixCrawls"),
+    "social" => array("manageGroups", "groupFeeds", "mixCrawls", "wiki"),
     "system" => array("manageMachines", "manageLocales",
         "serverSettings", "captchaSettings", "configure")
 );
@@ -106,7 +106,7 @@ if(MAINTENANCE_MODE && $_SERVER["SERVER_ADDR"] != $_SERVER["REMOTE_ADDR"]) {
 if(!defined('WORK_DIRECTORY')) {
 /*+++ The next block of code is machine edited, change at 
 your own risk, please use configure web page instead +++*/
-define('WORK_DIRECTORY', '/Library/WebServer/Documents/yioop_data200');
+define('WORK_DIRECTORY', '');
 /*++++++*/
 // end machine edited code
 }
