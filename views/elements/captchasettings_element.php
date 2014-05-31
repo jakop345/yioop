@@ -96,46 +96,49 @@ class CaptchasettingsElement extends Element
                             </li>
                             <li><label for="captcha-possibilities">
                             <?php 
-                            e(tl(
-                            'captchasettings_element_captcha_possibilities')); 
-                            ?></label>
+                             e(tl('captchasettings_element_captcha_possible')); 
+                            ?>
+                            </label>
                             <?php $this->view->helper("options")->render(
-                                "captcha-possibilities", "CAPTCHA_POSSIBILITIES", 
+                                "captcha-possibilities", 
+                                "CAPTCHA_POSSIBILITIES", 
                                 $data['CAPTCHA_POSSIBILITIES'], 
                                 $data['CAPTCHA_POSSIBILITIES']);?>
                             </li>
                             <li><label for="captcha-locale">
                             <?php 
-                            e(tl('captchasettings_element_captcha_language')); 
-                            ?></label>
+                              e(tl('captchasettings_element_captcha_locale')); 
+                            ?>
+                            </label>
                             <?php $this->view->helper("options")->render(
                                 "captcha-locale", "CAPTCHA_LOCALE", 
                                 $data['LANGUAGES'], "en-US");?>
                             </li>
-                            <li><label for="captcha-question-input-label"><?php
-                                e(tl(
-                                'captchasettings_element_captcha_question'));
-                                ?></label>
+                            <li><label for="captcha-question-input-label">
+                            <?php 
+                             e(tl('captchasettings_element_captcha_question')); 
+                            ?>
+                            </label>
                                 <input type="text" 
                                     id="captcha-question-input" 
                                     name="CAPTCHA_QUESTION_INPUT">
                             </li>
-                            <li><label for="captcha-choices-input-label"><?php
-                                e(tl(
-                                'captchasettings_element_captcha_choices'));
-                                ?></label>
+                            <li><label for="captcha-choices-input-label">
+                            <?php 
+                              e(tl('captchasettings_element_captcha_choices')); 
+                            ?>
+                            </label>
                                 <input type="text" 
                                     id="captcha-choices-input" 
                                     name="CAPTCHA_CHOICES_INPUT"></li>
                             <li><input type="hidden" name="arg" 
                                     value="addtextcaptcha" />
              				    <input type="submit"   
-             				        id="text-captcha-add-to-database" 
-             				        name="text_captcha_add_to_database" 
-             				        value="<?php
-             				        e(tl(
-             				       'captchasettings_element_add_to_database'));
-             				        ?>"/>
+             				      id="text-captcha-add-to-database" 
+             				      name="text_captcha_add_to_database" 
+             				      value="<?php 
+                                  e(tl('captchasettings_element_captcha_add')); 
+                                  ?>"/>
              				</li>
                         </ul>
                         <input type="hidden" name="CAPTCHA_MODE" 
@@ -165,15 +168,13 @@ class CaptchasettingsElement extends Element
                             </select>
                             <input type="hidden" name="arg" 
                                 value="updatetextcaptcha" />
-         				    <input type="submit" value="<?php
-         				       e(tl(
-         				      'captchasettings_element_delete_from_database'));
-         				       ?>" 
+         				    <input type="submit" value="<?php 
+                               e(tl('captchasettings_element_captcha_delete')); 
+                               ?>" 
          				       name="actiondelete"/>
-                            <input type="submit" value="<?php
-            				    e(tl(
-            				  'captchasettings_element_edit_database'));
-            				    ?>"  
+                            <input type="submit" value="<?php 
+                                e(tl('captchasettings_element_captcha_edit')); 
+                                ?>"  
                                name="actionedit"/>
                        </form> 
                        <?php 
