@@ -82,9 +82,9 @@ $COMPONENT_ACTIVITIES = array(
         "manageRoles"),
     "crawl" => array("manageCrawls", "manageClassifiers", "pageOptions",
         "resultsEditor", "searchSources"),
-    "social" => array("manageGroups", "groupFeeds", "mixCrawls", "wiki"),
+    "social" => array("manageGroups", "groupFeeds", "mixCrawls"),
     "system" => array("manageMachines", "manageLocales",
-        "serverSettings", "configure")
+        "serverSettings", "captchaSettings", "configure")
 );
 
 /** setting profile.php to something else in loac_config.php allows one to have
@@ -104,9 +104,9 @@ if(MAINTENANCE_MODE && $_SERVER["SERVER_ADDR"] != $_SERVER["REMOTE_ADDR"]) {
 }
 
 if(!defined('WORK_DIRECTORY')) {
-/*+++ The next block of code is machine edited, change at
+/*+++ The next block of code is machine edited, change at 
 your own risk, please use configure web page instead +++*/
-define('WORK_DIRECTORY', '');
+define('WORK_DIRECTORY', '/Library/WebServer/Documents/yioop_data200');
 /*++++++*/
 // end machine edited code
 }
@@ -122,15 +122,21 @@ define('FALLBACK_LOCALE_DIR', BASE_DIR."/locale");
 define ('SESSION_NAME', "yioopbiscuit");
 define('CSRF_TOKEN', "YIOOP_TOKEN");
 
-/** Captcha Mode Possibility*/
+/** Captcha Mode*/
 define('TEXT_CAPTCHA', 1);
-
-/** Captcha Mode Possibility*/
 define('HASH_CAPTCHA', 2);
+define('GRAPHICAL_CAPTCHA', 3);
+
+//Captcha Type
+define('CAPTCHA', 1);
+define('RECOVERY', 2);
+
+//Captcha Possibilities
+define('MOST', 1);
+define('LEAST', 2);
 
 /** Authentication Mode Possibility*/
 define('NORMAL_AUTHENTICATION', 1);
-
 /** Authentication Mode Possibility*/
 define('ZKP_AUTHENTICATION', 2);
 
@@ -168,7 +174,8 @@ if(file_exists(WORK_DIRECTORY.PROFILE_FILE_NAME)) {
     /** @ignore */
     define('PROFILE', false);
     define('DBMS', 'sqlite3');
-    define('CAPTCHA_MODE', HASH_CAPTCHA);
+    define('CAPTCHA_TYPE', CAPTCHA);
+    define('CAPTCHA_POSSIBILITIES', MOST);
     define('AUTHENTICATION_MODE', NORMAL_AUTHENTICATION);
     define('DEBUG_LEVEL', NO_DEBUG_INFO);
     define('USE_FILECACHE', false);

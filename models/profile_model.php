@@ -309,6 +309,13 @@ EOT;
             "CREATE TABLE ACTIVITY (ACTIVITY_ID $serial PRIMARY KEY
                 $auto_increment, TRANSLATION_ID INTEGER,
                 METHOD_NAME VARCHAR(256))",
+
+			"CREATE TABLE CAPTCHA (CAPTCHA_ID $serial PRIMARY KEY $auto_increment,
+	                TRANSLATION_ID INTEGER, METHOD_NAME VARCHAR(256) )",     
+	                        
+	        "CREATE TABLE QUESTION_CHOICE_MAPPING (TRANSLATION_ID_QUESTION INTEGER,
+	                TRANSLATION_ID_CHOICES INTEGER )",            
+
             "CREATE INDEX ACTIVITY_TRANSLATION_ID_INDEX ON
                  ACTIVITY (TRANSLATION_ID)",
             "CREATE TABLE CRAWL_MIXES (TIMESTAMP NUMERIC(11) PRIMARY KEY,
@@ -348,7 +355,7 @@ EOT;
                 MEMBER_ACCESS INTEGER, VOTE_ACCESS INTEGER DEFAULT ".
                 NON_VOTING_GROUP.")",
             /* NOTE: We are not using singular name GROUP for GROUPS as
-               is a reserved SQL keyword
+               GROUP is a reserved SQL keyword
              */
             "CREATE INDEX GRP_OWNER_ID_INDEX ON GROUPS (OWNER_ID)",
             "CREATE INDEX GRP_MEMBER_ACCESS_INDEX ON GROUPS(MEMBER_ACCESS)",
@@ -373,6 +380,8 @@ EOT;
                 PRIMARY KEY(TIMESTAMP, FRAGMENT_ID))",
             "CREATE TABLE ROLE (ROLE_ID $serial PRIMARY KEY $auto_increment,
                 NAME VARCHAR(512))",
+			"CREATE TABLE PREFERENCES (PREFERENCES_ID $serial PRIMARY KEY $auto_increment,
+		                TRANSLATION_ID INTEGER, METHOD_NAME VARCHAR(256))",     
             "CREATE TABLE ROLE_ACTIVITY (ROLE_ID INTEGER, ACTIVITY_ID INTEGER,
                 PRIMARY KEY(ROLE_ID, ACTIVITY_ID))",
             "CREATE TABLE SUBSEARCH (LOCALE_STRING VARCHAR(32) PRIMARY KEY,

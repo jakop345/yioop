@@ -2474,3 +2474,18 @@ table.wikitable > caption
     z-index: 200;
 }
 
+/* Captcha settings styles */
+
+#captcha-settings-container ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+#captcha-settings-container li {
+    line-height: 40px;
+}
+
+.graphical-captcha-container {
+    width: 260px;
+    padding-top: 10px;
+}

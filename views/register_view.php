@@ -183,16 +183,16 @@ class RegisterView extends View
                                 <?php echo in_array("repassword", $missing)
                                     ?'<span class="red">*</span>':''; ?></td>
                         </tr>
-                        <?php
-                        if(isset($_SESSION["random_string"])) {
+                        <?php                        
+                        if(isset($_SESSION["random_string"]) || 
+                            isset($_SESSION["graphical_captcha_string"])) {
                             $question_sets = array(
-                                tl('register_view_account_recovery')=>
+                                tl('register_view_account_recovery') =>
                                 $data['RECOVERY']);
-                        }
-                        else {
+                        } else {
                             $question_sets = array(
-                                tl('register_view_human_check')=>
-                                $data['CAPTCHAS'],
+                                tl('register_view_human_check') =>
+                                $data['CAPTCHA'],
                                 tl('register_view_account_recovery')
                                 =>$data['RECOVERY']);
                         }
@@ -222,6 +222,16 @@ class RegisterView extends View
                                 }
                                 $i++;
                             }
+                        }                        
+                        if (isset($_SESSION["graphical_captcha_string"])) {
+                            $graphical_element_data = array();
+                            $graphical_element_data["captcha_string"] = 
+                                $_SESSION["graphical_captcha_string"];
+                            e('<tr><th class="table-label">'.
+                                tl('register_view_human_check').'</th><td>');
+                            $this->element("graphicalcaptcha")->render(
+                                $graphical_element_data);
+                            e("</td></tr>");
                         }
                         ?>
                         <tr>

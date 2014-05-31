@@ -126,65 +126,50 @@ class RegisterController extends Controller implements CrawlConstants
      */
     function __construct()
     {
+        $locale = $this->model("locale");
+        $textcaptchasettings_model = $this->model("textcaptchasettings");
+        $tid_data = $textcaptchasettings_model->getTranslationIdMethodNameMap(
+            $locale->getLocaleTag());
+        $recovery_tid_list = $tid_data['recovery_tids'];
+        $captcha_tid_list = $tid_data['captcha_tids'];
+        $least_tid_list = $tid_data['least_tids'];
+        $most_tid_list = $tid_data['most_tids'];
+        $tid_method_name_map = $tid_data['map'];
+        $question_choices_map = 
+            $textcaptchasettings_model->getQuestionChoicesMap();
         $this->captchas_qa = array(
-            array(tl('register_controller_question0_most'),
-                tl('register_controller_question0_least'),
-                tl('register_controller_question0_choices')),
-            array(tl('register_controller_question1_most'),
-                tl('register_controller_question1_least'),
-                tl('register_controller_question1_choices')),
-            array(tl('register_controller_question2_most'),
-                tl('register_controller_question2_least'),
-                tl('register_controller_question2_choices')),
-            array(tl('register_controller_question3_most'),
-                tl('register_controller_question3_least'),
-                tl('register_controller_question3_choices')),
-            array(tl('register_controller_question4_most'),
-                tl('register_controller_question4_least'),
-                tl('register_controller_question4_choices')),
-            array(tl('register_controller_question5_most'),
-                tl('register_controller_question5_least'),
-                tl('register_controller_question5_choices')),
-            array(tl('register_controller_question6_most'),
-                tl('register_controller_question6_least'),
-                tl('register_controller_question6_choices')),
-            array(tl('register_controller_question7_most'),
-                tl('register_controller_question7_least'),
-                tl('register_controller_question7_choices')),
-            array(tl('register_controller_question8_most'),
-                tl('register_controller_question8_least'),
-                tl('register_controller_question8_choices')),
-            array(tl('register_controller_question9_most'),
-                tl('register_controller_question9_least'),
-                tl('register_controller_question9_choices')),
-            );
+            'least' => array(),
+            'most' => array()
+        );
         $this->recovery_qa = array(
-            array(tl('register_controller_recovery1_more'),
-                tl('register_controller_recovery1_less'),
-                tl('register_controller_recovery1_choices')),
-            array(tl('register_controller_recovery2_more'),
-                tl('register_controller_recovery2_less'),
-                tl('register_controller_recovery2_choices')),
-            array(tl('register_controller_recovery3_more'),
-                tl('register_controller_recovery3_less'),
-                tl('register_controller_recovery3_choices')),
-            array(tl('register_controller_recovery4_more'),
-                tl('register_controller_recovery4_less'),
-                tl('register_controller_recovery4_choices')),
-            array(tl('register_controller_recovery5_more'),
-                tl('register_controller_recovery5_less'),
-                tl('register_controller_recovery5_choices')),
-            array(tl('register_controller_recovery6_more'),
-                tl('register_controller_recovery6_less'),
-                tl('register_controller_recovery6_choices'))
-            );
+            LEAST => array(),
+            MOST => array()
+        );
+        foreach($question_choices_map as $question_translation_id => 
+            $choices_translation_id) {
+            $question_method_name = 
+                $tid_method_name_map[$question_translation_id];
+            $choices_method_name = 
+                $tid_method_name_map[$choices_translation_id];
+            $least_or_most = (in_array($question_translation_id, 
+                $least_tid_list))? LEAST: MOST;
+            if(in_array($question_translation_id, $recovery_tid_list)) {
+                $this->recovery_qa[$least_or_most][] = array(
+                    'question' => $question_method_name, 'choices' => 
+                        $choices_method_name);
+            } else {
+                $this->captchas_qa[$least_or_most][] = array(
+                    'question' => $question_method_name, 'choices' => 
+                        $choices_method_name);           
+            }
+        }
         parent::__construct();
     }
 
     /**
      *  Main entry method for this controller. Determine which account
      *  creation/recovery activity needs to be performed. Calls the
-     *  appropriate method, then sends the return $data to aview
+     *  appropriate method, then sends the return $data to a view
      *  determined by that activity. $this->displayView then renders that
      *  view
      */
@@ -195,18 +180,6 @@ class RegisterController extends Controller implements CrawlConstants
             $user = $_SESSION['USER_ID'];
         } else {
             $user = $_SERVER['REMOTE_ADDR'];
-        }
-        $visitor_check_names = array('captcha_time_out',
-            'suggest_day_exceeded');
-        foreach($visitor_check_names as $name) {
-            $visitor = $visitor_model->getVisitor($_SERVER['REMOTE_ADDR'],
-                $name);
-            if(isset($visitor['END_TIME']) && $visitor['END_TIME'] > time()) {
-                $_SESSION['value'] = date('Y-m-d H:i:s', $visitor['END_TIME']);
-                $url = BASE_URL."?c=static&p=".$visitor['PAGE_NAME'];
-                header("Location:".$url);
-                exit();
-            }
         }
         $data = array();
         $data['REFRESH'] = "register";
@@ -224,6 +197,10 @@ class RegisterController extends Controller implements CrawlConstants
             'processAccountData', 'createAccount', $data);
         $data["check_fields"] = array("user");
         unset($data["check_user"]);
+        if(CAPTCHA_MODE != GRAPHICAL_CAPTCHA && 
+                isset($_SESSION["graphical_captcha_string"])) {
+            unset($_SESSION["graphical_captcha_string"]);
+        }
         if(CAPTCHA_MODE == TEXT_CAPTCHA) {
             for($i = 0; $i < self::NUM_CAPTCHA_QUESTIONS; $i++) {
                 $data["check_fields"][] = "question_$i";
@@ -387,7 +364,7 @@ class RegisterController extends Controller implements CrawlConstants
             $user_model->setUserSession($user['USER_ID'], $_SESSION);
         }
         unset($_SESSION['CAPTCHA_ANSWERS']);
-        unset($_SESSION['CAPTCHAS']);
+        unset($_SESSION['CAPTCHA']);
         unset($_SESSION['RECOVERY_ANSWERS']);
         unset($_SESSION['RECOVERY']);
         return $data;
@@ -445,7 +422,7 @@ class RegisterController extends Controller implements CrawlConstants
             }
         }
         unset($_SESSION['CAPTCHA_ANSWERS']);
-        unset($_SESSION['CAPTCHAS']);
+        unset($_SESSION['CAPTCHA']);
         unset($_SESSION['RECOVERY_ANSWERS']);
         unset($_SESSION['RECOVERY']);
         $_SESSION['REMOTE_ADDR'] = $_SERVER['REMOTE_ADDR'];
@@ -518,7 +495,7 @@ class RegisterController extends Controller implements CrawlConstants
                 $user['HASH'].$time.$user['USER_NAME'].AUTH_KEY));
         $server->send($subject, MAIL_SENDER, $user['EMAIL'], $message);
         unset($_SESSION['CAPTCHA_ANSWERS']);
-        unset($_SESSION['CAPTCHAS']);
+        unset($_SESSION['CAPTCHA']);
         unset($_SESSION['RECOVERY_ANSWERS']);
         unset($_SESSION['RECOVERY']);
         return $data;
@@ -647,10 +624,14 @@ class RegisterController extends Controller implements CrawlConstants
         $data["REFRESH"] = "suggest";
         $visitor_model = $this->model("visitor");
         $clear = false;
-        if($profile['CAPTCHA_MODE'] == HASH_CAPTCHA) {
+        if(CAPTCHA_MODE != GRAPHICAL_CAPTCHA && 
+                isset($_SESSION["graphical_captcha_string"])) {
+            unset($_SESSION["graphical_captcha_string"]);
+        }
+        if(CAPTCHA_MODE == HASH_CAPTCHA) {
             $data['INCLUDE_SCRIPTS'] = array("sha1", "hash_captcha");
         }
-        if($profile['CAPTCHA_MODE'] == TEXT_CAPTCHA) {
+        if(CAPTCHA_MODE == TEXT_CAPTCHA) {
             $num_captchas = self::NUM_CAPTCHA_QUESTIONS;
             unset($_SESSION["request_time"]);
             unset($_SESSION["level"] );
@@ -686,27 +667,31 @@ class RegisterController extends Controller implements CrawlConstants
         if(isset($_REQUEST['url'])) {
             $data['url'] = $this->clean($_REQUEST['url'], "string");
         }
-        if($profile['CAPTCHA_MODE'] == TEXT_CAPTCHA) {
-            if(!isset($_SESSION['CAPTCHAS']) ||
+        if(CAPTCHA_MODE == TEXT_CAPTCHA) {
+            if(!isset($_SESSION['CAPTCHA']) ||
                !isset($_SESSION['CAPTCHA_ANSWERS'])){
                 list($captchas, $answers) = $this->selectQuestionsAnswers(
-                $this->captchas_qa, $num_captchas, self::NUM_CAPTCHA_CHOICES);
-                $data['CAPTCHAS'] = $captchas;
+                    $this->captchas_qa, $num_captchas, 
+                    self::NUM_CAPTCHA_CHOICES);
+                $data['CAPTCHA'] = $captchas;
                 $data['build_time'] = time();
                 $_SESSION['BUILD_TIME'] = $data['build_time'];
                 $_SESSION['CAPTCHA_ANSWERS'] = $answers;
-                $_SESSION['CAPTCHAS'] = $data['CAPTCHAS'];
+                $_SESSION['CAPTCHA'] = $data['CAPTCHA'];
             } else {
-                $data['CAPTCHAS'] = $_SESSION['CAPTCHAS'];
+                $data['CAPTCHA'] = $_SESSION['CAPTCHA'];
             }
         }
         $missing = array();
         $save = isset($_REQUEST['arg']) && $_REQUEST['arg'];
+        if(CAPTCHA_MODE == GRAPHICAL_CAPTCHA && !$save) {
+            $this->setupGraphicalCaptchaViewData();
+        }
         if(CAPTCHA_MODE == TEXT_CAPTCHA) {
             for($i = 0; $i < $num_captchas; $i++) {
             $field = "question_$i";
-            $captchas = isset($_SESSION['CAPTCHAS'][$i]) ?
-                $_SESSION['CAPTCHAS'][$i] : array();
+            $captchas = isset($_SESSION['CAPTCHA'][$i]) ?
+                $_SESSION['CAPTCHA'][$i] : array();
             if($save) {
                 if(!isset($_REQUEST[$field]) || $_REQUEST[$field] == "-1" ||
                     !in_array($_REQUEST[$field], $captchas)) {
@@ -719,6 +704,7 @@ class RegisterController extends Controller implements CrawlConstants
         }
         $data['MISSING'] = $missing;
         if($save && isset($_REQUEST['url'])) {
+			print("suggest url saved?");
             $url = $this->clean($_REQUEST['url'], "string");
             $url_parts = @parse_url($url);
             if(!isset($url_parts['scheme'])) {
@@ -736,7 +722,7 @@ class RegisterController extends Controller implements CrawlConstants
                     tl('register_controller_error_fields')."</h1>');";
                 return $data;
             }
-            if(CAPTCHA_MODE == HASH_CAPTCHA) {
+           if(CAPTCHA_MODE == HASH_CAPTCHA) {
                 if(!$this->validateHashCode()) {
                     $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
                     tl('register_controller_failed_hashcode')."</h1>');";
@@ -751,13 +737,29 @@ class RegisterController extends Controller implements CrawlConstants
                     tl('register_controller_failed_human')."</h1>');";
                 for($i = 0; $i < $num_captchas; $i++) {
                     $data["question_$i"] = "-1";
-                }
-                unset($_SESSION['CAPTCHAS']);
+                
+                 }
+                unset($_SESSION['CAPTCHA']);
                 unset($_SESSION['CAPTCHA_ANSWERS']);
                 $visitor_model->updateVisitor(
                     $_SERVER['REMOTE_ADDR'], "captcha_time_out");
                 return $data;
                 }
+            }
+            if(CAPTCHA_MODE == GRAPHICAL_CAPTCHA) {
+                if(isset ($_SESSION['graphical_captcha_string']) && 
+                        $_SESSION['graphical_captcha_string'] != 
+                        $_REQUEST['user_entered_graphical_captcha_string']) {
+                    $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
+                        tl('register_controller_failed_graphical_human').
+                        "</h1>');";
+                    unset($_SESSION['graphical_captcha_string']);
+                    $this->setupGraphicalCaptchaViewData();
+                    $visitor_model->updateVisitor(
+                        $_SERVER['REMOTE_ADDR'], "captcha_time_out");
+                    return $data;
+                }
+                $this->setupGraphicalCaptchaViewData();
             }
             if(!$this->model("crawl")->appendSuggestSites($url)) {
                 $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
@@ -769,22 +771,23 @@ class RegisterController extends Controller implements CrawlConstants
             $visitor_model->updateVisitor(
                 $_SERVER['REMOTE_ADDR'], "suggest_day_exceeded",
                 self::ONE_DAY, self::ONE_DAY, MAX_SUGGEST_URLS_ONE_DAY);
-            if($profile['CAPTCHA_MODE'] == TEXT_CAPTCHA) {
+            if(CAPTCHA_MODE == TEXT_CAPTCHA) {
                 for($i = 0; $i < $num_captchas; $i++) {
                 $data["question_$i"] = "-1";
                 }
-                unset($_SESSION['CAPTCHAS']);
+                unset($_SESSION['CAPTCHA']);
                 unset($_SESSION['CAPTCHA_ANSWERS']);
                 list($captchas, $answers) = $this->selectQuestionsAnswers(
-                $this->captchas_qa, $num_captchas, self::NUM_CAPTCHA_CHOICES);
-                $data['CAPTCHAS'] = $captchas;
+                    $this->captchas_qa, $num_captchas, 
+                    self::NUM_CAPTCHA_CHOICES);
+                $data['CAPTCHA'] = $captchas;
                 $_SESSION['CAPTCHA_ANSWERS'] = $answers;
-                $_SESSION['CAPTCHAS'] = $data['CAPTCHAS'];
+                $_SESSION['CAPTCHA'] = $data['CAPTCHA'];
             }
             $data['build_time'] = time();
             $_SESSION['BUILD_TIME'] = $data['build_time'];
-            $data['url'] ="";
-        }
+            $data['url'] =""; 
+        } 
         return $data;
     }
 
@@ -828,16 +831,23 @@ class RegisterController extends Controller implements CrawlConstants
             unset($_SESSION["request_time"]);
             unset($_SESSION["level"] );
             unset($_SESSION["random_string"] );
-        if(!isset($_SESSION['CAPTCHAS'])||!isset($_SESSION['CAPTCHA_ANSWERS'])){
-            list($captchas, $answers) = $this->selectQuestionsAnswers(
-                $this->captchas_qa, self::NUM_CAPTCHA_QUESTIONS,
-                self::NUM_CAPTCHA_CHOICES);
-            $data['CAPTCHAS'] = $captchas;
-            $_SESSION['CAPTCHA_ANSWERS'] = $answers;
-            $_SESSION['CAPTCHAS'] = $data['CAPTCHAS'];
-        } else {
-            $data['CAPTCHAS'] = $_SESSION['CAPTCHAS'];
+            if(empty($_SESSION['CAPTCHA'])) {
+                unset($_SESSION['CAPTCHA']);
+            }
+            if(!isset($_SESSION['CAPTCHA']) || !isset(
+                    $_SESSION['CAPTCHA_ANSWERS'])){
+                list($captchas, $answers) = $this->selectQuestionsAnswers(
+                    $this->captchas_qa, self::NUM_CAPTCHA_QUESTIONS,
+                    self::NUM_CAPTCHA_CHOICES);
+                $data['CAPTCHA'] = $captchas;
+                $_SESSION['CAPTCHA_ANSWERS'] = $answers;
+                $_SESSION['CAPTCHA'] = $data['CAPTCHA'];
+            } else {
+                $data['CAPTCHA'] = $_SESSION['CAPTCHA'];
+            }
         }
+        if(CAPTCHA_MODE == GRAPHICAL_CAPTCHA) {
+            $this->setupGraphicalCaptchaViewData();
         }
         if(!isset($_SESSION['RECOVERY'])) {
             list($data['RECOVERY'], ) = $this->selectQuestionsAnswers(
@@ -848,17 +858,67 @@ class RegisterController extends Controller implements CrawlConstants
         }
         return $data;
     }
-
+    
     /**
-     *  Picks $num_select most/least questions from an array of triplets of
-     *  the form a string question: Which is the most ..?, a string
-     *  question: Which is the least ..?, followed by a comma separated list
-     *  of choices ranked from least to most. For each question pick,
-     *  $num_choices many items from the last element of the triplet are
-     *  chosen.
+     * Sets up the graphical captcha view
+     * Draws the string for graphical captcha
+     */
+    
+    function setupGraphicalCaptchaViewData() {
+        unset($_SESSION["graphical_captcha_string"]);
+        // defines captcha text
+        $characters_for_captcha = '1234567890'.
+            'abcdefghijklmnopqrstuvwxyz'.
+            'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $len = strlen($characters_for_captcha);
+        // selecting letters for captcha
+        $captcha_letter = $characters_for_captcha[rand(0, $len - 1)]; 
+        $word = "";
+        for ($i = 0; $i < 6; $i++) {
+            // selecting letters for captcha
+            $captcha_letter = $characters_for_captcha[rand(0, $len - 1)];
+            $word = $word.$captcha_letter;
+         }
+         // stores the captcha in a session variable 'graphical_captcha_string'
+         $_SESSION['graphical_captcha_string'] = $word;
+    }
+    
+    /**
+     *  Picks $num_select most/least questions from an associative array
+     * which contains 2 other arrays one for most and one for least.
+     * The arrays for most or least in turn contains and array of
+     * question-choices pair; question: Which is the most ..? and 
+     * choices: which contains a comma separated list of choices ranked from 
+     * least to most. For each question pick, $num_choices many items from 
+     * the choices would be selected.
+     * An example associative array would like this.
+     * $this->captchas_qa = array(
+     *  MOST => array(
+     *      array(
+     *          "question"=>"register_controller_question0_most",
+     *          "choices"=>"register_controller_question0_choices"
+     *      ),
+     *      array(
+     *          "question"=>"register_controller_question1_most",
+     *          "choices"=>"register_controller_question1_choices"
+     *      )
+     *
+     *  ),
+     *  LEAST => array(
+     *      array(
+     *          "question"=>"register_controller_question0_least",
+     *          "choices"=>"register_controller_question0_choices"
+     *      ),
+     *      array(
+     *          "question"=>"register_controller_question0_least",
+     *          "choices"=>"register_controller_question0_choices"
+     *      )
+     *    )
+     *   );
      *
      *  @param array $questions_answers an array t_1, t_2, t_3, t_4, where
-     *      each t_i is a triplet as described above
+     *      each t_i is an associative array containing the most
+     *      and least arrays as described above
      *  @param int $num_select number of triples from the list to pick
      *      for each triple pick either the most question or the least
      *      question
@@ -873,14 +933,37 @@ class RegisterController extends Controller implements CrawlConstants
     {
         $questions = array();
         $answers = array();
-        $size_qa = count($question_answers);
-        for($i = 0; $i < $num_select; $i++) {
-            do {
-                $question_choice = mt_rand(0, $size_qa - 1);
-            }while(isset($questions[$question_choice]));
-            $more_less = rand(0, 1);
+        // Clone arrays so you can unset values
+        $qa_least_arr = array_merge(array(), $question_answers[LEAST]);
+        $qa_most_arr = array_merge(array(), $question_answers[MOST]);
+
+        for($i = 0; $i < $num_select && (count($qa_most_arr) > 0 && 
+                count($qa_least_arr) > 0); $i++) {
+            $least_or_most = (rand(0, 1))?MOST:LEAST;
+            if(count($qa_most_arr) == 0 && count($qa_least_arr) > 0) {
+                $least_or_most = LEAST;
+            } elseif (count($qa_most_arr) >= 0 && count($qa_least_arr) == 0) {
+                $least_or_most = MOST;
+            }
+            
+            $selected_question_choice = Null;
+            $most_question_choice_index = -1;
+            $least_question_choice_index = -1;
+            if($least_or_most == MOST) {
+              $size_qa = count($qa_most_arr);
+              $most_question_choice_index = mt_rand(0, $size_qa - 1);
+              $selected_question_choice = 
+                  $qa_most_arr[$most_question_choice_index];
+            } else {
+              $size_qa = count($qa_least_arr);
+              $least_question_choice_index = mt_rand(0, $size_qa - 1);
+              $selected_question_choice = 
+                  $qa_least_arr[$least_question_choice_index];
+            }
+            
             $answer_possibilities =
-                explode(",", $question_answers[$question_choice][2]);
+                explode(",", 
+                    $selected_question_choice["choices"]);
             $selected_possibilities = array();
             $size_possibilities = count($answer_possibilities);
             if($num_choices < 0) {
@@ -889,27 +972,32 @@ class RegisterController extends Controller implements CrawlConstants
                 $num = $num_choices;
             }
             for($j = 0; $j < $num; $j++) {
-                do {
-                    $selected_possibility = mt_rand(0, $size_possibilities - 1);
-                } while(isset($selected_possibilities[$selected_possibility]));
-                $selected_possibilities[$selected_possibility] =
-                    $answer_possibilities[$selected_possibility];
+              do {
+                  $selected_possibility = mt_rand(0, $size_possibilities - 1);
+              } while(isset($selected_possibilities[$selected_possibility]));
+              $selected_possibilities[$selected_possibility] =
+                  $answer_possibilities[$selected_possibility];
             }
-            $questions[$question_choice] = array("-1" =>
-                    $question_answers[$question_choice][$more_less]);
+            $questions[$i] =  array("-1" =>
+                    $selected_question_choice["question"]);
             $tmp = array_values($selected_possibilities);
-            $questions[$question_choice] +=  array_combine($tmp, $tmp);
-            if($more_less) {
+            $questions[$i] +=  array_combine($tmp, $tmp);
+            if($least_or_most == MOST) {
                 ksort($selected_possibilities);
-                $selected_possibilities = array_values($selected_possibilities);
+                $selected_possibilities = 
+                    array_values($selected_possibilities);
                 $answers[$i] = $selected_possibilities[0];
+                unset($qa_most_arr[$most_question_choice_index]);
+                $qa_most_arr = array_values($qa_most_arr);
             } else {
                 krsort($selected_possibilities);
-                $selected_possibilities = array_values($selected_possibilities);
+                $selected_possibilities = 
+                    array_values($selected_possibilities);
                 $answers[$i] = $selected_possibilities[0];
+                unset($qa_least_arr[$least_question_choice_index]);
+                $qa_least_arr = array_values($qa_least_arr);
             }
         }
-        $questions = array_values($questions);
         return array($questions, $answers);
     }
 
@@ -940,7 +1028,7 @@ class RegisterController extends Controller implements CrawlConstants
                 $activity = $activity_fail;
             }
             if($activity == $activity_success) {
-                if($profile['CAPTCHA_MODE'] == TEXT_CAPTCHA) {
+                if(CAPTCHA_MODE == TEXT_CAPTCHA) {
                     if(!isset($_SESSION['CAPTCHA_ANSWERS']) ) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('register_controller_need_cookies')."</h1>');";
@@ -953,14 +1041,25 @@ class RegisterController extends Controller implements CrawlConstants
                         for($i = 0; $i < self::NUM_CAPTCHA_QUESTIONS; $i++) {
                             $data["question_$i"] = "-1";
                         }
-                    unset($_SESSION['CAPTCHAS']);
+                    unset($_SESSION['CAPTCHA']);
                     unset($_SESSION['CAPTCHA_ANSWERS']);
                     $this->model("visitor")->updateVisitor(
                         $_SERVER['REMOTE_ADDR'], "captcha_time_out");
                     $activity = $activity_fail;
                     }
-                }
-                else {
+                } elseif (CAPTCHA_MODE == GRAPHICAL_CAPTCHA) {
+                    if($_SESSION['graphical_captcha_string'] != 
+                            $_REQUEST[
+                            'user_entered_graphical_captcha_string']) {
+                        $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
+                        tl('register_controller_failed_graphical_human')."
+                            </h1>');";
+                        unset($_SESSION['graphical_captcha_string']);
+                        $this->model("visitor")->updateVisitor(
+                            $_SERVER['REMOTE_ADDR'], "captcha_time_out");
+                        $activity = $activity_fail;
+                    }
+                } else {
                     if(!$this->validateHashCode()) {
                         $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
                         tl('register_controller_failed_hashcode')."</h1>');";
@@ -1010,19 +1109,22 @@ class RegisterController extends Controller implements CrawlConstants
     function checkCaptchaAnswers()
     {
         $captcha_passed = true;
+        
         for($i = 0; $i < self::NUM_CAPTCHA_QUESTIONS; $i++) {
+	
             $field = "question_".$i;
             if($_REQUEST[$field] != $_SESSION['CAPTCHA_ANSWERS'][$i]) {
                 $captcha_passed = false;
                 break;
+              
             }
         }
         return $captcha_passed;
     }
 
     /**
-     *  Checks whether the answers to the account recovery questions match those
-     *  provided earlier by an account user
+     *  Checks whether the answers to the account recovery questions match 
+     * those provided earlier by an account user
      *
      *  @param array $user who to check recovery answers for
      *  @return bool true if only if all were correct

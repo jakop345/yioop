@@ -342,6 +342,11 @@ class SystemComponent extends Component
         $search_array = array(array("tag", "", "", "ASC"));
         $data['SCRIPT'] = "";
         $data["ELEMENT"] = "managelocales";
+        $locales = $parent->model("locale")->getLocaleList();
+        $data["LANGUAGES"] = array();
+        foreach($locales as $locale) {
+            $data["LANGUAGES"][$locale['LOCALE_TAG']] = $locale['LOCALE_NAME'];
+        }
         $data['CURRENT_LOCALE'] = array("localename" => "",
             'localetag' => "", 'writingmode' => '-1');
         $data['WRITING_MODES'] = array(
@@ -657,6 +662,125 @@ EOD;
         }
         return $data;
     }
+
+	/**
+     * Responsible for the Captcha settings.
+     * Allows users(and admin) to add/delete captcha questions 
+     * to/from the database.
+     */
+	function captchaSettings()
+    {
+        $parent = $this->parent;        
+        $textcaptchasettings_model = $parent->model("textcaptchasettings");
+        $possible_arguments = array("addtextcaptcha", "savetextcaptcha", 
+            "updatetextcaptcha", "setcaptchamode");
+        $data = array();
+        $profile_model = $parent->model("profile");
+        $profile =  $profile_model->getProfile(WORK_DIRECTORY);
+        $arg = "";
+        if(isset($_REQUEST['arg'])) {
+            $arg = $_REQUEST['arg'];
+        }
+        $data['SCRIPT'] = "";
+        $data["ELEMENT"] = "captchasettings";
+        $locales = $parent->model("locale")->getLocaleList();
+        $data["LANGUAGES"] = array();
+        foreach($locales as $locale) {
+            $data["LANGUAGES"][$locale['LOCALE_TAG']] = $locale['LOCALE_NAME'];
+        }
+
+        if(isset($_REQUEST['arg']) &&
+                    in_array($_REQUEST['arg'], $possible_arguments)) {
+            switch($_REQUEST['arg'])
+            {   
+                case "setcaptchamode":
+                    $captcha_mode = $_REQUEST['CAPTCHA_MODE'];
+                    if($captcha_mode) {
+                        $profile["CAPTCHA_MODE"] = $captcha_mode;
+                        $profile_model->updateProfile(WORK_DIRECTORY, 
+                            array(), $profile);
+                    }
+                    break;
+                case "addtextcaptcha": 
+                    
+                    $text_captcha_add_to_database = isset(
+                        $_REQUEST["text_captcha_add_to_database"]);
+                    if($text_captcha_add_to_database) {
+                        // Call the captcha model to insert questions to DB.
+                        $captcha_type = $_REQUEST["CAPTCHA_TYPE"];
+                        $question_type = $_REQUEST["CAPTCHA_POSSIBILITIES"];
+                        $captcha_locale = $_REQUEST["CAPTCHA_LOCALE"];
+                        $captcha_question = 
+                            $_REQUEST["CAPTCHA_QUESTION_INPUT"];
+                        $captcha_choices = $_REQUEST["CAPTCHA_CHOICES_INPUT"];
+                        if($captcha_type && $question_type && $captcha_locale 
+                            && $captcha_question && $captcha_choices) {
+                          $captcha_add = 
+                          $textcaptchasettings_model->addCaptchaDataToDatabase(
+                                $captcha_type, $question_type, $captcha_locale, 
+                                $captcha_question, $captcha_choices);
+                        }   
+
+                   } 
+                   break;
+                
+                case "updatetextcaptcha":
+                    if(isset($_REQUEST['actiondelete'])) {
+                        if(isset($_REQUEST["text_captcha_delete_questions"])) {
+                          $text_captcha_delete_questions = 
+                                $_REQUEST["text_captcha_delete_questions"];   
+                          $captcha_delete = 
+                            $textcaptchasettings_model->
+                                deleteCaptchaDataFromDatabase(
+                                $text_captcha_delete_questions);
+                        }
+                    }
+                    if(isset($_REQUEST['actionedit'])) {
+                        if(isset($_REQUEST["text_captcha_delete_questions"])) {
+                            $text_captcha_delete_questions = 
+                                $_REQUEST["text_captcha_delete_questions"];
+                            $data['EDIT_CAPTCHA_MAPS'] = 
+                                $textcaptchasettings_model->editCaptchaData(
+                                    $text_captcha_delete_questions);      
+                        }   
+                    }
+                    break;
+                case "savetextcaptcha":
+                    if(isset($_REQUEST['updateField'])) {
+                        $textcaptchasettings_model->
+                            updateCaptchaStringInTranslationLocale(
+                                $_REQUEST['updateField']);
+                    }
+                    break;
+                default:
+                    break; 
+            }   
+        }
+        $translation_locale = 
+            $textcaptchasettings_model->fetchCaptchaPrefQuestionChoices();
+        $data["translation_locale"] = $translation_locale;
+        $data['CAPTCHA_MODES'] = array (
+               TEXT_CAPTCHA =>
+                   tl('captchasettings_element_text_captcha'),
+               HASH_CAPTCHA =>
+                   tl('captchasettings_element_hash_captcha'),
+               GRAPHICAL_CAPTCHA =>
+                   tl('captchasettings_element_graphical_captcha'),
+                   );
+
+        $data['CAPTCHA_TYPE'] = array(
+               CAPTCHA => tl('captchasettings_element_captcha'),
+               RECOVERY => tl('captchasettings_element_recovery'),
+
+               );
+        $data['CAPTCHA_POSSIBILITIES'] = array(
+               MOST => tl('captchasettings_element_possibility_most'),
+               LEAST => tl('captchasettings_element_possibility_least'),    
+               );
+        $data["CAPTCHA_MODE"] = $profile["CAPTCHA_MODE"];
+        return $data;
+    }
+
 
 
     /**
