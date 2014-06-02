@@ -218,10 +218,8 @@ class NewsUpdater implements CrawlConstants
         }
     }
 }
-
-
 /*
- *  Instantiate and runs the Fetcher
+ *  Instantiate and runs the NewsUpdater program
  */
 $news_updater =  new NewsUpdater();
 $news_updater->start();

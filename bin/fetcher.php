@@ -30,10 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
-
 if(php_sapi_name() != 'cli') {echo "BAD REQUEST"; exit();}
-
 /**
  * Calculate base directory of script
  * @ignore

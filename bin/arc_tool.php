@@ -117,13 +117,11 @@ mb_regex_encoding("UTF-8");
  */
 class ArcTool implements CrawlConstants
 {
-
     /**
      * The maximum number of documents the arc_tool list function
      * will read into memory in one go.
      */
     const MAX_BUFFER_DOCS = 200;
-
     /**
      * Initializes the ArcTool, for now does nothing
      */
@@ -131,7 +129,6 @@ class ArcTool implements CrawlConstants
     {
 
     }
-
     /**
      * Runs the ArcTool on the supplied command line arguments
      */
@@ -153,7 +150,6 @@ class ArcTool implements CrawlConstants
                 }
             }
         }
-
         switch($argv[1])
         {
             case "list":
@@ -226,7 +222,6 @@ class ArcTool implements CrawlConstants
                 echo $this->getArchiveName($archive_path)."\n";
             }
         }
-
         $nonyioop_pattern = CRAWL_DIR."/archives/*/arc_description.ini";
         $archives = glob($nonyioop_pattern);
         if(is_array($archives) && count($archives) > 0 ) {
@@ -239,13 +234,11 @@ class ArcTool implements CrawlConstants
                 echo $this->getArchiveName($path)."\n";
             }
         }
-
         if(!$archives_found) {
             echo "No archives currently in crawl directory \n";
         }
         echo "\n";
      }
-
     /**
      * Determines whether the supplied path is a WebArchiveBundle or
      * an IndexArchiveBundle or non-Yioop Archive. Then outputs
@@ -1018,7 +1011,6 @@ php arc_tool.php shard bundle_name generation
 php arc_tool.php show bundle_name start num
     /* outputs items start through num from bundle_name or name of
        non-Yioop archive crawl folder */
-
 
 EOD;
         exit();

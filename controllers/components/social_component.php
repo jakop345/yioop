@@ -562,7 +562,6 @@ class SocialComponent extends Component implements CrawlConstants
         } else {
             $user_id = PUBLIC_GROUP_ID;
         }
-        
         $username = $user_model->getUsername($user_id);
         if(isset($_REQUEST['num'])) {
             $results_per_page = $parent->clean($_REQUEST['num'], "int");
@@ -797,7 +796,7 @@ class SocialComponent extends Component implements CrawlConstants
                 $page_info = $group_model->getPageInfoByThread($just_thread);
                 if(isset($page_info["PAGE_NAME"])) {
                     $data["WIKI_PAGE_NAME"] = $page_info["PAGE_NAME"];
-                    $data["WIKI_QUERY"] = "?c=group&amp;".
+                    $data["WIKI_QUERY"] = "?c=$controller_name&amp;".
                         "a=wiki&amp;arg=edit&amp;page_name=".
                         $page_info['PAGE_NAME']."&amp;locale_tag=".
                         $page_info["LOCALE_TAG"]."&amp;group_id=".
@@ -885,6 +884,366 @@ class SocialComponent extends Component implements CrawlConstants
 
     }
 
+
+    /**
+     * Handles requests to reading, editing, viewing history, reverting, etc
+     * wiki pages
+     * @return $data an associative array of form variables used to draw
+     *      the appropriate wiki page
+     */
+    function wiki()
+    {
+        $parent = $this->parent;
+        $controller_name = 
+            (get_class($parent) == "AdminController") ? "admin" : "group";
+        $data = array();
+        $data["CONTROLLER"] = $controller_name;
+        $other_controller_name = (get_class($parent) == "AdminController")
+            ? "group" : "admin";
+
+        $data["ELEMENT"] = "wiki";
+        $data["VIEW"] = "wiki";
+        $data["SCRIPT"] = "";
+        $group_model = $parent->model("group");
+        $locale_tag = getLocaleTag();
+        $data['CURRENT_LOCALE_TAG'] = $locale_tag;
+        if(isset($_SESSION['USER_ID'])) {
+            $user_id = $_SESSION['USER_ID'];
+            $data['ADMIN'] = 1;
+        } else {
+            $user_id = $_SERVER['REMOTE_ADDR'];
+        }
+        $clean_array = array(
+            "group_id" => "int",
+            "page_name" => "string",
+            "page" => "string",
+            "edit_reason" => "string",
+            "filter" => 'string',
+            "limit" => 'int',
+            "num" => 'int',
+            "page_id" => 'int',
+            "show" => 'int',
+            "diff" => 'int',
+            "diff1" => 'int',
+            "diff2" => 'int',
+            "revert" => 'int'
+        );
+        $last_care_missing = 2;
+        $missing_fields = false;
+        $i = 0;
+        foreach($clean_array as $field => $type) {
+            if(isset($_REQUEST[$field])) {
+                $$field = $parent->clean($_REQUEST[$field], $type);
+            } else if($i < $last_care_missing) {
+                $$field = false;
+                $missing_fields = true;
+            }
+            $i++;
+        }
+        if(isset($_REQUEST['group_id'])) {
+            $group_id = $parent->clean($_REQUEST['group_id'], "int");
+        } else if(isset($page_id)) {
+            $page_info = $group_model->getPageInfoByPageId($page_id);
+            if(isset($page_info["GROUP_ID"])) {
+                $group_id = $page_info["GROUP_ID"];
+                unset($page_info);
+            } else {
+                $group_id = PUBLIC_GROUP_ID;
+            }
+        } else {
+            $group_id = PUBLIC_GROUP_ID;
+        }
+        $group = $group_model->getGroupById($group_id, $user_id);
+        $data["CAN_EDIT"] = false;
+        $data["MODE"] = "read";
+        if(!$group) {
+            $group_id = PUBLIC_GROUP_ID;
+            $group = $group_model->getGroupById($group_id, $user_id);
+        } else {
+            if($group["OWNER_ID"] == $user_id ||
+                ($group["STATUS"] == ACTIVE_STATUS &&
+                $group["MEMBER_ACCESS"] == GROUP_READ_WRITE)) {
+                $data["CAN_EDIT"] = true;
+            }
+        }
+        $read_address = "?c={$data['CONTROLLER']}&amp;a=wiki&amp;".
+            "arg=read&amp;group_id=$group_id&amp;page_name=";
+        if(isset($_REQUEST["arg"])) {
+            switch($_REQUEST["arg"])
+            {
+                case "edit":
+                    if(!$data["CAN_EDIT"]) { continue; }
+                    $data["MODE"] = "edit";
+                    if($missing_fields) {
+                        $data['SCRIPT'] .=
+                            "doMessage('<h1 class=\" red\" >". 
+                            tl("group_controller_missing_fields").
+                            "</h1>')";
+                    } else if(!$missing_fields && isset($page)) {
+                        $group_model->setPageName($user_id,
+                            $group_id, $page_name, $page,
+                            $locale_tag, $edit_reason,
+                            tl('group_controller_page_created', $page_name),
+                            tl('group_controller_page_discuss_here'),
+                            $read_address);
+                        $data['SCRIPT'] .=
+                            "doMessage('<h1 class=\"red\" >".
+                            tl("group_controller_page_saved").
+                            "</h1>')";
+                    }
+                break;
+                case "history":
+                    if(!$data["CAN_EDIT"] || !$page_id) { 
+                        continue;
+                    }
+                    $data["MODE"] = "history";
+                    $data["PAGE_NAME"] = "history";
+                    $limit = isset($limit) ? $limit : 0;
+                    $num = (isset($_SESSION["MAX_PAGES_TO_SHOW"])) ?
+                       $_SESSION["MAX_PAGES_TO_SHOW"] :
+                       DEFAULT_ADMIN_PAGING_NUM;
+                    $default_history = true;
+                    if(isset($show)) {
+                        $page_info = $group_model->getHistoryPage(
+                            $page_id, $show);
+                        if($page_info) {
+                            $data["MODE"] = "show";
+                            $default_history = false;
+                            $data["PAGE_NAME"] = $page_info["PAGE_NAME"];
+                            $parser = new WikiParser($read_address);
+                            $parsed_page = $parser->parse($page_info["PAGE"]);
+                            $data["PAGE_ID"] = $page_id;
+                            $data[CSRF_TOKEN] = 
+                                $parent->generateCSRFToken($user_id);
+                            $history_link = "?c=group&amp;a=wiki&amp;".
+                                CSRF_TOKEN.'='.$data[CSRF_TOKEN].
+                                '&amp;arg=history&amp;page_id='.
+                                $data['PAGE_ID'];
+                            $data["PAGE"] =
+                                "<div>&nbsp;</div>".
+                                "<div class='black-box back-dark-gray'>".
+                                "<div class='float-opposite'>".
+                                "<a href='$history_link'>".
+                                tl("group_controller_back") . "</a></div>".
+                                tl("group_controller_history_page",
+                                $data["PAGE_NAME"], date("c", $show)) .
+                                "</div>" . $parsed_page;
+                            $data["DISCUSS_THREAD"] = 
+                                $page_info["DISCUSS_THREAD"];
+                        }
+                    } else if(isset($diff) && $diff &&
+                        isset($diff1) && isset($diff2)) {
+                        $page_info1 = $group_model->getHistoryPage(
+                            $page_id, $diff1);
+                        $page_info2 = $group_model->getHistoryPage(
+                            $page_id, $diff2);
+                        $data["MODE"] = "diff";
+                        $default_history = false;
+                        $data["PAGE_NAME"] = $page_info2["PAGE_NAME"];
+                        $data["PAGE_ID"] = $page_id;
+                        $data[CSRF_TOKEN] = 
+                            $parent->generateCSRFToken($user_id);
+                        $history_link = "?c=group&amp;a=wiki&amp;".
+                            CSRF_TOKEN.'='.$data[CSRF_TOKEN].
+                            '&amp;arg=history&amp;page_id='.
+                            $data['PAGE_ID'];
+                        $out_diff = "<div>--- {$data["PAGE_NAME"]}\t".
+                            "''$diff1''\n";
+                        $out_diff .= "<div>+++ {$data["PAGE_NAME"]}\t".
+                            "''$diff2''\n";
+                        $out_diff .= diff($page_info1["PAGE"],
+                            $page_info2["PAGE"], true);
+                        $data["PAGE"] =
+                            "<div>&nbsp;</div>".
+                            "<div class='black-box back-dark-gray'>".
+                            "<div class='float-opposite'>".
+                            "<a href='$history_link'>".
+                            tl("group_controller_back") . "</a></div>".
+                            tl("group_controller_diff_page",
+                            $data["PAGE_NAME"], date("c", $diff1),
+                            date("c", $diff2)) .
+                            "</div>" . "$out_diff";
+                    } else if(isset($revert)) {
+                        $page_info = $group_model->getHistoryPage(
+                            $page_id, $revert);
+                        if($page_info) {
+                            $group_model->setPageName($user_id,
+                                $group_id, $page_info["PAGE_NAME"], 
+                                $page_info["PAGE"],
+                                $locale_tag,
+                                tl('group_controller_page_revert_to',
+                                date('c', $revert)), "", "", $read_address);
+                            $data['SCRIPT'] .=
+                                "doMessage('<h1 class=\"red\" >".
+                                tl("group_controller_page_reverted").
+                                "</h1>')";
+                        } else {
+                            $data['SCRIPT'] .=
+                                "doMessage('<h1 class=\"red\" >".
+                                tl("group_controller_revert_error").
+                                "</h1>')";
+                        }
+                    }
+                    if($default_history) {
+                        $data["LIMIT"] = $limit;
+                        $data["RESULTS_PER_PAGE"] = $num;
+                        list($data["TOTAL_ROWS"], $data["PAGE_NAME"],
+                            $data["HISTORY"]) = 
+                            $group_model->getPageHistoryList($page_id, $limit,
+                            $num);
+                        if((!isset($diff1) || !isset($diff2))) {
+                            $data['diff1'] = $data["HISTORY"][0]["PUBDATE"];
+                            $data['diff2'] = $data["HISTORY"][0]["PUBDATE"];
+                            if(count($data["HISTORY"]) > 1) {
+                                $data['diff2'] = $data["HISTORY"][1]["PUBDATE"];
+                            }
+                        }
+                    }
+                    $data['page_id'] = $page_id;
+                break;
+                case "pages":
+                    $data["MODE"] = "pages";
+                    $limit =isset($limit) ? $limit : 0;
+                    $num = (isset($_SESSION["MAX_PAGES_TO_SHOW"])) ?
+                       $_SESSION["MAX_PAGES_TO_SHOW"] :
+                       DEFAULT_ADMIN_PAGING_NUM;
+                    if(!isset($filter)) {
+                        $filter = "";
+                    }
+                    if(isset($page_name)) {
+                        $data['PAGE_NAME'] = $page_name;
+                    }
+                    $data["LIMIT"] = $limit;
+                    $data["RESULTS_PER_PAGE"] = $num;
+                    $data["FILTER"] = $filter;
+                    $search_page_info = false;
+                    if($filter != "") {
+                        $search_page_info = $group_model->getPageInfoByName(
+                            $group_id, $filter, $locale_tag, "read");
+                    }
+                    if(!$search_page_info) {
+                        list($data["TOTAL_ROWS"], $data["PAGES"]) =
+                            $group_model->getPageList(
+                            $group_id, $locale_tag, $filter, $limit,
+                            $num);
+                        if($data["TOTAL_ROWS"] == 0) {
+                            $data["MODE"] = "read";
+                            $page_name = $filter;
+                        }
+                    } else {
+                        $data["MODE"] = "read";
+                        $page_name = $filter;
+                    }
+                break;
+            }
+        }
+        if(!$page_name) {
+            $page_name = tl('group_controller_main');
+        }
+        $data["GROUP"] = $group;
+        if(in_array($data["MODE"], array("read", "edit"))) {
+            if(!isset($data["PAGE"]) || !$data['PAGE']) {
+                $data["PAGE_NAME"] = $page_name;
+                if(isset($search_page_info) && $search_page_info) {
+                    $page_info = $search_page_info;
+                } else {
+                    $page_info = $group_model->getPageInfoByName($group_id,
+                        $page_name, $locale_tag, $data["MODE"]);
+                }
+                $data["PAGE"] = $page_info["PAGE"];
+                $data["PAGE_ID"] = $page_info["ID"];
+                $data["DISCUSS_THREAD"] = $page_info["DISCUSS_THREAD"];
+            }
+            if(!$data["PAGE"] && $locale_tag != DEFAULT_LOCALE) {
+                //fallback to default locale for translation
+                $page_info = $group_model->getPageInfoByName(
+                    $group_id, $page_name, DEFAULT_LOCALE, $data["MODE"]);
+                $data["PAGE"] = $page_info["PAGE"];
+                $data["PAGE_ID"] = $page_info["ID"];
+                $data["DISCUSS_THREAD"] = $page_info["DISCUSS_THREAD"];
+            }
+            $document_parts = explode("\nEND_HEAD_VARS\n", $data["PAGE"]);
+            if(count($document_parts) > 1) {
+                $head = $document_parts[0];
+                $data["PAGE"] = $document_parts[1];
+            }
+            if($data['MODE'] == "read" && strpos($data["PAGE"], "`") !== false){
+                if(isset($data["INCLUDE_SCRIPTS"])) {
+                    $data["INCLUDE_SCRIPTS"] = array();
+                }
+                $data["INCLUDE_SCRIPTS"][] = "math";
+            }
+            if($data['MODE'] == "edit") {
+                $this->initializeWikiEditor($data);
+            }
+        }
+        return $data;
+    }
+
+    /**
+     * Called to include the Javascript Wiki Editor (wiki.js) on a page
+     * and to send any localizations needed from PHP to Javascript-land
+     *
+     * @param array &$data an asscoiative array of data to be used by the
+     *      view and layout that the wiki editor will be drawn on
+     *      This method tacks on to INCLUDE_SCRIPTS to make the layout load
+     *      wiki.js.
+     * @param $id if "" then all textareas on page will get editor buttons
+     *      otherwise just the on with $id will. (Can call this method
+     *      multiple times, if want more than one but not all)
+     */
+    function initializeWikiEditor(&$data, $id = "")
+    {
+        if(!isset($data["WIKI_INITIALIZED"]) || !$data["WIKI_INITIALIZED"]) {
+            if (!isset($data["INCLUDE_SCRIPTS"])) {
+                $data["INCLUDE_SCRIPTS"] = array();
+            }
+
+            $data["INCLUDE_SCRIPTS"][] = "wiki";
+            $data["WIKI_INITIALIZED"] = true;
+
+            //set up an array of translation for javascript-land
+            if(!isset($data['SCRIPT'])) {
+                $data['SCRIPT'] = "";
+            }
+            $data['SCRIPT'] .= "\ntl = {".
+                'wiki_js_small :"'. tl('wiki_js_small') .'",' .
+                'wiki_js_medium :"'. tl('wiki_js_medium').'",'.
+                'wiki_js_large :"'. tl('wiki_js_large').'",'.
+                'wiki_js_search_size :"'. tl('wiki_js_search_size').'",'.
+                'wiki_js_prompt_heading :"'. tl('wiki_js_prompt_heading').'",'.
+                'wiki_js_example :"'. tl('wiki_js_example').'",'.
+                'wiki_js_table_title :"'. tl('wiki_js_table_title').'",'.
+                'wiki_js_submit :"'. tl('wiki_js_submit').'",'.
+                'wiki_js_cancel :"'. tl('wiki_js_cancel').'",'.
+                'wiki_js_bold :"'. tl('wiki_js_bold') . '",' .
+                'wiki_js_italic :"'. tl('wiki_js_italic').'",'.
+                'wiki_js_underline :"'. tl('wiki_js_underline').'",'.
+                'wiki_js_strike :"'. tl('wiki_js_strike').'",'.
+                'wiki_js_heading :"'. tl('wiki_js_heading').'",'.
+                'wiki_js_heading1 :"'. tl('wiki_js_heading1').'",'.
+                'wiki_js_heading2 :"'. tl('wiki_js_heading2').'",'.
+                'wiki_js_heading3 :"'. tl('wiki_js_heading3').'",'.
+                'wiki_js_heading4 :"'. tl('wiki_js_heading4').'",'.
+                'wiki_js_bullet :"'. tl('wiki_js_bullet').'",'.
+                'wiki_js_enum :"'. tl('wiki_js_enum') .'",'.
+                'wiki_js_nowiki :"'. tl('wiki_js_nowiki') .'",'.
+                'wiki_js_add_search :"'.tl('wiki_js_add_search') .'",'.
+                'wiki_js_search_size :"'. tl('wiki_js_search_size') .'",'.
+                'wiki_js_add_wiki_table :"'. tl('wiki_js_add_wiki_table').'",'.
+                'wiki_js_for_table_cols :"'. tl('wiki_js_for_table_cols').'",'.
+                'wiki_js_for_table_rows :"'. tl('wiki_js_for_table_rows').'",'.
+                'wiki_js_add_hyperlink :"'. tl('wiki_js_add_hyperlink').'",'.
+                'wiki_js_link_text :"'. tl('wiki_js_link_text').'",'.
+                'wiki_js_link_url :"'. tl('wiki_js_link_url').'"'.
+                '};';
+        }
+        if($id == "") {
+            $data['SCRIPT'] .= "editorizeAll();\n";
+        } else {
+            $data['SCRIPT'] .= "editorize('$id');\n";
+        }
+    }
 
     /**
      * Handles admin request related to the crawl mix activity
@@ -1220,356 +1579,4 @@ class SocialComponent extends Component implements CrawlConstants
         $data['SCRIPT'] .= ']; drawFragments();';
     }
 
-    /**
-     * Handles requests to reading, editing, viewing history, reverting, etc
-     * wiki pages
-     * @return $data an associative array of form variables used to draw
-     *      the appropriate wiki page
-     */
-    function wiki()
-    {
-        $parent = $this->parent;
-        $data = array();
-        $data["VIEW"] = "wiki";
-        $data["SCRIPT"] = "";
-        $group_model = $parent->model("group");
-        $locale_tag = getLocaleTag();
-        $data['CURRENT_LOCALE_TAG'] = $locale_tag;
-        if(isset($_SESSION['USER_ID'])) {
-            $user_id = $_SESSION['USER_ID'];
-            $data['ADMIN'] = 1;
-        } else {
-            $user_id = $_SERVER['REMOTE_ADDR'];
-        }
-        $clean_array = array(
-            "group_id" => "int",
-            "page_name" => "string",
-            "page" => "string",
-            "edit_reason" => "string",
-            "filter" => 'string',
-            "limit" => 'int',
-            "num" => 'int',
-            "page_id" => 'int',
-            "show" => 'int',
-            "diff" => 'int',
-            "diff1" => 'int',
-            "diff2" => 'int',
-            "revert" => 'int'
-        );
-        $last_care_missing = 2;
-        $missing_fields = false;
-        $i = 0;
-        foreach($clean_array as $field => $type) {
-            if(isset($_REQUEST[$field])) {
-                $$field = $parent->clean($_REQUEST[$field], $type);
-            } else if($i < $last_care_missing) {
-                $$field = false;
-                $missing_fields = true;
-            }
-            $i++;
-        }
-        if(isset($_REQUEST['group_id'])) {
-            $group_id = $parent->clean($_REQUEST['group_id'], "int");
-        } else if(isset($page_id)) {
-            $page_info = $group_model->getPageInfoByPageId($page_id);
-            if(isset($page_info["GROUP_ID"])) {
-                $group_id = $page_info["GROUP_ID"];
-                unset($page_info);
-            } else {
-                $group_id = PUBLIC_GROUP_ID;
-            }
-        } else {
-            $group_id = PUBLIC_GROUP_ID;
-        }
-        $group = $group_model->getGroupById($group_id, $user_id);
-        $data["CAN_EDIT"] = false;
-        $data["MODE"] = "read";
-        if(!$group) {
-            $group_id = PUBLIC_GROUP_ID;
-            $group = $group_model->getGroupById($group_id, $user_id);
-        } else {
-            if($group["OWNER_ID"] == $user_id ||
-                ($group["STATUS"] == ACTIVE_STATUS &&
-                $group["MEMBER_ACCESS"] == GROUP_READ_WRITE)) {
-                $data["CAN_EDIT"] = true;
-            }
-        }
-        $read_address = "?c=group&amp;a=wiki&amp;arg=read&amp;group_id=".
-            "$group_id&amp;page_name=";
-        if(isset($_REQUEST["arg"])) {
-            switch($_REQUEST["arg"])
-            {
-                case "edit":
-                    if(!$data["CAN_EDIT"]) { continue; }
-                    $data["MODE"] = "edit";
-                    if($missing_fields) {
-                        $data['SCRIPT'] .=
-                            "doMessage('<h1 class=\" red\" >". 
-                            tl("group_controller_missing_fields").
-                            "</h1>')";
-                    } else if(!$missing_fields && isset($page)) {
-                        $group_model->setPageName($user_id,
-                            $group_id, $page_name, $page,
-                            $locale_tag, $edit_reason,
-                            tl('group_controller_page_created', $page_name),
-                            tl('group_controller_page_discuss_here'),
-                            $read_address);
-                        $data['SCRIPT'] .=
-                            "doMessage('<h1 class=\"red\" >".
-                            tl("group_controller_page_saved").
-                            "</h1>')";
-                    }
-                break;
-                case "history":
-                    if(!$data["CAN_EDIT"] || !$page_id) { 
-                        continue;
-                    }
-                    $data["MODE"] = "history";
-                    $data["PAGE_NAME"] = "history";
-                    $limit = isset($limit) ? $limit : 0;
-                    $num = (isset($_SESSION["MAX_PAGES_TO_SHOW"])) ?
-                       $_SESSION["MAX_PAGES_TO_SHOW"] :
-                       DEFAULT_ADMIN_PAGING_NUM;
-                    $default_history = true;
-                    if(isset($show)) {
-                        $page_info = $group_model->getHistoryPage(
-                            $page_id, $show);
-                        if($page_info) {
-                            $data["MODE"] = "show";
-                            $default_history = false;
-                            $data["PAGE_NAME"] = $page_info["PAGE_NAME"];
-                            $parser = new WikiParser($read_address);
-                            $parsed_page = $parser->parse($page_info["PAGE"]);
-                            $data["PAGE_ID"] = $page_id;
-                            $data[CSRF_TOKEN] = 
-                                $parent->generateCSRFToken($user_id);
-                            $history_link = "?c=group&amp;a=wiki&amp;".
-                                CSRF_TOKEN.'='.$data[CSRF_TOKEN].
-                                '&amp;arg=history&amp;page_id='.
-                                $data['PAGE_ID'];
-                            $data["PAGE"] =
-                                "<div>&nbsp;</div>".
-                                "<div class='black-box back-dark-gray'>".
-                                "<div class='float-opposite'>".
-                                "<a href='$history_link'>".
-                                tl("group_controller_back") . "</a></div>".
-                                tl("group_controller_history_page",
-                                $data["PAGE_NAME"], date("c", $show)) .
-                                "</div>" . $parsed_page;
-                            $data["DISCUSS_THREAD"] = 
-                                $page_info["DISCUSS_THREAD"];
-                        }
-                    } else if(isset($diff) && $diff &&
-                        isset($diff1) && isset($diff2)) {
-                        $page_info1 = $group_model->getHistoryPage(
-                            $page_id, $diff1);
-                        $page_info2 = $group_model->getHistoryPage(
-                            $page_id, $diff2);
-                        $data["MODE"] = "diff";
-                        $default_history = false;
-                        $data["PAGE_NAME"] = $page_info2["PAGE_NAME"];
-                        $data["PAGE_ID"] = $page_id;
-                        $data[CSRF_TOKEN] = 
-                            $parent->generateCSRFToken($user_id);
-                        $history_link = "?c=group&amp;a=wiki&amp;".
-                            CSRF_TOKEN.'='.$data[CSRF_TOKEN].
-                            '&amp;arg=history&amp;page_id='.
-                            $data['PAGE_ID'];
-                        $out_diff = "<div>--- {$data["PAGE_NAME"]}\t".
-                            "''$diff1''\n";
-                        $out_diff .= "<div>+++ {$data["PAGE_NAME"]}\t".
-                            "''$diff2''\n";
-                        $out_diff .= diff($page_info1["PAGE"],
-                            $page_info2["PAGE"], true);
-                        $data["PAGE"] =
-                            "<div>&nbsp;</div>".
-                            "<div class='black-box back-dark-gray'>".
-                            "<div class='float-opposite'>".
-                            "<a href='$history_link'>".
-                            tl("group_controller_back") . "</a></div>".
-                            tl("group_controller_diff_page",
-                            $data["PAGE_NAME"], date("c", $diff1),
-                            date("c", $diff2)) .
-                            "</div>" . "$out_diff";
-                    } else if(isset($revert)) {
-                        $page_info = $group_model->getHistoryPage(
-                            $page_id, $revert);
-                        if($page_info) {
-                            $group_model->setPageName($user_id,
-                                $group_id, $page_info["PAGE_NAME"], 
-                                $page_info["PAGE"],
-                                $locale_tag,
-                                tl('group_controller_page_revert_to',
-                                date('c', $revert)), "", "", $read_address);
-                            $data['SCRIPT'] .=
-                                "doMessage('<h1 class=\"red\" >".
-                                tl("group_controller_page_reverted").
-                                "</h1>')";
-                        } else {
-                            $data['SCRIPT'] .=
-                                "doMessage('<h1 class=\"red\" >".
-                                tl("group_controller_revert_error").
-                                "</h1>')";
-                        }
-                    }
-                    if($default_history) {
-                        $data["LIMIT"] = $limit;
-                        $data["RESULTS_PER_PAGE"] = $num;
-                        list($data["TOTAL_ROWS"], $data["PAGE_NAME"],
-                            $data["HISTORY"]) = 
-                            $group_model->getPageHistoryList($page_id, $limit,
-                            $num);
-                        if((!isset($diff1) || !isset($diff2))) {
-                            $data['diff1'] = $data["HISTORY"][0]["PUBDATE"];
-                            $data['diff2'] = $data["HISTORY"][0]["PUBDATE"];
-                            if(count($data["HISTORY"]) > 1) {
-                                $data['diff2'] = $data["HISTORY"][1]["PUBDATE"];
-                            }
-                        }
-                    }
-                    $data['page_id'] = $page_id;
-                break;
-                case "pages":
-                    $data["MODE"] = "pages";
-                    $limit =isset($limit) ? $limit : 0;
-                    $num = (isset($_SESSION["MAX_PAGES_TO_SHOW"])) ?
-                       $_SESSION["MAX_PAGES_TO_SHOW"] :
-                       DEFAULT_ADMIN_PAGING_NUM;
-                    if(!isset($filter)) {
-                        $filter = "";
-                    }
-                    if(isset($page_name)) {
-                        $data['PAGE_NAME'] = $page_name;
-                    }
-                    $data["LIMIT"] = $limit;
-                    $data["RESULTS_PER_PAGE"] = $num;
-                    $data["FILTER"] = $filter;
-                    $search_page_info = false;
-                    if($filter != "") {
-                        $search_page_info = $group_model->getPageInfoByName(
-                            $group_id, $filter, $locale_tag, "read");
-                    }
-                    if(!$search_page_info) {
-                        list($data["TOTAL_ROWS"], $data["PAGES"]) =
-                            $group_model->getPageList(
-                            $group_id, $locale_tag, $filter, $limit,
-                            $num);
-                        if($data["TOTAL_ROWS"] == 0) {
-                            $data["MODE"] = "read";
-                            $page_name = $filter;
-                        }
-                    } else {
-                        $data["MODE"] = "read";
-                        $page_name = $filter;
-                    }
-                break;
-            }
-        }
-        if(!$page_name) {
-            $page_name = tl('group_controller_main');
-        }
-        $data["GROUP"] = $group;
-        if(in_array($data["MODE"], array("read", "edit"))) {
-            if(!isset($data["PAGE"]) || !$data['PAGE']) {
-                $data["PAGE_NAME"] = $page_name;
-                if(isset($search_page_info) && $search_page_info) {
-                    $page_info = $search_page_info;
-                } else {
-                    $page_info = $group_model->getPageInfoByName($group_id,
-                        $page_name, $locale_tag, $data["MODE"]);
-                }
-                $data["PAGE"] = $page_info["PAGE"];
-                $data["PAGE_ID"] = $page_info["ID"];
-                $data["DISCUSS_THREAD"] = $page_info["DISCUSS_THREAD"];
-            }
-            if(!$data["PAGE"] && $locale_tag != DEFAULT_LOCALE) {
-                //fallback to default locale for translation
-                $page_info = $group_model->getPageInfoByName(
-                    $group_id, $page_name, DEFAULT_LOCALE, $data["MODE"]);
-                $data["PAGE"] = $page_info["PAGE"];
-                $data["PAGE_ID"] = $page_info["ID"];
-                $data["DISCUSS_THREAD"] = $page_info["DISCUSS_THREAD"];
-            }
-            $document_parts = explode("\nEND_HEAD_VARS\n", $data["PAGE"]);
-            if(count($document_parts) > 1) {
-                $head = $document_parts[0];
-                $data["PAGE"] = $document_parts[1];
-            }
-            if($data['MODE'] == "read" && strpos($data["PAGE"], "`") !== false){
-                if(isset($data["INCLUDE_SCRIPTS"])) {
-                    $data["INCLUDE_SCRIPTS"] = array();
-                }
-                $data["INCLUDE_SCRIPTS"][] = "math";
-            }
-            if($data['MODE'] == "edit") {
-                $this->initializeWikiEditor($data);
-            }
-        }
-        return $data;
-    }
-
-    /**
-     * Called to include the Javascript Wiki Editor (wiki.js) on a page
-     * and to send any localizations needed from PHP to Javascript-land
-     *
-     * @param array &$data an asscoiative array of data to be used by the
-     *      view and layout that the wiki editor will be drawn on
-     *      This method tacks on to INCLUDE_SCRIPTS to make the layout load
-     *      wiki.js.
-     * @param $id if "" then all textareas on page will get editor buttons
-     *      otherwise just the on with $id will. (Can call this method
-     *      multiple times, if want more than one but not all)
-     */
-    function initializeWikiEditor(&$data, $id = "")
-    {
-        if(!isset($data["WIKI_INITIALIZED"]) || !$data["WIKI_INITIALIZED"]) {
-            if (!isset($data["INCLUDE_SCRIPTS"])) {
-                $data["INCLUDE_SCRIPTS"] = array();
-            }
-
-            $data["INCLUDE_SCRIPTS"][] = "wiki";
-            $data["WIKI_INITIALIZED"] = true;
-
-            //set up an array of translation for javascript-land
-            if(!isset($data['SCRIPT'])) {
-                $data['SCRIPT'] = "";
-            }
-            $data['SCRIPT'] .= "\ntl = {".
-                'wiki_js_small :"'. tl('wiki_js_small') .'",' .
-                'wiki_js_medium :"'. tl('wiki_js_medium').'",'.
-                'wiki_js_large :"'. tl('wiki_js_large').'",'.
-                'wiki_js_search_size :"'. tl('wiki_js_search_size').'",'.
-                'wiki_js_prompt_heading :"'. tl('wiki_js_prompt_heading').'",'.
-                'wiki_js_example :"'. tl('wiki_js_example').'",'.
-                'wiki_js_table_title :"'. tl('wiki_js_table_title').'",'.
-                'wiki_js_submit :"'. tl('wiki_js_submit').'",'.
-                'wiki_js_cancel :"'. tl('wiki_js_cancel').'",'.
-                'wiki_js_bold :"'. tl('wiki_js_bold') . '",' .
-                'wiki_js_italic :"'. tl('wiki_js_italic').'",'.
-                'wiki_js_underline :"'. tl('wiki_js_underline').'",'.
-                'wiki_js_strike :"'. tl('wiki_js_strike').'",'.
-                'wiki_js_heading :"'. tl('wiki_js_heading').'",'.
-                'wiki_js_heading1 :"'. tl('wiki_js_heading1').'",'.
-                'wiki_js_heading2 :"'. tl('wiki_js_heading2').'",'.
-                'wiki_js_heading3 :"'. tl('wiki_js_heading3').'",'.
-                'wiki_js_heading4 :"'. tl('wiki_js_heading4').'",'.
-                'wiki_js_bullet :"'. tl('wiki_js_bullet').'",'.
-                'wiki_js_enum :"'. tl('wiki_js_enum') .'",'.
-                'wiki_js_nowiki :"'. tl('wiki_js_nowiki') .'",'.
-                'wiki_js_add_search :"'.tl('wiki_js_add_search') .'",'.
-                'wiki_js_search_size :"'. tl('wiki_js_search_size') .'",'.
-                'wiki_js_add_wiki_table :"'. tl('wiki_js_add_wiki_table').'",'.
-                'wiki_js_for_table_cols :"'. tl('wiki_js_for_table_cols').'",'.
-                'wiki_js_for_table_rows :"'. tl('wiki_js_for_table_rows').'",'.
-                'wiki_js_add_hyperlink :"'. tl('wiki_js_add_hyperlink').'",'.
-                'wiki_js_link_text :"'. tl('wiki_js_link_text').'",'.
-                'wiki_js_link_url :"'. tl('wiki_js_link_url').'"'.
-                '};';
-        }
-        if($id == "") {
-            $data['SCRIPT'] .= "editorizeAll();\n";
-        } else {
-            $data['SCRIPT'] .= "editorize('$id');\n";
-        }
-    }
 }

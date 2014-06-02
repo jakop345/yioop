@@ -79,7 +79,7 @@ class GroupfeedElement extends Element implements CrawlConstants
         }
         if(!$is_status) { 
             if($is_admin || $logged_in) { ?>
-                <div class="float-same" style="position:relative; top:10px;">[<a
+                <div class="float-same admin-collapse">[<a
                 href="<?php e($other_paging_query) ?>" ><?php 
                 e($arrows); ?></a>]</div>
             <?php
@@ -123,9 +123,12 @@ class GroupfeedElement extends Element implements CrawlConstants
                             $data['SUBTITLE']));
                     }
                 } else if(isset($data['JUST_GROUP_ID'])){
-                    e($data['PAGES'][0][self::SOURCE_NAME]);
+                    $manage_groups = "?c={$data['CONTROLLER']}&amp;".
+                        CSRF_TOKEN."=".$data[CSRF_TOKEN]."&amp;a=manageGroups";
+                    e("<a href='$manage_groups'>".
+                        $data['PAGES'][0][self::SOURCE_NAME]."</a>");
                     e(" [".tl('groupfeed_element_feed')."|".
-                        "<a href='?c=group&".CSRF_TOKEN."=".
+                        "<a href='?c={$data['CONTROLLER']}&".CSRF_TOKEN."=".
                         $data[CSRF_TOKEN]."&amp;a=wiki&group_id=".
                         $data['JUST_GROUP_ID']."'>" .
                         tl('group_view_wiki') . "</a>]");

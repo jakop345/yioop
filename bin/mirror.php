@@ -346,7 +346,7 @@ class Mirror implements CrawlConstants
     }
 }
 /*
- *  Instantiate and runs the Fetcher
+ *  Instantiate and runs the Mirror program
  */
 $syncer =  new Mirror(NAME_SERVER);
 $syncer->start();

@@ -122,6 +122,8 @@ EOD;
 }
 
 /**
+ * Used to clean trailing whitespace from files in a folder or just from
+ * a file given in the command line
  *
  * @param array $args $args[0] contains path to sub-folder/file
  * @return bool $no_instructions false if should output code_tool.php
@@ -487,7 +489,6 @@ function excludedPath($path)
             return true;
         }
     }
-
     return false;
 }
 ?>

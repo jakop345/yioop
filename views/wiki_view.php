@@ -108,26 +108,7 @@ class WikiView extends View
             ?></small>
         </h1>
         <?php
-        switch($data["MODE"])
-        {
-            case "edit":
-                $this->renderEditPageForm($data);
-            break;
-
-            case "pages":
-                $this->renderPages($data, $can_edit, $logged_in);
-            break;
-
-            case "history":
-                $this->renderHistory($data);
-            break;
-
-            case "show":
-            case "read":
-            default:
-                $this->renderReadPage($data, $can_edit, $logged_in);
-            break;
-        }
+        $this->element("wiki")->render($data);
 
         if($logged_in) {
         ?>

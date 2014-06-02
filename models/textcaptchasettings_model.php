@@ -39,7 +39,7 @@ require_once BASE_DIR."/models/model.php";
  * This is class is used to handle the
  * captcha settings for Yioop
  *
- * @author Chris Pollett
+ * @author 
  *
  * @package seek_quarry
  * @subpackage model
@@ -54,7 +54,6 @@ class TextcaptchasettingsModel extends Model
      * a captcha question
      * @return string the identifier string for a captcha question
      */
-
     function getTranslationId($identifier_string)
     {
 
@@ -67,7 +66,6 @@ class TextcaptchasettingsModel extends Model
          }
          return $row['TRANSLATION_ID'];
     }
-
     /**
      * Computes and returns identifier_string for a captcha question
      * given captcha_locale and captcha_type
@@ -79,7 +77,6 @@ class TextcaptchasettingsModel extends Model
      *
      * @return string the identifier_string for a captcha question
      */
-
     function getIdentifierStringQuestion($captcha_type, $question_type)
     {
         $identifier_string_question = "";
@@ -389,7 +386,6 @@ class TextcaptchasettingsModel extends Model
      *
      * @return string the method name for a captcha/recovery question
      */
-
     function getMethodNameQuestion($captcha_type, $question_type)
     {
         $method_name_question = "";
@@ -425,7 +421,7 @@ class TextcaptchasettingsModel extends Model
 
         // Least Captcha questions
          } else if($captcha_type == CAPTCHA && $question_type == LEAST) {
-             $method_name_filter = "captcha_question_least%";
+            $method_name_filter = "captcha_question_least%";
             $least_captcha_sql = "SELECT TRANSLATION_ID, MAX(METHOD_NAME) ".
                 "AS METHOD_NAME FROM CAPTCHA WHERE METHOD_NAME ". 
                 "LIKE :method_name_filter ORDER BY METHOD_NAME DESC";
@@ -468,7 +464,7 @@ class TextcaptchasettingsModel extends Model
                 Converts $method_index to Integer
                 Checks if $method_index is an integer.
                 If yes, adds 1 to it
-              */
+             */
            if(!is_numeric($method_name_index)) {
                return false;
            } else {
@@ -523,7 +519,6 @@ class TextcaptchasettingsModel extends Model
      *
      * @return string the method_name for a captcha/preference choice list
      */
-
     function getMethodNameChoices($captcha_type, $question_type)
     {
         $method_name_choices = "";
@@ -684,7 +679,6 @@ class TextcaptchasettingsModel extends Model
      * @return bool value; returns true if the question-choice pair
      *      is added to the database
      */
-
     function addCaptchaDataToDatabase($captcha_type, $question_type,
                 $captcha_locale, $captcha_question, $captcha_choices)
     {
@@ -759,7 +753,7 @@ class TextcaptchasettingsModel extends Model
                 return false;
             }
         } else {
-            print_r("Not the right question type!");
+            return false;
         }
 
         // Insert into QUESTION_CHOICES_MAPPING table
@@ -792,7 +786,6 @@ class TextcaptchasettingsModel extends Model
      *
      * @return string returns the captcha/recovery questions from the database
      */
-
     function fetchCaptchaPrefQuestionChoices()
     {
       $db = $this->db;
@@ -817,7 +810,6 @@ class TextcaptchasettingsModel extends Model
      *
      * @param string the captcha questions text_captcha_delete_questions
      */
-
     function deleteCaptchaDataFromDatabase($text_captcha_delete_questions)
     {
       $db = $this->db;
@@ -894,10 +886,10 @@ class TextcaptchasettingsModel extends Model
      * translation id.
      * @param a string locale_tag that is the locale tag for the chosen locale
      *
-     * @return returns a boolean value
+     * @return bool
      */
-
-    function getTranslationIdMethodNameMap($locale_tag){
+    function getTranslationIdMethodNameMap($locale_tag)
+    {
         if(!$locale_tag) {
             $locale_tag = DEFAULT_LOCALE;
         }
@@ -951,9 +943,10 @@ class TextcaptchasettingsModel extends Model
 
     /**
      * Function for getting the translation id map for question choices
+     * @return
      */
-
-    function getQuestionChoicesMap(){
+    function getQuestionChoicesMap()
+    {
         $db = $this->db;
         $sql = "SELECT * FROM QUESTION_CHOICE_MAPPING";
         $result = $db->execute($sql);
@@ -976,8 +969,8 @@ class TextcaptchasettingsModel extends Model
      * @param string text_captcha_edit_questions, the question selected
      *        to be edited
      */
-
-    function editCaptchaData($text_captcha_edit_questions){
+    function editCaptchaData($text_captcha_edit_questions)
+    {
         if(!$text_captcha_edit_questions){
             return;
         }
@@ -1042,8 +1035,8 @@ class TextcaptchasettingsModel extends Model
      * @param rowid_translation_map which is the map for the translation id
      *        and its corresponding rowid
      */
-
-    function updateCaptchaStringInTranslationLocale($rowid_translation_map) {
+    function updateCaptchaStringInTranslationLocale($rowid_translation_map)
+    {
         foreach($rowid_translation_map as $rowid => $translation) {
             $sql = "UPDATE TRANSLATION_LOCALE SET TRANSLATION = :translation ".
                 "WHERE rowid = :rowid";
@@ -1052,6 +1045,4 @@ class TextcaptchasettingsModel extends Model
         }
     }
 }
-
  ?>
-

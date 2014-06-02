@@ -57,7 +57,6 @@ if(!PROFILE) {
         "by visiting its web interface on localhost.\n";
     exit();
 }
-
 /** Get the database library based on the current database type */
 require_once BASE_DIR."/models/datasources/".DBMS."_manager.php";
 
@@ -79,10 +78,8 @@ require_once BASE_DIR."/lib/crawl_daemon.php";
 require_once BASE_DIR."/lib/fetch_url.php";
 /** Loads common constants for web crawling*/
 require_once BASE_DIR."/lib/crawl_constants.php";
-
 /** */
 require_once BASE_DIR."/lib/phrase_parser.php";
-
 /** Include marker interface to say we support join() method*/
 require_once BASE_DIR."/lib/join.php";
 

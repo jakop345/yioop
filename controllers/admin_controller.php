@@ -299,8 +299,12 @@ class AdminController extends Controller implements CrawlConstants
             $data['ACTIVITIES'] = $allowed_activities;
         }
         if(!in_array($activity, $this->status_activities)) {
+            $name_activity = $activity;
+            if($activity == "wiki") {
+                $name_activity = "groupFeeds";
+            }
             $data['CURRENT_ACTIVITY'] =
-                $activity_model->getActivityNameFromMethodName($activity);
+                $activity_model->getActivityNameFromMethodName($name_activity);
         }
 
         $data['COMPONENT_ACTIVITIES'] = array();

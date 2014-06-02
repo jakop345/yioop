@@ -158,8 +158,6 @@ class QueryTool implements CrawlConstants
             echo $data['ERROR']."\n";
         }
     }
-
-
     /**
      * Outputs the "how to use this tool message" and then exit()'s.
      */
@@ -174,7 +172,6 @@ class QueryTool implements CrawlConstants
         exit();
     }
 }
-
 /**
  * Used within PhraseModel called from SearchController to do stemming
  * @return string IANA tag either default or from the command line.

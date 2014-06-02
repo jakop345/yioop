@@ -865,13 +865,18 @@ ul.in-list li
     position: relative;
     top: 14pt;
 }
-
+.admin-collapse
+{
+    position:relative; 
+    top:10px;
+}
 .admin-heading,
 .group-heading
 {
     position: relative;
     top: 30px;
 }
+
 .group-heading small
 {
     position: relative;
@@ -892,6 +897,7 @@ ul.in-list li
     position: relative;
     top: 0px;
 }
+
 .landing .logo
 {
     min-width: 6in;

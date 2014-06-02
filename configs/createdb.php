@@ -250,8 +250,8 @@ which looks like:
 :::: that's sorta crazy
 
 ==Horizontal Rule==
-Sometimes it is convenient to separate paragraphs or sections with a horizontal rule.
-This can be done by placing four hyphens on a line by themselves:
+Sometimes it is convenient to separate paragraphs or sections with a horizontal
+rule. This can be done by placing four hyphens on a line by themselves:
 <nowiki>
 ----
 </nowiki>
@@ -259,8 +259,8 @@ This results in a line that looks like:
 ----
 
 ==Text Formatting Within Paragraphs==
-Within a paragraph it is often convenient to make some text bold, italics, underlined, etc. Below is
-a quick summary of how to do this:
+Within a paragraph it is often convenient to make some text bold, italics, 
+underlined, etc. Below is a quick summary of how to do this:
 ===Wiki Markup===
 {|
 |<nowiki>''italic''</nowiki>|''italic''
@@ -380,8 +380,8 @@ example:
 |-
 |c||d
 |}
-Headings for columns and rows can be made by using an exclamation point, !, rather than
-a vertical bar |. For example,
+Headings for columns and rows can be made by using an exclamation point, !,
+rather than a vertical bar |. For example,
 <nowiki>
 {|
 !a!!b
@@ -425,7 +425,8 @@ of the table to further control how it looks:
 |-
 |c|d
 |}
-Within a cell attributes like align, valign, styles, and class can be used. For example,
+Within a cell attributes like align, valign, styles, and class can be used. For
+example,
 <nowiki>
 {|
 | style="text-align:right;"| a| b
@@ -541,7 +542,7 @@ $activities = array(
         )),
     "groupFeeds" => array('db_activity_group_feeds',
         array(
-            "en-US" => 'My Group Feeds',
+            "en-US" => 'Feeds and Wikis',
         )),
     "mixCrawls" => array('db_activity_mix_crawls',
         array(
@@ -1232,18 +1233,17 @@ foreach($captcha_questions_and_choices as $captcha_question_and_choice) {
              $index_captcha_question_and_choices,
              '".$db->escapeString($translation_choices)."')");
     }
-    $sql_choices = "INSERT INTO CAPTCHA (TRANSLATION_ID, METHOD_NAME) VALUES (?,?)";
-       $result_choices = $db->execute($sql_choices,
-            array($translation_id_choices, $method_name_choices));
-       if((!$result_choices)) {
-           return false;
-       }
-
+    $sql_choices = "INSERT INTO CAPTCHA (TRANSLATION_ID, METHOD_NAME)
+        VALUES (?,?)";
+    $result_choices = $db->execute($sql_choices, array($translation_id_choices,
+        $method_name_choices));
+    if((!$result_choices)) {
+       return false;
+    }
 }
 
 foreach($preferences_questions_and_choices as
             $preferences_question_and_choice) {
-
     $questionpref_data = $preferences_question_and_choice['question'];
     $choicespref_data = $preferences_question_and_choice['choices'];
     $identifierpref_string_question = $questionpref_data['identifier_string'];
@@ -1315,8 +1315,7 @@ $new_user_activities = array(
     "manageAccount",
     "manageGroups",
     "mixCrawls",
-    "groupFeeds",
-    "captchaSettings"
+    "groupFeeds"
 );
 
 foreach($new_user_activities as $new_activity) {
