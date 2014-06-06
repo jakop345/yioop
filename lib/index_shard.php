@@ -30,26 +30,21 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * Read in base class, if necessary
  */
 require_once "persistent_structure.php";
-
 /**
  * Load charCopy
  */
 require_once "utility.php";
-
 /**
  *Loads common constants for web crawling
  */
 require_once  BASE_DIR.'/lib/crawl_constants.php';
 /** For CrawlDaemon::processHandler function  */
 require_once BASE_DIR."/lib/crawl_daemon.php";
-
 /**
  * Data structure used to store one generation worth of the word document
  * index (inverted index).
@@ -79,7 +74,6 @@ require_once BASE_DIR."/lib/crawl_daemon.php";
  * @package seek_quarry
  * @subpackage library
  */
-
 class IndexShard extends PersistentStructure implements
     CrawlConstants
 {
@@ -104,7 +98,6 @@ class IndexShard extends PersistentStructure implements
      *  @var int
      */
     var $docids_len;
-
     /**
      * This string is non-empty when shard is loaded and in its packed state.
      * It consists of a sequence of posting records. Each posting
@@ -119,7 +112,6 @@ class IndexShard extends PersistentStructure implements
      *  @var int
      */
     var $word_docs_len;
-
     /**
      * Stores the array of word entries for this shard
      * In the packed state, word entries consist of the word id,
@@ -132,7 +124,6 @@ class IndexShard extends PersistentStructure implements
      * @var array
      */
     var $words;
-
     /**
      * Stores length of the words array in the shard on disk. Only set if
      * we're in $read_only_from_disk mode
@@ -140,7 +131,6 @@ class IndexShard extends PersistentStructure implements
      * @var int
      */
      var $words_len;
-
     /**
      * An array representing offsets into the words dictionary of the index of
      * the first occurrence of a two byte prefix of a word_id.
@@ -148,28 +138,24 @@ class IndexShard extends PersistentStructure implements
      * @var array
      */
     var $prefixes;
-
     /**
      * Length of the prefix index into the dictionary of the shard
      *
      * @var int
      */
     var $prefixes_len;
-
     /**
      * This is supposed to hold the number of earlier shards, prior to the
      * current shard.
      * @var int
      */
     var $generation;
-
     /**
      * This is supposed to hold the number of documents that a given shard can
      * hold.
      * @var int
      */
     var $num_docs_per_generation;
-
     /**
      * Number of documents (not links) stored in this shard
      * @var int
@@ -190,7 +176,6 @@ class IndexShard extends PersistentStructure implements
      * @var int
      */
     var $len_all_link_docs;
-
     /**
      * File handle for a shard if we are going to use it in read mode
      * and not completely load it.
@@ -198,14 +183,12 @@ class IndexShard extends PersistentStructure implements
      * @var resource
      */
     var $fh;
-
     /**
      * An cached array of disk blocks for an index shard that has not
      * been completely loaded into memory.
      * @var array
      */
     var $blocks;
-
     /**
      * Flag used to determined if this shard is going to be largely kept on
      * disk and to be in read only mode. Otherwise, shard will assume to
@@ -213,108 +196,88 @@ class IndexShard extends PersistentStructure implements
      * @var bool
      */
     var $read_only_from_disk;
-
     /**
      * Keeps track of the packed/unpacked state of the word_docs list
      *
      * @var bool
      */
     var $word_docs_packed;
-
     /**
      * Keeps track of the length of the shard as a file
      *
      * @var int
      */
     var $file_len;
-
     /**
      * Number of document inserts since the last time word data was flattened
      * to the word_postings string.
      */
      var $last_flattened_words_count;
-
     /**
      * Used to hold word_id, posting_len, posting triples as a memory efficient
      * string
      * @var string
      */
     var $word_postings;
-
     /**
      * Fraction of NUM_DOCS_PER_GENERATION document inserts before data
      * from the words array is flattened to word_postings. (It will
      * also be flattened during periodic index saves)
      */
     const FLATTEN_FREQUENCY = 10000;
-
     /**
      * Bytes of tmp string allowed during flattenings
      */
      const WORD_POSTING_COPY_LEN = 2000000;
-
     /**
      * Used to keep track of whether a record in document infos is for a
      * document or for a link
      */
     const LINK_FLAG =  0x800000;
-
-
     /**
      * Shard block size is 1<< this power
      */
     const SHARD_BLOCK_POWER = 12;
-
     /**
      * Size in bytes of one block in IndexShard
      */
     const SHARD_BLOCK_SIZE = 4096;
-
     /**
      * Header Length of an IndexShard (sum of its non-variable length fields)
      */
     const HEADER_LENGTH = 40;
-
     /**
      * Length of the data portion of a word entry in bytes in the shard
      */
     const WORD_DATA_LEN = 12;
-
     /**
      * Length of a word entry's key in bytes
      */
     const WORD_KEY_LEN = 20;
-
     /**
      * Length of a key in a DOC ID.
      */
     const DOC_KEY_LEN = 8;
-
     /**
      * Length of  DOC ID.
      */
     const DOC_ID_LEN = 24;
-
     /**
      * Length of one posting ( a doc offset occurrence pair) in a posting list
      */
     const POSTING_LEN = 4;
-
     /**
      *  Represents an empty prefix item
      */
     const BLANK = "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF";
-
     /**
      * Flag used to indicate that a word item should not be packed or unpacked
      */
     const HALF_BLANK = "\xFF\xFF\xFF\xFF";
-
     /**
      *  Represents an empty prefix item
      */
     const STORE_FLAG = "\x80";
-
     /**
      * Makes an index shard with the given file name and generation offset
      *
@@ -352,7 +315,6 @@ class IndexShard extends PersistentStructure implements
         $this->word_docs_packed = false;
         $this->blocks_words= array();
     }
-
     /**
      * Add a new document to the index shard with the given summary offset.
      * Associate with this document the supplied list of words and word counts.
@@ -382,22 +344,17 @@ class IndexShard extends PersistentStructure implements
             $this->word_docs = "";
             $this->word_docs_packed = false;
         }
-
         $doc_len = 0;
         $link_doc_len = 0;
         $len_key = strlen($doc_keys);
         $num_keys = floor($len_key/self::DOC_KEY_LEN);
-
         if($num_keys * self::DOC_KEY_LEN != $len_key) return false;
-
         if($num_keys % 2 == 0 ) {
             $doc_keys .= self::BLANK; //want to keep docids_len divisible by 16
         }
-
         $summary_offset_string = packInt($summary_offset);
         $added_len = strlen($summary_offset_string);
         $this->doc_infos .= $summary_offset_string;
-
         if($is_doc) {
             $this->num_docs++;
         } else { //link item
@@ -433,7 +390,6 @@ class IndexShard extends PersistentStructure implements
             }
             $this->word_docs_len += strlen($store);
         }
-
         $this->len_all_docs += $doc_len;
         $this->len_all_link_docs += $link_doc_len;
         $flags = ($is_doc) ? 0 : self::LINK_FLAG;
@@ -444,16 +400,13 @@ class IndexShard extends PersistentStructure implements
         }
         $item_len = ($is_doc) ? $doc_len: $link_doc_len;
         $len_num_keys = $this->packDoclenNum(($flags + $item_len), $num_keys);
-
         $this->doc_infos .=  $len_num_keys;
         $added_len += strlen($len_num_keys);
         $this->doc_infos .= $doc_keys;
         $added_len += strlen($doc_keys);
         $this->docids_len += $added_len;
-
         return true;
     }
-
     /**
      * Returns the first offset, last offset, and number of documents the
      * word occurred in for this shard. The first offset (similarly, the last
@@ -476,7 +429,6 @@ class IndexShard extends PersistentStructure implements
         $is_disk = $this->read_only_from_disk;
         $word_item_len = self::WORD_KEY_LEN + self::WORD_DATA_LEN;
         $word_key_len = self::WORD_KEY_LEN;
-
         if($is_disk) {
             $this->getShardHeader();
             if(!isset($word_id[1])) {
@@ -490,7 +442,6 @@ class IndexShard extends PersistentStructure implements
             }
             list(,$offset, $high) = unpack("N*", $prefix_info);
             $high--;
-
             $start = self::HEADER_LENGTH + $this->prefixes_len  + $offset;
         } else {
             if($this->word_docs_packed == false) {
@@ -503,7 +454,6 @@ class IndexShard extends PersistentStructure implements
         }
         $low = 0;
         $check_loc = (($low + $high) >> 1);
-
         do {
             $old_check_loc = $check_loc;
             if($is_disk) {
@@ -532,11 +482,8 @@ class IndexShard extends PersistentStructure implements
                 $check_loc = (($high + $check_loc) >> 1);
             }
         } while($old_check_loc != $check_loc);
-
         return false;
-
     }
-
     /**
      * Returns documents using the word_docs string (either as stored
      * on disk or completely read in) of records starting
@@ -560,7 +507,6 @@ class IndexShard extends PersistentStructure implements
             $this->packWords(NULL);
             $this->outputPostingLists();
         }
-
         $num_docs_so_far = 0;
         $results = array();
         /* wd_len is a kludgy fix because word_docs_len can get out of sync
@@ -590,11 +536,9 @@ class IndexShard extends PersistentStructure implements
             $results[$doc_id] = $item;
             $num_docs_so_far += $next - $posting_start;
         } while ($next <= $last && $num_docs_so_far < $len);
-
         $next_offset = $next << 2;
         return $results;
     }
-
     /**
      *  An upper bound on the number of docs or links represented by
      *  the start and ending integer offsets into a posting list.
@@ -610,7 +554,6 @@ class IndexShard extends PersistentStructure implements
     {
         return ceil(($last_offset - $start_offset) /$avg_posting_len);
     }
-
     /**
      * Return (docid, item) where item has document statistics (summary offset,
      * relevance, doc rank, and score) for the document give by the
@@ -637,12 +580,9 @@ class IndexShard extends PersistentStructure implements
         $doc_depth = log(($doc_index + 1) + (AVG_LINKS_PER_PAGE + 1) *
             $this->num_docs_per_generation * $this->generation, 10);
         $item[self::DOC_RANK] = number_format(10 - $doc_depth, PRECISION);
-
         $doc_loc = $doc_index << 4;
-
         list(, $item[self::SUMMARY_OFFSET], $doc_int) =
             unpack("N*", $this->getDocInfoSubstring($doc_loc, $doc_key_len));
-
         $num_keys = $doc_int & 255;
         if($num_keys > 15) { /* shouldn't have more than this many keys
                                 fighting index corruption
@@ -661,10 +601,8 @@ class IndexShard extends PersistentStructure implements
         }
         $item[self::DOC_LEN] = $doc_len;
         $item[self::IS_DOC] = $is_doc;
-
         $item[self::PROXIMITY]=$this->computeProximity($position_list, $is_doc);
         $occurrences = $this->weightedCount($position_list, $is_doc);
-
         //override $occurrences if $occurs != 0
         if($occurs != 0) {
             $occurrences = array(
@@ -687,9 +625,7 @@ class IndexShard extends PersistentStructure implements
             $item[self::DOC_RANK] = $pre_rank >> 19;
             $doc_len &= (2 << 19 - 1);
         }
-
         $skip_stats = false;
-
         if($item[self::SUMMARY_OFFSET] == self::NEEDS_OFFSET_FLAG) {
             $skip_stats = true;
             $item[self::RELEVANCE] = 1;
@@ -757,7 +693,6 @@ class IndexShard extends PersistentStructure implements
                         results */
         }
         return array($doc_id, $num_keys, $item);
-
     }
     /**
      * Used to sum over the occurences in a position list counting with
@@ -787,7 +722,6 @@ class IndexShard extends PersistentStructure implements
         }
         return $count;
     }
-
     /**
      * Returns a proximity score for a single term based on its location in
      * doc.
@@ -801,7 +735,6 @@ class IndexShard extends PersistentStructure implements
             $position_list[0] < AD_HOC_TITLE_LENGTH) ?
             floatval(TITLE_WEIGHT) : floatval(DESCRIPTION_WEIGHT);
     }
-
     /**
      *  Computes BM25F relevance and a score for the supplied item based
      *  on the supplied parameters.
@@ -825,7 +758,6 @@ class IndexShard extends PersistentStructure implements
         $pre_relevance = number_format(
             3 * $occurrences/($occurrences + $half + 1.5* $doc_ratio),
             PRECISION);
-
         if($num_doc_or_links > $total_docs_or_links) {
             $num_doc_or_links = 0.5 * $total_docs_or_links;
             //this case shouldn't happen but do a sanity check
@@ -837,7 +769,6 @@ class IndexShard extends PersistentStructure implements
             ($num_term_occurrences + $half));
         $item[self::RELEVANCE] += $half * $IDF * $pre_relevance * $type_weight;
     }
-
     /**
      *  Gets the posting closest to index $current in the word_docs string
      *  modifies the passed-by-ref variables $posting_start and
@@ -868,7 +799,6 @@ class IndexShard extends PersistentStructure implements
             $cpword = $this->getWordDocsWord($posting_start << 2);
             $continue = ((($cpword >> 24) & 192) == 128);
         }
-
         while((($pword >> 24) & 192) > 64) {
             $posting_end++;
             $pword = $this->getWordDocsWord($posting_end << 2);
@@ -876,7 +806,6 @@ class IndexShard extends PersistentStructure implements
         return $this->getWordDocsSubstring($posting_start << 2,
             ($posting_end - $posting_start + 1) << 2);
     }
-
     /**
      *  Returns the document index of the posting at offset $current in
      *  word_docs
@@ -899,7 +828,6 @@ class IndexShard extends PersistentStructure implements
         }
         return docIndexModified9($pword);
     }
-
     /**
      * Finds the first posting offset between $start_offset and $end_offset
      * of a posting that has a doc_offset bigger than or equal to $doc_offset
@@ -957,7 +885,6 @@ class IndexShard extends PersistentStructure implements
         } while($current <= $end);
         return false;
      }
-
     /**
      * Performs a galloping search (double forward jump distance each failure
      * step)  forward in a posting list from
@@ -985,7 +912,6 @@ class IndexShard extends PersistentStructure implements
         $current = $end;
         return $post_doc_index;
     }
-
     /**
      * Given an offset of a posting into the word_docs string, looks up
      * the posting there and computes the doc_offset stored in it.
@@ -997,7 +923,6 @@ class IndexShard extends PersistentStructure implements
         $doc_index = $this->getDocIndexOfPostingAtOffset($offset >> 2);
         return ($doc_index << 4);
     }
-
     /**
      * Returns $len many documents which contained the word corresponding to
      * $word_id (only works for loaded shards)
@@ -1019,7 +944,6 @@ class IndexShard extends PersistentStructure implements
         }
         return $results;
     }
-
     /**
      * Adds the contents of the supplied $index_shard to the current index
      * shard
@@ -1087,7 +1011,6 @@ class IndexShard extends PersistentStructure implements
                 memory_get_usage());
         }
     }
-
     /**
      * Used to flatten the words associative array to a more memory
      * efficient word_postings string.
@@ -1221,7 +1144,6 @@ class IndexShard extends PersistentStructure implements
         $this->last_flattened_words_count = $this->num_docs;
         crawlLog("..Done Merge Index Posting Final Copy");
     }
-
     /**
      * Changes the summary offsets associated with a set of doc_ids to new
      * values. This is needed because the fetcher puts documents in a
@@ -1273,8 +1195,6 @@ class IndexShard extends PersistentStructure implements
             }
         }
     }
-
-
     /**
      *  Save the IndexShard to its filename
      *
@@ -1341,7 +1261,6 @@ class IndexShard extends PersistentStructure implements
         $this->word_docs_packed = false;
         return $out;
     }
-
     /**
      * Computes the prefix string index for the current words array.
      * This index gives offsets of the first occurrences of the lead two char's
@@ -1384,7 +1303,6 @@ class IndexShard extends PersistentStructure implements
                 $num_words = 1;
             }
         }
-
         $tmp[$old_prefix] = pack("N*", $offset, $num_words);
         $num_prefixes = 2 << 16;
         $this->prefixes = "";
@@ -1397,7 +1315,6 @@ class IndexShard extends PersistentStructure implements
         }
         $this->prefixes_len = strlen($this->prefixes);
     }
-
     /**
      * Posting lists are initially stored associated with a word as a key
      * value pair. The merge operation then merges them these to a string
@@ -1460,7 +1377,6 @@ class IndexShard extends PersistentStructure implements
         $this->words_len = strlen($this->words);
         $this->word_docs_packed = true;
     }
-
     /**
      * Used to convert the word_postings string into a word_docs string
      * or if a file handle is provided write out the word_docs sequence
@@ -1518,7 +1434,6 @@ class IndexShard extends PersistentStructure implements
             }
         }
     }
-
     /**
      * Takes the word docs string and splits it into posting lists which are
      * assigned to particular words in the words dictionary array.
@@ -1555,7 +1470,6 @@ class IndexShard extends PersistentStructure implements
         unset($this->word_docs);
         $this->word_docs_packed = false;
     }
-
     /**
      * From disk gets $len many bytes starting from $offset in the word_docs
      * strings
@@ -1573,7 +1487,6 @@ class IndexShard extends PersistentStructure implements
         }
         return substr($this->word_docs, $offset, $len);
     }
-
     /**
      * Reads 32 bit word as an unsigned int from the offset given in the
      * word_docs string in the sahrd
@@ -1586,7 +1499,6 @@ class IndexShard extends PersistentStructure implements
         }
         return unpackInt(substr($this->word_docs, $offset, 4));
     }
-
     /**
      * From disk gets $len many bytes starting from $offset in the doc_infos
      * strings
@@ -1604,7 +1516,6 @@ class IndexShard extends PersistentStructure implements
         }
         return substr($this->doc_infos, $offset, $len);
     }
-
     /**
      *  Gets from Disk Data $len many bytes beginning at $offset from the
      *  current IndexShard
@@ -1636,11 +1547,8 @@ class IndexShard extends PersistentStructure implements
             $block_offset += $block_size;
             $substring .= $data;
         }
-
         return substr($substring, 0, $len);
     }
-
-
     /**
      * Reads 32 bit word as an unsigned int from the offset given in the shard
      *
@@ -1659,7 +1567,6 @@ class IndexShard extends PersistentStructure implements
             return false;
         }
     }
-
     /**
      * Reads SHARD_BLOCK_SIZE from the current IndexShard's file beginning
      * at byte offset $bytes
@@ -1696,7 +1603,6 @@ class IndexShard extends PersistentStructure implements
             unpack("N*", $tmp));
         return $tmp;
     }
-
     /**
      * If not already loaded, reads in from disk the fixed-length'd field
      * variables of this IndexShard ($this->words_len, etc)
@@ -1711,7 +1617,6 @@ class IndexShard extends PersistentStructure implements
         self::headerToShardFields($header, $this);
         $this->doc_info_offset = $this->file_len - $this->docids_len;
     }
-
     /**
      * Used to store the length of a document as well as the number of
      * key components in its doc_id as a packed int (4 byte string)
@@ -1724,7 +1629,6 @@ class IndexShard extends PersistentStructure implements
     {
         return packInt(($doc_len << 8) + $num_keys);
     }
-
     /**
      * Used to extract from a 32 bit unsigned int,
      * a pair which represents the length of a document together with the
@@ -1740,7 +1644,6 @@ class IndexShard extends PersistentStructure implements
         $doc_len = ($doc_info >> 8);
         return array($doc_len, $num_keys);
     }
-
     /**
      * Converts $str into 3 ints for a first offset into word_docs,
      * a last offset into word_docs, and a count of number of docs
@@ -1760,7 +1663,6 @@ class IndexShard extends PersistentStructure implements
         }
         return array($first_offset, $last_offset, $count);
     }
-
     /**
      *  Load an IndexShard from a file or string
      *
@@ -1784,7 +1686,6 @@ class IndexShard extends PersistentStructure implements
         }
         self::headerToShardFields($header, $shard);
         crawlLog("..done reading index shard header");
-
         if($data === NULL) {
             if(!($shard->prefixes_len > 0 )) return NULL;
             if(!($shard->words_len > 0 )) return NULL;
@@ -1802,7 +1703,6 @@ class IndexShard extends PersistentStructure implements
             $pos += $shard->word_docs_len;
             $shard->doc_infos = substr($data, $pos, $shard->docids_len);
         }
-
         $pre_words_array = str_split($words, self::WORD_KEY_LEN +
             self::WORD_DATA_LEN);
         unset($words);
@@ -1813,8 +1713,6 @@ class IndexShard extends PersistentStructure implements
         crawlLog("..done unpacking index shard posting lists");
         return $shard;
     }
-
-
     /**
      *  Split a header string into a shards field variable
      *
@@ -1838,7 +1736,6 @@ class IndexShard extends PersistentStructure implements
         $shard->word_doc_offset = self::HEADER_LENGTH +
             $shard->prefixes_len + $shard->words_len;
     }
-
     /**
      * Callback function for load method. splits a word_key . word_info string
      * into an entry in the passed shard $shard->words[word_key] = $word_info.
@@ -1853,5 +1750,4 @@ class IndexShard extends PersistentStructure implements
             substr($value, self::WORD_KEY_LEN,
                 self::WORD_DATA_LEN);
     }
-
 }

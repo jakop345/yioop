@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * Element responsible for drawing the screen used to set up the search engine
  *
@@ -44,10 +42,8 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @package seek_quarry
  * @subpackage element
  */
-
 class ConfigureElement extends Element
 {
-
     /**
      * Draws the forms used to configure the search engine.
      *

@@ -123,7 +123,7 @@ class SystemComponent extends Component
                 $r["num_fetchers"] = 0;
             }
         }
-        $machine_exists = (isset($r["name"]) && 
+        $machine_exists = (isset($r["name"]) &&
             $machine_model->checkMachineExists("NAME", $r["name"]) ) ||
             (isset($r["url"]) && $machine_model->checkMachineExists("URL",
             $r["url"]) );
@@ -308,9 +308,7 @@ class SystemComponent extends Component
                             tl('system_component_machine_no_action').
                             "</h1>');";
                     }
-
                 break;
-
             }
         }
         $parent->pagingLogic($data, $machine_model, "MACHINE",
@@ -320,8 +318,6 @@ class SystemComponent extends Component
         }
         return $data;
     }
-
-
     /**
      * Handles admin request related to the manage locale activity
      *
@@ -342,11 +338,6 @@ class SystemComponent extends Component
         $search_array = array(array("tag", "", "", "ASC"));
         $data['SCRIPT'] = "";
         $data["ELEMENT"] = "managelocales";
-        $locales = $parent->model("locale")->getLocaleList();
-        $data["LANGUAGES"] = array();
-        foreach($locales as $locale) {
-            $data["LANGUAGES"][$locale['LOCALE_TAG']] = $locale['LOCALE_NAME'];
-        }
         $data['CURRENT_LOCALE'] = array("localename" => "",
             'localetag' => "", 'writingmode' => '-1');
         $data['WRITING_MODES'] = array(
@@ -366,7 +357,7 @@ class SystemComponent extends Component
                 $$field = "";
                 if(isset($_REQUEST[$field])) {
                     $tmp = $parent->clean($_REQUEST[$field], "string");
-                    if($field == "writingmode" && ($tmp == -1 || 
+                    if($field == "writingmode" && ($tmp == -1 ||
                         !isset($data['WRITING_MODES'][$tmp]))) {
                         $tmp = "lr-tb";
                     }
@@ -414,11 +405,11 @@ class SystemComponent extends Component
                         $change = true;
                     }
                     if(isset($localetag))
-                    $data['CURRENT_LOCALE']['localename'] = 
+                    $data['CURRENT_LOCALE']['localename'] =
                         $info["LOCALE_NAME"];
-                    $data['CURRENT_LOCALE']['localetag'] = 
+                    $data['CURRENT_LOCALE']['localetag'] =
                         $selectlocale;
-                    $data['CURRENT_LOCALE']['writingmode'] = 
+                    $data['CURRENT_LOCALE']['writingmode'] =
                         $info["WRITING_MODE"];
                     if($change) {
                         $locale_model->updateLocaleInfo($info);
@@ -457,11 +448,11 @@ class SystemComponent extends Component
                     $data['DEFAULT_STRINGS'] =
                         $locale_model->getStringData(DEFAULT_LOCALE);
                     $data['show'] = "all";
-                    $data["show_strings"] = 
+                    $data["show_strings"] =
                         array("all" => tl('system_component_all_strings'),
                             "missing" => tl('system_component_missing_strings')
                         );
-                    if(isset($_REQUEST['show']) && 
+                    if(isset($_REQUEST['show']) &&
                         $_REQUEST['show'] == "missing") {
                         $data["show"]= "missing";
                         foreach($data['STRINGS'] as $string_id => $translation){
@@ -495,7 +486,6 @@ class SystemComponent extends Component
         }
         return $data;
     }
-
     /**
      *  Handles admin panel requests for mail, database, tor, proxy server
      *  settings
@@ -507,7 +497,6 @@ class SystemComponent extends Component
     {
         $parent = $this->parent;
         $profile_model = $parent->model("profile");
-
         $data = array();
         $profile = array();
         $arg = "";
@@ -522,7 +511,6 @@ class SystemComponent extends Component
                 $parent->updateProfileFields($data, $profile,
                     array('USE_FILECACHE', 'USE_MEMCACHE', 'USE_MAIL_PHP',
                         'USE_PROXY'));
-
                 $old_profile =
                     $profile_model->getProfile(WORK_DIRECTORY);
                 $db_problem = false;
@@ -532,7 +520,6 @@ class SystemComponent extends Component
                     $profile['DB_NAME'] != $old_profile['DB_NAME']) ||
                     (isset($profile['DB_HOST']) &&
                     $profile['DB_HOST'] != $old_profile['DB_HOST'])) {
-
                     if(!$profile_model->migrateDatabaseIfNecessary(
                         $profile)) {
                         $db_problem = true;
@@ -577,15 +564,13 @@ class SystemComponent extends Component
                     break;
                 }
             break;
-            default:
-                $data = array_merge($data,
-                    $profile_model->getProfile(WORK_DIRECTORY));
-                $data['MEMCACHE_SERVERS'] = str_replace(
-                    "|Z|","\n", $data['MEMCACHE_SERVERS']);
-                $data['PROXY_SERVERS'] = str_replace(
-                    "|Z|","\n", $data['PROXY_SERVERS']);
-            break;
         }
+        $data = array_merge($data,
+            $profile_model->getProfile(WORK_DIRECTORY));
+        $data['MEMCACHE_SERVERS'] = str_replace(
+            "|Z|","\n", $data['MEMCACHE_SERVERS']);
+        $data['PROXY_SERVERS'] = str_replace(
+            "|Z|","\n", $data['PROXY_SERVERS']);
         $data['DBMSS'] = array();
         $data['SCRIPT'] .= "logindbms = Array();\n";
         foreach($profile_model->getDbmsList() as $dbms) {
@@ -605,18 +590,6 @@ class SystemComponent extends Component
                     tl('system_component_configure_email_activation'),
                 'admin_activation' =>
                     tl('system_component_configure_admin_activation'),
-            );
-        $data['CAPTCHA_MODES'] = array (
-                TEXT_CAPTCHA =>
-                   tl('serversettings_element_text_captcha'),
-                HASH_CAPTCHA =>
-                   tl('serversettings_element_hash_captcha'),
-            );
-        $data['AUTHENTICATION_MODES'] = array (
-                NORMAL_AUTHENTICATION =>
-                   tl('serversettings_element_normal_authentication'),
-                ZKP_AUTHENTICATION =>
-                   tl('serversettings_element_zkp_authentication'),
             );
         $data['show_mail_info'] = "false";
         if(isset($data['REGISTRATION_TYPE']) &&
@@ -662,127 +635,73 @@ EOD;
         }
         return $data;
     }
-
-	/**
-     * Responsible for the Captcha settings.
-     * Allows users(and admin) to add/delete captcha questions 
-     * to/from the database.
+    /**
+     * Responsible for the Captcha Settings and managing Captcha/Recovery
+     * questions.
      */
-	function captchaSettings()
+    function security()
     {
-        $parent = $this->parent;        
-        $textcaptchasettings_model = $parent->model("textcaptchasettings");
-        $possible_arguments = array("addtextcaptcha", "savetextcaptcha", 
-            "updatetextcaptcha", "setcaptchamode");
+        $parent = $this->parent;
+        $captcha_model = $parent->model("captcha");
+        $possible_arguments = array("updatequestions", "updatetypes");
         $data = array();
         $profile_model = $parent->model("profile");
-        $profile =  $profile_model->getProfile(WORK_DIRECTORY);
-        $arg = "";
-        if(isset($_REQUEST['arg'])) {
-            $arg = $_REQUEST['arg'];
-        }
+        $profile = $profile_model->getProfile(WORK_DIRECTORY);
         $data['SCRIPT'] = "";
-        $data["ELEMENT"] = "captchasettings";
-        $locales = $parent->model("locale")->getLocaleList();
-        $data["LANGUAGES"] = array();
-        foreach($locales as $locale) {
-            $data["LANGUAGES"][$locale['LOCALE_TAG']] = $locale['LOCALE_NAME'];
-        }
-
-        if(isset($_REQUEST['arg']) &&
-                    in_array($_REQUEST['arg'], $possible_arguments)) {
-            switch($_REQUEST['arg'])
-            {   
-                case "setcaptchamode":
-                    $captcha_mode = $_REQUEST['CAPTCHA_MODE'];
-                    if($captcha_mode) {
-                        $profile["CAPTCHA_MODE"] = $captcha_mode;
-                        $profile_model->updateProfile(WORK_DIRECTORY, 
-                            array(), $profile);
-                    }
-                    break;
-                case "addtextcaptcha": 
-                    
-                    $text_captcha_add_to_database = isset(
-                        $_REQUEST["text_captcha_add_to_database"]);
-                    if($text_captcha_add_to_database) {
-                        // Call the captcha model to insert questions to DB.
-                        $captcha_type = $_REQUEST["CAPTCHA_TYPE"];
-                        $question_type = $_REQUEST["CAPTCHA_POSSIBILITIES"];
-                        $captcha_locale = $_REQUEST["CAPTCHA_LOCALE"];
-                        $captcha_question = 
-                            $_REQUEST["CAPTCHA_QUESTION_INPUT"];
-                        $captcha_choices = $_REQUEST["CAPTCHA_CHOICES_INPUT"];
-                        if($captcha_type && $question_type && $captcha_locale 
-                            && $captcha_question && $captcha_choices) {
-                          $captcha_add = 
-                          $textcaptchasettings_model->addCaptchaDataToDatabase(
-                                $captcha_type, $question_type, $captcha_locale, 
-                                $captcha_question, $captcha_choices);
-                        }   
-
-                   } 
-                   break;
-                
-                case "updatetextcaptcha":
-                    if(isset($_REQUEST['actiondelete'])) {
-                        if(isset($_REQUEST["text_captcha_delete_questions"])) {
-                          $text_captcha_delete_questions = 
-                                $_REQUEST["text_captcha_delete_questions"];   
-                          $captcha_delete = 
-                            $textcaptchasettings_model->
-                                deleteCaptchaDataFromDatabase(
-                                $text_captcha_delete_questions);
-                        }
-                    }
-                    if(isset($_REQUEST['actionedit'])) {
-                        if(isset($_REQUEST["text_captcha_delete_questions"])) {
-                            $text_captcha_delete_questions = 
-                                $_REQUEST["text_captcha_delete_questions"];
-                            $data['EDIT_CAPTCHA_MAPS'] = 
-                                $textcaptchasettings_model->editCaptchaData(
-                                    $text_captcha_delete_questions);      
-                        }   
-                    }
-                    break;
-                case "savetextcaptcha":
-                    if(isset($_REQUEST['updateField'])) {
-                        $textcaptchasettings_model->
-                            updateCaptchaStringInTranslationLocale(
-                                $_REQUEST['updateField']);
-                    }
-                    break;
-                default:
-                    break; 
-            }   
-        }
-        $translation_locale = 
-            $textcaptchasettings_model->fetchCaptchaPrefQuestionChoices();
-        $data["translation_locale"] = $translation_locale;
+        $data["ELEMENT"] = "security";
+        $data["CURRENT_LOCALE"] = getLocaleTag();
         $data['CAPTCHA_MODES'] = array (
-               TEXT_CAPTCHA =>
-                   tl('captchasettings_element_text_captcha'),
-               HASH_CAPTCHA =>
-                   tl('captchasettings_element_hash_captcha'),
-               GRAPHICAL_CAPTCHA =>
-                   tl('captchasettings_element_graphical_captcha'),
-                   );
-
-        $data['CAPTCHA_TYPE'] = array(
-               CAPTCHA => tl('captchasettings_element_captcha'),
-               RECOVERY => tl('captchasettings_element_recovery'),
-
-               );
-        $data['CAPTCHA_POSSIBILITIES'] = array(
-               MOST => tl('captchasettings_element_possibility_most'),
-               LEAST => tl('captchasettings_element_possibility_least'),    
-               );
+           TEXT_CAPTCHA =>
+               tl('captchasettings_element_text_captcha'),
+           HASH_CAPTCHA =>
+               tl('captchasettings_element_hash_captcha'),
+           IMAGE_CAPTCHA =>
+               tl('captchasettings_element_image_captcha'),
+            );
+        $data['AUTHENTICATION_MODES'] = array (
+                NORMAL_AUTHENTICATION =>
+                   tl('serversettings_element_normal_authentication'),
+                ZKP_AUTHENTICATION =>
+                   tl('serversettings_element_zkp_authentication'),
+            );
+        if(isset($_REQUEST['arg']) &&
+            in_array($_REQUEST['arg'], $possible_arguments)) {
+            switch($_REQUEST['arg'])
+            {
+                case "updatetypes":
+                    $change = false;
+                    if(in_array($_REQUEST['CAPTCHA_MODE'],
+                        array_keys($data['CAPTCHA_MODES']))) {
+                        $profile["CAPTCHA_MODE"] = $_REQUEST['CAPTCHA_MODE'];
+                        $change = true;
+                    }
+                    if(in_array($_REQUEST['AUTHENTICATION_MODE'],
+                        array_keys($data['AUTHENTICATION_MODES']))) {
+                        $profile["AUTHENTICATION_MODE"] =
+                            $_REQUEST['AUTHENTICATION_MODE'];
+                        $change = true;
+                    }
+                    if($change) {
+                        $profile_model->updateProfile(WORK_DIRECTORY,
+                            array(), $profile);
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('security_element_settings_updated').
+                            "</h1>');";
+                    } else {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('security_element_no_update_settings').
+                            "</h1>');";
+                    }
+                break;
+                case "updatequestions":
+                break;
+            }
+        }
+        $data = array_merge($data,
+            $profile_model->getProfile(WORK_DIRECTORY));
         $data["CAPTCHA_MODE"] = $profile["CAPTCHA_MODE"];
         return $data;
     }
-
-
-
     /**
      * Responsible for handling admin request related to the configure activity
      *
@@ -1068,7 +987,6 @@ EOD;
 
         return $data;
     }
-
     /**
      * Checks to see if the current machine has php configured in a way
      * Yioop! can run.

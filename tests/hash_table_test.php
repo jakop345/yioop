@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  *  Load the hash table library we'll be testing
  */
@@ -41,7 +39,6 @@ require_once BASE_DIR."/lib/hash_table.php";
  *  Load the crawlHash function
  */
 require_once BASE_DIR.'/lib/utility.php';
-
 /**
  *  Used to test that the HashTable class properly stores key value pairs,
  *  handles insert, deletes, collisions okay. It should also detect when
@@ -65,7 +62,6 @@ class HashTableTest extends UnitTest
         $this->test_objects['FILE2'] = new HashTable(WORK_DIRECTORY.
             "/hash2.txt", 10, 8, 1);
     }
-
     /**
      * Since a HashTable is a PersistentStructure it periodically saves
      * itself to a file. To clean up we delete the files that might be created
@@ -75,7 +71,6 @@ class HashTableTest extends UnitTest
         @unlink(WORK_DIRECTORY."/hash1.txt");
         @unlink(WORK_DIRECTORY."/hash2.txt");
     }
-
     /**
      * Check if for the big hash table we insert something then later look it
      * up, that we in fact find it. Moreover, the value we associated with the
@@ -94,7 +89,6 @@ class HashTableTest extends UnitTest
                     pack("H*","0000147700000000"),
             "Lookup value equals insert value");
     }
-
     /**
      * Checks insert an item, delete that item, then look it up. Make sure we
      * don't find it after deletion.
@@ -115,7 +109,6 @@ class HashTableTest extends UnitTest
                 crawlHash("http://www.cs.sjsu.edu/", true)),
             "delete crawlHash(URL) succeeded");
     }
-
     /**
      * Completety fill table. Next insert should fail. Then delete all the
      * items. Then check that we can't find any of them
@@ -158,7 +151,6 @@ class HashTableTest extends UnitTest
                 "Should not find Item ".($i+1)." after delete");
         }
     }
-
     /**
      * First check that inserting an item twice does not change its index in
      * the table. Then inserts an item which should hash to the same value. So
@@ -210,7 +202,6 @@ class HashTableTest extends UnitTest
                 $index2 + 2,
                 "New Item hi7 location does not overwrite deleted items");
     }
-
     /**
      *  Test how fast insertion and deletions can be done
      */

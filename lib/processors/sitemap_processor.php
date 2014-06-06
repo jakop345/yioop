@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * Load base class, if needed.
  */
@@ -41,7 +39,6 @@ require_once BASE_DIR."/lib/processors/text_processor.php";
  * Load so can parse urls
  */
 require_once BASE_DIR."/lib/url_parser.php";
-
  /**
  * Used to create crawl summary information
  * for sitemap files
@@ -52,7 +49,6 @@ require_once BASE_DIR."/lib/url_parser.php";
  */
 class SitemapProcessor extends TextProcessor
 {
-
     /**
      *  Used to extract the title, description and links from
      *  a string consisting of rss news feed data.
@@ -69,7 +65,6 @@ class SitemapProcessor extends TextProcessor
         $summary = NULL;
         if(is_string($page)) {
             $dom = self::dom($page);
-
             if($dom !==false) {
                 $summary[self::TITLE] = $url;
                 $summary[self::DESCRIPTION] = "Sitemap of ".$url;
@@ -86,13 +81,8 @@ class SitemapProcessor extends TextProcessor
                 $summary[self::JUST_METAS] = true;
             }
         }
-
         return $summary;
-
     }
-
-
-
     /**
      * Return a document object based on a string containing the contents of
      * an RSS page
@@ -104,13 +94,9 @@ class SitemapProcessor extends TextProcessor
     static function dom($page)
     {
         $dom = new DOMDocument();
-
         @$dom->loadXML($page);
-
         return $dom;
     }
-
-
     /**
      * Returns links from the supplied dom object of a sitemap
      * where links have been canonicalized according to
@@ -126,7 +112,6 @@ class SitemapProcessor extends TextProcessor
     static function links($dom, $site)
     {
         $sites = array();
-
         $xpath = new DOMXPath($dom);
         $xpath->registerNamespace('s',
             "http://www.sitemaps.org/schemas/sitemap/0.9");
@@ -134,7 +119,6 @@ class SitemapProcessor extends TextProcessor
             "/s:urlset/s:url/s:loc",
             "/s:sitemapindex/s:sitemap/s:loc"
         );
-
         $i = 0;
         foreach($paths as $path) {
             $nodes = @$xpath->evaluate($path);
@@ -154,7 +138,6 @@ class SitemapProcessor extends TextProcessor
                     break 2;
                 }
             }
-
         }
         return $sites;
     }

@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * Element responsible for displaying the queue_server or fetcher log
  * of a machine
@@ -42,10 +40,8 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @package seek_quarry
  * @subpackage element
  */
-
 class MachinelogElement extends Element
 {
-
     /**
      * Draws the log file of a queue_server or a fetcher
      *
@@ -97,7 +93,6 @@ class MachinelogElement extends Element
                 e($data['REFRESH_LOG'].""); ?>";
             document.location = refreshUrl;
         }
-
         function doUpdate()
         {
              var sec = 1000;

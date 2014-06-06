@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * A PersistentStructure is a data structure which every so many operations
  * will be saved to secondary storage (such as disk).
@@ -45,7 +43,6 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @package seek_quarry
  * @subpackage library
  */
-
 class PersistentStructure
 {
     /** If not specified in the constructor, this will be the number of
@@ -82,7 +79,6 @@ class PersistentStructure
         $this->save_frequency = $save_frequency;
         $this->unsaved_operations = 0;
     }
-
     /**
      *  Load a PersistentStructure from a file
      *
@@ -93,7 +89,6 @@ class PersistentStructure
     {
         return unserialize(file_get_contents($fname));
     }
-
     /**
      *  Save the PersistentStructure to its filename
      *  This method is generic but super memory inefficient, so reimplement
@@ -103,7 +98,6 @@ class PersistentStructure
     {
         file_put_contents($this->filename, serialize($this));
     }
-
     /**
      * Add one to the unsaved_operations count. If this goes above the
      * save_frquency then save the PersistentStructure to secondary storage
@@ -118,5 +112,4 @@ class PersistentStructure
         }
     }
 }
-
- ?>
+?>

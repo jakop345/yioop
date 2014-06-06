@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * This element is used to render the Page Options admin activity
  * This activity lets a user control the amount of web pages downloaded,

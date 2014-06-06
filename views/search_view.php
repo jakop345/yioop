@@ -30,12 +30,9 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /** Loads common constants for web crawling*/
 require_once BASE_DIR."/lib/crawl_constants.php";
-
 /**
  * Web page used to present search results
  * It is also contains the search box for
@@ -45,19 +42,16 @@ require_once BASE_DIR."/lib/crawl_constants.php";
  * @package seek_quarry
  * @subpackage view
  */
-
 class SearchView extends View implements CrawlConstants
 {
     /** This view is drawn on a web layout
      *  @var string
      */
     var $layout = "web";
-
     /**
      * Represent extension of Git urls
      */
     const GIT_EXTENSION = ".git";
-
     /**
      *  Draws the main landing pages as well as search result pages
      *
@@ -75,7 +69,6 @@ class SearchView extends View implements CrawlConstants
             $this->element("subsearch")->render($data);
             $this->element("signin")->render($data);
             ?>
-
         </div>
         <?php
         }
@@ -88,7 +81,6 @@ class SearchView extends View implements CrawlConstants
             $logo = "resources/m-yioop.png";
         }
         ?>
-
         <h1 class="logo"><a href="./?<?php
             e(CSRF_TOKEN."=".$data[CSRF_TOKEN])?>"><img
             src="<?php e($logo); ?>" alt="<?php e(tl('search_view_title'));
@@ -173,7 +165,6 @@ class SearchView extends View implements CrawlConstants
             <?php
         }
     }
-
     /**
      *  Used to draw the results of a query to the Yioop Search Engine
      *
@@ -427,7 +418,6 @@ class SearchView extends View implements CrawlConstants
                 ?>
                 </p>
             </div>
-
             <?php
             } //end foreach
             $this->helper("pagination")->render(

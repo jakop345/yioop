@@ -30,14 +30,11 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /** Loads base model class if necessary*/
 require_once BASE_DIR."/models/model.php";
 /** For crawlHash function */
 require_once BASE_DIR."/lib/utility.php";
-
 /**
  * This is class is used to handle
  * db results related to Role Administration
@@ -53,7 +50,6 @@ class RoleModel extends Model
      * @var array
      */
     var $search_table_column_map = array("name"=>"NAME");
-
     /**
      * @param mixed $args
      */
@@ -61,7 +57,6 @@ class RoleModel extends Model
     {
         return "NAME";
     }
-
     /**
      *  Get the activities  (name, method, id) that a given role can perform
      *
@@ -72,13 +67,11 @@ class RoleModel extends Model
         $db = $this->db;
         $activities = array();
         $locale_tag = getLocaleTag();
-
         $sql = "SELECT LOCALE_ID FROM LOCALE WHERE LOCALE_TAG = ? " .
             $db->limitOffset(1);
         $result = $db->execute($sql, array($locale_tag));
         $row = $db->fetchArray($result);
         $locale_id = $row['LOCALE_ID'];
-
         $sql = "SELECT DISTINCT R.ROLE_ID AS ROLE_ID, ".
             "RA.ACTIVITY_ID AS ACTIVITY_ID, ".
             "A.METHOD_NAME AS METHOD_NAME, ".
@@ -88,7 +81,6 @@ class RoleModel extends Model
             "WHERE  R.ROLE_ID = ? AND ".
             "R.ROLE_ID = RA.ROLE_ID AND T.TRANSLATION_ID = A.TRANSLATION_ID ".
             "AND RA.ACTIVITY_ID = A.ACTIVITY_ID";
-
         $result = $db->execute($sql, array($role_id));
         $i = 0;
         $sub_sql = "SELECT TRANSLATION AS ACTIVITY_NAME ".
@@ -109,12 +101,8 @@ class RoleModel extends Model
             $i++;
         }
         unset($activities[$i]); //last one will be null
-
         return $activities;
-
     }
-
-
     /**
      * Gets all the roles associated with a user id
      *
@@ -126,7 +114,6 @@ class RoleModel extends Model
     {
         $db = $this->db;
         $user_id = $db->escapeString($user_id);
-
         $roles = array();
         $locale_tag = getLocaleTag();
         $limit = $db->limitOffset($limit, $num);
@@ -141,12 +128,9 @@ class RoleModel extends Model
         $result = $db->execute($sql, array($locale_tag));
         $row = $db->fetchArray($result);
         $locale_id = $row['LOCALE_ID'];
-
-
         $sql = "SELECT UR.ROLE_ID AS ROLE_ID, R.NAME AS ROLE_NAME ".
             " FROM  USER_ROLE UR, ROLE R WHERE UR.USER_ID = ? ".
             " AND R.ROLE_ID = UR.ROLE_ID $like  ORDER BY R.NAME ASC $limit";
-
         $result = $db->execute($sql, $param_array);
         $i = 0;
         while($roles[$i] = $db->fetchArray($result)) {
@@ -155,7 +139,6 @@ class RoleModel extends Model
         unset($roles[$i]); //last one will be null
         return $roles;
     }
-
     /**
      *  Get a count of the number of groups that a user_id has.
      *
@@ -182,7 +165,6 @@ class RoleModel extends Model
         }
         return $row['NUM'];
     }
-
     /**
      *   Check is a user given by $user_id has the role $role_id
      *
@@ -205,7 +187,6 @@ class RoleModel extends Model
         }
         return true;
     }
-
     /**
      * Adds a role to a given user
      *
@@ -217,8 +198,6 @@ class RoleModel extends Model
         $sql = "INSERT INTO USER_ROLE VALUES (?, ?) ";
         $result = $this->db->execute($sql, array($user_id, $role_id));
     }
-
-
     /**
      * Deletes a role from a given user
      *
@@ -230,7 +209,6 @@ class RoleModel extends Model
         $sql = "DELETE FROM USER_ROLE WHERE USER_ID=? AND  ROLE_ID=?";
         $result = $this->db->execute($sql, array($user_id, $role_id));
     }
-
     /**
      * Get role id associated with role_name (so role_names better be unique)
      *
@@ -245,10 +223,8 @@ class RoleModel extends Model
         if(!$row = $db->fetchArray($result) ) {
             return -1;
         }
-
         return $row['ROLE_ID'];
     }
-
     /**
      * Return the role_id and role_name row corresponding to a given rolename
      * @param string $rolename
@@ -266,8 +242,6 @@ class RoleModel extends Model
         $row = $db->fetchArray($result);
         return $row;
     }
-
-
     /**
      *  Add a rolename to the database using provided string
      *
@@ -276,11 +250,8 @@ class RoleModel extends Model
     function addRole($role_name)
     {
         $sql = "INSERT INTO ROLE (NAME) VALUES (?)";
-
         $this->db->execute($sql, array($role_name));
     }
-
-
     /**
      *  Add an allowed activity to an existing role
      *
@@ -292,8 +263,6 @@ class RoleModel extends Model
         $sql = "INSERT INTO ROLE_ACTIVITY VALUES (?, ?)";
         $this->db->execute($sql, array($role_id, $activity_id));
     }
-
-
     /**
      *  Delete a role by its roleid
      *
@@ -306,8 +275,6 @@ class RoleModel extends Model
         $sql = "DELETE FROM ROLE WHERE ROLE_ID=?";
         $this->db->execute($sql, array($role_id));
     }
-
-
     /**
      *  Remove an allowed activity from a role
      *

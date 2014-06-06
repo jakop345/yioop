@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * Used to draw the admin screen on which admin users can create roles, delete
  * roles and add and delete activitiess from roles
@@ -41,10 +39,8 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @package seek_quarry
  * @subpackage element
  */
-
 class ManagerolesElement extends Element
 {
-
     /**
      * renders the screen in which roles can be created, deleted, and activities
      * can be added to and deleted from a selected roles
@@ -119,7 +115,6 @@ class ManagerolesElement extends Element
         </div>
     <?php
     }
-
     /**
      *  Draws the add role and edit role forms
      *
@@ -204,7 +199,6 @@ class ManagerolesElement extends Element
         </form>
         <?php
     }
-
     /**
      *  Draws the search for roles forms
      *

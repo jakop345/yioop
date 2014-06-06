@@ -30,14 +30,11 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  *  Load the string_array library we'll be testing
  */
 require_once BASE_DIR."/lib/string_array.php";
-
 /**
  *  Used to test that the StringArray class properly stores/retrieves values,
  *  and can handle loading and saving
@@ -58,7 +55,6 @@ class StringArrayTest extends UnitTest
         $this->test_objects['FILE1'] = new StringArray(WORK_DIRECTORY.
             "/array.txt", 4, 4, -1);
     }
-
     /**
      * Since a StringArray is a PersistentStructure it periodically saves
      * itself to a file. To clean up we delete the files that might be created
@@ -67,7 +63,6 @@ class StringArrayTest extends UnitTest
     {
         @unlink(WORK_DIRECTORY."/array.txt");
     }
-
     /**
      * Check if can put objects into string array and retrieve them
      */
@@ -86,7 +81,6 @@ class StringArrayTest extends UnitTest
         $tmp = unpack("N",$this->test_objects['FILE1']->get(3));
         $this->assertEqual($tmp[1], 2, "Get put 3th items equal");
     }
-
     /**
      * Check if saving and loading of StringArray's works
      * Also checks that save is nondestructive

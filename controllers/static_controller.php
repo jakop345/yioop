@@ -30,12 +30,9 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**Load base controller class, if needed. */
 require_once BASE_DIR."/controllers/controller.php";
-
 /**
  * This controller is  used by the Yioop web site to display
  * PUBLIC_GROUP_ID pages more like static forward facing pages.
@@ -52,7 +49,6 @@ class StaticController extends Controller
      * @var array
      */
     var $activities = array("showPage");
-
     /**
      *  This is the main entry point for handling people arriving to view
      *  a static page. It determines which page to draw and class the view
@@ -81,8 +77,6 @@ class StaticController extends Controller
         $data[CSRF_TOKEN] = $this->generateCSRFToken($user);
         $this->displayView($view, $data);
     }
-
-
     /**
      * This activity is used to display one a PUBLIC_GROUP_ID pages used
      * by the Yioop Web Site
@@ -149,7 +143,6 @@ class StaticController extends Controller
         }
         return $data;
     }
-
     /**
      *  Used to read in a PUBLIC_GROUP_ID wiki page that will be presented
      *  to non-logged in visitors to the site.

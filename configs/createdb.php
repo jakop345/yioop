@@ -34,12 +34,10 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(isset($_SERVER['DOCUMENT_ROOT']) && strlen($_SERVER['DOCUMENT_ROOT']) > 0) {
     echo "BAD REQUEST";
     exit();
 }
-
 /**
  * Calculate base directory of script
  * @ignore
@@ -48,25 +46,18 @@ define("BASE_DIR", substr(
     dirname(realpath($_SERVER['PHP_SELF'])), 0,
     -strlen("/configs")));
 require_once BASE_DIR.'/configs/config.php';
-
 /* get the database library */
 require_once BASE_DIR."/models/datasources/".DBMS."_manager.php";
-
 /** Get base class for profile_model.php*/
 require_once BASE_DIR."/models/model.php";
-
 /** For ProfileModel::createDatabaseTables method*/
 require_once BASE_DIR."/models/profile_model.php";
-
 /** For GroupModel::setPageName method*/
 require_once BASE_DIR."/models/group_model.php";
-
 /** For crawlHash function */
 require_once BASE_DIR."/lib/utility.php";
-
 $profile_model = new ProfileModel(DB_NAME, false);
 $db_class = ucfirst(DBMS)."Manager";
-
 $dbinfo = array("DBMS" => DBMS, "DB_HOST" => DB_HOST, "DB_USER" => DB_USER,
     "DB_PASSWORD" => DB_PASSWORD, "DB_NAME" => DB_NAME);
 if(!in_array(DBMS, array('sqlite', 'sqlite3'))) {
@@ -88,16 +79,12 @@ if(!in_array(DBMS, array('sqlite', 'sqlite3'))) {
     $db = new $db_class();
     $db->connect();
 }
-
 if(!$profile_model->createDatabaseTables($db, $dbinfo)) {
     echo "\n\nCouldn't create database tables!!!\n\n";
     exit();
 }
-
 $db->execute("INSERT INTO VERSION VALUES (19)");
-
 $creation_time = microTimestamp();
-
 //numerical value of the blank password
 $profile = $profile_model->getProfile(WORK_DIRECTORY);
 $new_profile = $profile;
@@ -107,7 +94,6 @@ $sha1_of_blank_string =  bchexdec(sha1(''));
 //calculating V  = S ^ 2 mod N
 $temp = bcpow($sha1_of_blank_string . '', '2');
 $zkp_password = bcmod($temp, $new_profile['FIAT_SHAMIR_MODULUS']);
-
 //default account is root without a password
 $sql ="INSERT INTO USERS VALUES (".ROOT_ID.", 'admin', 'admin','root',
         'root@dev.null', '".crawlCrypt('')."', '".ACTIVE_STATUS.
@@ -129,7 +115,6 @@ $sql = "INSERT INTO GROUPS VALUES(".PUBLIC_GROUP_ID.",'Public','".
     $creation_time."','".ROOT_ID."', '".PUBLIC_JOIN."', '".GROUP_READ.
     "', ".NON_VOTING_GROUP.")";
 $db->execute($sql);
-
 $now = time();
 $db->execute("INSERT INTO ROLE VALUES (".ADMIN_ROLE.", 'Admin' )");
 $db->execute("INSERT INTO ROLE VALUES (".USER_ROLE.", 'User' )");
@@ -259,7 +244,7 @@ This results in a line that looks like:
 ----
 
 ==Text Formatting Within Paragraphs==
-Within a paragraph it is often convenient to make some text bold, italics, 
+Within a paragraph it is often convenient to make some text bold, italics,
 underlined, etc. Below is a quick summary of how to do this:
 ===Wiki Markup===
 {|
@@ -460,7 +445,6 @@ foreach($public_pages as $page_name => $page_content) {
         $page_content, "en-US", "Creating Default Pages",
         "$page_name Wiki Page Created!", "Discuss the page in this thread!");
 }
-
 /* we insert 1 by 1 rather than comma separate as sqlite
    does not support comma separated inserts
  */
@@ -487,7 +471,6 @@ $locales = array(
     array('fa', 'فارسی', 'rl-tb'),
     array('te', 'తెలుగు', 'lr-tb'),
 );
-
 $i = 1;
 foreach($locales as $locale) {
     $db->execute("INSERT INTO LOCALE VALUES ($i, '{$locale[0]}',
@@ -495,7 +478,6 @@ foreach($locales as $locale) {
     $locale_index[$locale[0]] = $i;
     $i++;
 }
-
 $activities = array(
     "manageAccount" => array('db_activity_manage_account',
         array(
@@ -594,10 +576,10 @@ $activities = array(
             "en-US" => 'Server Settings',
             "fr-FR" => 'Serveurs',
         )),
-    "captchaSettings" => array('db_activity_captcha_settings',
+    "security" => array('db_activity_security',
         array(
-            "en-US" => 'Captcha Settings',
-            "fr-FR" => 'Paramètres Captcha',
+            "en-US" => 'Security',
+            "fr-FR" => 'Sécurité',
         )),
 
     "configure" => array('db_activity_configure',
@@ -611,555 +593,6 @@ $activities = array(
         ))
 
 );
-
-$captcha_questions_and_choices = array(
-    // Captcha-Most Questions
-
-    $question_choice_most_pair01 = array(
-       'question' => array('identifier_string' =>'db_most_question01',
-            'method_name' => 'captcha_question_most01',
-            'values' => array('en-US' => "Which lives or lasts the longest?",
-                'fr-FR' => "Qui vit ou dure le plus longtemps?"
-                    )),
-       'choices' => array('identifier_string' => 'db_most_captcha_choices01',
-            'method_name' => 'captcha_choices_most01',
-            'values' => array('en-US' => "lightning, bacteria, ant, dog, ". 
-                "horse, person, oak tree, planet, star, galaxy",
-                'fr-FR' => "la foudre, les bactéries, une fourmi, un chien, ".
-                 "un cheval, une personne, un chêne, une planète, ".
-                 "une étoile, une galaxie"
-                    ))
-
-    ),
-    $question_choice_most_pair02 = array(
-       'question' => array('identifier_string' => 'db_most_question02',
-            'method_name' => 'captcha_question_most02',
-            'values' => array('en-US' => "Which is more abundant?",
-                'fr-FR' => "Quel est le plus abondant?",
-                    )),
-
-       'choices' => array('identifier_string' => 'db_most_captcha_choices02',
-            'method_name' => 'captcha_choices_most02',
-            'values' => array('en-US' => "continents, countries, subways, ".
-                 "cities, doctors, people, hands, teeth, hair, cells, ".
-                 "molecules, atoms, protons",
-                'fr-FR' => "continents, les pays, les métros, les villes, ".
-                 "les médecins, les gens, les mains, les dents, les cheveux, ".
-                 "les cellules, les molécules, les atomes, les protons",
-                    ))
-    ),
-
-
-    $question_choice_most_pair03 = array(
-       'question' => array('identifier_string' => 'db_most_question03',
-            'method_name' => 'captcha_question_most03',
-            'values' => array('en-US' => "Which is usually more pricey?",
-                'fr-FR' => "Quel est généralement plus cher?",
-                    )),
-
-       'choices' => array('identifier_string' => 'db_most_captcha_choices03',
-            'method_name' => 'captcha_choices_most03',
-            'values' => array('en-US' => "a postage stamp, cup of coffee, ".
-                 "movie ticket, shoes, bicycle, one month's rent, car, ".
-                 "house, a power plant",
-                'fr-FR' => "un timbre-poste, tasse de café, ". 
-                 "billet de cinéma, chaussures, vélos, ". 
-                 "la location d'un mois, voiture, maison, ".
-                 "d'une centrale électrique",
-                    ))
-    ),
-
-    $question_choice_most_pair04 = array(
-       'question' => array('identifier_string' => 'db_most_question04',
-            'method_name' => 'captcha_question_most04',
-            'values' => array('en-US' => "Which is more round?",
-                'fr-FR' => "Quel est le plus rond?",
-                    )),
-
-       'choices' => array('identifier_string' => 'db_most_captcha_choices04',
-            'method_name' => 'captcha_choices_most04',
-            'values' => array('en-US' => "a chair, the letter T, a banana, ".
-                 "a pear, an apple, an orange, a sphere",
-                'fr-FR' => "une chaise, la lettre T, une banane, une poire, ".
-                 "une pomme, une orange, une sphère",
-                    ))
-    ),
-
-    $question_choice_most_pair05 = array(
-       'question' => array('identifier_string' => 'db_most_question05',
-            'method_name' => 'captcha_question_most05',
-            'values' => array('en-US' => "Which is usually the largest?",
-                   'fr-FR' => "Quel est généralement le plus grand?",
-                       )),
-       'choices' => array('identifier_string' => 'db_most_captcha_choices05',
-            'method_name' => 'captcha_choices_most05',
-               'values' => array('en-US' => "a coin, a baseball, ". 
-                    "a milk gallon, shopping cart, refrigerator, ". 
-                    "giraffe, house, volcano, the Moon, the Earth",
-                'fr-FR' => "une pièce de monnaie, une balle de baseball, ".
-                 "un gallon de lait, panier, réfrigérateur, girafe, maison, ".
-                 "volcan, la Lune, la Terre",
-                       ))
-    ),
-
-    $question_choice_most_pair06 = array(
-       'question' => array('identifier_string' => 'db_most_question06',
-            'method_name' => 'captcha_question_most06',
-            'values' => array('en-US' => "Which is taller?",
-                  'fr-FR' => "Quel est le plus grand?",
-                      )),
-       'choices' => array('identifier_string' => 'db_most_captcha_choices06',
-            'method_name' => 'captcha_choices_most06',
-               'values' => array('en-US' => "ladybug, mouse, cat, toddler, ". 
-                    "man, horse, elephant, giraffe, tall building, mountain",
-                'fr-FR' => "coccinelle, souris, chat, enfant, homme, ".
-                 "cheval, éléphant, girafe, grand bâtiment, montagne",
-                       ))
-    ),
-
-    $question_choice_most_pair07 = array(
-       'question' => array('identifier_string' => 'db_most_question07',
-            'method_name' => 'captcha_question_most07',
-            'values' => array('en-US' => "Which takes longer?",
-                 'fr-FR' => "Qui prend plus de temps?",
-                     )),
-       'choices' => array('identifier_string' => 'db_most_captcha_choices07',
-            'method_name' => 'captcha_choices_most07',
-               'values' => array('en-US' => "blink, lick envelope, ". 
-                    "comb hair, apply makeup, watch a movie, run marathon, ". 
-                    "olympics, summer vacation, year",
-                'fr-FR' => "clignotement, enveloppe lécher, ".
-                 "peigner les cheveux, appliquer le maquillage, ".
-                 "regarder un film, exécuter marathon, jeux olympiques, ".
-                 "les vacances d'été, l'année",
-                        ))
-    ),
-
-    $question_choice_most_pair08 = array(
-       'question' => array('identifier_string' => 'db_most_question08',
-            'method_name' => 'captcha_question_most08',
-            'values' => array('en-US' => "Which is hotter sounding?",
-                 'fr-FR' => "Quel sondage plus chaud?",
-                     )),
-       'choices' => array('identifier_string' => 'db_most_captcha_choices08',
-            'method_name' => 'captcha_choices_most08',
-               'values' => array('en-US' => "Pluto, polar exploring, ". 
-                    "skating, swimming pool, tea, steam, molten iron, sun",
-                'fr-FR' => "Pluton, exploration polaire, patinage, piscine, ".
-                 "thé, vapeur, fer fondu, le soleil",
-                       ))
-    ),
-
-    $question_choice_most_pair09 = array(
-       'question' => array('identifier_string' => 'db_most_question09',
-            'method_name' => 'captcha_question_most09',
-            'values' => array('en-US' => "Which is the oldest?",
-                 'fr-FR' => "Quel est la plus ancienne?",
-                     )),
-       'choices' => array('identifier_string' => 'db_most_captcha_choices09',
-            'method_name' => 'captcha_choices_most09',
-               'values' => array('en-US' => "fresh milk, current president, ".
-                    "your grandparents, Flight at Kitty Hawk, ". 
-                    "the Black Death, Egyptian Pyramids, writing, ".
-                    "cave paintings, dinosaurs",
-                'fr-FR' => "lait frais, actuel président, ".
-                 "vos grands-parents, vol à Kitty Hawk, la peste noire, ".
-                 "pyramides égyptiennes,  l'écriture, ". 
-                 "les peintures rupestres, des dinosaures",
-                       ))
-    ),
-
-    $question_choice_most_pair10 = array(
-       'question' => array('identifier_string' => 'db_most_question10',
-            'method_name' => 'captcha_question_most10',
-            'values' => array('en-US'=> "Which holds more?",
-                'fr-FR'=> "Qui détient plus?",
-                    )),
-       'choices' => array('identifier_string' => 'db_most_captcha_choices10',
-            'method_name' => 'captcha_choices_most10',
-               'values' => array('en-US'=> "teaspoon, saucer, cup, bowl, ". 
-                    "teapot, wash basin, barrel, pickup truck, ". 
-                    "moving van, oil tanker",
-                'fr-FR'=> "cuillère à café, soucoupe, tasse, bol, théière, ".
-                 "lavabo, baril, camionnette, camion de déménagement, ".
-                  "pétrolier",
-                       ))
-        ),
-
-    //Captcha-Least Questions
-
-    $question_choice_least_pair01 = array(
-       'question' => array('identifier_string' => 'db_least_question01',
-            'method_name' => 'captcha_question_least01',
-               'values' => array('en-US' => "Which lives or lasts the ". 
-                   "shortest?",
-                'fr-FR' => "Qui vit ou dure le plus court?",
-                       )),
-       'choices' => array('identifier_string' => 'db_least_captcha_choices01',
-            'method_name' => 'captcha_choices_least01',
-            'values' => array('en-US' => "lightning, bacteria, ant, dog, ". 
-                 "horse, person, oak tree, planet, star, galaxy",
-                'fr-FR' => "la foudre, les bactéries, une fourmi, un chien, ".
-                  "un cheval, une personne, un chêne, une planète, ". 
-                  "une étoile, une galaxie",
-                      ))
-    ),
-
-    $question_choice_least_pair02 = array(
-       'question' => array('identifier_string' => 'db_least_question02',
-            'method_name' => 'captcha_question_least02',
-               'values' => array('en-US' => "Which is less abundant?",
-                'fr-FR' => "Quel est moins abondante?",
-                       )),
-       'choices' => array('identifier_string' => 'db_least_captcha_choices02',
-            'method_name' => 'captcha_choices_least02',
-            'values' => array('en-US' => "continents, countries, subways, ".
-                 "cities, doctors, people, hands, teeth, hair, cells, ".
-                 "molecules, atoms, protons",
-                'fr-FR' => "continents, les pays, les métros, les villes, ".
-                 "les médecins, les gens, les mains, les dents, ". 
-                 "les cheveux, les cellules, les molécules, ". 
-                 "les atomes, les protons",
-                      ))
-    ),
-
-    $question_choice_least_pair03 = array(
-       'question' => array('identifier_string' => 'db_least_question03',
-            'method_name' => 'captcha_question_least03',
-               'values' => array('en-US' => "Which is usually less pricey?",
-                'fr-FR' => "Quel est généralement moins cher?",
-                       )),
-       'choices' => array('identifier_string' => 'db_least_captcha_choices03',
-            'method_name' => 'captcha_choices_least03',
-             'values' => array('en-US' => "a postage stamp, cup of coffee, ".
-                 "movie ticket, shoes, bicycle, one month's rent, car, ".
-                 "house, a power plant",
-                'fr-FR' => "un timbre-poste, tasse de café, ".
-                 "billet de cinéma, chaussures, vélos, ". 
-                 "la location d'un mois, voiture, maison, ".
-                 "d'une centrale électrique",
-                      ))
-    ),
-
-    $question_choice_least_pair04 = array(
-       'question' => array('identifier_string' => 'db_least_question04',
-            'method_name' => 'captcha_question_least04',
-               'values' => array('en-US' => "Which is less round?",
-                'fr-FR' => "Quel est moins rond?",
-                       )),
-       'choices' => array('identifier_string' => 'db_least_captcha_choices04',
-            'method_name' => 'captcha_choices_least04',
-            'values' => array('en-US' => "a chair, the letter T, a banana, ".
-                 "a pear, an apple, an orange, a sphere",
-                'fr-FR' => "une chaise, la lettre T, une banane, une poire, ".
-                 "une pomme, une orange, une sphère",
-                      ))
-    ),
-
-    $question_choice_least_pair05 = array(
-       'question' => array('identifier_string' => 'db_least_question05',
-            'method_name' => 'captcha_question_least05',
-               'values' => array('en-US' => "Which is usually the smallest?",
-                'fr-FR' => "Quel est généralement le plus petit?",
-                       )),
-       'choices' => array('identifier_string' => 'db_least_captcha_choices05',
-            'method_name' => 'captcha_choices_least05',
-            'values' => array('en-US' => "a coin, a baseball, ". 
-                 "a milk gallon, shopping cart, refrigerator, ". 
-                 "giraffe,house, volcano, the Moon, the Earth",
-                'fr-FR' => "une pièce de monnaie, une balle de baseball, ".
-                 "un gallon de lait, panier, réfrigérateur, girafe, ".
-                 "maison, volcan, la Lune, la Terre",
-                      ))
-    ),
-
-    $question_choice_least_pair06 = array(
-       'question' => array('identifier_string' => 'db_least_question06',
-            'method_name' => 'captcha_question_least06',
-            'values' => array('en-US' => "Which is shorter?",
-                'fr-FR' => "Quel est le plus court?",
-                       )),
-       'choices' => array('identifier_string' => 'db_least_captcha_choices06',
-            'method_name' => 'captcha_choices_least06',
-            'values' => array('en-US' => "ladybug, mouse, cat, toddler, ".
-                 "man, horse, elephant, giraffe, tall building, mountain",
-                'fr-FR' => "coccinelle, souris, chat, enfant, homme, ".
-                 "cheval, éléphant, girafe, grand bâtiment, montagne",
-                      ))
-    ),
-
-    $question_choice_least_pair07 = array(
-       'question' => array('identifier_string' => 'db_least_question07',
-            'method_name' => 'captcha_question_least07',
-               'values' => array('en-US' => "Which takes less time?",
-                'fr-FR' => "Qui prend moins de temps?",
-                       )),
-       'choices' => array('identifier_string' => 'db_least_captcha_choices07',
-            'method_name' => 'captcha_choices_least07',
-            'values' => array('en-US' => "blink, lick envelope, comb hair, ".
-                 "apply makeup, watch a movie, run marathon, olympics, ".
-                 "summer vacation, year",
-                'fr-FR' => "clignotement, enveloppe lécher, ".
-                 "peigner les cheveux, appliquer le maquillage, ".
-                 "regarder un film, exécuter marathon, ".
-                 "jeux olympiques, les vacances d'été, l'année",
-                      ))
-    ),
-
-    $question_choice_least_pair08 = array(
-       'question' => array('identifier_string' => 'db_least_question08',
-            'method_name' => 'captcha_question_least08',
-            'values' => array('en-US' => "Which is colder sounding?",
-                'fr-FR' => "Quel est le sondage froid?",
-                      )),
-       'choices' => array('identifier_string' => 'db_least_captcha_choices08',
-            'method_name' => 'captcha_choices_least08',
-            'values' => array('en-US' => "Pluto, polar exploring, skating, ".
-                 "swimming pool, tea, steam, molten iron, sun",
-                'fr-FR' => "Pluton, exploration polaire, patinage, piscine, ".
-                 "thé, vapeur, fer fondu, le soleil",
-                     ))
-    ),
-
-    $question_choice_least_pair09 = array(
-       'question' => array('identifier_string' => 'db_least_question09',
-            'method_name' => 'captcha_question_least09',
-            'values' => array('en-US' => "Which is the newest?",
-                'fr-FR' => "Quel est le plus récent?",
-                     )),
-       'choices' => array('identifier_string' => 'db_least_captcha_choices09',
-            'method_name' => 'captcha_choices_least09',
-            'values' => array('en-US' => "fresh milk, current president, ".
-                 "your grandparents, Flight at Kitty Hawk, the Black Death, ".
-                 "Egyptian Pyramids, writing, cave paintings, dinosaurs",
-                'fr-FR' => "lait frais, actuel président, ". 
-                 "vos grands-parents, vol à Kitty Hawk, la peste noire, ". 
-                 "pyramides égyptiennes, l'écriture, ". 
-                 "les peintures rupestres, des dinosaures",
-                    ))
-    ),
-
-    $question_choice_least_pair10 = array(
-       'question' => array('identifier_string' => 'db_least_question10',
-            'method_name' => 'captcha_question_least10',
-            'values' => array('en-US' => "Which holds less?",
-                'fr-FR' => "Qui détient moins?",
-                    )),
-       'choices' => array('identifier_string' => 'db_least_captcha_choices10',
-            'method_name' => 'captcha_choices_least10',
-            'values' => array('en-US' => "teaspoon, saucer, cup, bowl, ". 
-                "teapot, wash basin, barrel, pickup truck, moving van, ". 
-                "oil tanker",
-                'fr-FR' => "cuillère à café, soucoupe, tasse, bol, théière, ".
-                 "lavabo, baril, camionnette, camion de déménagement, ".
-                 "pétrolier",
-                    ))
-    ),
-);
-
-
-$preferences_questions_and_choices = array(
-    //Preferences-Most Questions
-
-    $preferences_choice_most_pair01 = array(
-       'question' => array('identifier_string' => 'db_most_prefquestion01',
-            'method_name' => 'preferences_question_most01',
-            'values' => array('en-US' => "Animal you like the best:",
-                'fr-FR' => "Animal que vous aimez le mieux:",
-                     )),
-       'choices' => array('identifier_string' => 'db_most_prefchoices01',
-            'method_name' => 'preferences_choices_most01',
-            'values' => array('en-US' => "ant, bunny, cat, cockroach, ".
-                 "dog, goldfish, hamster, horse, snake, tiger, whale",
-                'fr-FR' => "fourmi, lapin, chat, cafard, chien, ". 
-                 "poisson d'or, hamster, cheval, serpent, ". 
-                 "araignée, tigre, baleine",
-                    ))
-    ),
-
-    $preferences_choice_most_pair02 = array(
-       'question' => array('identifier_string' => 'db_most_prefquestion02',
-            'method_name' => 'preferences_question_most02',
-            'values' => array('en-US' => "Color you like the most:",
-                'fr-FR' => "Couleur que vous aimez le plus:",
-                     )),
-       'choices' => array('identifier_string' => 'db_most_prefchoices02',
-            'method_name' => 'preferences_choices_most02',
-            'values' => array('en-US' => "no color, aquamarine, blue, ". 
-                 "brown, gold, green, gray, mauve, pink, periwinkle, ". 
-                 "purple, red, silver, turquoise, yellow",
-                'fr-FR' => "pas de couleur, aigue-marine, bleu, brun, or, ".
-                 "vert, gris, mauve, rose, bigorneau, pourpre, rouge, ".
-                 "argent, turquoise, jaune",
-                    ))
-    ),
-
-    $preferences_choice_most_pair03 = array(
-       'question' => array('identifier_string' => 'db_most_prefquestion03',
-            'method_name' => 'preferences_question_most03',
-            'values' => array('en-US' => "Food you like the most:",
-                'fr-FR' => "Nourriture que vous aimez le plus:",
-                     )),
-       'choices' => array('identifier_string' => 'db_most_prefchoices03',
-            'method_name' => 'preferences_choices_most03',
-            'values' => array('en-US' => "apple, banana, chicken, fish, ".
-                 "lamb, nuts, orange, pork, potato, tomato, steak",
-                'fr-FR' => "pomme, banane, poulet, poisson, agneau, ".
-                 "noix, orange, porc, pomme de terre, la tomate, le steak",
-                    ))
-    ),
-
-    $preferences_choice_most_pair04 = array(
-       'question' => array('identifier_string' => 'db_most_prefquestion04',
-            'method_name' => 'preferences_question_most04',
-            'values' => array('en-US' => "Drink you like the most:",
-                'fr-FR' => "Boisson vous aimez le plus:",
-                     )),
-       'choices' => array('identifier_string' => 'db_most_prefchoices04',
-            'method_name' => 'preferences_choices_most04',
-            'values' => array('en-US' => "apple juice, beer, coffee, ". 
-                 "hot tea, ice tea, lemonade, orange juice, soda, ". 
-                 "sparkling water, still water, wine",
-                'fr-FR' => "jus de pomme, bière, café, thé chaud, ". 
-                 "thé glacé, limonade, jus d'orange, soda, ". 
-                 "eau gazeuse, eau plate, vin",
-                    ))
-    ),
-
-    $preferences_choice_most_pair05 = array(
-       'question' => array('identifier_string' => 'db_most_prefquestion05',
-            'method_name' => 'preferences_question_most05',
-            'values' => array('en-US' => "Game you like the most:",
-                'fr-FR' => "Jeu que vous aimez le plus:",
-                     )),
-       'choices' => array('identifier_string' => 'db_most_prefchoices05',
-            'method_name' => 'preferences_choices_most05',
-            'values' => array('en-US' => "basketball, backgammon, checkers, ".
-                 "chess, football, hockey, skate, ski, tennis, volleyball",
-                'fr-FR' => "basket-ball, backgammon, dames, échecs, ".
-                 "football, hockey, patin, ski, tennis, volley-ball",
-                    ))
-    ),
-
-    $preferences_choice_most_pair06 = array(
-       'question' => array('identifier_string' => 'db_most_prefquestion06',
-            'method_name' => 'preferences_question_most06',
-            'values' => array('en-US' => "Sound you like the most:",
-                'fr-FR' => "Son que vous aimez le plus: ",
-                     )),
-       'choices' => array('identifier_string' => 'db_most_prefchoices06',
-            'method_name' => 'preferences_choices_most06',
-            'values' => array('en-US' => "accordion, drum, flute, guitar, ".
-                 "harmonica, harp, horn, oboe, piano, triangle, trumpet, ".
-                 "violin, whistle, xylophone",
-                'fr-FR' => "accordéon, tambour, flûte, guitare, harmonica, ".
-                 "harpe, cor, hautbois, piano, triangle, trompette, violon, ".
-                 "sifflet, xylophone",
-                    ))
-    ),
-
-    //Preferences-Least Questions
-
-    $preferences_choice_least_pair01 = array(
-       'question' => array('identifier_string' => 'db_least_prefquestion01',
-            'method_name' => 'preferences_question_least01',
-            'values' => array('en-US' => "Animal you like the least:",
-                'fr-FR' => "Animal que vous aimez le moins:",
-                     )),
-       'choices' => array('identifier_string' => 'db_least_prefchoices01',
-            'method_name' => 'preferences_choices_least01',
-            'values' => array('en-US' => "ant, bunny, cat, cockroach, dog, ".
-                 "goldfish, hamster, horse, snake, tiger, whale",
-                'fr-FR' => "fourmi, lapin, chat, cafard, chien, ".
-                 "poisson d'or, hamster, cheval, serpent, araignée, ".
-                 "tigre, baleine",
-                    ))
-    ),
-
-    $preferences_choice_least_pair02 = array(
-       'question' => array('identifier_string' => 'db_least_prefquestion02',
-            'method_name' => 'preferences_question_least02',
-            'values' => array('en-US' => "Color you like the least:",
-                'fr-FR' => "Couleur que vous aimez le moins:",
-                     )),
-       'choices' => array('identifier_string' => 'db_least_prefchoices02',
-            'method_name' => 'preferences_choices_least02',
-            'values' => array('en-US' => "no color, aquamarine, blue, ". 
-                 "brown, gold, green, gray, mauve, pink, periwinkle, ". 
-                 "purple, red, silver, turquoise, yellow",
-                'fr-FR' => "pas de couleur, aigue-marine, bleu,brun, or, ".
-                 "vert, gris, mauve, rose, bigorneau, pourpre, rouge, ". 
-                 "argent, turquoise, jaune",
-                    ))
-    ),
-
-    $preferences_choice_least_pair03 = array(
-       'question' => array('identifier_string' => 'db_least_prefquestion03',
-            'method_name' => 'preferences_question_least03',
-            'values' => array('en-US' => "Food you like the least:",
-                'fr-FR' => "Nourriture que vous aimez le moins:",
-                     )),
-       'choices' => array('identifier_string' => 'db_least_prefchoices03',
-            'method_name' => 'preferences_choices_least03',
-            'values' => array('en-US' => "apple, banana, chicken, fish, ".
-                 "lamb, nuts, orange, pork, potato, tomato, steak",
-                'fr-FR' => "pomme, banane, poulet, poisson, agneau, noix, ".
-                 "orange, porc, pomme de terre, la tomate, le steak",
-                    ))
-    ),
-
-    $preferences_choice_least_pair04 = array(
-       'question' => array('identifier_string' => 'db_least_prefquestion04',
-            'method_name' => 'preferences_question_least04',
-            'values' => array('en-US' => "Drink you like the least:",
-                'fr-FR' => "Boisson vous aimez le moins:",
-                     )),
-       'choices' => array('identifier_string' => 'db_least_prefchoices04',
-            'method_name' => 'preferences_choices_least04',
-            'values' => array('en-US' => "apple juice, beer, coffee, ". 
-                 "hot tea, ice tea, lemonade, orange juice, soda, ". 
-                 "sparkling water, still water, wine",
-                'fr-FR' => "jus de pomme, bière, café, thé chaud, ". 
-                 "thé glacé, limonade, jus d'orange, soda, ". 
-                 "eau gazeuse, eau plate, vin",
-                    ))
-    ),
-
-    $preferences_choice_least_pair05 = array(
-       'question' => array('identifier_string' => 'db_least_prefquestion05',
-            'method_name' => 'preferences_question_least05',
-            'values' => array('en-US' => "Game you like the least:",
-                'fr-FR' => "Jeu que vous aimez le moins:",
-                     )),
-       'choices' => array('identifier_string' => 'db_least_prefchoices05',
-            'method_name' => 'preferences_choices_least05',
-            'values' => array('en-US' => "basketball, backgammon, ". 
-                 "checkers, chess, football, hockey, skate, ski, ". 
-                 "tennis, volleyball",
-                'fr-FR' => "basket-ball, backgammon, dames, échecs, ". 
-                 "football, hockey, patin, ski, tennis, volley-ball",
-                    ))
-    ),
-
-    $preferences_choice_least_pair06 = array(
-       'question' => array('identifier_string' => 'db_least_prefquestion06',
-            'method_name' => 'preferences_question_least06',
-            'values' => array('en-US' => "Sound you like the least:",
-                'fr-FR' => "Son que vous aimez le moins: ",
-                     )),
-       'choices' => array('identifier_string' => 'db_least_prefchoices06',
-            'method_name' => 'preferences_choices_least06',
-            'values' => array('en-US' => "accordion, drum, flute, guitar, ".
-                 "harmonica, harp, horn, oboe, piano, triangle, trumpet, ".
-                 "violin, whistle, xylophone",
-                'fr-FR' => "accordéon, tambour, flûte, guitare, harmonica, ".
-                 "harpe, cor, hautbois, piano, triangle, trompette, violon, ".
-                 "sifflet, xylophone",
-                    ))
-    ),
-);
-
-
 $i = 1;
 foreach($activities as $activity => $translation_info) {
     // set-up activity
@@ -1172,152 +605,15 @@ foreach($activities as $activity => $translation_info) {
         $index = $locale_index[$locale_tag];
         $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES ($i, $index,
             '$translation')");
-
     }
-
     $i++;
 }
-
-foreach($captcha_questions_and_choices as $captcha_question_and_choice) {
-    $question_data = $captcha_question_and_choice['question'];
-    $choices_data = $captcha_question_and_choice['choices'];
-    $identifier_string_question = $question_data['identifier_string'];
-    $identifier_string_choices = $choices_data['identifier_string'];
-    $method_name_question = $question_data['method_name'];
-    $method_name_choices = $choices_data['method_name'];
-    $values_question = $question_data['values'];
-    $values_choices = $choices_data['values'];
-
-    $sql_question_translation =  "INSERT INTO TRANSLATION ". 
-            "(IDENTIFIER_STRING) VALUES(?)";
-    $question_translation_result = $db->execute($sql_question_translation,
-            array($identifier_string_question));
-    if($question_translation_result) {
-        $translation_id_question = $db->insertID();
-    }
-    $sql_choices_translation =  "INSERT INTO TRANSLATION ". 
-            "(IDENTIFIER_STRING) VALUES(?)";
-    $choices_translation_result = $db->execute($sql_choices_translation,
-            array($identifier_string_choices));
-    if($choices_translation_result) {
-        $translation_id_choices = $db->insertID();
-    }
-    $sql_mapping = "INSERT INTO QUESTION_CHOICE_MAPPING ".
-            "(TRANSLATION_ID_QUESTION, TRANSLATION_ID_CHOICES) ".
-            "VALUES (?,?)";
-    $result_mapping = $db->execute($sql_mapping,
-            array($translation_id_question, $translation_id_choices));
-    if(!$result_mapping) {
-        return false;
-    }
-
-    $sql_question = "INSERT INTO CAPTCHA (TRANSLATION_ID, METHOD_NAME) ".
-            "VALUES (?,?)";
-    $result_question = $db->execute($sql_question,
-            array($translation_id_question, $method_name_question));
-    if((!$result_question)) {
-        return false;
-    }
-
-    foreach($question_data['values'] as $locale_tag => $translation_question) {
-        $index_captcha_question_and_choices = $locale_index[$locale_tag];
-        $db->execute("INSERT INTO TRANSLATION_LOCALE
-            VALUES ($translation_id_question,
-            $index_captcha_question_and_choices,
-            '".$db->escapeString($translation_question)."')");
-     }
-     foreach($choices_data['values'] as $locale_tag => $translation_choices) {
-         $index_captcha_question_and_choices = $locale_index[$locale_tag];
-         $db->execute("INSERT INTO TRANSLATION_LOCALE
-             VALUES ($translation_id_choices,
-             $index_captcha_question_and_choices,
-             '".$db->escapeString($translation_choices)."')");
-    }
-    $sql_choices = "INSERT INTO CAPTCHA (TRANSLATION_ID, METHOD_NAME)
-        VALUES (?,?)";
-    $result_choices = $db->execute($sql_choices, array($translation_id_choices,
-        $method_name_choices));
-    if((!$result_choices)) {
-       return false;
-    }
-}
-
-foreach($preferences_questions_and_choices as
-            $preferences_question_and_choice) {
-    $questionpref_data = $preferences_question_and_choice['question'];
-    $choicespref_data = $preferences_question_and_choice['choices'];
-    $identifierpref_string_question = $questionpref_data['identifier_string'];
-    $identifierpref_string_choices = $choicespref_data['identifier_string'];
-    $methodpref_name_question = $questionpref_data['method_name'];
-    $methodpref_name_choices = $choicespref_data['method_name'];
-    $valuespref_question = $questionpref_data['values'];
-    $valuespref_choices = $choicespref_data['values'];
-
-    $sqlpref_question_translation =  "INSERT INTO TRANSLATION ". 
-            "(IDENTIFIER_STRING) VALUES(?)";
-    $questionpref_translation_result =
-            $db->execute($sqlpref_question_translation,
-            array($identifierpref_string_question));
-    if($questionpref_translation_result) {
-        $translation_id_questionpref = $db->insertID();
-    }
-    $sqlpref_choices_translation =  "INSERT INTO TRANSLATION ".
-            "(IDENTIFIER_STRING) VALUES(?)";
-    $choicespref_translation_result =
-            $db->execute($sqlpref_choices_translation,
-            array($identifierpref_string_choices));
-    if($choicespref_translation_result) {
-        $translation_id_choicespref = $db->insertID();
-    }
-
-    $sql_mapping = "INSERT INTO QUESTION_CHOICE_MAPPING ".
-            "(TRANSLATION_ID_QUESTION, TRANSLATION_ID_CHOICES) ".
-            "VALUES (?,?)";
-    $result_mapping = $db->execute($sql_mapping,
-            array($translation_id_questionpref, $translation_id_choicespref));
-    if(!$result_mapping) {
-        return false;
-    }
-
-    $sqlpref_question = "INSERT INTO PREFERENCES ". 
-            "(TRANSLATION_ID, METHOD_NAME) VALUES (?,?)";
-    $resultpref_question = $db->execute($sqlpref_question,
-            array($translation_id_questionpref, $methodpref_name_question));
-    if((!$resultpref_question)) {
-        return false;
-    }
-
-     foreach($questionpref_data['values'] as $locale_tag =>
-            $translation_questionpref) {
-       $index_preferences_question_and_choices = $locale_index[$locale_tag];
-       $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
-            ($translation_id_questionpref,
-            $index_preferences_question_and_choices,
-           '".$db->escapeString($translation_questionpref)."')");
-    }
-    foreach($choicespref_data['values'] as $locale_tag =>
-            $translation_choicespref) {
-         $index_captcha_question_and_choices = $locale_index[$locale_tag];
-         $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
-             ($translation_id_choicespref, $index_captcha_question_and_choices,
-             '".$db->escapeString($translation_choicespref)."')");
-    }
-    $sqlpref_choices = "INSERT INTO PREFERENCES ". 
-            "(TRANSLATION_ID, METHOD_NAME) VALUES (?,?)";
-    $resultpref_choices = $db->execute($sqlpref_choices,
-            array($translation_id_choicespref, $methodpref_name_choices));
-    if((!$resultpref_choices)){
-        return false;
-    }
-}
-
 $new_user_activities = array(
     "manageAccount",
     "manageGroups",
     "mixCrawls",
     "groupFeeds"
 );
-
 foreach($new_user_activities as $new_activity) {
     $i = 1;
     foreach($activities as $key => $value) {
@@ -1329,7 +625,6 @@ foreach($new_user_activities as $new_activity) {
         $i++;
     }
 }
-
 $db->execute("INSERT INTO MEDIA_SOURCE VALUES ('1342634195',
     'YouTube', 'video', 'http://www.youtube.com/watch?v={}&',
     'http://i1.ytimg.com/vi/{}/default.jpg', '')");
@@ -1348,7 +643,6 @@ $db->execute("INSERT INTO MEDIA_SOURCE VALUES ('1342634199',
 $db->execute("INSERT INTO MEDIA_SOURCE VALUES ('1342634200',
     'Yahoo News', 'rss', 'http://news.yahoo.com/rss/',
     '', 'en')");
-
 $db->execute("INSERT INTO CRAWL_MIXES VALUES (2, 'images', ".ROOT_ID.", -1)");
 $db->execute("INSERT INTO MIX_FRAGMENTS VALUES(2, 0, 1)");
 $db->execute("INSERT INTO MIX_COMPONENTS VALUES(
@@ -1409,13 +703,9 @@ $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
         (1004, 16, '新闻' )");
 $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
         (1004, 20, 'اخبار' )");
-
-
-
 $db->disconnect();
 if(in_array(DBMS, array('sqlite','sqlite3' ))){
     chmod(CRAWL_DIR."/data/".DB_NAME.".db", 0666);
 }
-
 echo "Create DB succeeded\n";
 ?>

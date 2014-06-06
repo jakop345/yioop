@@ -30,21 +30,17 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * Element responsible for drawing the page with more
- * search option, account, and tool info
+ * search source options, create account, and tool info
  *
  * @author Chris Pollett
  * @package seek_quarry
  * @subpackage element
  */
-
 class MoreoptionsElement extends Element
 {
-
     /**
      *  Method responsible for drawing the page with more
      *  search option, account, and tool info

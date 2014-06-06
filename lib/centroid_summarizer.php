@@ -46,27 +46,27 @@ require_once BASE_DIR."/lib/phrase_parser.php";
 /**
  * Load in locale specific tokenizing code
  */
-foreach(glob(LOCALE_DIR."/*/resources/tokenizer.php")
-    as $filename) {
+foreach(glob(LOCALE_DIR."/*/resources/tokenizer.php") as $filename) {
     require_once $filename;
 }
-
+/**
+ *  Class which may be used by TextProcessors to get a summary for a text
+ *  document that may later be used for indexing. It does this by doing
+ *  centroid-based clustering. It also generates a word cloud for a document
+ */
 class CentroidSummarizer
 {
-
     /**
      * Number of bytes in a sentence before it is considered long
      * We use strlen rather than mbstrlen. This might actually be
      * a better metric of the potential of a sentence to have info.
      */
     const LONG_SENTENCE_LEN = 30;
-
     /**
      * Number of sentences in a document before only consider longer
      * sentences in cenroid
      */
     const LONG_SENTENCE_THRESHOLD = 200;
-
     /**
      *  Generates a centroid with which every sentence is ranked with cosine
      *  ranking method and also generates a word cloud.
@@ -155,7 +155,6 @@ class CentroidSummarizer
             $i++;
         }
         ksort($wc);
-
         /* Calculate similarity measure between centroid and each sentence */
         $sim = array();
         for($i=0; $i < $n; $i++) {
@@ -263,7 +262,6 @@ class CentroidSummarizer
             ' ', mb_strtolower($sent)));
         return $sent;
     }
-
     /**
      *  Formats the document to remove carriage returns, hyphens and digits
      *  as we will not be using digits in word cloud.
@@ -278,7 +276,6 @@ class CentroidSummarizer
         $content = preg_replace($substitute, ' ', mb_strtolower($content));
         return $content;
     }
-
     /**
      *  This function does an additional processing on the page
      *  such as removing all the tags from the page

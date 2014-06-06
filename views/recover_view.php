@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * This View is responsible for drawing the
  * screen for recovering a forgotten password
@@ -47,7 +45,6 @@ class RecoverView extends View
      *  @var string
      */
     var $layout = "web";
-
     /**
      *  Draws the recover password web page and the page one get after
      *  following the recover password email
@@ -109,7 +106,7 @@ class RecoverView extends View
                         <tr>
                             <th class="table-label">
                                 <label for="password"><?php
-                                    e(tl('register_view_password'));
+                                    e(tl('register_view_new_password'));
                                 ?></label>
                             </th>
                             <td class="table-input">
@@ -148,43 +145,55 @@ class RecoverView extends View
                     }
                     if($activity == "recoverComplete") {
                         $question_sets = array(
-                            tl('register_view_account_recovery')
-                                =>$data['RECOVERY']);
+                            tl('register_view_account_recovery') =>
+                            $data['RECOVERY']);
                     } else {
-                       if(isset($_SESSION["random_string"])) {
+                       if(CAPTCHA_MODE != TEXT_CAPTCHA) {
                             $question_sets = array();
-                        } else {
+                       } else {
                             $question_sets = array(
                                 tl('register_view_human_check') =>
-                                $data['CAPTCHAS'] );
+                                $data['CAPTCHA'] );
+                       }
+                    }
+                    $i = 0;
+                    foreach($question_sets as $name => $set) {
+                        $first = true;
+                        $num = count($set);
+                        foreach($set as $question) {
+                            if($first) { ?>
+                                <tr><th class="table-label"
+                                    rowspan='<?php e($num); ?>'><?php
+                                    e($name);
+                                ?></th><td class="table-input border-top">
+                            <?php
+                            } else { ?>
+                                <tr><td class="table-input">
+                            <?php
+                            }
+                            $this->helper("options")->render(
+                                "question-$i", "question_$i",
+                                $question, $data["question_$i"]);
+                            $first = false;
+                            e(in_array("question_$i", $missing)
+                                ?'<span class="red">*</span>':'');
+                            e("</td></tr>");
+                            $i++;
                         }
                     }
-                    if(isset($_SESSION["random_string"])) {
-                        $i = 0;
-                        foreach($question_sets as $name => $set) {
-                            $first = true;
-                            $num = count($set);
-                            foreach($set as $question) {
-                                if($first) { ?>
-                                    <tr><th class="table-label"
-                                        rowspan='<?php e($num); ?>'><?php
-                                        e($name);
-                                    ?></th><td class="table-input border-top">
-                                <?php
-                                } else { ?>
-                                    <tr><td class="table-input">
-                                <?php
-                                }
-                                $this->helper("options")->render(
-                                    "question-$i", "question_$i",
-                                    $question, $data["question_$i"]);
-                                $first = false;
-                                e(in_array("question_$i", $missing)
-                                    ?'<span class="red">*</span>':'');
-                                e("</td></tr>");
-                                $i++;
-                            }
-                        }
+                    if(isset($data['CAPTCHA_IMAGE'])) {
+                        ?>
+                        <tr><th class="table-label" rowspan='2'><label
+                            for="user-captcha-text"><?php
+                            e(tl('register_view_human_check'));
+                            ?></label></th><td><img class="captcha"
+                            src="<?php
+                            e($data['CAPTCHA_IMAGE']); ?>" alt="CAPTCHA">
+                            </td></tr><tr><td>
+                            <input type="text" maxlength="6"
+                            id="user-captcha-text" class="narrow-field"
+                            name="user_captcha_text"/></td></tr>
+                        <?php
                     }
                     ?>
                     <tr>

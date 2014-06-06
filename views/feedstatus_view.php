@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * This view is used to display information about
  * crawls that have been made by this seek_quarry instance
@@ -41,10 +39,8 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @package seek_quarry
  * @subpackage view
  */
-
 class FeedstatusView extends View
 {
-
     /**
      * An Ajax call from the My Group Feeds element in Admin View triggers
      * this view to be instantiated. The renderView method then draws

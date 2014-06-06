@@ -30,21 +30,16 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  *Loads base class for iterating
  */
 require_once BASE_DIR.
     '/lib/archive_bundle_iterators/archive_bundle_iterator.php';
-
 /** For bzip2 compression*/
 require_once BASE_DIR.'/lib/bzip2_block_iterator.php';
-
 /** For webencode */
 require_once BASE_DIR.'/lib/utility.php';
-
 /**
  * Used to iterate through the records of a collection of text or compressed
  * text-oriented records
@@ -127,7 +122,6 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
      * @var resource
      */
     var $buffer_fh;
-
     /**
      * Which block of self::BUFFER_SIZE from the current archive
      * file is stored in the file $this->buffer_filename
@@ -135,7 +129,6 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
      * @var int
      */
     var $buffer_block_num;
-
     /**
      * Name of a buffer file to be used to reduce gzseek calls in the
      * case where gzip compression is being used
@@ -143,7 +136,6 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
      * @var string
      */
     var $buffer_filename;
-
     /**
      * Name of function to be call whenever the partition is changed
      * that the iterator is reading. The point of the callback is to
@@ -152,7 +144,6 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
      * @var string
      */
     var $switch_partition_callback_name = NULL;
-
     /**
      * Contains basic parameters of how this iterate works: compression,
      * start and stop delimiter. Typically, this data is read from the
@@ -161,13 +152,11 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
      * @var array
      */
     var $ini;
-
     /**
      * How many bytes at a time should be read from the current archive
      * file into the buffer file. 8192 = BZip2BlockIteraror::BlOCK_SIZE
      */
     const BUFFER_SIZE = 16384000;
-
     /**
      *  Estimate of the maximum size of a record stored in a text archive
      *  Data in archives is split into chunk of buffer size plus two record
@@ -209,9 +198,7 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
             }
             $extension = $ini['file_extension'];
         }
-
         $this->setIniInfo($ini);
-
         if($this->start_delimiter == "" && $this->end_delimiter == "" &&
             $this->iterate_dir != false) {
             crawlLog("At least one of start or end delimiter must be set!!");
@@ -233,7 +220,6 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
             $this->reset();
         }
     }
-
     /**
      *  Mutator Method for controller how this text archive iterator behaves
      *  Normally, data, on compression, start, stop delimiter read from an ini
@@ -270,7 +256,6 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
             $this->encoding = "UTF-8";
         }
     }
-
     /**
      * Estimates the important of the site according to the weighting of
      * the particular archive iterator
@@ -282,7 +267,6 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
     {
         return false;
     }
-
     /**
      * Resets the iterator to the start of the archive bundle
      */
@@ -305,7 +289,6 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
             unlink($this->buffer_filename);
         }
     }
-
     /**
      *  Called to get the next chunk of BUFFER_SIZE + 2 MAX_RECORD_SIZE bytes
      *  of data from the text archive. This data is returned unprocessed in
@@ -334,7 +317,6 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
         $this->saveCheckpoint();
         return $info;
     }
-
     /**
      *  Helper function for nextChunk to advance the parition if we are
      *  at the end of the current archive file
@@ -357,7 +339,6 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
         }
         $info[self::START_PARTITION] = true;
     }
-
     /**
      * Gets the next at most $num many docs from the iterator. It might return
      * less than $num many documents if the partition changes or the end of the
@@ -407,13 +388,11 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
         $this->saveCheckpoint();
         return $pages;
     }
-
     /**
      * Gets the next doc from the iterator
      * @param bool $no_process if true then just return page string found
      *      not any additional meta data.
      * @return mixed associative array for doc or just string of doc
-     *
      */
     function nextPage($no_process = false)
     {
@@ -448,7 +427,6 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
             }
         }
         if($no_process == true) {return $page; }
-
         $site = array();
         $site[self::HEADER] = "text_archive_bundle_iterator extractor";
         $site[self::IP_ADDRESSES] = array("0.0.0.0");
@@ -462,12 +440,9 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
         $site[self::SERVER] = "unknown";
         $site[self::SERVER_VERSION] = "unknown";
         $site[self::OPERATING_SYSTEM] = "unknown";
-
         $site[self::WEIGHT] = 1;
         return $site;
     }
-
-
     /**
      * Reads and return the block of data from the current partition
      * @return mixed a uncompressed string from the current partitin
@@ -478,7 +453,6 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
         $block = NULL;
         return $this->fileGets();
     }
-
     /**
      * Acts as gzread($num_bytes, $archive_file), hiding the fact that
      * buffering of the archive_file is being done to a buffer file
@@ -496,7 +470,6 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
         } while($len < $num_bytes && $this->updateBuffer());
         return $read_string;
     }
-
     /**
      * Acts as gzgets(), hiding the fact that
      * buffering of the archive_file is being done to a buffer file
@@ -512,7 +485,6 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
         } while(feof($this->buffer_fh) && $this->updateBuffer());
         return $read_string;
     }
-
     /**
      *  If reading from a gzbuffer file goes off the end of the current
      *  buffer, reads in the next block from archive file.
@@ -528,7 +500,6 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
         $this->buffer_block_num++;
         return $this->makeBuffer($buffer, $return_string);
     }
-
     /**
      *  Reads in block $this->buffer_block_num of size self::BUFFER_SIZE from
      *  the archive file
@@ -575,11 +546,9 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
                         return false;
                     }
                 break;
-
                 case 'gzip':
                     $buffer = gzread($this->fh, $padded_buffer_size);
                 break;
-
                 case 'plain':
                     $buffer = fread($this->fh, $padded_buffer_size);
                 break;
@@ -608,7 +577,6 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
             return !is_null($this->bz2_iterator);
         }
     }
-
     /**
      *  Checks if this object's archive's current partition is at an end of file
      *
@@ -635,7 +603,6 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
         }
         return $eof;
     }
-
     /**
      *  Wrapper around particular compression scheme fopen function
      *
@@ -670,7 +637,6 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
         $this->buffer_block_num = -1;
         $this->current_offset = 0;
     }
-
     /**
      *  Wrapper around particular compression scheme fclose function
      */
@@ -694,7 +660,6 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
         }
         fclose($this->buffer_fh);
     }
-
     /**
      *  Returns the current position in the current iterator partition file
      *  for the given compression scheme.
@@ -705,8 +670,6 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
     {
         return ftell($this->buffer_fh);
     }
-
-
     /**
      * Stores the current progress to the file iterate_status.txt in the result
      * dir such that a new instance of the iterator could be constructed and
@@ -729,7 +692,6 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
         file_put_contents($this->status_filename,
             serialize($info));
     }
-
     /**
      * Restores  the internal state from the file iterate_status.txt in the
      * result dir such that the next call to nextPages will pick up from just
@@ -765,7 +727,6 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
         $this->current_offset = $info['current_offset'];
         return $info;
     }
-
     /**
      * Used to extract data between two tags. After operation $this->buffer has
      * contents after the close tag.
@@ -780,7 +741,6 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
         if(!isset($info[1])) {return $info; }
         return $info[0];
     }
-
     /**
      * Used to extract data between two tags for the first tag found
      * amongst the array of tags $tags. After operation $this->buffer has

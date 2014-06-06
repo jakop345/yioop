@@ -30,15 +30,12 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  *Loads base class for iterating
  */
 require_once BASE_DIR.
     '/lib/archive_bundle_iterators/text_archive_bundle_iterator.php';
-
 /**
  * Used to iterate through the records of a collection of warc files stored in
  * a WebArchiveBundle folder. Warc is the newer file format of the
@@ -75,7 +72,6 @@ class WarcArchiveBundleIterator extends TextArchiveBundleIterator
         parent::__construct($iterate_timestamp, $iterate_dir,
             $result_timestamp, $result_dir, $ini);
     }
-
     /**
      * Gets the next doc from the iterator
      * @param bool $no_process do not do any processing on page data
@@ -116,7 +112,9 @@ class WarcArchiveBundleIterator extends TextArchiveBundleIterator
         }
         return $site;
     }
-
+    /**
+     * Used to advance the file pointer to the start of a WARD record
+     */
     function getRecordStart()
     {
         do {
@@ -125,7 +123,6 @@ class WarcArchiveBundleIterator extends TextArchiveBundleIterator
         $this->current_offset = $this->fileTell() - strlen($line);
         fseek($this->buffer_fh, $this->current_offset);
     }
-
     /**
      * Used to parse the header portion of a WARC record
      *

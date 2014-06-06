@@ -31,125 +31,125 @@
  * @filesource
  */
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
+/** Loads common constants for web crawling*/
+require_once BASE_DIR."/lib/crawl_constants.php";
 /**
- * View used to draw and allow editing of wiki page when not in the admin view
- * (so activities panel on side is not present.) This is also used to draw
- * wiki pages for public groups when not logged.
+ * Element responsible for drawing wiki pages in either admin or wiki view
+ * It is also responsible for rendering wiki history pages, and listings of
+ * wiki pages available for a group
  *
  * @author Chris Pollett
  * @package seek_quarry
- * @subpackage view
+ * @subpackage element
  */
-class WikiView extends View
+class WikiElement extends Element implements CrawlConstants
 {
-    /** This view is drawn on a web layout
-     *  @var string
-     */
-    var $layout = "web";
-
     /**
-     * Draws a minimal container with a WikiElement in it on which a group
-     * wiki page can be drawn
+     *  Draw a wiki page for group, or, depending on $data['MODE'] a listing
+     *  of all pages for a group, or the history of revisions of a given page
+     *  or the edit page form
      *
-     * @param array $data with fields used for drawing the container and page
+     * @param array $data fields contain data about the page being
+     *  displayeed or edited, or the list of pages being displayed.
      */
-    function renderView($data) 
+    function render($data)
     {
-        $logo = "resources/yioop.png";
         $logged_in = isset($data["ADMIN"]) && $data["ADMIN"];
         $can_edit = $logged_in && isset($data["CAN_EDIT"]) && $data["CAN_EDIT"];
-        $base_query = "?c=group&amp;".CSRF_TOKEN."=".
-            $data[CSRF_TOKEN] . "&amp;group_id=".
-                $data["GROUP"]["GROUP_ID"];
-        if(MOBILE) {
-            $logo = "resources/m-yioop.png";
+        $is_admin = ($data["CONTROLLER"] == "admin");
+        $arrows = ($is_admin) ? "&lt;&lt;" : "&gt;&gt;";
+        $other_controller = ($is_admin) ? "group" : "admin";
+        $base_query = "?c={$data['CONTROLLER']}&amp;".CSRF_TOKEN."=".
+            $data[CSRF_TOKEN];
+        $manage_groups = $base_query ."&amp;a=manageGroups";
+        $base_query .= "&amp;group_id=".$data["GROUP"]["GROUP_ID"];
+        $other_base_query = "?c=$other_controller&amp;".CSRF_TOKEN."=".
+            $data[CSRF_TOKEN]."&amp;a=wiki&amp;group_id=".
+            $data["GROUP"]["GROUP_ID"]."&amp;arg=".$data['MODE']."&amp;".
+            "page_name=".$data['GROUP']['GROUP_NAME'];
+        if($is_admin || $logged_in) { ?>
+            <div class="float-same admin-collapse">[<a
+            href="<?php e($other_base_query) ?>" ><?php
+            e($arrows); ?></a>]</div>
+        <?php
         }
         ?>
-        <div class="top-bar">
-        <div class="subsearch">
-        <ul class="out-list">
         <?php
-        $modes = array();
-        if($can_edit) {
-            $modes = array(
-                "read" => tl('wiki_view_read'),
-                "edit" => tl('wiki_view_edit')
-            );
+        if($is_admin) {
+            e('<div class="current-activity">');
+        } else {
+            e('<div class="small-margin-current-activity">');
         }
-        $modes["pages"] = tl('wiki_view_pages');
-        foreach($modes as $name => $translation) { 
-            if($data["MODE"] == $name) { ?>
-                <li class="outer"><b><?php e($translation); ?></b></li>
-                <?php
-            } else if(!isset($data["PAGE_NAME"]) || $data["PAGE_NAME"]=="") { ?>
-                <li class="outer"><span class="gray"><?php e($translation);
-                ?></span></li>
-                <?php
-            } else {
-                ?>
-                <li class="outer"><a href="<?php e($base_query .
-                    '&amp;arg='.$name.'&amp;a=wiki&amp;page_name='.
-                    $data['PAGE_NAME']); ?>"><?php
-                    e($translation); ?></a></li>
-                <?php
+        if($is_admin) {
+            ?>
+            <h2><?php
+            e("<a href='$manage_groups'>{$data['GROUP']['GROUP_NAME']}".
+                "</a> [<a href='?c={$data['CONTROLLER']}&".CSRF_TOKEN."=".
+                $data[CSRF_TOKEN]."&amp;a=groupFeeds&just_group_id=".
+                $data['GROUP']['GROUP_ID']."'>".tl('groupfeed_element_feed').
+                "</a>|".tl('wiki_view_wiki')."]" ); ?></h2>
+            <div class="top-margin"><b>
+            <?php
+            e(tl('wiki_view_page', $data['PAGE_NAME']) . " - [");
+            $modes = array();
+            if($can_edit) {
+                $modes = array(
+                    "read" => tl('wiki_view_read'),
+                    "edit" => tl('wiki_view_edit')
+                );
             }
+            $modes["pages"] = tl('wiki_view_pages');
+            $bar = "";
+            foreach($modes as $name => $translation) {
+                if($data["MODE"] == $name) { 
+                    e($bar); ?><b><?php e($translation); ?></b><?php
+                } else if(!isset($data["PAGE_NAME"]) || $data["PAGE_NAME"]=="")
+                    {
+                    e($bar); ?><span class="gray"><?php e($translation);
+                    ?></span><?php
+                } else {
+                    e($bar); ?><a href="<?php e($base_query .
+                        '&amp;arg='.$name.'&amp;a=wiki&amp;page_name='.
+                        $data['PAGE_NAME']); ?>"><?php
+                        e($translation); ?></a><?php
+                }
+                $bar = "|";
+            }
+            ?>]</b>
+            </div>
+            <?php
         }
-        ?>
-        </ul>
-        </div>
-        <?php
-            $this->element("signin")->render($data);
-        ?>
-        </div>
-        <h1 class="group-heading logo"><a href="./?<?php
-            e(CSRF_TOKEN."=".$data[CSRF_TOKEN]); ?>"><img
-            src="<?php e($logo); ?>" alt="Yioop!" /></a><small> - <?php
-            e($data["GROUP"]["GROUP_NAME"].
-                "[<a href='$base_query&amp;a=groupFeeds'>".tl('wiki_view_feed').
-                "</a>|".tl('wiki_view_wiki')."]");
-            ?></small>
-        </h1>
-        <?php
-        $this->element("wiki")->render($data);
-
-        if($logged_in) {
-        ?>
-        <script type="text/javascript">
-        /*
-            Used to warn that user is about to be logged out
-         */
-        function logoutWarn()
+        switch($data["MODE"])
         {
-            doMessage(
-                "<h2 class='red'><?php
-                    e(tl('adminview_auto_logout_one_minute')); ?></h2>");
+            case "edit":
+                $this->renderEditPageForm($data);
+            break;
+            case "pages":
+                $this->renderPages($data, $can_edit, $logged_in);
+            break;
+            case "history":
+                $this->renderHistory($data);
+            break;
+            case "show":
+            case "read":
+            default:
+                $this->renderReadPage($data, $can_edit, $logged_in);
+            break;
         }
-        /*
-            Javascript to perform autologout
-         */
-        function autoLogout()
-        {
-            document.location='?c=search&a=signout';
-        }
-
-        //schedule logout warnings
-        var sec = 1000;
-        var minute = 60*sec;
-        setTimeout("logoutWarn()", 59 * minute);
-        setTimeout("autoLogout()", 60 * minute);
-
-        </script>
-        <?php
-        }
+        e('</div>');
     }
     /**
-     * @param array $data
+     * Used to draw a Wiki Page for reading. If the page does not exist
+     * various create/login-to-create etc messages are displayed depending
+     * of it the user is logged in. and has write permissions on the group
+     *
+     * @param array $data fields PAGE used for page contents
+     * @param bool $can_edit whether the current user has permissions to
+     *      edit or create this page
+     * @param bool $logged_in whethe current user is logged in or not
      */
     function renderReadPage($data, $can_edit, $logged_in)
     {
-        ?>
-        <div class="small-margin-current-activity">
-        <?php
         if($data["PAGE"]) {
             e($data["PAGE"]);
         } else if($can_edit) {
@@ -158,7 +158,8 @@ class WikiView extends View
             e("<p>".tl("wiki_view_create_edit")."</p>");
             e("<p>".tl("wiki_view_use_form_below")."</p>");?>
             <form id="editpageForm" method="get" action='#'>
-            <input type="hidden" name="c" value="group" />
+            <input type="hidden" name="c" value="<?php e($data['CONTROLLER']);
+                ?>" />
             <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
                 e($data[CSRF_TOKEN]); ?>" />
             <input type="hidden" name="a" value="wiki" />
@@ -182,10 +183,8 @@ class WikiView extends View
             e("<h2>".tl("wiki_view_page_no_exist", $data["PAGE_NAME"]).
                 "</h2>");
         }
-        ?>
-        </div>
-        <?php
     }
+
     /**
      * Used to drawn the form that let's someone edit a wiki page
      *
@@ -195,19 +194,19 @@ class WikiView extends View
     function renderEditPageForm($data)
     {
         ?>
-        <div class="small-margin-current-activity">
-        <div class="float-opposite">
-        [<a href="?c=group&amp;a=wiki&amp;<?php
+        <div class="float-opposite" style="position:relative; top:35px;">
+        [<a href="?c=<?php e($data['CONTROLLER']); ?>&amp;a=wiki&amp;<?php
             e(CSRF_TOKEN.'='.$data[CSRF_TOKEN].'&amp;arg=history&amp;'.
             'page_id='.$data['PAGE_ID']); ?>"
         ><?php e(tl('wiki_element_history'))?></a>]
-        [<a href="?c=group&amp;a=groupFeeds&amp;<?php
+        [<a href="?c=<?php e($data['CONTROLLER']); ?>&amp;a=groupFeeds&amp;<?php
             e(CSRF_TOKEN.'='.$data[CSRF_TOKEN].
             '&amp;just_thread='.$data['DISCUSS_THREAD']);?>" ><?php
             e(tl('wiki_element_discuss'))?></a>]
         </div>
         <form id="editpageForm" method="post" action='#'>
-            <input type="hidden" name="c" value="group" />
+            <input type="hidden" name="c" value="<?php e($data['CONTROLLER']); 
+            ?>" />
             <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
                 e($data[CSRF_TOKEN]); ?>" />
             <input type="hidden" name="a" value="wiki" />
@@ -244,32 +243,35 @@ class WikiView extends View
                 e(tl('wiki_element_savebutton')); ?></button>
             </div>
         </form>
-        </div>
         <?php
     }
-
     /**
-     * @param array $data
+     * Used to draw a list of Wiki Pages for the current group. It also
+     * draws a search form and can be used to create pages
+     *
+     * @param array $data fields for the current controller, CSRF_TOKEN
+     *      ect needed to render the search for and paging queries
+     * @param bool $can_edit whether the current user has permissions to
+     *      edit or create this page
+     * @param bool $logged_in whethe current user is logged in or not
      */
     function renderPages($data, $can_edit, $logged_in)
     {
-        ?>
-        <div class="small-margin-current-activity">
-        <?php
-        $base_query = "?c=group&amp;".CSRF_TOKEN."=".
+        $base_query = "?c={$data['CONTROLLER']}&amp;".CSRF_TOKEN."=".
             $data[CSRF_TOKEN] . "&amp;group_id=".
                 $data["GROUP"]["GROUP_ID"]."&amp;a=wiki";
         $create_query = $base_query . "&amp;arg=edit&amp;page_name=" .
             $data["FILTER"];
         $base_query .= "&amp;arg=read";
-        $paging_query = "?c=group&amp;".CSRF_TOKEN."=".
+        $paging_query = "?c={$data['CONTROLLER']}&amp;".CSRF_TOKEN."=".
             $data[CSRF_TOKEN] . "&amp;group_id=".
                 $data["GROUP"]["GROUP_ID"]."&amp;a=wiki&amp;arg=pages";
         e("<h2>".tl("wiki_view_wiki_page_list",
             $data["GROUP"]["GROUP_NAME"]). "</h2>");
         ?>
         <form id="editpageForm" method="get" action='#'>
-        <input type="hidden" name="c" value="group" />
+        <input type="hidden" name="c" value="<?php e($data['CONTROLLER']); 
+            ?>" />
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" name="a" value="wiki" />
@@ -300,26 +302,23 @@ class WikiView extends View
             <div>&nbsp;</div>
             <?php
         }
-        $this->helper("pagination")->render(
+        $this->view->helper("pagination")->render(
             $paging_query,
             $data['LIMIT'], $data['RESULTS_PER_PAGE'], $data['TOTAL_ROWS']);
-        ?>
-        </div>
-        <?php
     }
 
     /**
      * Used to draw the revision history page for a wiki document
+     * Has a form that can be used to draw the diff of two revisions
      *
-     * @param array $data
+     * @param array $data fields contain info about revisions of a Wiki page
      */
     function renderHistory($data)
     {
-        $base_query = "?c=group&amp;".CSRF_TOKEN."=".
+        $base_query = "?c={$data['CONTROLLER']}&amp;".CSRF_TOKEN."=".
             $data[CSRF_TOKEN] . "&amp;group_id=".
             $data["GROUP"]["GROUP_ID"]."&amp;a=wiki";
         ?>
-        <div class="small-margin-current-activity">
         <div class="float-opposite"><a href="<?php e($base_query .
                     '&amp;arg=edit&amp;a=wiki&amp;page_name='.
                     $data['PAGE_NAME']); ?>"><?php
@@ -353,7 +352,7 @@ class WikiView extends View
         <div>&nbsp;</div>
         <?php
         $time = time();
-        $feed_helper = $this->helper("feeds");
+        $feed_helper = $this->view->helper("feeds");
         $base_query .= "&amp;arg=history&amp;page_id=".$data["page_id"];
         $current = $data['HISTORY'][0]["PUBDATE"];
         $first = true;
@@ -396,11 +395,10 @@ class WikiView extends View
             <div>&nbsp;</div>
             <?php
         }
-        $this->helper("pagination")->render(
+        $this->view->helper("pagination")->render(
             $base_query,
             $data['LIMIT'], $data['RESULTS_PER_PAGE'], $data['TOTAL_ROWS']);
         ?>
-        </div>
         <script type="text/javascript">
         function updateFirst(val)
         {
@@ -414,4 +412,3 @@ class WikiView extends View
         <?php
     }
 }
-?>

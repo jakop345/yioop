@@ -48,7 +48,7 @@ the installation is complete.
 
 php queue_server.php terminal
 
-from the bin folder. 
+from the bin folder.
 
 (3) You need at least one fetcher running
 to download pages.To run a fetcher, simply type:

@@ -30,21 +30,16 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  *Loads base class for iterating
  */
 require_once BASE_DIR.
     '/lib/archive_bundle_iterators/text_archive_bundle_iterator.php';
-
 /** Wikipedia is usually bzip2 compressed*/
 require_once BASE_DIR.'/lib/bzip2_block_iterator.php';
-
 /** Wikipedia is usually bzip2 compressed*/
 require_once BASE_DIR.'/lib/wiki_parser.php';
-
 /**
  * Used to define the styles we put on cache wiki pages
  */
@@ -77,7 +72,6 @@ table.wikitable > caption
 </style>
 EOD
 );
-
 /**
  * Used to iterate through a collection of .xml.bz2  media wiki files
  * stored in a WebArchiveBundle folder. Here these media wiki files contain the
@@ -97,7 +91,6 @@ class MediaWikiArchiveBundleIterator extends TextArchiveBundleIterator
      * @var object
      */
     var $parser;
-
     /**
      * Creates a media wiki archive iterator with the given parameters.
      *
@@ -119,8 +112,6 @@ class MediaWikiArchiveBundleIterator extends TextArchiveBundleIterator
             $result_timestamp, $result_dir, $ini);
         $this->switch_partition_callback_name = "readMediaWikiHeader";
     }
-
-
     /**
      * Estimates the important of the site according to the weighting of
      * the particular archive iterator
@@ -132,7 +123,6 @@ class MediaWikiArchiveBundleIterator extends TextArchiveBundleIterator
     {
         return min($site[self::WEIGHT], 15);
     }
-
     /**
      * Reads the siteinfo tag of the mediawiki xml file and extract data that
      * will be used in constructing page summaries.
@@ -162,7 +152,6 @@ class MediaWikiArchiveBundleIterator extends TextArchiveBundleIterator
         $this->header['ip_address'] = gethostbyname($url_parts['host']);
         return true;
     }
-
     /**
      * Used to initialize the arrays of match/replacements used to format
      * wikimedia syntax into HTML (not perfectly since we are only doing
@@ -222,7 +211,6 @@ class MediaWikiArchiveBundleIterator extends TextArchiveBundleIterator
         );
         $this->parser = new WikiParser($base_address, $add_substitutions);
     }
-
     /**
      * Restores the internal state from the file iterate_status.txt in the
      * result dir such that the next call to nextPages will pick up from just
@@ -238,7 +226,6 @@ class MediaWikiArchiveBundleIterator extends TextArchiveBundleIterator
         }
         return $info;
     }
-
     /**
      * Gets the text content of the first dom node satisfying the
      * xpath expression $path in the dom document $dom
@@ -257,7 +244,6 @@ class MediaWikiArchiveBundleIterator extends TextArchiveBundleIterator
         }
         return "";
     }
-
     /**
      * Gets the next doc from the iterator
      * @param bool $no_process do not do any processing on page data
@@ -275,7 +261,6 @@ class MediaWikiArchiveBundleIterator extends TextArchiveBundleIterator
         $dom = new DOMDocument();
         @$dom->loadXML($page_info);
         $site = array();
-
         $pre_url = $this->getTextContent($dom, "/page/title");
         $pre_url = str_replace(" ", "_", $pre_url);
         $site[self::URL] = $this->header['base_address'].$pre_url;
@@ -308,12 +293,10 @@ class MediaWikiArchiveBundleIterator extends TextArchiveBundleIterator
                 $pre_page);
         $site[self::PAGE] .= $pre_page;
         $site[self::PAGE] .= "\n</body>\n</html>";
-
         $site[self::HASH] = FetchUrl::computePageHash($site[self::PAGE]);
         $site[self::WEIGHT] = ceil(max(
             log(strlen($site[self::PAGE]) + 1, 2) - 10, 1));
         return $site;
     }
 }
-
 ?>

@@ -33,7 +33,6 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 /** Calculate base directory of script
  *  @ignore
  */
@@ -41,8 +40,6 @@ $pathinfo = pathinfo($_SERVER['SCRIPT_FILENAME']);
 if(!defined('BASE_DIR')) {
     define("BASE_DIR", $pathinfo["dirname"].'/');
 }
-
-
 /**
  * Load the configuration file
  */
@@ -55,15 +52,11 @@ require_once(BASE_DIR."/controllers/static_controller.php");
  * Load global functions related to localization
  */
 require_once BASE_DIR."/lib/locale_functions.php";
-
 mb_internal_encoding("UTF-8");
 mb_regex_encoding("UTF-8");
-
 $locale_tag = guessLocale();
-
 $locale = NULL;
 setLocaleObject($locale_tag);
-
 if(!isset($_REQUEST['p']) ||
     !in_array($_REQUEST['p'], array("404", "409"))) {
     $_REQUEST['p'] = "404";
@@ -77,10 +70,6 @@ switch($_REQUEST['p'])
         header("HTTP/1.0 409 Conflict");
     break;
 }
-
 $controller = new StaticController();
-
 $controller->processRequest();
-
-
 ?>

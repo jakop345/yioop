@@ -30,26 +30,19 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  *  Load the library for crawlHash
  */
 require_once BASE_DIR."/lib/utility.php";
-
 /**
  *  Load the library for crawlHash
  */
 require_once BASE_DIR."/lib/crawl_constants.php";
-
-
 /**
  *  Load the index_shard library we'll be testing
  */
 require_once BASE_DIR."/lib/index_shard.php";
-
-
 /**
  *  Used to test that the IndexShard class can properly add new documents
  *  and retrieve those documents by word. Checks that doc offsets can be
@@ -73,7 +66,6 @@ class IndexShardTest extends UnitTest
         $this->test_objects['shard3'] = new IndexShard(WORK_DIRECTORY.
             "/shard3.txt", 0);
     }
-
     /**
      * Deletes any index shard files we may have created
      */
@@ -83,7 +75,6 @@ class IndexShardTest extends UnitTest
         @unlink(WORK_DIRECTORY."/shard2.txt");
         @unlink(WORK_DIRECTORY."/shard3.txt");
     }
-
     /**
      * Check if can store documents into an index shard and retrieve them
      */
@@ -99,12 +90,10 @@ class IndexShardTest extends UnitTest
             'CCCCCCCC' => array(4, 9, 16),
             'DDDDDDDD' => array(5, 25, 125),
         );
-
         $meta_ids = array(
             "EEEEEEEE",
             "FFFFFFFF"
         );
-
         $this->test_objects['shard']->addDocumentWords($docid,
             $offset, $word_counts, $meta_ids, array("EEEEEEEE"), true);
         $this->assertEqual($this->test_objects['shard']->len_all_docs, 8,
@@ -128,13 +117,10 @@ class IndexShardTest extends UnitTest
         $meta_ids = array(
             "YYYYYYYY"
         );
-
         $this->test_objects['shard']->addDocumentWords($docid,
             $offset, $word_counts, $meta_ids, array(), true);
-
         $c_data = $this->test_objects['shard']->getPostingsSliceById(
             crawlHashWord('CCCCCCCC', true), 5);
-
         $this->assertTrue(isset($c_data["AAAAAAAABBBBBBBBCCCCCCCC"]),
             "Work lookup first item of two works");
         $this->assertTrue(isset($c_data["HHHHHHHHIIIIIIIIJJJJJJJJ"]),
@@ -151,10 +137,7 @@ class IndexShardTest extends UnitTest
             "Doc lookup by meta word works");
         $this->assertEqual(count($c_data), 1,
             "Doc lookup by meta word works has correct count");
-
     }
-
-
     /**
      * Check if can store link documents into an index shard and retrieve them
      */
@@ -167,12 +150,10 @@ class IndexShardTest extends UnitTest
             'NNNNNNNN' => array(2, 4, 6),
             'OOOOOOOO' => array(7, 8, 9),
         );
-
         $meta_ids = array(
             "PPPPPPPP",
             "QQQQQQQQ"
         );
-
         $this->test_objects['shard']->addDocumentWords($docid,
             $offset, $word_counts, $meta_ids);
         $this->assertEqual($this->test_objects['shard']->len_all_link_docs, 9,
@@ -191,12 +172,10 @@ class IndexShardTest extends UnitTest
             'CCCCCCCC' => array(2),
             'MMMMMMMM' => array(6),
         );
-
         $meta_ids = array(
             "EEEEEEEE",
             "FFFFFFFF"
         );
-
         $this->test_objects['shard']->addDocumentWords($docid,
             $offset, $word_counts, $meta_ids, true);
         $c_data = $this->test_objects['shard']->getPostingsSliceById(
@@ -208,7 +187,6 @@ class IndexShardTest extends UnitTest
         $this->assertEqual(count($c_data), 2,
             "Link Doc lookup by word works has correct count");
     }
-
     /**
      * Check that appending two index shards works correctly
      */
@@ -222,14 +200,12 @@ class IndexShardTest extends UnitTest
             'CCCCCCCC' => array(2),
             'DDDDDDDD' => array(6),
         );
-
         $meta_ids = array(
             "EEEEEEEE",
             "FFFFFFFF"
         );
         $this->test_objects['shard']->addDocumentWords($docid,
             $offset, $word_lists, $meta_ids, true);
-
         $docid = "KKKKKKKKGGGGGGGGHHHHHHHH";
         $offset = 20;
         $word_lists = array(
@@ -246,7 +222,6 @@ class IndexShardTest extends UnitTest
             'IIIIIIII' => array(4),
             'JJJJJJJJ' => array(5),
         );
-
         $meta_ids = array(
             "KKKKKKKK"
         );
@@ -295,7 +270,6 @@ class IndexShardTest extends UnitTest
         $this->assertTrue(isset($c_data["GGGGGGGG"]),
             "Data from third shard present 4");
     }
-
     /**
      * Check that changing document offsets works
      */
@@ -306,7 +280,6 @@ class IndexShardTest extends UnitTest
         $word_lists = array(
             'BBBBBBBB' => array(1)
         );
-
         $meta_ids = array(
         );
         $this->test_objects['shard']->addDocumentWords($docid,
@@ -379,15 +352,12 @@ class IndexShardTest extends UnitTest
             $this->assertEqual($c_data['CCCCCCCCFFFFFFFF']
                 [CrawlConstants::SUMMARY_OFFSET],
                 0,  "Summary offset matches predicted second word");
-
     }
-
     /**
      * Check that save and load work
      */
     function saveLoadTestCase()
     {
-
         $docid = "AAAAAAAABBBBBBBBCCCCCCCC";
         $offset = 5;
         $word_counts = array(
@@ -395,7 +365,6 @@ class IndexShardTest extends UnitTest
             'CCCCCCCC' => array(2),
             'DDDDDDDD' => array(6),
         );
-
         $meta_ids = array(
             "EEEEEEEE",
             "FFFFFFFF"
@@ -433,9 +402,7 @@ class IndexShardTest extends UnitTest
         $this->assertTrue(isset($c_data["AAAAAAAABBBBBBBBCCCCCCCC"]),
             "Doc lookup 2 by word works");
         // test saving and loading from a string
-
         $out_string = $this->test_objects['shard']->save(true);
-
         $this->test_objects['shard2'] = IndexShard::load("shard.txt",
             $out_string);
         $c_data = $this->test_objects['shard2']->getPostingsSliceById(

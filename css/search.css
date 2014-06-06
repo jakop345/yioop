@@ -29,12 +29,10 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 /*
     search.css
     Main stylesheet for Yioop search engine
  */
-
 /*
    We begin with some generic global styles
    and classes
@@ -43,7 +41,6 @@ h2
 {
     margin-bottom: 0;
 }
-
 p
 {
     margin: 0;
@@ -867,7 +864,7 @@ ul.in-list li
 }
 .admin-collapse
 {
-    position:relative; 
+    position:relative;
     top:10px;
 }
 .admin-heading,
@@ -2322,7 +2319,6 @@ div.group-result
     z-index:101;
 
 }
-
 .indexing-plugin-lightbox .light-content
 {
     top: 8.5in;
@@ -2358,6 +2354,13 @@ div.group-result
     margin:100px auto;
 }
 
+/* Captcha settings styles */
+
+.captcha {
+    padding: 5px;
+    width: 2.1in;
+}
+
 /**
  * Styles for wiki tables
  */
@@ -2365,7 +2368,7 @@ table.wikitable
 {
     background:white;
     border:1px #aaa solid;
-    border-collapse: scollapse
+    border-collapse: collapse;
     margin:1em 0;
 }
 table.wikitable > tr > th,table.wikitable > tr > td,
@@ -2478,29 +2481,5 @@ table.wikitable > caption
     visibility: hidden;
     width: 100%;
     z-index: 200;
-}
-
-/* Captcha settings styles */
-
-#captcha-settings-container ul {
-    list-style-type: none;
-    padding: 0;
-}
-
-#captcha-settings-container li {
-    line-height: 40px;
-}
-
-.graphical-captcha-container {
-    width: 260px;
-    padding-top: 10px;
-}
-
-.text-captcha-container .question-update-input {
-    width: 50%;
-}
-
-.text-captcha-container .choices-update-input {
-    width: 50%;
 }
 

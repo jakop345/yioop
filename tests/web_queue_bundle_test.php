@@ -30,18 +30,13 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /** Load search engine-wide configuration file */
 require_once BASE_DIR.'/configs/config.php';
-
 /** For unlinkRecursive method */
 require_once(BASE_DIR."/models/datasources/".DBMS."_manager.php");
-
 /**   Loads the WebQueueBundle class we are going to test */
 require_once BASE_DIR."/lib/web_queue_bundle.php";
-
 /**
  * UnitTest for the WebQueueBundle class.
  *
@@ -55,7 +50,6 @@ class WebQueueBundleTest extends UnitTest
      * @var object
      */
     var $db;
-
     /**
      * Sets up a miminal DBMS manager class so that we will be able to use
      * unlinkRecursive to tear down own WebQueueBundle
@@ -76,7 +70,6 @@ class WebQueueBundleTest extends UnitTest
             new WebQueueBundle(WORK_DIRECTORY."/QueueTest",
                 1000, 1000, CrawlConstants::MAX);
     }
-
     /**
      *  Delete the directory and files associated with the WebQueueBundle
      */
@@ -84,7 +77,6 @@ class WebQueueBundleTest extends UnitTest
     {
         $this->db->unlinkRecursive(WORK_DIRECTORY."/QueueTest");
     }
-
     /**
      * Does two adds to the WebQueueBundle of urls and weight. Then checks the
      * contents of the queue to see if as expected. Then does a rebuild on the
@@ -114,9 +106,7 @@ class WebQueueBundleTest extends UnitTest
         $this->assertEqual(
             $this->test_objects['FILE1']->getContents(), $expected_array,
             "Rebuild table should not affect contents");
-
     }
-
     /**
      * Checks the two methods addGotRobotTxtFilter($host) and
      * containsGotRobotTxt($host) properly insert do containment for the
@@ -134,7 +124,6 @@ class WebQueueBundleTest extends UnitTest
             $web_queue->containsGotRobotTxt("http://www.bob.com/"),
             "Contains added robots.txt host");
     }
-
     /**
      * Tests the methods addRobotPaths and checkRobotOkay
      */
@@ -147,7 +136,6 @@ class WebQueueBundleTest extends UnitTest
             CrawlConstants::DISALLOWED_SITES => array("/trap","/*?"),
         );
         $web_queue->addRobotPaths($host, $paths);
-
         $test_urls = array(
             array("http://www.cs.sjsu.edu/", true,
                 "url with no stored rules"),
@@ -162,7 +150,6 @@ class WebQueueBundleTest extends UnitTest
             array("http://www.test.com/a?b", false,
                 "forbidden url 3"),
         );
-
         foreach($test_urls as $test_url) {
             $result = $web_queue->checkRobotOkay($test_url[0]);
             $this->assertEqual($result, $test_url[1], $test_url[2]);

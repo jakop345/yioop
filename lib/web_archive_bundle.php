@@ -30,22 +30,16 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * A WebArchiveBundle is a collection of WebArchive's, so load definition of
  * web archive
  */
 require_once BASE_DIR.'/lib/web_archive.php';
-
 /**
  * Used to compress data stored in WebArchiveBundle
  */
 require_once BASE_DIR.'/lib/compressors/gzip_compressor.php';
-
-
-
 /**
  * A web archive bundle is a collection of web archives which are managed
  * together.It is useful to split data across several archive files rather than
@@ -60,7 +54,6 @@ require_once BASE_DIR.'/lib/compressors/gzip_compressor.php';
  */
 class WebArchiveBundle
 {
-
     /**
      * Folder name to use for this WebArchiveBundle
      * @var string
@@ -123,24 +116,19 @@ class WebArchiveBundle
         $this->compressor = $compressor;
         $this->write_partition = 0;
         $this->read_only_archive = $read_only_archive;
-
         if(!is_dir($this->dir_name) && !$this->read_only_archive) {
             mkdir($this->dir_name);
         }
-
         //store/read archive description
-
         if(file_exists($dir_name."/description.txt")) {
             $info = unserialize(
                 file_get_contents($this->dir_name."/description.txt"));
         } else {
             $this->version = 1;
         }
-
         if(isset($info['NUM_DOCS_PER_PARTITION'])) {
             $this->num_docs_per_partition = $info['NUM_DOCS_PER_PARTITION'];
         }
-
         $this->count = 0;
         if(isset($info['COUNT'])) {
             $this->count = $info['COUNT'];
@@ -148,7 +136,6 @@ class WebArchiveBundle
         if(isset($info['VERSION'])) {
             $this->version = $info['VERSION'];
         }
-
         if(isset($info['WRITE_PARTITION'])) {
             $this->write_partition = $info['WRITE_PARTITION'];
         }
@@ -160,7 +147,6 @@ class WebArchiveBundle
                 $this->description = "Archive created without a description";
             }
         }
-
         $info['DESCRIPTION'] = $this->description;
         $info['NUM_DOCS_PER_PARTITION'] = $this->num_docs_per_partition;
         $info['COUNT'] = $this->count;
@@ -178,9 +164,7 @@ class WebArchiveBundle
             file_put_contents(
                 $this->dir_name."/description.txt", serialize($info));
         }
-
     }
-
     /**
      * Add the array of $pages to the WebArchiveBundle pages being stored in
      * the partition according to write partition and the field used to store
@@ -192,16 +176,13 @@ class WebArchiveBundle
      */
     function addPages($offset_field, &$pages)
     {
-
         $num_pages = count($pages);
-
         if($this->num_docs_per_partition > 0 &&
             $num_pages > $this->num_docs_per_partition) {
             crawlLog("ERROR! At most ".$this->num_docs_per_partition.
                 "many pages can be added in one go!");
             exit();
         }
-
         $partition = $this->getPartition($this->write_partition);
         $part_count = $partition->count;
         if($this->num_docs_per_partition > 0 &&
@@ -209,15 +190,11 @@ class WebArchiveBundle
             $this->setWritePartition($this->write_partition + 1);
             $partition = $this->getPartition($this->write_partition);
         }
-
         $this->addCount($num_pages); //only adds to count on disk
         $this->count += $num_pages;
-
         $partition->addObjects($offset_field, $pages, NULL, NULL, false);
-
         return $this->write_partition;
     }
-
     /**
      * Advances the index of the write partition by one and creates the
      * corresponding web archive.
@@ -232,7 +209,6 @@ class WebArchiveBundle
         }
         $this->getPartition($this->write_partition);
     }
-
     /**
      * Gets a page using in WebArchive $partition using the provided byte
      * $offset and using existing $file_handle if possible.
@@ -253,7 +229,6 @@ class WebArchiveBundle
             return array();
         }
     }
-
     /**
      * Gets an object encapsulating the $index the WebArchive partition in
      * this bundle.
@@ -289,7 +264,6 @@ class WebArchiveBundle
         }
         return $this->partition[$index];
     }
-
     /**
      * Creates a new counter to be maintained in the description.txt
      * file if the counter doesn't exist, leaves unchanged otherwise
@@ -308,7 +282,6 @@ class WebArchiveBundle
                 "/description.txt", serialize($info));
         }
     }
-
     /**
      * Updates the description file with the current count for the number of
      * items in the WebArchiveBundle. If the $field item is used counts of
@@ -328,7 +301,6 @@ class WebArchiveBundle
                 serialize($info));
         }
     }
-
     /**
      * Gets information about a WebArchiveBundle out of its description.txt
      * file
@@ -349,13 +321,9 @@ class WebArchiveBundle
             $info['NUM_DOCS_PER_PARTITION'] = -1;
             return $info;
         }
-
         $info = unserialize(file_get_contents($dir_name."/description.txt"));
-
         return $info;
-
     }
-
     /**
      * Sets the archive info (DESCRIPTION, COUNT,
      * NUM_DOCS_PER_PARTITION) for this web archive
@@ -370,7 +338,6 @@ class WebArchiveBundle
             file_put_contents($dir_name."/description.txt", serialize($info));
         }
     }
-
     /**
      * Returns the mast time the archive info of the bundle was modified.
      *

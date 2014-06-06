@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * Base class for all the SeekQuarry/Yioop engine Unit tests
  *
@@ -42,7 +40,6 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  */
 abstract class UnitTest
 {
-
     /**
      * Used to store the results for each test sub case
      */
@@ -63,21 +60,18 @@ abstract class UnitTest
     function __construct()
     {
     }
-
     /**
      * Execute each of the test cases of this unit test and return the results
      * @return array test case results
      */
     function run()
     {
-
         $test_results = array();
         $methods = get_class_methods(get_class($this));
         foreach ($methods as $method) {
             $this->test_objects = NULL;
             $this->setUp();
             $len = strlen($method);
-
             if(substr_compare(
                 $method, self::case_name, $len - strlen(self::case_name)) == 0){
                 $this->test_case_results = array();
@@ -86,10 +80,8 @@ abstract class UnitTest
             }
             $this->tearDown();
         }
-
         return $test_results;
     }
-
     /**
      * Checks that $x can coerced to true, the result of the
      * test is added to $this->test_case_results
@@ -109,7 +101,6 @@ abstract class UnitTest
         }
         $this->test_case_results[] = $test;
     }
-
     /**
      * Checks that $x can coerced to false, the result of the
      * test is added to $this->test_case_results
@@ -129,7 +120,6 @@ abstract class UnitTest
         }
         $this->test_case_results[] = $test;
     }
-
     /**
      * Checks that $x and $y are the same, the result of the
      * test is added to $this->test_case_results
@@ -150,7 +140,6 @@ abstract class UnitTest
         }
         $this->test_case_results[] = $test;
     }
-
     /**
      * Checks that $x and $y are not the same, the result of the
      * test is added to $this->test_case_results
@@ -171,17 +160,14 @@ abstract class UnitTest
         }
         $this->test_case_results[] = $test;
     }
-
     /**
      * This method is called before each test case is run to set up the
      * given test case
      */
     abstract function setUp();
-
     /**
      * This method is called after each test case is run to clean up
      */
     abstract function tearDown();
-
 }
 ?>

@@ -30,26 +30,20 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined("UNIT_TEST_MODE")) {
     if(php_sapi_name() != 'cli') {echo "BAD REQUEST"; exit();}
-
-
     /** Calculate base directory of script
      * @ignore
      */
     define("BASE_DIR", substr(
         dirname(realpath($_SERVER['PHP_SELF'])), 0,
         -strlen("/bin")));
-
     /** NO_CACHE means don't try to use memcache
      * @ignore
      */
     define("NO_CACHE", true);
 }
-
 ini_set("memory_limit","2000M"); //so have enough memory to crawl big pages
-
 /** Load in global configuration settings */
 require_once BASE_DIR.'/configs/config.php';
 if(!PROFILE) {
@@ -109,8 +103,6 @@ if(USE_MEMCACHE) {
     }
     unset($mc);
 }
-
-
 /**
  * Command line program responsible for managing Yioop crawls.
  *
@@ -196,7 +188,6 @@ class QueueServer implements CrawlConstants, Join
      * @var string
      */
     var $crawl_type;
-
     /**
      * If the crawl_type is self::ARCHIVE_CRAWL, then crawl_index is the
      * timestamp of the existing archive to crawl
@@ -219,12 +210,13 @@ class QueueServer implements CrawlConstants, Join
      */
     var $all_file_types;
     /**
-     *
+     * Used in schedules to tell the fetcher whether or not to cache pages
      * @var bool
      */
     var $cache_pages;
     /**
-     *
+     * Used to add page rules to be applied to downloaded pages to schedules
+     * that the fetcher will use (and hence apply the page )
      * @var array
      */
     var $page_rules;
@@ -294,41 +286,35 @@ class QueueServer implements CrawlConstants, Join
      * @var array
      */
     var $indexing_plugins_data;
-
     /**
      * List of media sources mainly to determine the value of the media:
      * meta word (in particular, if it should be video or not)
      * @var array
      */
     var $video_sources;
-
     /**
-     * This is a list of hourly (timestamp, number_of_urls_crawled) data
+     * This is a list of hourly (timestamp, number_of_urls_crawled) statistics
      * @var array
      */
     var $hourly_crawl_data;
-
     /**
      *  Used to say what kind of queue_server this is (one of BOTH, INDEXER,
      *  SCHEDULER)
      *  @var mixed
      */
     var $server_type;
-
     /**
      *  String used to describe this kind of queue server (Indexer, Scheduler,
      *  etc. in the log files.
      *  @var mixed
      */
     var $server_name;
-
     /**
      *  Creates a Queue Server Daemon
      */
     function __construct()
     {
         global $INDEXED_FILE_TYPES;
-
         $db_class = ucfirst(DBMS)."Manager";
         $this->db = new $db_class();
         $this->indexed_file_types = $INDEXED_FILE_TYPES;
@@ -361,7 +347,6 @@ class QueueServer implements CrawlConstants, Join
         $this->video_sources = array();
         $this->server_name = "IndexerAndScheduler";
     }
-
     /**
      * This is the function that should be called to get the queue_server
      * to start. Calls init to handle the command line arguments then enters
@@ -404,9 +389,7 @@ class QueueServer implements CrawlConstants, Join
             crawlLog("Remove old messages..", "queue_server");
         }
         $this->loop();
-
     }
-
     /**
      * Main runtime loop of the queue_server.
      *
@@ -455,10 +438,8 @@ class QueueServer implements CrawlConstants, Join
                 sleep(QUEUE_SLEEP_TIME - $time_diff);
             }
         }
-
         crawlLog("{$this->server_name} shutting down!!");
     }
-
     /**
      * Main body of queue_server loop where indexing, scheduling,
      * robot file processing is done.
@@ -542,7 +523,6 @@ class QueueServer implements CrawlConstants, Join
             break;
         }
     }
-
     /**
      * Used to check if the current queue_server process is acting a
      * url scheduler for fetchers
@@ -554,7 +534,6 @@ class QueueServer implements CrawlConstants, Join
         return strcmp($this->server_type, self::SCHEDULER) == 0 ||
             strcmp($this->server_type, self::BOTH) == 0;
     }
-
     /**
      * Used to check if the current queue_server process is acting a
      * indexer of data coming from fetchers
@@ -566,7 +545,6 @@ class QueueServer implements CrawlConstants, Join
         return strcmp($this->server_type, self::INDEXER) == 0 ||
             strcmp($this->server_type, self::BOTH) == 0;
     }
-
     /**
      * Used to check if the current queue_server process is acting only as a
      * indexer of data coming from fetchers (and not some other activity
@@ -578,7 +556,6 @@ class QueueServer implements CrawlConstants, Join
     {
         return strcmp($this->server_type, self::INDEXER) == 0;
     }
-
     /**
      * Used to check if the current queue_server process is acting only as a
      * indexer of data coming from fetchers (and not some other activity
@@ -590,7 +567,6 @@ class QueueServer implements CrawlConstants, Join
     {
         return strcmp($this->server_type, self::SCHEDULER) == 0;
     }
-
     /**
      * Used to write info about the current recrawl to file as well as to
      * process any recrawl data files received
@@ -608,9 +584,7 @@ class QueueServer implements CrawlConstants, Join
             CRAWL_DIR."/schedules/".
                 self::schedule_data_base_name.$this->crawl_time;
         $this->processDataFile($schedule_dir, "processRecrawlDataArchive");
-
     }
-
     /**
      * Even during a recrawl the fetcher may send robot data to the
      * queue_server. This function prints a log message and calls another
@@ -626,7 +600,6 @@ class QueueServer implements CrawlConstants, Join
         $this->processDataFile($robot_dir, "processRecrawlRobotArchive");
         crawlLog("done. ");
     }
-
     /**
      * Even during a recrawl the fetcher may send robot data to the
      * queue_server. This function delete the passed robot file.
@@ -636,10 +609,8 @@ class QueueServer implements CrawlConstants, Join
     function processRecrawlRobotArchive($file)
     {
         crawlLog("Deleting unneeded robot schedule files");
-
         unlink($file);
     }
-
     /**
      * Used to get a data archive file (either during a normal crawl or a
      * recrawl). After uncompressing this file (which comes via the web server
@@ -656,10 +627,8 @@ class QueueServer implements CrawlConstants, Join
         $decode = webdecode($decode);
         $decode = gzuncompress($decode);
         $sites = unserialize($decode);
-
         return $sites;
     }
-
     /**
      * Processes fetcher data file information during a recrawl
      *
@@ -671,8 +640,6 @@ class QueueServer implements CrawlConstants, Join
         unlink($file);
         $this->writeCrawlStatus($sites);
     }
-
-
     /**
      * Handles messages passed via files to the QueueServer.
      *
@@ -788,13 +755,10 @@ class QueueServer implements CrawlConstants, Join
                         $info[self::STATUS] = self::WAITING_START_MESSAGE_STATE;
                     }
                 break;
-
             }
         }
-
         return $info;
     }
-
     /**
      * Used to stop the currently running crawl gracefully so that it can
      * be restarted. This involved writing the queue's contents back to
@@ -838,7 +802,6 @@ class QueueServer implements CrawlConstants, Join
             file_put_contents($close_file, "1");
         }
     }
-
     /**
      * Used to write an admin crawl status message during a start or stop
      * crawl.
@@ -859,7 +822,6 @@ class QueueServer implements CrawlConstants, Join
             serialize($crawl_status));
         chmod(CRAWL_DIR."/schedules/crawl_status.txt", 0777);
     }
-
     /**
      * When a crawl is being shutdown, this function is called to write
      * the contents of the web queue bundle back to schedules. This allows
@@ -965,7 +927,6 @@ class QueueServer implements CrawlConstants, Join
             self::queue_base_name.$this->crawl_time);
         $this->db->setWorldPermissionsRecursive($dir);
     }
-
     /**
      * During crawl shutdown, this function is called to do a final save and
      * merge of the crawl dictionary, so that it is ready to serve queries.
@@ -984,7 +945,6 @@ class QueueServer implements CrawlConstants, Join
             CRAWL_DIR.'/cache/'.
             self::index_data_base_name.$this->crawl_time);
     }
-
     /**
      * During crawl shutdown this is called to run any post processing plugins
      */
@@ -1033,7 +993,6 @@ class QueueServer implements CrawlConstants, Join
                 self::index_data_base_name.$this->crawl_time);
         }
     }
-
     /**
      * Begins crawling base on time, order, restricted site $info
      * Setting up a crawl involves creating a queue bundle and an
@@ -1075,16 +1034,12 @@ class QueueServer implements CrawlConstants, Join
                 array_push($try_to_set_from_old_index,  $index_field);
             }
         }
-
         /* We now do further processing or disallowed sites to see if any
            of them are really quota sites
          */
         if($update_disallow == true) {  $this->updateDisallowedQuotaSites(); }
-
         $this->initializeWebQueue();
-
         $dir = CRAWL_DIR.'/cache/'.self::index_data_base_name.$this->crawl_time;
-
         if(!file_exists($dir)) {
             if($this->isAIndexer()) {
                 $this->index_archive = new IndexArchiveBundle($dir, false,
@@ -1096,7 +1051,6 @@ class QueueServer implements CrawlConstants, Join
                 false);
             $archive_info = IndexArchiveBundle::getArchiveInfo($dir);
             $index_info = unserialize($archive_info['DESCRIPTION']);
-
             foreach($try_to_set_from_old_index as $index_field) {
                 if(isset($index_info[$read_from_info[$index_field]]) ) {
                     $this->$index_field =
@@ -1119,8 +1073,6 @@ class QueueServer implements CrawlConstants, Join
         $info[self::STATUS] = self::CONTINUE_STATE;
         return $info;
     }
-
-
     /**
      * This is called whenever the crawl options are modified to parse
      * from the disallowed sites, those sites of the format:
@@ -1151,18 +1103,15 @@ class QueueServer implements CrawlConstants, Join
                 }
             }
         }
-
         foreach($this->quota_sites as $site => $info) {
             if(!in_array($site, $active_quota_sites)) {
                 $this->quota_sites[$site] = false;
             }
         }
-
         $this->disallowed_sites = array_filter($this->disallowed_sites);
         $this->quota_sites = array_filter($this->quota_sites);
         $this->quota_sites_keys = array_keys($this->quota_sites);
     }
-
     /**
      * This method sets up a WebQueueBundle according to the current crawl
      * order so that it can receive urls and prioritize them.
@@ -1200,7 +1149,6 @@ class QueueServer implements CrawlConstants, Join
             }
         }
     }
-
     /**
      * Delete all the urls from the web queue does not affect filters
      */
@@ -1219,7 +1167,6 @@ class QueueServer implements CrawlConstants, Join
         }
         $this->web_queue->closeUrlArchive($fh);
     }
-
     /**
      * Checks to see if the parameters by which the active crawl are being
      * conducted have been modified since the last time the values were put
@@ -1270,10 +1217,8 @@ class QueueServer implements CrawlConstants, Join
            of them are really quota sites
          */
         if($update_disallow == true) {  $this->updateDisallowedQuotaSites(); }
-
         $this->archive_modified_time = $modified_time;
     }
-
     /**
      * Delete all the queue bundles and schedules that don't have an
      * associated index bundle as this means that crawl has been deleted.
@@ -1357,7 +1302,6 @@ class QueueServer implements CrawlConstants, Join
             }
         }
     }
-
     /**
      * This is a callback method that IndexArchiveBundle will periodically
      * call when it processes a method that take a long time. This
@@ -1375,7 +1319,6 @@ class QueueServer implements CrawlConstants, Join
         $this->processCrawlData(true);
         crawlLog("}}}} End Rejoin Crawl");
     }
-
     /**
      * Generic function used to process Data, Index, and Robot info schedules
      * Finds the first file in the the direcotry of schedules of the given
@@ -1420,7 +1363,6 @@ class QueueServer implements CrawlConstants, Join
             $old_dir = $dir;
         }
     }
-
     /**
      * Determines the most recent fetcher that has spoken with the
      * web server of this queue_server and stored the result in the
@@ -1441,7 +1383,6 @@ class QueueServer implements CrawlConstants, Join
             }
         }
     }
-
     /**
      * Sets up the directory to look for a file of unprocessed
      * index archive data from fetchers then calls the function
@@ -1461,7 +1402,6 @@ class QueueServer implements CrawlConstants, Join
         $this->processDataFile($index_dir, "processIndexArchive", $blocking);
         crawlLog("done index data check and process.");
     }
-
     /**
      * Adds the summary and index data in $file to summary bundle and word index
      *
@@ -1477,7 +1417,6 @@ class QueueServer implements CrawlConstants, Join
     function processIndexArchive($file, $blocking)
     {
         static $blocked = false;
-
         if($blocking && $blocked) {
             crawlLog("Indexer waiting for merge tiers to ".
                 "complete before write partition. B");
@@ -1490,17 +1429,12 @@ class QueueServer implements CrawlConstants, Join
             "{$this->server_name} is starting to process index data,".
             " memory usage: ".memory_get_usage() . "...");
         crawlLog("Processing index data in $file...");
-
         $start_time = microtime();
         $start_total_time = microtime();
-
         $pre_sites = webdecode(file_get_contents($file));
-
         $len_urls = unpackInt(substr($pre_sites, 0, 4));
-
         $seen_urls_string = substr($pre_sites, 4, $len_urls);
         $pre_sites = substr($pre_sites, 4 + $len_urls);
-
         $sites[self::SEEN_URLS] = array();
         $pos = 0;
         $num = 0;
@@ -1540,11 +1474,9 @@ class QueueServer implements CrawlConstants, Join
         $sites[self::INVERTED_INDEX] = IndexShard::load("fetcher_shard",
             $pre_sites);
         unset($pre_sites);
-
         crawlLog("B. Indexer Load Sent shard. Memory usage:".
             memory_get_usage() ." time: ".(changeInMicrotime($start_time)));
         $start_time = microtime();
-
         //do deduplication of summaries
         if(isset($sites[self::SEEN_URLS]) &&
             count($sites[self::SEEN_URLS]) > 0) {
@@ -1556,7 +1488,6 @@ class QueueServer implements CrawlConstants, Join
         } else {
             $num_seen = 0;
         }
-
         $visited_urls_count = 0;
         $recent_urls_count = 0;
         $recent_urls = array();
@@ -1593,13 +1524,11 @@ class QueueServer implements CrawlConstants, Join
                 $blocked = true;
                 return;
             }
-
             $summary_offsets = array();
             if(isset($seen_sites)) {
                 $this->index_archive->addPages(
                     $generation, self::SUMMARY_OFFSET, $seen_sites,
                     $visited_urls_count);
-
                 foreach($seen_sites as $site) {
                     if($site[self::IS_DOC]){ // so not link
                         $hash = $site[self::HASH_URL].
@@ -1618,30 +1547,23 @@ class QueueServer implements CrawlConstants, Join
                 " time: ".(changeInMicrotime($start_time)));
             $start_time = microtime();
             // added summary offset info to inverted index data
-
             $index_shard->changeDocumentOffsets($summary_offsets);
-
             crawlLog("D. Indexer Update shard offsets. Memory usage:".
                 memory_get_usage() ." time: ".(changeInMicrotime($start_time)));
             $start_time = microtime();
-
             $this->index_archive->addIndexData($index_shard);
             $this->index_dirty = true;
         }
         crawlLog("E. Indexer Add index shard. Memory usage:".memory_get_usage().
             " time: ".(changeInMicrotime($start_time)));
-
-
         crawlLog("Indexer Done Index Processing File: $file. Total time: ".
             changeInMicrotime($start_total_time));
         if(isset($recent_urls)) {
             $sites[self::RECENT_URLS] = & $recent_urls;
             $this->writeCrawlStatus($sites);
         }
-
         unlink($file);
     }
-
     /**
      * Checks how old the oldest robot data is and dumps if older then a
      * threshold, then sets up the path to the robot schedule directory
@@ -1651,7 +1573,6 @@ class QueueServer implements CrawlConstants, Join
     {
         if(!isset($this->web_queue) ) {return;}
         crawlLog("Checking age of robot data in queue server ");
-
         if($this->web_queue->getRobotTxtAge() > CACHE_ROBOT_TXT_TIME) {
             $this->deleteRobotData();
             crawlLog("Deleting DNS Cache data..");
@@ -1661,16 +1582,13 @@ class QueueServer implements CrawlConstants, Join
             crawlLog("Number of Crawl-Delayed Hosts: ".floor(count(
                 $this->waiting_hosts)/2));
         }
-
         crawlLog("Checking for robots.txt files to process...");
         $robot_dir =
             CRAWL_DIR."/schedules/".
                 self::robot_data_base_name.$this->crawl_time;
-
         $this->processDataFile($robot_dir, "processRobotArchive");
         crawlLog("done robot check and process. ");
     }
-
     /**
      * Reads in $file of robot data adding host-paths to the disallowed
      * robot filter and setting the delay in the delay filter of
@@ -1692,31 +1610,24 @@ class QueueServer implements CrawlConstants, Join
                     crawlLog("Removing $robot_url from queue");
                     $this->web_queue->removeQueue($robot_url);
                 }
-
                 if(isset($robot_info[self::CRAWL_DELAY])) {
                     $this->web_queue->setCrawlDelay($robot_host,
                         $robot_info[self::CRAWL_DELAY]);
                 }
-
                 if(isset($robot_info[self::ROBOT_PATHS])) {
                     $this->web_queue->addRobotPaths($robot_host,
                         $robot_info[self::ROBOT_PATHS]);
                 }
-
                 if(isset($robot_info[self::IP_ADDRESSES])) {
                     $final_ip = array_pop($robot_info[self::IP_ADDRESSES]);
                     $this->web_queue->addDNSCache($robot_host, $final_ip);
                 }
             }
         }
-
         crawlLog(" time: ".(changeInMicrotime($start_time))."\n");
-
         crawlLog("Done Robots Processing File: $file");
-
         unlink($file);
     }
-
     /**
      * Process cache page validation data files sent by Fetcher
      */
@@ -1729,7 +1640,6 @@ class QueueServer implements CrawlConstants, Join
             "processEtagExpiresArchive");
         crawlLog("done etag check and process.");
     }
-
     /**
      * Processes a cache page validation data file. Extracts key-value pairs
      * from the file and inserts into the B-Tree used for storing cache
@@ -1741,7 +1651,6 @@ class QueueServer implements CrawlConstants, Join
     {
         crawlLog("Processing etag expires http header data in $file");
         $start_time = microtime();
-
         $etag_expires_data =
             unserialize(gzuncompress(webdecode(file_get_contents($file))));
         crawlLog("Done uncompressing etag data. Starting to add to btree");
@@ -1757,12 +1666,10 @@ class QueueServer implements CrawlConstants, Join
             $entry = array($key, $value);
             $this->web_queue->etag_btree->insert($entry);
         }
-
         crawlLog(" time: ".(changeInMicrotime($start_time))."\n");
         crawlLog("Done processing etag expires http header data file: $file");
         unlink($file);
     }
-
     /**
      * Deletes all Robot informations stored by the QueueServer.
      *
@@ -1786,8 +1693,6 @@ class QueueServer implements CrawlConstants, Join
         crawlLog("...Clearing Waiting Hosts");
         $this->waiting_hosts = array();
     }
-
-
     /**
      * Checks for a new crawl file or a schedule data for the current crawl and
      * if such a exists then processes its contents adding the relevant urls to
@@ -1799,10 +1704,8 @@ class QueueServer implements CrawlConstants, Join
     {
         crawlLog("Start checking for new URLs data memory usage: ".
             memory_get_usage());
-
         $info = array();
         $info[self::STATUS] = self::CONTINUE_STATE;
-
         if(file_exists(CRAWL_DIR."/schedules/".self::schedule_start_name)) {
             crawlLog(
                 "Start schedule urls".CRAWL_DIR.
@@ -1811,17 +1714,13 @@ class QueueServer implements CrawlConstants, Join
                 CRAWL_DIR."/schedules/".self::schedule_start_name);
             return $info;
         }
-
         $schedule_dir =
             CRAWL_DIR."/schedules/".
                 self::schedule_data_base_name.$this->crawl_time;
         $this->processDataFile($schedule_dir, "processDataArchive");
-
         crawlLog("done.");
-
         return $info;
     }
-
     /**
      * Process a file of to-crawl urls adding to or adjusting the weight in
      * the PriorityQueue of those which have not been seen. Also
@@ -1867,10 +1766,8 @@ class QueueServer implements CrawlConstants, Join
             }
         }
         crawlLog(" time: ".(changeInMicrotime($start_time)));
-
         crawlLog("...Remove Seen Urls Queue...");
         $start_time = microtime();
-
         if(isset($sites[self::HASH_SEEN_URLS])) {
             $cnt = 0;
             foreach($sites[self::HASH_SEEN_URLS] as $hash_url) {
@@ -1881,25 +1778,19 @@ class QueueServer implements CrawlConstants, Join
                 }
             }
         }
-
         crawlLog(" time: ".(changeInMicrotime($start_time)));
-
         crawlLog("... Scheduler Queueing To Crawl ...");
         $start_time = microtime();
-
         if(isset($sites[self::TO_CRAWL])) {
-
             crawlLog("A.. Queue delete previously seen urls from add set");
             $to_crawl_sites = & $sites[self::TO_CRAWL];
             $this->deleteSeenUrls($to_crawl_sites);
             crawlLog(" time: ".(changeInMicrotime($start_time)));
-
             crawlLog("B.. Queue insert unseen robots.txt urls;".
                 "adjust changed weights");
             $start_time = microtime();
             $cnt = 0;
             $num_triples = count($to_crawl_sites);
-
             $added_urls = array();
             $added_pairs = array();
             $contains_host = array();
@@ -1924,7 +1815,6 @@ class QueueServer implements CrawlConstants, Join
                     $url = "http://localhost/";
                 }
                 $weight = $triple[1];
-
                 $this->web_queue->addSeenUrlFilter($triple[2]); //add for dedup
                 unset($triple[2]); // so triple is now a pair
                 $host_url = UrlParser::getHost($url);
@@ -1968,16 +1858,11 @@ class QueueServer implements CrawlConstants, Join
                  so group and do last
              */
             $this->web_queue->addUrlsQueue($added_pairs);
-
         }
         crawlLog(" time: ".(changeInMicrotime($start_time)));
-
         crawlLog("Done queue schedule file: $file");
-
         unlink($file);
-
     }
-
     /**
      * Writes status information about the current crawl so that the webserver
      * app can use it for its display.
@@ -2025,7 +1910,6 @@ class QueueServer implements CrawlConstants, Join
         chmod($stat_file, 0777);
         crawlLog(
             "End checking for new URLs data memory usage".memory_get_usage());
-
         crawlLog(
             "The current crawl description is: ".
                 $index_archive_info['DESCRIPTION']);
@@ -2039,7 +1923,6 @@ class QueueServer implements CrawlConstants, Join
             }
         }
     }
-
     /**
      * Removes the already seen urls from the supplied array
      *
@@ -2049,7 +1932,6 @@ class QueueServer implements CrawlConstants, Join
     {
         $this->web_queue->differenceSeenUrls($sites, array(0, 2));
     }
-
     /**
      * Used to create encode a string representing with meta info for
      * a fetcher schedule.
@@ -2082,7 +1964,6 @@ class QueueServer implements CrawlConstants, Join
 
         return base64_encode(serialize($sites))."\n";
     }
-
     /**
      * Produces a schedule.txt file of url data for a fetcher to crawl next.
      *
@@ -2100,26 +1981,18 @@ class QueueServer implements CrawlConstants, Join
     {
         $i = 1; // array implementation of priority queue starts at 1 not 0
         $fetch_size = 0;
-
         crawlLog("Start Produce Fetch Batch Memory usage".memory_get_usage() );
-
         $count = $this->web_queue->to_crawl_queue->count;
-
         $schedule_time = time();
         $first_line = $this->calculateScheduleMetaInfo($schedule_time);
-
         $sites = array();
-
         $delete_urls = array();
         $crawl_delay_hosts = array();
         $time_per_request_guess = MINIMUM_FETCH_LOOP_TIME ;
             // it would be impressive if we can achieve this speed
-
         $current_crawl_index = -1;
-
         crawlLog("Trying to Produce Fetch Batch; Queue Size $count");
         $start_time = microtime();
-
         $fh = $this->web_queue->openUrlArchive();
         /*
             $delete - array of items we will delete from the queue after
@@ -2133,9 +2006,7 @@ class QueueServer implements CrawlConstants, Join
                 "location %s in queue of %s.", $i, $count);
             //look in queue for url and its weight
             $tmp = $this->web_queue->peekQueue($i, $fh);
-
             list($url, $weight, $flag, $probe) = $tmp;
-
             // if queue error remove entry any loop
             if($tmp === false || strcmp($url, "LOOKUP ERROR") == 0) {
                 $delete_urls[$i] = false;
@@ -2143,7 +2014,6 @@ class QueueServer implements CrawlConstants, Join
                 $i++;
                 continue;
             }
-
             $no_flags = false;
             $hard_coded = false;
             $host_url = UrlParser::getHost($url);
@@ -2196,10 +2066,8 @@ class QueueServer implements CrawlConstants, Join
                 }
                 continue;
             }
-
             //Now handle the non-robots.txt url case
             $robots_okay = true;
-
             if($has_robots) {
                 if($no_flags) {
                     if(!isset($hard_coded) || !$hard_coded) {
@@ -2223,10 +2091,8 @@ class QueueServer implements CrawlConstants, Join
                     $i++;
                     continue;
                 }
-
                 //each host has two entries in $this->waiting_hosts
                 $num_waiting = floor(count($this->waiting_hosts)/2);
-
                 if($delay > 0 ) {
                     // handle adding a url if there is a crawl delay
                     $hash_host = crawlHash($host_url);
@@ -2235,7 +2101,6 @@ class QueueServer implements CrawlConstants, Join
                         && $num_waiting < MAX_WAITING_HOSTS) ||
                         $is_waiting_host && $this->waiting_hosts[$hash_host] ==
                         $schedule_time) {
-
                         $this->waiting_hosts[$hash_host] =
                            $schedule_time;
                         $this->waiting_hosts[$schedule_time][] =
@@ -2251,7 +2116,6 @@ class QueueServer implements CrawlConstants, Join
                                 + $request_batches_per_delay
                                 * NUM_MULTI_CURL_PAGES;
                         }
-
                         if(($next_slot =
                             $this->getEarliestSlot( $next_earliest_slot,
                                 $sites)) < MAX_FETCH_SIZE) {
@@ -2286,7 +2150,6 @@ class QueueServer implements CrawlConstants, Join
                             /* we might miss some sites by marking them
                                seen after only scheduling them
                              */
-
                         $current_crawl_index = $next_slot;
                         $fetch_size++;
                     } else { //no more available slots so prepare to bail
@@ -2298,18 +2161,13 @@ class QueueServer implements CrawlConstants, Join
                     }
                 } //if delay else
             } // if containsGotRobotTxt
-
             // handle robots.txt urls
-
-
             $i++;
         } //end while
         $this->web_queue->closeUrlArchive($fh);
-
         $new_time = microtime();
         crawlLog("...Done selecting URLS for fetch batch time so far:".
             (changeInMicrotime($start_time)));
-
         $num_deletes = count($delete_urls);
         $k = 0;
         foreach($delete_urls as $delete_url) {
@@ -2327,7 +2185,6 @@ class QueueServer implements CrawlConstants, Join
         crawlLog("...Removed $k URLS for fetch batch from queue in time: ".
             (changeInMicrotime($new_time)));
         $new_time = microtime();
-
         if(isset($sites) && count($sites) > 0 ) {
             $dummy_slot = array(self::DUMMY, 0.0, 0);
             /* dummy's are used for crawl delays of sites with longer delays
@@ -2345,7 +2202,6 @@ class QueueServer implements CrawlConstants, Join
                 }
             }
             ksort($sites);
-
             //write schedule to disk
             $fh = fopen(CRAWL_DIR.
                 "/schedules/".
@@ -2359,7 +2215,6 @@ class QueueServer implements CrawlConstants, Join
                 $k++;
                 $extracted_etag = NULL;
                 list($url, $weight, $delay) = $site;
-
                 $key = crawlHash($url, true);
                 if(USE_ETAG_EXPIRES) {
                 /*check if we have cache validation data for a URL. If both
@@ -2402,11 +2257,9 @@ class QueueServer implements CrawlConstants, Join
                 if($dns_lookup) {
                     $url .= "###".urlencode($dns_lookup);
                 }
-
                 if($extracted_etag !== NULL) {
                     $url .= $extracted_etag;
                 }
-
                 $out_string = base64_encode(
                     packFloat($weight).packInt($delay).$url)."\n";
                 fwrite($fh, $out_string);
@@ -2414,7 +2267,6 @@ class QueueServer implements CrawlConstants, Join
             fclose($fh);
             crawlLog("...Sort URLS and write schedule time: ".
                 (changeInMicrotime($new_time)));
-
             crawlLog("End Produce Fetch Batch Memory usage".
                 memory_get_usage() );
             crawlLog("Created fetch batch of size $num_sites.".
@@ -2439,9 +2291,7 @@ class QueueServer implements CrawlConstants, Join
                 $this->clearWebQueue();
             }
         }
-
     }
-
     /**
      * Gets the first unfilled schedule slot after $index in $arr
      *
@@ -2456,17 +2306,13 @@ class QueueServer implements CrawlConstants, Join
     function getEarliestSlot($index, &$arr)
     {
         $cnt = count($arr);
-
         for( $i = $index + 1; $i < $cnt; $i++) {
             if(!isset($arr[$i] ) ) {
                 break;
             }
         }
-
         return $i;
     }
-
-
     /**
      * Checks if url belongs to a list of sites that are allowed to be
      * crawled and that the file type is crawlable
@@ -2489,7 +2335,6 @@ class QueueServer implements CrawlConstants, Join
         }
         return true;
     }
-
     /**
      * Checks if url belongs to a list of sites that aren't supposed to be
      * crawled
@@ -2502,7 +2347,6 @@ class QueueServer implements CrawlConstants, Join
         return UrlParser::urlMemberSiteArray($url, $this->disallowed_sites,
             "d".$this->allow_disallow_cache_time);
     }
-
     /**
      * Checks if the $url is from a site which has an hourly quota to download.
      * If so, it bumps the quota count and return true; false otherwise.
@@ -2535,7 +2379,6 @@ class QueueServer implements CrawlConstants, Join
         return $flag;
     }
 }
-
 if(!defined("UNIT_TEST_MODE")) {
     /*
      *  Instantiate and runs the QueueSever
@@ -2543,5 +2386,4 @@ if(!defined("UNIT_TEST_MODE")) {
     $queue_server =  new QueueServer($INDEXED_FILE_TYPES);
     $queue_server->start();
 }
-
 ?>

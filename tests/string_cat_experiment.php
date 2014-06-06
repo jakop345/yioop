@@ -33,21 +33,17 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(isset($_SERVER['DOCUMENT_ROOT']) && strlen($_SERVER['DOCUMENT_ROOT']) > 0) {
     echo "BAD REQUEST";
     exit();
 }
-
 ini_set("memory_limit","300M");
 echo "Time to pack null strings of various lengths with pack('xLEN')\n";
-
 for($i = 10; $i< 100000000; $i *= 10) {
     $start = microtime();
     $big_string = pack("x$i");
     echo "Len = $i Time =".changeInMicroTime($start)."secs \n";
 }
-
 echo 'Concatenation $str2 = $str1.$str1 where $str1 of various lengths'."\n";
 for($i = 10; $i< 100000000; $i *= 10) {
     $big_string = pack("x$i");
@@ -55,9 +51,7 @@ for($i = 10; $i< 100000000; $i *= 10) {
     $str2 = $big_string.$big_string;
     echo "Len = $i Time =".changeInMicroTime($start)."secs \n";
 }
-
 unset($str2);
-
 echo 'Concatenation $str1 .= $str1 where $str1 of various lengths'."\n";
 for($i = 10; $i< 100000000; $i *= 10) {
     $big_string = pack("x$i");
@@ -65,7 +59,6 @@ for($i = 10; $i< 100000000; $i *= 10) {
     $big_string .= $big_string;
     echo "Len = $i Time =".changeInMicroTime($start)."secs \n";
 }
-
 echo 'Time to concatenate "hello" on to a string of various lengths'."\n";
 for($i = 10; $i< 100000000; $i *= 10) {
     $big_string = pack("x$i");
@@ -73,9 +66,7 @@ for($i = 10; $i< 100000000; $i *= 10) {
     $big_string .= "hello";
     echo "Len = $i Time =".changeInMicroTime($start)."secs \n";
 }
-
 echo "Concatenate hello various numbers of times to a string of length 10^7\n";
-
 for($i = 10; $i< 10000000; $i *= 10) {
     $big_string = pack("x100000000");
     $start = microtime();
@@ -84,7 +75,6 @@ for($i = 10; $i< 10000000; $i *= 10) {
     }
     echo "Num Hello Cats = $i Time =".changeInMicroTime($start)."secs \n";
 }
-
 /**
  * Measures the change in time in seconds between two timestamps to microsecond
  * precision

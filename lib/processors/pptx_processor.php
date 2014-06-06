@@ -36,7 +36,6 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 $INDEXED_FILE_TYPES[] = "pptx";
 $PAGE_PROCESSORS["application/vnd.openxmlformats-officedocument.".
     "presentationml.presentation"] = "PptxProcessor";
-
 /**
  * Load base class, if needed.
  */
@@ -45,12 +44,10 @@ require_once BASE_DIR."/lib/processors/text_processor.php";
  * Load so can parse urls
  */
 require_once BASE_DIR."/lib/url_parser.php";
-
 /**
  * For deleteFileOrDir
  */
 require_once BASE_DIR."/lib/utility.php";
-
 /**
  * Used to create crawl summary information
  * for PPTX files
@@ -61,7 +58,6 @@ require_once BASE_DIR."/lib/utility.php";
  */
 class PptxProcessor extends TextProcessor
 {
-
     /**
      *  Used to extract the title, description and links from
      *  a pptx file consisting of xml data.
@@ -79,7 +75,6 @@ class PptxProcessor extends TextProcessor
         $sites = array();
         // Create a temporary pptx file
         $filename=CRAWL_DIR . "/pptx.zip";
-
         file_put_contents($filename, $page);
         // Open a zip archive
         $zip = new ZipArchive;
@@ -98,7 +93,6 @@ class PptxProcessor extends TextProcessor
                 $dom = self::dom($buf);
                 $slides=self::slides($dom);
             }
-
             $summary[self::DESCRIPTION]="";
             $summary[self::LINKS]=$sites;
             for ($i = 1; $i <= $slides; $i++) {
@@ -108,7 +102,6 @@ class PptxProcessor extends TextProcessor
                    with each slide*/
                     $dom = self::dom($buf);
                     $desc=self::description($dom);
-
                     if(strlen($summary[self::DESCRIPTION])
                         < self::$max_description_len) {
                             $summary[self::DESCRIPTION]=
@@ -133,32 +126,27 @@ class PptxProcessor extends TextProcessor
         }
         return $summary;
     }
-
     /**
      * Returns up to MAX_LINK_PER_PAGE many links from the supplied
      * dom object where links have been canonicalized according to
      * the supplied $site information.
      *
-     * @param object $dom   a document object with links on it
-     * @param string $site   a string containing a url
+     * @param object $dom a document object with links on it
+     * @param string $site a string containing a url
      *
-     * @return array   links from the $dom object
+     * @return array links from the $dom object
      */
     static function links($dom, $site)
     {
         $sites = array();
-
         $xpath = new DOMXPath($dom);
         $paras = $xpath->evaluate("/p:sld//p:cSld//p:spTree//p:sp//
             p:txBody//a:p//a:r//a:rPr//a:hlinkClick");
-
         $i=0;
-
         foreach($paras as $para) {
             if($i < MAX_LINKS_TO_EXTRACT) {
                 $hlink = $para->parentNode->parentNode->
                     getElementsByTagName("t")->item(0)->nodeValue;
-
                 $url = UrlParser::canonicalLink(
                     $hlink, $site);
                 $len = strlen($url);
@@ -173,7 +161,6 @@ class PptxProcessor extends TextProcessor
             }
             $i++;
         }
-
         return $sites;
     }
     /**
@@ -187,12 +174,9 @@ class PptxProcessor extends TextProcessor
     static function dom($page)
     {
         $dom = new DOMDocument();
-
         @$dom->loadXML($page);
-
         return $dom;
     }
-
     /**
      *  Returns powerpoint head title of a pptx based on its document object
      *
@@ -208,7 +192,6 @@ class PptxProcessor extends TextProcessor
         $title = $titles->item(0)->nodeValue;
         return $title;
     }
-
     /**
      *  Returns number of slides of  pptx based on its document object
      *
@@ -224,7 +207,6 @@ class PptxProcessor extends TextProcessor
         $number = $slides->item(0)->nodeValue;
         return $number;
     }
-
     /**
      *  Determines the language of the xml document by looking at the
      *  language attribute of a tag.
@@ -236,12 +218,10 @@ class PptxProcessor extends TextProcessor
     static function lang($dom)
     {
         $xpath = new DOMXPath($dom);
-
         $languages = $xpath->evaluate("/p:sld//p:cSld//p:spTree//
             p:sp//p:txBody//a:p//a:r//a:rPr");
         return $languages->item(0)->getAttribute("lang");
     }
-
     /**
      * Returns descriptive text concerning a pptx slide based on its document
      * object
@@ -252,7 +232,6 @@ class PptxProcessor extends TextProcessor
     static function description($dom)
     {
         $xpath = new DOMXPath($dom);
-
         $titles = $xpath->evaluate("/p:sld//p:cSld//p:spTree
             //p:sp//p:txBody//a:p//a:r//a:t");
         $description="";
@@ -261,6 +240,5 @@ class PptxProcessor extends TextProcessor
         }
         return $description;
     }
-
 }
 ?>

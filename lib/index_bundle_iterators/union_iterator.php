@@ -30,20 +30,15 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  *Loads BloomFilterFile to remember things we've already grouped
  */
 require_once BASE_DIR.'/lib/bloom_filter_file.php';
-
-
 /**
  *Loads base class for iterating
  */
 require_once BASE_DIR.'/lib/index_bundle_iterators/index_bundle_iterator.php';
-
 /**
  * Used to iterate over the documents which occur in any of a set of
  * WordIterator results
@@ -76,14 +71,11 @@ class UnionIterator extends IndexBundleIterator
      * @var int
      */
     var $seen_docs_unfiltered;
-
     /**
      * stores a mapping between seen doc keys and which iterator they came from
      * @var array
      */
     var $key_iterator_table;
-
-
     /**
      * Creates a union iterator with the given parameters.
      *
@@ -93,7 +85,6 @@ class UnionIterator extends IndexBundleIterator
     function __construct($index_bundle_iterators)
     {
         $this->index_bundle_iterators = $index_bundle_iterators;
-
         /*
             estimate number of results by sum of all iterator counts,
             then improve estimate as iterate
@@ -121,10 +112,8 @@ class UnionIterator extends IndexBundleIterator
                 $this->seen_docs_unfiltered += $this->seen_docs;
             }
         }
-
         $doc_block = $this->currentDocsWithWord();
     }
-
     /**
      * Returns the iterators to the first document block that it could iterate
      * over
@@ -138,7 +127,6 @@ class UnionIterator extends IndexBundleIterator
         $this->seen_docs_unfiltered = 0;
         $doc_block = $this->currentDocsWithWord();
     }
-
     /**
      * Computes a relevancy score for a posting offset with respect to this
      * iterator and generation
@@ -156,7 +144,6 @@ class UnionIterator extends IndexBundleIterator
         }
         return $relevance;
     }
-
     /**
      * Hook function used by currentDocsWithWord to return the current block
      * of docs if it is not cached
@@ -181,7 +168,6 @@ class UnionIterator extends IndexBundleIterator
                 $pages = array_merge($pages, $docs);
                 $found_docs = true;
             }
-
         }
         if($found_docs == false) {
             $this->pages = $docs;
@@ -192,7 +178,6 @@ class UnionIterator extends IndexBundleIterator
         $this->count_block = count($pages);
         return $pages;
     }
-
     /**
      * Gets the summaries associated with the keys provided the keys
      * can be found in the current block of docs returned by this iterator
@@ -228,7 +213,6 @@ class UnionIterator extends IndexBundleIterator
         }
         return $out_pages;
     }
-
     /**
      * Forwards the iterator one group of docs
      * @param array $gen_doc_offset a generation, doc_offset pair. If set,
@@ -239,9 +223,7 @@ class UnionIterator extends IndexBundleIterator
     function advance($gen_doc_offset = NULL)
     {
         $this->advanceSeenDocs();
-
         $this->seen_docs_unfiltered += $this->count_block_unfiltered;
-
         $total_num_docs = 0;
         for($i = 0; $i < $this->num_iterators; $i++) {
             $total_num_docs += $this->index_bundle_iterators[$i]->num_docs;
@@ -255,7 +237,6 @@ class UnionIterator extends IndexBundleIterator
             $this->num_docs = 0;
         }
     }
-
     /**
      * This method is supposed to set
      * the value of the result_per_block field. This field controls
@@ -273,7 +254,6 @@ class UnionIterator extends IndexBundleIterator
         trigger_error("Cannot set the results per block of
             a union iterator", E_USER_ERROR);
      }
-
     /**
      * This method is supposed to get the doc_offset and generation
      * for the next document that would be return by

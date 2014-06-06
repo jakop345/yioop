@@ -30,15 +30,11 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
-
 /**
  *Loads base class for iterating
  */
 require_once BASE_DIR.'/lib/index_bundle_iterators/index_bundle_iterator.php';
-
 /**
  * Used to iterate over the documents which dont' occur in a set of
  * iterator results
@@ -66,7 +62,6 @@ class NegationIterator extends IndexBundleIterator
      * @var int
      */
     var $to_advance_index;
-
     /**
      * Creates a negation iterator with the given parameters.
      *
@@ -79,16 +74,12 @@ class NegationIterator extends IndexBundleIterator
             $index_bundle_iterator->index_name,
             $index_bundle_iterator->filter);
         $this->index_bundle_iterators[1] = $index_bundle_iterator;
-
         $this->num_iterators = 2;
         $this->num_docs = 0;
         $this->results_per_block = 1;
-
         $this->num_docs = $this->index_bundle_iterators[0]->num_docs;
-
         $this->reset();
     }
-
     /**
      * Returns the iterators to the first document block that it could iterate
      * over
@@ -99,12 +90,9 @@ class NegationIterator extends IndexBundleIterator
             $this->index_bundle_iterators[$i]->setResultsPerBlock(1);
             $this->index_bundle_iterators[$i]->reset();
         }
-
         $this->seen_docs = 0;
         $this->seen_docs_unfiltered = 0;
-
     }
-
     /**
      * Computes a relevancy score for a posting offset with respect to this
      * iterator and generation
@@ -117,7 +105,6 @@ class NegationIterator extends IndexBundleIterator
     {
         return 1;
     }
-
     /**
      * Hook function used by currentDocsWithWord to return the current block
      * of docs if it is not cached
@@ -126,23 +113,18 @@ class NegationIterator extends IndexBundleIterator
      */
     function findDocsWithWord()
     {
-
         $status = $this->syncGenDocOffsetsAmongstIterators();
-
         if($status == -1) {
             return -1;
         }
         //next we finish computing BM25F
         $docs = $this->index_bundle_iterators[0]->currentDocsWithWord();
-
         if(is_array($docs) && count($docs) == 1) {
             //we get intersect docs one at a time so should be only one
             $keys = array_keys($docs);
             $key = $keys[0];
-
             $docs[$key][self::RELEVANCE] = 1;
             $docs[$key][self::PROXIMITY] = 1;
-
             $docs[$key][self::SCORE] = $docs[$key][self::DOC_RANK] *
                  $docs[$key][self::RELEVANCE] * $docs[$key][self::PROXIMITY];
         }
@@ -150,8 +132,6 @@ class NegationIterator extends IndexBundleIterator
         $this->pages = $docs;
         return $docs;
     }
-
-
     /**
      * Finds the next generation and doc offset amongst the all docs iterator
      * and the term to be negated iterator such that the all iterator is
@@ -191,10 +171,8 @@ class NegationIterator extends IndexBundleIterator
                 $changed_all = true;
             }
         } while($gen_doc_cmp >= 0);
-
         return 1;
     }
-
     /**
      * Forwards the iterator one group of docs (must be size 1)
      * @param array $gen_doc_offset a generation, doc_offset pair. If set,
@@ -206,11 +184,8 @@ class NegationIterator extends IndexBundleIterator
     {
         $this->current_block_fresh = false;
         $this->seen_docs += 1;
-
         $this->index_bundle_iterators[0]->advance($gen_doc_offset);
-
     }
-
     /**
      * Gets the doc_offset and generation for the next document that
      * would be return by this iterator
@@ -222,7 +197,6 @@ class NegationIterator extends IndexBundleIterator
         $this->syncGenDocOffsetsAmongstIterators();
         return $this->index_bundle_iterators[0]->currentGenDocOffsetWithWord();
     }
-
     /**
      * This method is supposed to set
      * the value of the result_per_block field. This field controls

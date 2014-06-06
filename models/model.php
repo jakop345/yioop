@@ -30,33 +30,23 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /** Used to manage database connections */
 require_once BASE_DIR."/models/datasources/".DBMS."_manager.php";
-
 /** Used to handle curl and multi curl page requests */
 require_once BASE_DIR."/lib/fetch_url.php";
-
 /**  For crawlHash function  */
 require_once BASE_DIR."/lib/utility.php";
-
 /** For checking if a url is on localhost */
 require_once BASE_DIR."/lib/url_parser.php";
-
 /** Used to load common constants among crawl components */
 require_once BASE_DIR."/lib/crawl_constants.php";
-
 define("SCORE_PRECISION", 4);
-
 define("TITLE_LENGTH", 20);
 define("MAX_TITLE_LENGTH", 20);
-
 define("SNIPPET_LENGTH_LEFT", 60);
 define("SNIPPET_LENGTH_RIGHT", 50);
 define("MIN_SNIPPET_LENGTH", 100);
-
 /**
  *
  * This is a base class for all models
@@ -70,12 +60,10 @@ define("MIN_SNIPPET_LENGTH", 100);
  */
 class Model implements CrawlConstants
 {
-
     /**
      * Default maximum character length of a search summary
      */
     const DEFAULT_DESCRIPTION_LENGTH = 150;
-
     /** Reference to a DatasourceManager
      *  @var object
      */
@@ -115,8 +103,6 @@ class Model implements CrawlConstants
         }
         $this->db_name = $db_name;
     }
-
-
     /**
      * Given an array page summaries, for each summary extracts snippets which
      * are related to a set of search words. For each snippet, bold faces the
@@ -204,21 +190,14 @@ class Model implements CrawlConstants
                     mb_substr(strip_tags(
                         $page[self::DESCRIPTION]), 0, $description_length);
             }
-
             $page[self::SCORE] = mb_substr($page[self::SCORE], 0,
                 SCORE_PRECISION);
-
             $pages[$i] = $page;
-
         }
-
         $output['TOTAL_ROWS'] = $results['TOTAL_ROWS'];
         $output['PAGES'] = $pages;
-
         return $output;
     }
-
-
     /**
      * Given a string, extracts a snippets of text related to a given set of
      * key words. For a given word a snippet is a window of characters to its
@@ -283,7 +262,6 @@ class Model implements CrawlConstants
                         $word_locations[] = $position[1];
                     }
                 }
-
             }
             $high = 0;
             sort($word_locations);
@@ -314,8 +292,6 @@ class Model implements CrawlConstants
         }
         return $snippet_string;
     }
-
-
     /**
      *  Given a string, wraps in bold html tags a set of key words it contains.
      *
@@ -334,10 +310,8 @@ class Model implements CrawlConstants
                 $text = $new_text;
             }
         }
-
         return $text;
     }
-
     /**
      * Gets a list of all DBMS that work with the search engine
      *
@@ -357,10 +331,8 @@ class Model implements CrawlConstants
                 $list[] = $dbms;
             }
         }
-
         return $list;
     }
-
     /**
      * Returns whether the provided dbms needs a login and password or not
      * (sqlite or sqlite3)
@@ -372,8 +344,6 @@ class Model implements CrawlConstants
     {
         return !in_array($dbms, array("sqlite", "sqlite3"));
     }
-
-
     /**
      * Used to determine if an action involves just one yioop instance on
      * the current local machine or not
@@ -397,7 +367,6 @@ class Model implements CrawlConstants
         return count($machine_urls) <= 1 &&
                     UrlParser::isLocalhostUrl($machine_urls[0]);
     }
-
     /**
      *  Used to get the translation of a string_id stored in the database to
      *  the given locale.
@@ -428,7 +397,6 @@ class Model implements CrawlConstants
         }
         return $string_id;
     }
-
     /**
      *  Get the user_id associated with a given username
      *  (In base class as used as an internal method in both signin and
@@ -450,7 +418,6 @@ class Model implements CrawlConstants
         $user_id = $row['USER_ID'];
         return $user_id;
     }
-
     /**
      *  Creates the WHERE and ORDER BY clauses for a query of a Yioop
      *  table such as USERS, ROLE, GROUP, which have associated search web
@@ -518,7 +485,6 @@ class Model implements CrawlConstants
         }
         return array($where, $order_by);
     }
-
     /**
      *  Gets a range of rows which match the procided search criteria from
      *  $th provided table
@@ -567,7 +533,6 @@ class Model implements CrawlConstants
         $rows = $this->postQueryCallback($rows);
         return $rows;
     }
-
     /**
      *  @param mixed $args
      */

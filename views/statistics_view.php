@@ -30,11 +30,8 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
- *
  * Draws a view displaying statistical information about a
  * web crawl such as number of hosts visited, distribution of
  * file sizes, distribution of file type, distribution of languages, etc
@@ -43,14 +40,12 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @package seek_quarry
  * @subpackage view
  */
-
 class StatisticsView extends View
 {
     /** This view is drawn on a web layout
      *  @var string
      */
     var $layout = "web";
-
     /**
      * Draws the web page used to display statistics about the default crawl
      *
@@ -74,11 +69,9 @@ class StatisticsView extends View
         $base_url = "?".CSRF_TOKEN."=".$data[CSRF_TOKEN]."&its=".$data["its"];
         if(isset($data["UNFINISHED"])) {
             e("<h1 class='center'>".tl('statistics_view_calculating')."</h1>");
-
             e("<h2 class='red center' style='text-decoration:blink'>"
                 .$data["stars"]."</h2>");
             ?>
-
             <script type="text/javascript">
                 function continueCalculate()
                 {

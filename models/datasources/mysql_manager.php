@@ -30,15 +30,11 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  *  Loads base datasource class if necessary
  */
 require_once BASE_DIR."/models/datasources/pdo_manager.php";
-
-
 /**
  * Mysql DatasourceManager
  *
@@ -65,7 +61,6 @@ class MysqlManager extends PdoManager
      *  @var string
      */
     var $special_quote = "`";
-
     /** {@inheritdoc} */
     function connect($db_host = DB_HOST, $db_user = DB_USER,
         $db_password = DB_PASSWORD, $db_name = DB_NAME)

@@ -30,12 +30,9 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /** Loads base model class if necessary */
 require_once BASE_DIR."/models/model.php";
-
 /**
  * This is class is used to handle
  * db results related to Administration Activities
@@ -57,19 +54,14 @@ class ActivityModel extends Model
     function getActivityNameFromMethodName($method_name)
     {
         $db = $this->db;
-
         $method_name = $db->escapeString($method_name);
-
         $roles = array();
         $locale_tag = getLocaleTag();
-
         $sql = "SELECT LOCALE_ID FROM LOCALE ".
             "WHERE LOCALE_TAG = '$locale_tag' " . $db->limitOffset(1);
         $result = $db->execute($sql);
         $row = $db->fetchArray($result);
-
         $locale_id = $row['LOCALE_ID'];
-
         $sql = "SELECT TL.TRANSLATION AS ACTIVITY_NAME  FROM ".
             " TRANSLATION_LOCALE TL, LOCALE L, ACTIVITY A ".
             "WHERE A.METHOD_NAME = :method_name ".
@@ -83,25 +75,19 @@ class ActivityModel extends Model
         if(isset($row['ACTIVITY_NAME'])) {
             $activity_name = $row['ACTIVITY_NAME'];
         }
-
         if(!$activity_name) {
             $sql = "SELECT T.IDENTIFIER_STRING AS STRING_ID FROM ".
                 " ACTIVITY A, TRANSLATION T ".
                 "WHERE A.METHOD_NAME = :method_name ".
                 " AND T.TRANSLATION_ID = A.TRANSLATION_ID " .
                 $db->limitOffset(1);
-
             $result = $db->execute($sql, array(":method_name" => $method_name));
             $row = $db->fetchArray($result);
             $activity_name = $this->translateDb($row['STRING_ID'],
                 DEFAULT_LOCALE);
         }
-
         return $activity_name;
-
     }
-
-
     /**
      * Gets a list of activity ids, method names, and translated
      * name of each available activity
@@ -111,16 +97,13 @@ class ActivityModel extends Model
     function getActivityList()
     {
         $db = $this->db;
-
         $activities = array();
         $locale_tag = getLocaleTag();
-
         $sql = "SELECT LOCALE_ID FROM LOCALE ".
             "WHERE LOCALE_TAG = :locale_tag " . $db->limitOffset(1);
         $result = $db->execute($sql, array(":locale_tag" => $locale_tag));
         $row = $db->fetchArray($result);
         $locale_id = $row['LOCALE_ID'];
-
         $sql = "SELECT A.ACTIVITY_ID AS ACTIVITY_ID, ".
             "A.METHOD_NAME AS METHOD_NAME, ".
             " T.IDENTIFIER_STRING AS IDENTIFIER_STRING, ".
@@ -148,12 +131,8 @@ class ActivityModel extends Model
             }
             $i++;
         }
-
-
         unset($activities[$i]); //last one will be null
-
         return $activities;
-
     }
 }
  ?>

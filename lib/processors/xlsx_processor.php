@@ -37,7 +37,6 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 $INDEXED_FILE_TYPES[] = "xlsx";
 $PAGE_PROCESSORS["application/vnd.openxmlformats-officedocument.".
     "spreadsheetml.sheet"] = "XlsxProcessor";
-
 /**
  * Load base class, if needed.
  */
@@ -46,7 +45,6 @@ require_once BASE_DIR."/lib/processors/text_processor.php";
  * Load so can parse urls
  */
 require_once BASE_DIR."/lib/url_parser.php";
-
  /**
  * Used to create crawl summary information
  * for xlsx files
@@ -55,10 +53,8 @@ require_once BASE_DIR."/lib/url_parser.php";
  * @package seek_quarry
  * @subpackage processor
  */
-
 class XlsxProcessor extends TextProcessor
 {
-
     /**
      *  Used to extract the title, description and links from
      *  a xlsx file.
@@ -72,26 +68,19 @@ class XlsxProcessor extends TextProcessor
      */
     function process($page, $url)
     {
-
         $summary = NULL;
         $sites = array();
-
         // Create a temporary xlsx file
-        $file_name=CRAWL_DIR . "/temp.xlsx";
-
+        $file_name = CRAWL_DIR . "/temp.xlsx";
         file_put_contents($file_name, $page);
-
         // Open a zip archive
         $zip = new ZipArchive;
         if($zip->open($file_name) === TRUE) {
-
             //Count of the sheets in xlsx
             $file_count = 0;
-
             //Getting the title from xlsx file
             $buf = $zip->getFromName("docProps/app.xml");
             if($buf) {
-
                $dom = self::dom($buf);
                if($dom !== false) {
                    // Get the title
@@ -99,25 +88,21 @@ class XlsxProcessor extends TextProcessor
                    $file_count = self::sheetCount($dom);
                }
             }
-
             //Getting the description from xlsx file
             $buf= $zip->getFromName("xl/sharedStrings.xml");
-            if ($buf) {
-
+            if($buf) {
                 $dom = self::dom($buf);
                 if($dom !== false) {
                     // Get the description
                     $summary[self::DESCRIPTION] = self::description($dom);
                 }
-
                 //Getting the language from xlsx file
                 $summary[self::LANG] =
                     self::calculateLang($summary[self::DESCRIPTION], $url);
             }
-
-            $summary[self::LINKS]=$sites;
+            $summary[self::LINKS] = $sites;
             //Getting links from each worksheet
-            for ($i = 1; $i<= $file_count; $i++) {
+            for($i = 1; $i<= $file_count; $i++) {
                 $buf= $zip->getFromName("xl/worksheets/_rels/sheet" . $i .
                     ".xml.rels");
                 if($buf) {
@@ -129,8 +114,7 @@ class XlsxProcessor extends TextProcessor
                     }
                 }
             }
-        }
-        else {
+        } else {
             $summary=parent::process($page, $url);
         }
         // Close the zip
@@ -139,7 +123,6 @@ class XlsxProcessor extends TextProcessor
         @unlink("$file_name");
         return $summary;
     }
-
     /**
      * Return a document object based on a string containing the contents of
      * a xml file
@@ -156,7 +139,6 @@ class XlsxProcessor extends TextProcessor
 
         return $dom;
     }
-
     /**
      *  Returns title of a xlsx file from each worksheet
      *
@@ -174,7 +156,6 @@ class XlsxProcessor extends TextProcessor
         }
         return $title;
      }
-
     /**
      *  Returns the count of worksheets in the xlsx file
      *
@@ -197,7 +178,6 @@ class XlsxProcessor extends TextProcessor
         }
         return $count;
     }
-
     /**
      * Returns descriptive text concerning a xlsx file based on its document
      * object
@@ -220,7 +200,6 @@ class XlsxProcessor extends TextProcessor
         }
         return $descriptions;
     }
-
     /**
      * Returns up to MAX_LINK_PER_PAGE many links from the supplied
      * dom object where links have been canonicalized according to
@@ -262,7 +241,6 @@ class XlsxProcessor extends TextProcessor
                 }
             }
         }
-
         return $sites;
     }
 

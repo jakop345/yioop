@@ -30,15 +30,11 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  *  Loads base datasource class if necessary
  */
 require_once BASE_DIR."/models/datasources/pdo_manager.php";
-
-
 /**
  * SQLite3 DatasourceManager
  *
@@ -54,7 +50,6 @@ require_once BASE_DIR."/models/datasources/pdo_manager.php";
  */
 class Sqlite3Manager extends PdoManager
 {
-
     /** {@inheritdoc} */
     function __construct()
     {
@@ -72,7 +67,6 @@ class Sqlite3Manager extends PdoManager
         }
         $this->db_name = NULL;
     }
-
     /**
      *  Select file name of database. If the
      *  @param string $db_host  not used but in base constructor

@@ -30,14 +30,11 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  *  Load base helper class if needed
  */
 require_once BASE_DIR."/views/helpers/helper.php";
-
 /**
  * This is a helper class is used to draw
  * an On-Off switch in a web page
@@ -46,10 +43,8 @@ require_once BASE_DIR."/views/helpers/helper.php";
  * @package seek_quarry
  * @subpackage helper
  */
-
 class ToggleHelper extends Helper
 {
-
     /**
      *  Draws an On Off switch in HTML where to toggle state one
      *  clicks a link
@@ -84,6 +79,5 @@ class ToggleHelper extends Helper
             </tr></table>
         <?php }
     }
-
 }
 ?>

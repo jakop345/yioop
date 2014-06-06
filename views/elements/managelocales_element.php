@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * This Element is responsible for drawing screens in the Admin View related
  * to localization. Namely, the ability to create, delete, and text writing mode
@@ -45,7 +43,6 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 class ManagelocalesElement extends Element
 {
-
     /**
      * Responsible for drawing the ceate, delete set writing mode screen for
      * locales as well ass the screen for adding modifying translations
@@ -110,13 +107,11 @@ class ManagelocalesElement extends Element
         </div>
     <?php
     }
-
     /**
      *  Draws the add locale and edit locale forms
      *
      *  @param array $data consists of values of locale fields set
      *      so far as well as values of the drops downs on the form
-
      */
     function renderLocaleForm($data)
     {
@@ -180,13 +175,11 @@ class ManagelocalesElement extends Element
         </form>
         <?php
     }
-
     /**
      *  Draws the search for locales forms
      *
      *  @param array $data consists of values of locale fields set
      *      so far as well as values of the drops downs on the form
-
      */
     function renderSearchForm($data)
     {
@@ -205,7 +198,7 @@ class ManagelocalesElement extends Element
                 "tb-rl" => "tb-rl", "tb-lr" => "tb-lr")
         );
         $view->helper("searchform")->render($data, $controller, $activity,
-                $view, $title, $return_form_name, $fields, $dropdowns);
+            $view, $title, $return_form_name, $fields, $dropdowns);
     }
 }
 ?>

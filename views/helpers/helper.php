@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * Base Helper Class.
  * Helpers are classes used to reduce the coding required in
@@ -43,10 +41,8 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @package seek_quarry
  * @subpackage helper
  */
-
 class Helper
 {
-
     /**
      *  The constructor at this point does nothing
      */

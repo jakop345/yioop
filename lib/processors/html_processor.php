@@ -30,23 +30,17 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /** Register File Types We Handle*/
 $add_extensions = array("asp", "aspx", "cgi", "cfm", "cfml", "do", "htm",
     "html", "jsp", "php", "pl", "py", "shtml");
-
 if(!isset($INDEXED_FILE_TYPES)) {
     $INDEXED_FILE_TYPES = array();
 }
 $INDEXED_FILE_TYPES = array_merge($INDEXED_FILE_TYPES, $add_extensions);
-
 $PAGE_PROCESSORS["text/html"] = "HtmlProcessor";
 $PAGE_PROCESSORS["text/asp"] = "HtmlProcessor";
 $PAGE_PROCESSORS["application/xhtml+xml"] = "HtmlProcessor";
-
-
 /**
  * Load base class, if needed.
  */
@@ -63,7 +57,6 @@ require_once BASE_DIR."/lib/centroid_summarizer.php";
  * For guessing language from charset
  */
 require_once BASE_DIR."/lib/locale_functions.php";
-
  /**
  * Used to create crawl summary information
  * for HTML files
@@ -78,7 +71,6 @@ class HtmlProcessor extends TextProcessor
      *  Maximum number of characters in a title
      */
     const MAX_TITLE_LEN = 100;
-
     /**
      *  Used to extract the title, description and links from
      *  a string consisting of webpage data.
@@ -154,11 +146,7 @@ class HtmlProcessor extends TextProcessor
             }
         }
         return $summary;
-
     }
-
-
-
     /**
      * Return a document object based on a string containing the contents of
      * a web page
@@ -183,18 +171,14 @@ class HtmlProcessor extends TextProcessor
             $page = "<html><head>$head</head><body>$body</body></html>";
         }
         $dom = new DOMDocument();
-
         //this hack modified from php.net
         @$dom->loadHTML('<?xml encoding="UTF-8">' . $page);
-
         foreach ($dom->childNodes as $item)
         if ($item->nodeType == XML_PI_NODE)
             $dom->removeChild($item); // remove hack
         $dom->encoding = "UTF-8"; // insert proper
-
         return $dom;
     }
-
     /**
      * Get any NOINDEX, NOFOLLOW, NOARCHIVE, NONE, info out of any robot
      * meta tags.
@@ -211,7 +195,6 @@ class HtmlProcessor extends TextProcessor
             "'abcdefghijklmnopqrstuvwxyz'," .
             " 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'),'ROBOT')";
         $metas = $xpath->evaluate("/html/head//meta[$robots_check]");
-
         $found_metas = array();
         foreach($metas as $meta) {
             $content = $meta->getAttribute('content');
@@ -222,7 +205,6 @@ class HtmlProcessor extends TextProcessor
         }
         return $found_metas;
     }
-
     /**
      *  Determines the language of the html document by looking at the root
      *  language attribute. If that fails $sample_text is used to try to guess
@@ -237,7 +219,6 @@ class HtmlProcessor extends TextProcessor
      */
     static function lang($dom, $sample_text = NULL, $url = NULL)
     {
-
         $htmls = $dom->getElementsByTagName("html");
         $lang = NULL;
         foreach($htmls as $html) {
@@ -246,7 +227,6 @@ class HtmlProcessor extends TextProcessor
                 return $lang;
             }
         }
-
         if($lang == NULL) {
             //baidu doesn't have a lang attribute but does say encoding
             $xpath = new DOMXPath($dom);
@@ -268,7 +248,6 @@ class HtmlProcessor extends TextProcessor
         }
         return $lang;
     }
-
     /**
      *  Returns title of a webpage based on its document object
      *
@@ -281,7 +260,6 @@ class HtmlProcessor extends TextProcessor
         $xpath = new DOMXPath($dom);
         $titles = $xpath->evaluate("/html//title");
         $title = "";
-
         foreach($titles as $pre_title) {
                 $title .= $pre_title->nodeValue;
         }
@@ -300,7 +278,6 @@ class HtmlProcessor extends TextProcessor
         $title = substr($title, 0, self::MAX_TITLE_LEN);
         return $title;
     }
-
     /**
      *  Returns title of a webpage based on crude regex match,
      *      used as a fall back if dom parsing did not work.
@@ -313,7 +290,6 @@ class HtmlProcessor extends TextProcessor
         $title = parent::getBetweenTags($page, 0, "<title", "</title");
         return strip_tags("<title".$title[1]."</title>");
     }
-
     /**
      *  Returns summary of body of a web page based on crude regex matching
      *      used as a fall back if dom parsing did not work.
@@ -330,7 +306,6 @@ class HtmlProcessor extends TextProcessor
         $body = implode(" ", $body_parts);
         return mb_substr($body, 0, self::$max_description_len);
     }
-
     /**
      * Returns descriptive text concerning a webpage based on its document
      * object
@@ -339,11 +314,10 @@ class HtmlProcessor extends TextProcessor
      * @param string $page original page string to extract description from
      * @return string a description of the page
      */
-    static function description($dom, $page) {
+    static function description($dom, $page)
+    {
         $xpath = new DOMXPath($dom);
-
         $metas = $xpath->evaluate("/html//meta");
-
         $description = "";
         //look for a meta tag with a description
         foreach($metas as $meta) {
@@ -370,10 +344,8 @@ class HtmlProcessor extends TextProcessor
             "/html//td", "/html//li", "/html//dt", "/html//dd",
             "/html//pre", "/html//a", "/html//article",
             "/html//section", "/html//cite");
-
         $para_data = array();
         $len = 0;
-
         foreach($page_parts as $part) {
             $doc_nodes = $xpath->evaluate($part);
             foreach($doc_nodes as $node) {
@@ -409,7 +381,6 @@ class HtmlProcessor extends TextProcessor
 
         return $description;
     }
-
     /**
      * Extracts are location of refresh urls from the meta tags of html page
      * in site
@@ -434,10 +405,8 @@ class HtmlProcessor extends TextProcessor
                 }
             }
         }
-
         return false;
     }
-
     /**
      * Returns up to MAX_LINKS_TO_EXTRACT many links from the supplied
      * dom object where links have been canonicalized according to
@@ -451,9 +420,7 @@ class HtmlProcessor extends TextProcessor
     static function links($dom, $site)
     {
         $sites = array();
-
         $xpath = new DOMXPath($dom);
-
         $base_refs = $xpath->evaluate("/html//base");
         if($base_refs->item(0)) {
             $tmp_site = $base_refs->item(0)->getAttribute('href');
@@ -461,12 +428,8 @@ class HtmlProcessor extends TextProcessor
                 $site = UrlParser::canonicalLink($tmp_site, $site);
             }
         }
-
         $i = 0;
-
         $hrefs = $xpath->evaluate("/html/body//a");
-
-
         foreach($hrefs as $href) {
             if($i < MAX_LINKS_TO_EXTRACT) {
                 $rel = $href->getAttribute("rel");
@@ -488,21 +451,17 @@ class HtmlProcessor extends TextProcessor
                             $sites[$url] = mb_substr($sites[$url], 0,
                                 2* MAX_LINKS_WORD_TEXT);
                         }
-
                        $i++;
                     }
                 }
             }
-
         }
-
         $frames = $xpath->evaluate("/html/frameset/frame|/html/body//iframe");
         foreach($frames as $frame) {
             if($i < MAX_LINKS_TO_EXTRACT) {
                 $url = UrlParser::canonicalLink(
                     $frame->getAttribute('src'), $site);
                 $len = strlen($url);
-
                 if(!UrlParser::checkRecursiveUrl($url)
                     && $len < MAX_URL_LENGTH && $len > 4) {
                     if(isset($sites[$url]) ) {
@@ -515,17 +474,12 @@ class HtmlProcessor extends TextProcessor
                 }
             }
         }
-
         $imgs = $xpath->evaluate("/html/body//img[@alt]");
-
         $i = 0;
-
         foreach($imgs as $img) {
             if($i < MAX_LINKS_TO_EXTRACT) {
                 $alt = $img->getAttribute('alt');
-
                 if(strlen($alt) < 1) { continue; }
-
                 $url = UrlParser::canonicalLink(
                     $img->getAttribute('src'), $site);
                 $len = strlen($url);
@@ -543,12 +497,9 @@ class HtmlProcessor extends TextProcessor
                     $i++;
                 }
             }
-
         }
-
        return $sites;
     }
-
     /**
      *  This returns the text content of a node but with spaces
      *  where tags were (unlike just using textContent)
@@ -564,5 +515,4 @@ class HtmlProcessor extends TextProcessor
         return strip_tags($text);
     }
 }
-
 ?>

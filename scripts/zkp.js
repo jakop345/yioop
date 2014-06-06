@@ -29,7 +29,6 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 /*
  *  Returns RSA like modulus.
  *
@@ -42,7 +41,6 @@ function getN(id)
     var n = elt(id).value;
     return str2BigInt(n, 10, 0);
 }
-
 /*
  *  Generates Fiat shamir parameters such as x and y and append
  *  with the input form
@@ -78,7 +76,6 @@ function dynamicForm(zkp_form_id, sha1, e, user_name, modulus_id)
     zkp_form.appendChild(input_username);
     zkp_form.submit();
 }
-
 /*
  *  Generates Fiat shamir parameters Y. When user gives username, password
  *  for the first time it stored the password on the cookie. From rest of
@@ -104,7 +101,6 @@ function getY(sha1, e, r, n)
     y = multMod(r, se, n);
     return y;
 }
-
 /*
  *  Generates random number and converts it into BigInteger in provided range
  *
@@ -145,7 +141,6 @@ function getR(range)
     var final_r = bigMod(r, range);
     return final_r;
 }
-
 /*
  *  Generates Fiat shamir parameters such as x and y and append
  *  with the input form. This method calls first time when user
@@ -167,7 +162,7 @@ function generateKeys(zkp_form_id, username_id, password_id,
     var token_name = token_object.name;
     var sha1 = generateSha1(password);
     var n = new getN(modulus_id);
-    for (var i = 0; i < auth_count - 1; i++) {
+    for(var i = 0; i < auth_count - 1; i++) {
         var r = getR(n);
         var x = multMod(r, r, n);
         var y = getY(sha1, e, r, n);
@@ -185,7 +180,6 @@ function generateKeys(zkp_form_id, username_id, password_id,
     elt(password_id).value = null;
     dynamicForm(zkp_form_id, sha1, e, u, modulus_id);
 }
-
 /*
  *  Sends Fiat-Shamir via AJAX parameters and receives parameter e from server
  *
@@ -214,14 +208,13 @@ function sendFiatShamirParameters(x, y, u, token, token_name, round_num)
     }
     http.send(params);
 }
-
 /*
  *  This function is used during create account module and when
  *  authentication mode is ZKP.
  *
- *  @param String password_id
- *  @param String repassword_id
- *  @param String 
+ *  @param String password_id element that holds ZKP password
+ *  @param String repassword_id element that holds retyped ZKP password
+ *  @param String modulus_id element that holds fiat shamir modulus
  */
 function registration(password_id, repassword_id, modulus_id)
 {

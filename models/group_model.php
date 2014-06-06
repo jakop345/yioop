@@ -38,7 +38,6 @@ require_once BASE_DIR."/models/model.php";
 require_once BASE_DIR."/lib/utility.php";
 /** For formatting wiki */
 require_once BASE_DIR."/lib/wiki_parser.php";
-
 /**
  * This is class is used to handle
  * db results related to Group Administration. Groups are collections of
@@ -50,7 +49,6 @@ require_once BASE_DIR."/lib/wiki_parser.php";
  * @package seek_quarry
  * @subpackage model
  */
-
 class GroupModel extends Model
 {
     /**
@@ -67,12 +65,10 @@ class GroupModel extends Model
         "pub_date" => "GI.PUBDATE", "parent_id"=>"GI.PARENT_ID",
         "register"=>"G.REGISTER_TYPE", "status"=>"UG.STATUS",
         "user_id"=>"P.USER_ID");
-
     /**
      * @var array
      */
     var $any_fields = array("access", "register");
-
     /**
      *  Used to determine the select clause for GROUPS table when do query
      *  to marshal group objects for the controller mainly in mangeGroups
@@ -99,7 +95,6 @@ class GroupModel extends Model
             G.MEMBER_ACCESS $join_date";
         return $select;
     }
-
     /**
      *  @param mixed $args
      */
@@ -107,7 +102,6 @@ class GroupModel extends Model
     {
         return "GROUPS G, USER_GROUP UG, USERS O";
     }
-
     /**
      *  @param mixed $args
      */
@@ -129,7 +123,6 @@ class GroupModel extends Model
         }
         return $where;
     }
-
     /**
      *  Get an array of users that belong to a group
      *
@@ -164,7 +157,6 @@ class GroupModel extends Model
         unset($users[$i]); //last one will be null
         return $users;
     }
-
     /**
      *  Get the number of users which belong to a group and whose user_name
      *  matches a filter
@@ -192,7 +184,6 @@ class GroupModel extends Model
         }
         return $row['NUM'];
     }
-
     /**
      *  Add a groupname to the database using provided string
      *
@@ -203,7 +194,6 @@ class GroupModel extends Model
     {
         $db = $this->db;
         $timestamp = microTimestamp();
-
         $sql = "INSERT INTO GROUPS (GROUP_NAME, CREATED_TIME, OWNER_ID,
             REGISTER_TYPE, MEMBER_ACCESS) VALUES (?, ?, ?, ?, ?);";
         $db->execute($sql, array($group_name, $timestamp, $user_id,
@@ -222,7 +212,6 @@ class GroupModel extends Model
         $db->execute($sql);
         return $last_id;
     }
-
     /**
      *  Takes the passed associated array $group representing changes
      *  fields of a GROUPS row, and executes an UPDATE statement to persist
@@ -252,7 +241,6 @@ class GroupModel extends Model
         $params[] = $group_id;
         $db->execute($sql, $params);
     }
-
     /**
      *   Check is a user given by $user_id belongs to a group given
      *   by $group_id. If the field $status is sent then check if belongs
@@ -282,7 +270,6 @@ class GroupModel extends Model
         }
         return true;
     }
-
     /**
      *  Change the status of a user in a group
      *
@@ -297,7 +284,6 @@ class GroupModel extends Model
             GROUP_ID=? AND USER_ID=?";
         $db->execute($sql, array($status, $group_id, $user_id));
     }
-
     /**
      * Get group id associated with groupname (so groupnames better be unique)
      *
@@ -315,7 +301,6 @@ class GroupModel extends Model
         }
         return $row['GROUP_ID'];
     }
-
     /**
      *  Delete a group from the database and any associated data in
      *  GROUP_ITEM and USER_GROUP tables.
@@ -335,7 +320,6 @@ class GroupModel extends Model
         $sql = "DELETE FROM GROUP_PAGE_HISTORY WHERE GROUP_ID=?";
         $db->execute($sql, $params);
     }
-
     /**
      *  Return the type of the registration for a group given by $group_id
      *  This says who is allowed to register for the group (i.e., is it
@@ -355,7 +339,6 @@ class GroupModel extends Model
         if(!$row) { return false; }
         return $row['REGISTER_TYPE'];
     }
-
     /**
      *  Returns information about the group with id $group_id provided
      *  that the requesting user $user_id has access to it
@@ -394,7 +377,6 @@ class GroupModel extends Model
         }
         return $group;
     }
-
    /**
     *  Get a list of all groups which user_id belongs to. Group names
     *  are not localized since these are
@@ -431,7 +413,6 @@ class GroupModel extends Model
         unset($groups[$i]); //last one will be null
         return $groups;
     }
-
     /**
      *  Get a count of the number of groups to which user_id belongs.
      *
@@ -458,7 +439,6 @@ class GroupModel extends Model
         }
         return $row['NUM'];
     }
-
     /**
      *  To update the OWNER_ID of a group
      *
@@ -471,7 +451,6 @@ class GroupModel extends Model
         $sql = "UPDATE GROUPS SET OWNER_ID=? WHERE GROUP_ID=?";
         $db->execute($sql, array($user_id, $group_id));
     }
-
     /**
      *  Add an allowed user to an existing group
      *
@@ -485,7 +464,6 @@ class GroupModel extends Model
         $sql = "INSERT INTO USER_GROUP VALUES (?, ?, ?, ?)";
         $db->execute($sql, array($user_id, $group_id, $status, $join_date));
     }
-
     /**
      *  Checks if a user belongs to a group but is not the owner of that group
      *  Such a user could be deleted from the group
@@ -508,7 +486,6 @@ class GroupModel extends Model
         }
         return true;
     }
-
     /**
      *  Delete a user from a group by userid an groupid
      *
@@ -521,7 +498,6 @@ class GroupModel extends Model
         $sql = "DELETE FROM USER_GROUP WHERE USER_ID=? AND GROUP_ID=?";
         $db->execute($sql, array($user_id, $group_id));
     }
-
     /**
      *  Returns the GROUP_FEED item with the given id
      *
@@ -537,7 +513,6 @@ class GroupModel extends Model
         $row = $db->fetchArray($result);
         return $row;
     }
-
     /**
      *  Creates a new group item
      *
@@ -565,7 +540,6 @@ class GroupModel extends Model
         }
         return $id;
     }
-
     /**
      *  Updates a group feed item's title and description. This assumes
      *  the given item already exists.
@@ -580,7 +554,6 @@ class GroupModel extends Model
         $sql = "UPDATE GROUP_ITEM SET TITLE=?, DESCRIPTION=? WHERE ID=?";
         $db->execute($sql, array($title, $description, $id));
     }
-
     /**
      * Removes a group feed item from the GROUP_ITEM table.
      *
@@ -603,7 +576,6 @@ class GroupModel extends Model
         $db->execute($sql, $params);
         return $db->affectedRows();
     }
-
     /**
      *  Gets the group feed items visible to a user with $user_id
      *  and which match the supplied search criteria found in $search_array,
@@ -686,7 +658,6 @@ class GroupModel extends Model
         unset($groups[$i]); //last one will be null
         return $groups;
     }
-
     /**
      *  Gets the number of group feed items visible to a user with $user_id
      *  and which match the supplied search criteria found in $search_array
@@ -737,7 +708,6 @@ class GroupModel extends Model
         $row = $db->fetchArray($result);
         return $row['NUM'];
     }
-
     /**
      *
      */
@@ -767,7 +737,6 @@ class GroupModel extends Model
         $result = $db->execute($sql, array($page_id, $user_id, $group_id,
             $page_name, $page, $locale_tag, $pubdate, $edit_comment));
     }
-
     /**
      *  @param int $group_id
      *  @param string $name
@@ -786,7 +755,6 @@ class GroupModel extends Model
         }
         return false;
     }
-
     /**
      *
      *  @param int $group_id
@@ -815,7 +783,6 @@ class GroupModel extends Model
         }
         return $row;
     }
-
     /**
      *
      *  @param int $page_thread_id
@@ -833,7 +800,6 @@ class GroupModel extends Model
         }
         return $row;
     }
-
     /**
      *
      *  @param int $page_thread_id
@@ -851,7 +817,6 @@ class GroupModel extends Model
         }
         return $row;
     }
-
     /**
      *
      *  @param int $page_id
@@ -911,7 +876,6 @@ class GroupModel extends Model
         }
         return array($total, $page_name, $pages);
     }
-
     /**
      *
      *  @param int $group_id

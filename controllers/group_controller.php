@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /** Load base controller class if needed */
 require_once BASE_DIR."/controllers/controller.php";
 /** Loads common constants for web crawling */
@@ -48,7 +46,6 @@ require_once BASE_DIR."/lib/wiki_parser.php";
  * @package seek_quarry
  * @subpackage controller
  */
-
 class GroupController extends Controller implements CrawlConstants
 {
     /**
@@ -58,7 +55,6 @@ class GroupController extends Controller implements CrawlConstants
      * @var array
      */
     var $activities = array("groupFeeds", "wiki");
-
     /**
      *  Used to process requests related to user group activities outside of
      *  the admin panel setting. This either could be because the admin panel
@@ -67,7 +63,6 @@ class GroupController extends Controller implements CrawlConstants
     function processRequest()
     {
         $data = array();
-
         if(!PROFILE) {
             return $this->configureRequest();
         }
@@ -113,7 +108,6 @@ class GroupController extends Controller implements CrawlConstants
         $_SESSION['REMOTE_ADDR'] = $_SERVER['REMOTE_ADDR'];
         $this->displayView($view, $data);
     }
-
     /**
      *
      */
@@ -133,7 +127,6 @@ class GroupController extends Controller implements CrawlConstants
         }
         return $data;
     }
-
     /**
      *
      */

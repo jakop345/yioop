@@ -33,38 +33,27 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 /** Calculate base directory of script
  * @ignore
  */
 define("BASE_DIR", substr($_SERVER['SCRIPT_FILENAME'], 0,
     -strlen("tests/index.php")));
-
 header("X-FRAME-OPTIONS: DENY"); //prevent click jacking
-
 /** Load search engine wide configuration file */
 require_once BASE_DIR.'/configs/config.php';
-
 if(!PROFILE || !DISPLAY_TESTS) {echo "BAD REQUEST"; exit();}
-
 /**
  * NO_CACHE means don't try to use memcache
  * @ignore
  */
 define("NO_CACHE", true);
-
-
 /**  Draw head of the html page */
 ?>
 <!DOCTYPE html>
-
 <html lang="en-US" dir="ltr">
-
     <head>
         <title>Seekquarry Search Engine Tests</title>
-
         <meta name="Author" content="Christopher Pollett" />
-
         <meta name="description"
             content="Displays unit tests for search engine" />
         <meta charset="utf-8" />
@@ -78,22 +67,31 @@ define("NO_CACHE", true);
             {
                 background-color: red;
             }
+            table,
+            tr,
+            td,
+            th
+            {
+                border: 1px ridge black;
+                padding: 2px;
+            }
         </style>
     </head>
     <body>
 <?php
-
 /**
  *  Load the base unit test class
  */
 require_once BASE_DIR."/lib/unit_test.php";
 /**
+ *  Load the base unit test class for Javascript tests
+ */
+require_once BASE_DIR."/lib/javascript_unit_test.php";
+/**
  * Do not send output to log files
  * @ignore
  */
 define("LOG_TO_FILES", false);
-
-
 $allowed_activities =
     array("listTests", "runAllTests", "runTestBasedOnRequest");
 if(isset($_REQUEST['activity']) &&
@@ -106,8 +104,6 @@ if(isset($_REQUEST['activity']) &&
 <h1>SeekQuarry Tests</h1>
 <?php
 $activity();
-
-
 /**
  * This function is responsible for listing out HTML links to the available
  * unit tests a user can run
@@ -130,21 +126,17 @@ function listTests()
     <?php
 
 }
-
 /**
  *  Runs all the unit_tests in the current directory and displays the results
  */
 function runAllTests()
 {
     $names = getTestNames();
-
     echo "<p><a href='?activity=listTests'>See test case list</a>.</p>";
-
     foreach($names as $name) {
         runTest($name);
     }
 }
-
 /**
  * Run the single unit test whose name is given in $_REQUEST['test'] and
  * display the results. If the unit test file was blah_test.php, then
@@ -161,7 +153,6 @@ function runTestBasedOnRequest()
         }
     }
 }
-
 /**
  * Uses $name to load a unit test class, run the tests in it and display the
  * results
@@ -174,12 +165,13 @@ function runTest($name)
     echo "<h2>$class_name</h2>";
     require_once $name;
     $test = new $class_name();
-    if($test instanceof JavaScriptTest) {
-        $test->sha1TestCase();
+    if($test instanceof JavascriptUnitTest) {
+        $test->run();
     } else {
         $results = $test->run();
     ?>
-    <table border="1" summary="Displays info about this test case">
+    <table class="wikitable"
+        summary="Displays info about this test case">
     <?php
         foreach($results as $test_case_name => $data) {
             echo "<tr><th>$test_case_name</th>";
@@ -212,7 +204,6 @@ function runTest($name)
     <?php
     }
 }
-
 /**
  * Gets the names of all the unit test files in the current directory.
  * Doesn't really check for this explicitly, just checks if the file
@@ -224,7 +215,6 @@ function getTestNames()
 {
     return glob('*_test.php');
 }
-
 /**
  * Convert the convention for unit test file names into our convention
  * for unit test class names
@@ -247,8 +237,6 @@ function getClassNameFromFileName($name)
 
     return $class_name;
 }
-
-
 ?>
     </body>
 </html>

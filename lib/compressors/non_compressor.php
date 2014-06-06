@@ -30,19 +30,15 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * Loads the base class if needed
  */
 require_once "compressor.php";
-
 /**
  * Loads utility class for packInt/unpackInt
  */
 require_once BASE_DIR."/lib/utility.php";
-
 /**
  *  Implementation of a trivial Compressor.
  *
@@ -54,12 +50,9 @@ require_once BASE_DIR."/lib/utility.php";
  */
 class NonCompressor implements Compressor
 {
-
     /** Constructor does nothing
      */
-
     function __construct() {}
-
     /**
      * Applies the Compressor compress filter to a string before it is inserted
      * into a WebArchive. In this case, the filter does nothing.
@@ -71,7 +64,6 @@ class NonCompressor implements Compressor
     {
         return $str;
     }
-
     /**
      * Used to unapply the compress filter as when data is read out of a
      * WebArchive. In this case, the unapplying filter does nothing.
@@ -83,7 +75,6 @@ class NonCompressor implements Compressor
     {
         return $str;
     }
-
     /**
      * Used to compress an int as a fixed length string in the format of
      * the compression algorithm underlying the compressor. Since this
@@ -95,7 +86,6 @@ class NonCompressor implements Compressor
     function compressInt($my_int) {
         return packInt($my_int);
     }
-
     /**
      * Used to uncompress an int from a fixed length string in the format of
      * the compression algorithm underlying the compressor. Since this
@@ -104,12 +94,10 @@ class NonCompressor implements Compressor
      * @param string $my_compressed_int the fixed length string containing
      *      the packed int to extract
      * @return int the integer contained in that string
-
      */
     function uncompressInt($my_compressed_int) {
         return unpackInt($my_compressed_int);
     }
-
     /**
      * Computes the length of an int when packed using the underlying
      * compression algorithm as a fixed length string. The pack function
@@ -120,7 +108,6 @@ class NonCompressor implements Compressor
     function compressedIntLen() {
         return 4;
     }
-
     /**
      * File extension that should be associated with this compressor
      * @return string name of dos file extension

@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /** Register File Types We Handle*/
 $add_extensions = array("csv", "tab", "tsv", "txt");
 if(!isset($INDEXED_FILE_TYPES)) {
@@ -45,26 +43,20 @@ $add_types = array(
     "text/x-java-source" => "TextProcessor",
     "text/tab-separated-values" => "TextProcessor"
 );
-
 $PAGE_PROCESSORS =  (isset($PAGE_PROCESSORS)) ?
     array_merge($PAGE_PROCESSORS, $add_types) : $add_types;
-
 /**
  * Load the base class
  */
 require_once BASE_DIR."/lib/processors/page_processor.php";
-
 /**
-* Get the centroid summary
-*/
+ * Get the centroid summary
+ */
 require_once BASE_DIR."/lib/centroid_summarizer.php";
-
 /**
  * So can extract parts of the URL if need to guess lang
  */
 require_once BASE_DIR."/lib/url_parser.php";
-
-
 /**
  * Parent class common to all processors used to create crawl summary
  * information  that involves basically text data
@@ -90,7 +82,6 @@ class TextProcessor extends PageProcessor
     function process($page, $url)
     {
         $summary = NULL;
-        $summarizer = $this->getSeedInfo();
         if(is_string($page)) {
             $summary[self::TITLE] = "";
             $lang = self::calculateLang($page);
@@ -112,8 +103,6 @@ class TextProcessor extends PageProcessor
         }
         return $summary;
     }
-
-
     /**
      *  Tries to determine the language of the document by looking at the
      *  $sample_text and $url provided
@@ -148,11 +137,8 @@ class TextProcessor extends PageProcessor
         } else {
             $lang = NULL;
         }
-
-
         return $lang;
     }
-
     /**
      * Gets the text between two tags in a document starting at the current
      * position.
@@ -171,21 +157,16 @@ class TextProcessor extends PageProcessor
             false ) {
             return array($len, "");
         }
-
         $between_start  += strlen($start_tag);
         if(($between_end = strpos($string, $end_tag, $between_start)) ===
             false ) {
             $between_end = $len;
         }
-
         $cur_pos = $between_end + strlen($end_tag);
-
         $between_string = substr($string, $between_start,
             $between_end - $between_start);
         return array($cur_pos, $between_string);
-
     }
-
     /**
      * Tries to extract http or https links from a string of text.
      * Does this by a very approximate regular expression.
@@ -211,7 +192,6 @@ class TextProcessor extends PageProcessor
         }
         return $sites;
     }
-
     /**
      * If an end of file is reached before closed tags are seen, this methods
      * closes these tags in the correct order.
@@ -237,7 +217,6 @@ class TextProcessor extends PageProcessor
         if(count($closedtags) == $len_opened){
             return;
         }
-
         $openedtags = array_reverse($openedtags);
         // close tags
         for($i=0;$i < $len_opened;$i++) {

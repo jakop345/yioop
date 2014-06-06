@@ -36,9 +36,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(php_sapi_name() != 'cli') {echo "BAD REQUEST"; exit();}
-
 ini_set("memory_limit","1500M");
 /**
  * Calculate base directory of script
@@ -47,21 +45,17 @@ ini_set("memory_limit","1500M");
 define("BASE_DIR", substr(
     dirname(realpath($_SERVER['PHP_SELF'])), 0,
     -strlen("/configs")));
-
 /** Load in global configuration settings */
 require_once BASE_DIR.'/configs/config.php';
-
 /**
  *  Contains makeNWordGramsTextFile and
  *  and makeNWordGramsFilterFile used to create the bloom filter
  */
 require_once BASE_DIR."/lib/nword_grams.php";
-
 /**
  *  Contains Trie Class used to store suggest terms
  */
 require_once BASE_DIR."/lib/trie.php";
-
 /**
  * Used to print out a description of how to use token_tool.php
  * @var string
@@ -156,14 +150,11 @@ file suitable for Chinese segmentation can be found at:
 http://www.mdbg.net/chindict/chindict.php?page=cc-cedict
 
 EOD;
-
-
 $num_args = count($argv);
 if( $num_args < 3 || $num_args > 8) {
     echo $usage;
     exit();
 }
-
 switch($argv[1])
 {
     case "dictionary":
@@ -195,15 +186,11 @@ switch($argv[1])
         echo $usage;
         exit();
 }
-
-
-
 if(!PROFILE) {
     echo "Please configure the search engine instance ".
         "by visiting its web interface on localhost.\n";
     exit();
 }
-
 /**
  * Makes an n or all word gram Bloom filter based on the supplied arguments
  * Wikipedia files are assumed to have been place in the PREP_DIR before this

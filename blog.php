@@ -36,6 +36,5 @@
 $_REQUEST['c'] = "group";
 $_REQUEST['a'] = "groupFeeds";
 $_REQUEST['just_group_id'] = 2;
-
 require_once("index.php");
 ?>

@@ -29,30 +29,25 @@
  * @copyright 2009 - 2014s
  * @filesource
  */
-
 /*
  * Update the version number manually when ever
  * suggest.js undergoes changes
  */
 SUGGEST_VERSION_NO = 0;
-
 /*
  *  Constants for key codes will handle
  */
 KeyCodes = new Object();
 KeyCodes.UP_ARROW = 38;
 KeyCodes.DOWN_ARROW = 40;
-
 /*
  * Maximum number of search terms to display
  */
 MAX_DISPLAY = 6;
-
 /*
  * Maximum number of characters in query to do spellsheck for
  */
 MIN_SPELL_CHECK_WIDTH = 40;
-
 /*
  * Height of a search term in pixels
  */
@@ -63,7 +58,6 @@ FONT_HEIGHT = 24;
  * what the trie object loaded says in loadTrie
  */
 END_OF_TERM_MARKER = " ";
-
 /*
  * Process to follow once onsubmit event is fired
  *
@@ -75,7 +69,6 @@ function processSubmit()
 {
     updateLocalStorage();
 }
-
 /*
  * To check if the given English letter is a vowel
  */
@@ -83,7 +76,6 @@ function processSubmit()
 function isVowel(c) {
     return ['a', 'e', 'i', 'o', 'u'].indexOf(c) !== -1;
 }
-
 /*
  * Steps to follow every time a key is up from the user end
  * Handles up/dowm arrow keys
@@ -92,7 +84,6 @@ function isVowel(c) {
  * @return String text_field Current value from the search box
  *
  */
-
 function onTypeTerm(event, text_field)
 {
     var key_code_pressed;
@@ -257,7 +248,6 @@ function onTypeTerm(event, text_field)
         }
     }
 }
-
 /*
  * To correct the spelling of the query words
  *
@@ -267,7 +257,6 @@ function onTypeTerm(event, text_field)
 function correctSpelling(word)
 {
     var prob = 0;
-
     trie_subtree = exist(dictionary, word);
     if(trie_subtree != false) {
         prob = parseInt(trie_subtree[END_OF_TERM_MARKER]);
@@ -294,15 +283,13 @@ function correctSpelling(word)
     }
     return corrected_word;
 }
-
 /*
- * To get the candidates for the spell correction with edit
+ * Gets the candidates for the spell correction with edit
  * distance 1
  *
  * @param String word Input word
  * @return Array set Words with edit distance - 1
  */
-
 function edits1(word)
 {
     var splits = new Object();
@@ -355,7 +342,6 @@ function edits1(word)
         deletes.concat(transposes).concat(replaces).concat(inserts).unique();
     return set;
 }
-
 Array.prototype.unique = function() {
     var a = this.concat();
     for(var i = 0; i<a.length; ++i) {
@@ -366,14 +352,12 @@ Array.prototype.unique = function() {
     }
     return a;
 }
-
 /*
  * To get the set of words which are known from the dictionary
  *
  * @param Array words_ip array of words
  * @return Array known_words array of known words
  */
-
 function known(words_ip)
 {
     var known_words = new Array(),j=0;
@@ -387,7 +371,6 @@ function known(words_ip)
     }
     return known_words;
 }
-
 /*
  * To update the local storage with the previous query terms and
  * create a trie on those terms
@@ -440,13 +423,11 @@ function updateLocalStorage()
     localStorage.setItem(locale + '_' + SUGGEST_VERSION_NO, trie_to_store +
      "@@" + JSON.stringify(locale_terms));
 }
-
 /*
  * Sort the local storage words based of number of times they are queried
  *
  * @return Array local storage words
  */
-
 function sortLocalTerms()
 {
     var local_storage_array = new Array();
@@ -461,7 +442,6 @@ function sortLocalTerms()
     local_storage_array.reverse();
     return local_storage_array;
 }
-
 /*
  * Callback used by a sort call in sortLocalTerms to compare two
  * string where before the * in the string is a term and after is a frequency
@@ -471,7 +451,6 @@ function sortLocalTerms()
  * @return number 0 - if same frequncy, negative if b has larger frequency,
  *      postive otherwise
  */
-
 function termFrequencyComparison(a, b)
 {
     var split_array1 = a.split('*');
@@ -480,7 +459,6 @@ function termFrequencyComparison(a, b)
     var val2 = parseInt(split_array2[0]);
     return (val1 - val2);
 }
-
 /*
  * To select an suggest value while up/down arrow keys are being used
  * and place in the search box
@@ -509,8 +487,6 @@ function termClick(term,termid)
     elt("suggest-dropdown").style.display = "none";
     elt("search-form").submit();
 }
-
-
 /*
  * Fetch words from the Trie and add to seachList with <li> </li> tags
  *
@@ -567,7 +543,6 @@ function getTrieTerms(trie_array, parent_word, highlighted_word)
         }
     }
 }
-
 /*
  * Returns the sub trie_array under term in
  * trie_array. If term does not exist in the trie_array
@@ -594,7 +569,6 @@ function exist(trie_array, term)
     }
     return trie_array;
 }
-
 /*
  * Entry point to find word completions/suggestions. Finds the portion of
  * trie_aray beneath term. Then using this subtrie get the first six entries.
@@ -642,7 +616,6 @@ function encode(str)
     str = str.replace(/\'/g, '%27'); // encodeURIComponent doesnt convert '
     return str;
 }
-
 /*
  * Extract next Unicode Char beginning at offset i in str returns Array
  * with this character and the next offset
@@ -683,7 +656,6 @@ function getUnicodeCharAndNextOffset(str, i)
     }
     return [str.charAt(i + 1), i + 1];
 }
-
 /*
  * Load the Trie during the launch of website
  * Trie's are represented using nested arrays.
@@ -711,7 +683,6 @@ function loadFiles()
         }
     }
 }
-
 /*
  * To process spell correction
  */
@@ -769,7 +740,6 @@ function spellCheck()
         }
     }
 }
-
 tag("body")[0].onload = loadFiles;
 var ip_field = elt("query-field");
 ip_field.onpaste = function(e) {

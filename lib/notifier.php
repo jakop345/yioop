@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * A Notifier is an object which will be notified by a priority queue
  * when the index in the queue viewed as array of some data item has been
@@ -55,7 +53,6 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @subpackage library
  * @see WebQueueBundle
  */
-
 interface Notifier
 {
     /**

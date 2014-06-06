@@ -30,18 +30,15 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 /**
  * Load the Bloom Filter File
  */
 require_once BASE_DIR."/lib/bloom_filter_file.php";
-
 /**
  * Load the Phrase Parser File
  */
 require_once BASE_DIR."/lib/phrase_parser.php";
-
 /**
  * Library of functions used to create and extract n word grams
  *
@@ -72,12 +69,10 @@ class NWordGrams
       * text file name containing bigrams.
       */
      const TEXT_SUFFIX = "_word_grams.txt";
-
      const WIKI_DUMP_REDIRECT = 0;
      const WIKI_DUMP_TITLE = 1;
      const PAGE_COUNT_WIKIPEDIA = 2;
      const PAGE_COUNT_WIKTIONARY = 3;
-
     /**
      * Says whether or not phrase exists in the N word gram Bloom Filter
      *
@@ -103,7 +98,6 @@ class NWordGrams
         }
         return self::$ngrams[$filter_prefix]->contains(mb_strtolower($phrase));
     }
-
     /**
      * Creates a bloom filter file from a n word gram text file. The
      * path of n word gram text file used is based on the input $lang.
@@ -143,9 +137,13 @@ class NWordGrams
         $ngrams->max_gram_len = $max_gram_len;
         $ngrams->save();
     }
-
     /**
+     * Used to create a filter file suitable for use in word segmentation
+     * (splitting text like "thiscontainsnospaces" into 
+     * "this contains no spaces"). Used by @see token_tool.php
      *
+     * @param string $dict_file file to use as a dictionary to make filter from
+     * @param string $lang locale tag of locale we are building the filter for
      */
     static function makeSegmentFilterFile($dict_file, $lang)
     {
@@ -172,7 +170,6 @@ class NWordGrams
         $filter->max_gram_len = 1;
         $filter->save();
     }
-
     /**
      * Generates a n word grams text file from input wikipedia xml file.
      * The input file can be a bz2 compressed or uncompressed.
@@ -263,7 +260,6 @@ class NWordGrams
             $ngrams_file_path
                 = LOCALE_DIR . "/$locale/resources/" . "{$num_gram}" .
                     self::TEXT_SUFFIX;
-
             $input_buffer = "";
             $time = time();
             echo "Reading wiki file ...$wiki_file_path...\n";
@@ -344,11 +340,10 @@ class NWordGrams
             $num_ngrams_found = count($ngrams);
         }
         sort($ngrams);
-
         $ngrams_string = implode("\n", $ngrams);
         file_put_contents($ngrams_file_path, $ngrams_string);
         $close($fr);
         return array($num_ngrams_found, $max_gram_len);
     }
-
 }
+?>

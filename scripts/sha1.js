@@ -29,9 +29,8 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
- /*
- *  To calculate the sha1 on the given String.
+/*
+ *  Calculates the sha1 of the given String.
  *
  *  @param String input string for the function
  *  @return String sha1 of the input string
@@ -40,16 +39,13 @@ function generateSha1(str)
 {
     var n = ((str.toString().length + 8) >> 6) + 1;
     var x = new Array();
-
     for (var i = 0; i < n * 16; i++) {
         x[i] = 0;
     }
-
     for (i = 0; i < str.toString().length; i++) {
         x[i >> 2] +=
             (str.toString().substr(i, 1)).charCodeAt(0) << (24 - (i % 4) * 8);
     }
-
     x[i >> 2] |= 0x80 << (24 - (i % 4) * 8);
     x[n * 16 - 1] = str.toString().length * 8;
     //sha1 constants
@@ -58,16 +54,13 @@ function generateSha1(str)
     var c = -1732584194;
     var d = 271733878;
     var e = -1009589776;
-
     var w = new Array();
-
     for (i = 0; i < x.length; i += 16) {
         var olda = a;
         var oldb = b;
         var oldc = c;
         var oldd = d;
         var olde = e;
-
         for (var j = 0; j < 80; j++) {
             if (j < 16) {
                 w[j] = x[i + j];
@@ -91,9 +84,8 @@ function generateSha1(str)
     }
     return bin2hex(Array(a, b, c, d, e));
 }
-
 /*
- *  To conver a binary array into a hexadecimal value
+ *  Converts a binary array into a hexadecimal value
  *
  *  @param array binarray array of a 5 binary values
  *  @return String hexadecimal
@@ -110,10 +102,8 @@ function bin2hex(binarray)
     }
     return str;
 }
-
 /*
- *  Calculate the one of the operand of a safe_add function
- *  based on the iteration value
+ *  Computes sha1 f values based on iteration
  *
  *  @param int t value of iteration
  *  @param int b constant value
@@ -134,9 +124,8 @@ function hashOperationByIteration(t, b, c, d)
     }
     return b^c^d;
 }
-
 /*
- *  To find a constant based on the iteration
+ *  Finds a constant based on the iteration
  *
  *  @param int t value of iteration
  *  @return int constant value
@@ -153,9 +142,8 @@ function constantForIteration(t)
         return -899497514;
     }
 }
-
 /*
- *  To add integers, wrapping at 2^32
+ *  Add integers, wrapping at 2^32
  *
  *  @param int x first operand of the add operation
  *  @param int y second operand of the add operation
@@ -167,7 +155,6 @@ function safeAdd(x, y)
     var msw = (x >> 16) + (y >> 16) + (lsw >> 16);
     return (msw << 16) | (lsw & 0xFFFF);
 }
-
 /*
  *  Bitwise rotate a 32-bit number
  *
@@ -179,9 +166,8 @@ function rotate(num, cnt)
 {
     return (num << cnt) | zeroFill(num, 32 - cnt);
 }
-
 /*
- *  Use for a zero padding to the input number if a number is not 32 bit
+ *  Used for zero padding an the input number if a number is not 32 bit
  *
  *  @param int a input number
  *  @param int b to define how many leading zero should be added
@@ -203,9 +189,8 @@ function zeroFill(a, b)
     }
     return bin2dec(bin);
 }
-
 /*
- *  Convert decimal number to binary string
+ *  Converts decimal number to binary string
  *
  *  @param int number input number
  *  @return string binary number
@@ -217,9 +202,8 @@ function dec2bin(number)
     }
     return parseInt(number, 10).toString(2);
 }
-
 /*
- *  Convert binary string to decimal number
+ *  Converts binary string to decimal number
  *
  *  @param string binary string input string
  *  @return int decimal number

@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * View responsible for drawing the admin pages of the SeekQuarry search engine
  * site.
@@ -67,15 +65,12 @@ class AdminView extends View
         ?>
         </div><?php
         }
-
         ?>
-
         <h1 class="admin-heading logo"><a href="./?<?php
             e(CSRF_TOKEN."=".$data[CSRF_TOKEN]); ?>"><img
             src="<?php e($logo); ?>" alt="Yioop!" /></a><span> - <?php
         e(tl('admin_view_admin'));
         if(!MOBILE) {e(' ['.$data['CURRENT_ACTIVITY'].']');}?></span></h1>
-
         <?php
         $this->element("activity")->render($data);
         if(isset($data['ELEMENT'])) {
@@ -101,13 +96,11 @@ class AdminView extends View
         {
             document.location='?c=search&a=signout';
         }
-
         //schedule logout warnings
         var sec = 1000;
         var minute = 60*sec;
         setTimeout("logoutWarn()", 59 * minute);
         setTimeout("autoLogout()", 60 * minute);
-
         </script>
         <?php
         }

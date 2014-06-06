@@ -30,14 +30,11 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  *  Load base helper class if needed
  */
 require_once BASE_DIR."/views/helpers/helper.php";
-
 /**
  * This is a helper class is used to handle
  * used to render the filetype based on
@@ -56,7 +53,6 @@ require_once BASE_DIR."/views/helpers/helper.php";
  */
 class FiletypeHelper extends Helper
 {
-
     /**
      *  Outputs the filetype corresponding to the supplied
      *  mime type.

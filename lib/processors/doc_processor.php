@@ -30,18 +30,14 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /** Register File Types We Handle*/
 $INDEXED_FILE_TYPES[] = "doc";
 $PAGE_PROCESSORS["application/msword"] = "DocProcessor";
-
 /**
  * Load the parent class
  */
 require_once BASE_DIR."/lib/processors/text_processor.php";
-
 /**
  * Used to create crawl summary information
  * for binary DOC files
@@ -72,13 +68,9 @@ class DocProcessor extends TextProcessor
         if($text == "") {
             $text = $url;
         }
-
         $summary = parent::process($text, $url);
-
         return $summary;
-
     }
-
     /**
      * This is the main text from Word doc extractor
      * A Word Doc consists of a FIB, Piece Table, and
@@ -95,7 +87,6 @@ class DocProcessor extends TextProcessor
      */
     static function extractASCIIText($doc) {
         $len = strlen($doc);
-
         $text = "";
         $boundary_change = 0;
         $text_state = false;
@@ -107,19 +98,15 @@ class DocProcessor extends TextProcessor
                 break;
              }
         }
-
         for($i = $start_text; $i < $len; $i += 8) {
             if(self::checkAllZeros($doc, $i)) {
                  $end_text =  $i;
                  break;
             }
-
             $text .= self::cleanTextBlock($doc, $i);
         }
-
         return $text;
     }
-
     /**
      * Scans document starting at given position and looking forward eight
      * character to see if these are ASCII printable or not.
@@ -128,7 +115,8 @@ class DocProcessor extends TextProcessor
      * @param int $pos position to start scanning
      * @return whether the eight next characters were ASCII printable
      */
-    static function checkPageForText($doc, $pos) {;
+    static function checkPageForText($doc, $pos) 
+    {
         $is_text = true;
         for($i = 0; $i < 8; $i++) {
             $ascii = ord($doc[$pos]);
@@ -139,10 +127,8 @@ class DocProcessor extends TextProcessor
             }
             $pos++;
         }
-
         return $is_text;
     }
-
     /**
      * Scans document starting at given position and looking forward eight
      * character to see if these are all \0 or not.
@@ -151,7 +137,8 @@ class DocProcessor extends TextProcessor
      * @param int $pos position to start scanning
      * @return whether the eight next characters were \0
      */
-    static function checkAllZeros($doc, $pos) {
+    static function checkAllZeros($doc, $pos) 
+    {
         $is_zero = true;
         for($i = 0; $i < 8; $i++) {
             $ascii = ord($doc[$pos]);
@@ -161,10 +148,8 @@ class DocProcessor extends TextProcessor
             }
             $pos++;
         }
-
         return $is_zero;
     }
-
     /**
      * Scans document starting at given position forward eight
      * character returning those characters which are ASCII printable
@@ -173,7 +158,8 @@ class DocProcessor extends TextProcessor
      * @param int $pos position to start scanning
      * @return substring of ASCII printable characters
      */
-    static function cleanTextBlock($doc, $pos) {
+    static function cleanTextBlock($doc, $pos) 
+    {
         $text = "";
         for($i = 0; $i < 8; $i++) {
             if(isset($doc[$pos])) {
@@ -185,10 +171,7 @@ class DocProcessor extends TextProcessor
             }
             $pos++;
         }
-
         return $text;
     }
-
 }
-
 ?>

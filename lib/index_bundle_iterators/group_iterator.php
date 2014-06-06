@@ -30,14 +30,11 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  *Loads base class for iterating
  */
 require_once BASE_DIR.'/lib/index_bundle_iterators/index_bundle_iterator.php';
-
 /**
  * This iterator is used to group together documents or document parts
  * which share the same url. For instance, a link document item and
@@ -59,7 +56,6 @@ class GroupIterator extends IndexBundleIterator
      * @var string
      */
     var $index_bundle_iterator;
-
     /**
      * The number of documents in the current block before filtering
      * by restricted words
@@ -72,40 +68,34 @@ class GroupIterator extends IndexBundleIterator
      * @var int
      */
     var $count_block;
-
     /**
      * hashes of document web pages seen in results returned from the
      * most recent call to findDocsWithWord
      * @var array
      */
     var $current_block_hashes;
-
     /**
      * The number of iterated docs before the restriction test
      * @var int
      */
     var $seen_docs_unfiltered;
-
     /**
      * hashed url keys used to keep track of track of groups seen so far
      * @var array
      */
     var $grouped_keys;
-
     /**
      * hashed of document web pages used to keep track of track of
      *  groups seen so far
      * @var array
      */
     var $grouped_hashes;
-
     /**
      * Used to keep track and to weight pages based on the number of other
      * pages from the same domain
      * @var array
      */
     var $domain_factors;
-
     /**
      * Whether the iterator is being used for a network query
      * @var bool
@@ -116,13 +106,11 @@ class GroupIterator extends IndexBundleIterator
      * @var int
      */
     var $current_machine;
-
     /**
      * the minimum number of pages to group from a block;
      * this trumps $this->index_bundle_iterator->results_per_block
      */
     const MIN_FIND_RESULTS_PER_BLOCK = MIN_RESULTS_TO_GROUP;
-
     /**
      * the minimum length of a description before we stop appending
      * additional link doc summaries
@@ -153,10 +141,8 @@ class GroupIterator extends IndexBundleIterator
         $this->network_flag = $network_flag;
         $this->current_machine = $current_machine;
         $this->is_feed = false;
-
         $this->reset();
     }
-
     /**
      * Returns the iterators to the first document block that it could iterate
      * over
@@ -170,7 +156,6 @@ class GroupIterator extends IndexBundleIterator
         $this->seen_docs = 0;
         $this->seen_docs_unfiltered = 0;
     }
-
     /**
      * Computes a relevancy score for a posting offset with respect to this
      * iterator and generation
@@ -184,7 +169,6 @@ class GroupIterator extends IndexBundleIterator
         return $this->index_bundle_iterator->computeRelevance($generation,
             $posting_offset);
     }
-
     /**
      * Hook function used by currentDocsWithWord to return the current block
      * of docs if it is not cached
@@ -218,10 +202,8 @@ class GroupIterator extends IndexBundleIterator
             $pages = $this->computeOutPages($pre_out_pages);
         }
         $this->pages = $pages;
-
         return $pages;
     }
-
     /**
      * Gets a sample of a few hundred pages on which to do grouping by URL
      *
@@ -256,7 +238,6 @@ class GroupIterator extends IndexBundleIterator
 
         return $pages;
     }
-
     /**
      * Groups documents as well as mini-pages based on links to documents by
      * url to produce an array of arrays of documents with same url. Since
@@ -289,7 +270,6 @@ class GroupIterator extends IndexBundleIterator
             } else {
                 $pre_out_pages[$hash_url][] = $doc_info;
             }
-
             if(!isset($this->grouped_keys[$hash_url])) {
                /*
                     new urls found in this block
@@ -299,10 +279,8 @@ class GroupIterator extends IndexBundleIterator
                 unset($pre_out_pages[$hash_url]);
             }
         }
-
         return $pre_out_pages;
     }
-
     /**
      * For documents which had been previously grouped by the hash of their
      * url, groups these groups further by the hash of their pages contents.
@@ -315,7 +293,6 @@ class GroupIterator extends IndexBundleIterator
      */
     function groupByHashAndAggregate(&$pre_out_pages)
     {
-
         foreach($pre_out_pages as $hash_url => $data) {
             $hash = $pre_out_pages[$hash_url][0][self::HASH];
             $this->aggregateScores($hash_url, $pre_out_pages[$hash_url]);
@@ -335,7 +312,6 @@ class GroupIterator extends IndexBundleIterator
                 }
             }
         }
-
         // delete all except highest scoring group with given hash
         foreach($this->current_seen_hashes as $hash => $url_data) {
             if(count($url_data) == 1) continue;
@@ -357,7 +333,6 @@ class GroupIterator extends IndexBundleIterator
             }
         }
     }
-
     /**
      * For a collection of grouped pages generates a grouped summary for each
      * group and returns an array of out pages consisting
@@ -371,7 +346,6 @@ class GroupIterator extends IndexBundleIterator
     function computeOutPages(&$pre_out_pages)
     {
         $out_pages = array();
-
         foreach($pre_out_pages as $hash_url => $group_infos) {
             $out_pages[$hash_url] = $pre_out_pages[$hash_url][0];
             $add_lookup = false;
@@ -384,7 +358,6 @@ class GroupIterator extends IndexBundleIterator
             }
             $out_pages[$hash_url][self::SUMMARY_OFFSET] = array();
             unset($out_pages[$hash_url][self::GENERATION]);
-
             $hash_count = $out_pages[$hash_url][self::HASH_URL_COUNT];
             for($i = 0; $i < $hash_count; $i++) {
                 $doc_info = $group_infos[$i];
@@ -414,10 +387,8 @@ class GroupIterator extends IndexBundleIterator
                     array($word_key, $group_infos[0][self::CRAWL_TIME]));
             }
         }
-
         return $out_pages;
     }
-
     /**
      * For a collection of pages each with the same url, computes the page
      * with the min score, max score, as well as the sum of the score,
@@ -462,13 +433,11 @@ class GroupIterator extends IndexBundleIterator
            sees on SERP pages.
          */
         $pre_hash_page[0][self::HASH_SUM_SCORE] = $sum_score;
-
         $pre_hash_page[0][self::DOC_RANK] = $sum_rank;
         $pre_hash_page[0][self::HASH_URL_COUNT] = count($pre_hash_page);
         $pre_hash_page[0][self::RELEVANCE] = $sum_relevance;
         $pre_hash_page[0][self::PROXIMITY] = $max_proximity;
     }
-
     /**
      * Forwards the iterator one group of docs
      * @param array $gen_doc_offset a generation, doc_offset pair. If set,
@@ -479,9 +448,7 @@ class GroupIterator extends IndexBundleIterator
     function advance($gen_doc_offset = NULL)
     {
         $this->advanceSeenDocs();
-
         $this->seen_docs_unfiltered += $this->count_block_unfiltered;
-
         if($this->seen_docs_unfiltered > 0) {
             if( $this->count_block_unfiltered < $this->results_per_block) {
                 $this->num_docs = $this->seen_docs;
@@ -494,20 +461,14 @@ class GroupIterator extends IndexBundleIterator
         } else {
             $this->num_docs = 0;
         }
-
-
         foreach($this->current_block_hashes as $hash_url) {
             $this->grouped_keys[$hash_url] = true;
         }
-
         foreach($this->current_seen_hashes as $hash => $url_data) {
             $this->grouped_hashes[$hash] = true;
         }
-
         $this->index_bundle_iterator->advance($gen_doc_offset);
-
     }
-
     /**
      * Gets the doc_offset and generation for the next document that
      * would be return by this iterator
@@ -518,6 +479,5 @@ class GroupIterator extends IndexBundleIterator
     function currentGenDocOffsetWithWord() {
         $this->index_bundle_iterator->currentGenDocOffsetWithWord();
     }
-
 }
 ?>

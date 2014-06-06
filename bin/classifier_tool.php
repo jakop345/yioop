@@ -30,7 +30,6 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(php_sapi_name() != 'cli') {echo "BAD REQUEST"; exit();}
 
 /**
@@ -202,7 +201,6 @@ class ClassifierTool
             'use_nb' => false,
             'chi2' => array(
                 'max' => 200)));
-
     /**
      * Initializes the classifier controller and crawl model that will be used
      * to manage crawl mixes, used for iterating over labeled examples.
@@ -212,7 +210,6 @@ class ClassifierTool
         $this->classifierController = new ClassifierController();
         $this->crawlModel = $this->classifierController->model("crawl");
     }
-
     /**
      * Parses the command-line options, returns the required arguments, and
      * updates the member variable $options with any parameters. If any of the
@@ -327,7 +324,6 @@ class ClassifierTool
             }
         }
     }
-
     /**
      * Like the TrainAndTest activity, but uses active training in order to
      * choose the documents to add to the training set. The method simulates
@@ -401,7 +397,6 @@ class ClassifierTool
             $this->crawlModel->deleteCrawlMix($mix_time);
         }
     }
-
     /**
      * Fetches the summaries for pages in the indices specified by the passed
      * dataset name. This method looks for existing indexes with names matching
@@ -491,7 +486,6 @@ class ClassifierTool
             return preg_match($re, $this->options['test_interval']);
         }
     }
-
     /**
      * Finalizes the current classifier, uses it to classify all test
      * documents, and logs the classification error.  The current classifier is
@@ -525,7 +519,6 @@ class ClassifierTool
         $this->log(0, 'error = %.4f', $error);
         $pages->reset();
     }
-
     /**
      * Writes out logging information according to a detail level. The first
      * argument is an integer (potentially negative) indicating the level of
@@ -565,7 +558,6 @@ class ClassifierTool
         call_user_func_array('printf', $args);
         echo "\n";
     }
-
     /**
      * Logs the current options using the log method of this class. This method
      * is used to explicitly state which settings were used for a given run of
@@ -586,7 +578,6 @@ class ClassifierTool
             }
         }
     }
-
     /**
      * Sets one or more options of the form NAME=VALUE according to a converter
      * such as intval, floatval, and so on. The options may be passed in either
@@ -650,8 +641,6 @@ class ClassifierTool
         }
     }
 }
-
-
 /**
  * This class provides the same interface as an iterator over crawl mixes, but
  * simply iterates over an array.

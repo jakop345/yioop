@@ -30,7 +30,6 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 /**
  * Implements a trie data structure which can be used to store terms read
  * from a dictionary in a succinct way
@@ -63,7 +62,6 @@ class Trie
         $this->trie_array = array();
         $this->end_marker = $end_marker;
     }
-
     /**
      * Adds a term to the Trie
      *
@@ -95,10 +93,8 @@ class Trie
         }
         // Set end of term marker
         $trie_array[$this->end_marker] = $term_arr[1];
-
         return $trie_array;
     }
-
     /**
      * Returns the sub trie_array under $term in
      * $this->trie_array. If $term does not exist in $trie->trie_array
@@ -131,7 +127,6 @@ class Trie
         }
         return $trie_array;
     }
-
     /**
      * Returns all the terms in the trie beneath the provided term prefix
      *
@@ -142,10 +137,8 @@ class Trie
     {
         $trie_array = $this->exists($prefix);
         if(!$trie_array) return false;
-
         return $this->getValuesTrieArray($trie_array, $prefix, $max_results);
     }
-
     /**
      * Computes the suffixes $count,...$max_results-$count in the trie_array
      * beneath the provided $find_more is true. Prepends $prefix to each

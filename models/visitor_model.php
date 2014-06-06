@@ -30,12 +30,9 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /** Loads base model class if necessary*/
 require_once BASE_DIR."/models/model.php";
-
 /**
  * Used to keep track of ip address of failed account creation and login
  * attempts
@@ -46,7 +43,6 @@ require_once BASE_DIR."/models/model.php";
  */
 class VisitorModel extends Model
 {
-
     /**
      *  Looks up an ip address to get the last time it was seen and the
      *  duration of the last time out period. If the last time it was seen
@@ -82,7 +78,6 @@ class VisitorModel extends Model
         }
         return $row;
     }
-
     /**
      *  Deletes an ip address from the VISITOR table
      *
@@ -94,7 +89,6 @@ class VisitorModel extends Model
         $sql = "DELETE FROM VISITOR WHERE ADDRESS = ? AND PAGE_NAME = ?";
         $this->db->execute($sql, array($ip_address, $page_name));
     }
-
     /**
      *  This creates or updates a visitor table entry for an ip address.
      *  These entries are used to keep track of which ip should be made to
@@ -142,5 +136,4 @@ class VisitorModel extends Model
             ":ip_address" => $ip_address, ":page_name" => $page_name));
     }
 }
-
  ?>

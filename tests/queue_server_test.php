@@ -30,18 +30,14 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /** Load search engine-wide configuration file */
 require_once BASE_DIR.'/configs/config.php';
-
 define("UNIT_TEST_MODE", true);
 /**
  *  Load the queue server class we'll be testing
  */
 require_once BASE_DIR."/bin/queue_server.php";
-
 /**
  *  Used to test functions related to scheduling websites to crawl for
  *  a web crawl (the responsibility of a QueueServer)
@@ -61,7 +57,6 @@ class QueueServerTest extends UnitTest
         $INDEXED_FILE_TYPES = array("html", "txt");
         $this->test_objects['Q_SERVER'] =  new QueueServer();
     }
-
     /**
      * Used to get rid of any object/files we created during a test case.
      * that need to be disposed of.
@@ -71,7 +66,6 @@ class QueueServerTest extends UnitTest
         // get rid of the queue_server from previous test case
         $this->test_objects['Q_SERVER'] = NULL;
     }
-
     /**
      * allowedToCrawlSite check if a url is  matches a list of url
      * and domains stored in a QueueServer's allowed_sites and that it
@@ -110,7 +104,6 @@ class QueueServerTest extends UnitTest
                 "domain disallowed", array(
                 "restrict_sites_by_url" => true)),
         );
-
         foreach($test_urls as $test_url) {
             if(isset($test_url[3])) {
                 foreach($test_url[3] as $field => $value) {
@@ -121,7 +114,6 @@ class QueueServerTest extends UnitTest
             $this->assertEqual($result, $test_url[1], $test_url[2]);
         }
     }
-
     /**
      * disallowedToCrawlSite check if a url is  matches a list of url
      * and domains stored in a QueueServer's disallowed_sites. This function
@@ -135,7 +127,6 @@ class QueueServerTest extends UnitTest
             "http://www.cs.sjsu.edu/faculty/pollett/*/*/",
             "http://www.bing.com/video/search?*&*&",
             "http://*.cool.*/a/*/");
-
        $test_urls = array(
             array("http://www.cs.sjsu.edu/faculty/pollett/", false,
                 "regex url negative 1"),
@@ -150,7 +141,6 @@ class QueueServerTest extends UnitTest
             array("http://www.cool.bob.edu/a/b/c", true,
                 "regex url positive 3"),
         );
-
         foreach($test_urls as $test_url) {
             $result = $q_server->disallowedToCrawlSite($test_url[0]);
             $this->assertEqual($result, $test_url[1], $test_url[2]);

@@ -32,7 +32,6 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 /**
  * Checks to see if the locale data of Yioop! in the work dir is older than the
  * currently running Yioop!
@@ -49,7 +48,6 @@ function upgradeLocalesCheck()
     }
     return false;
 }
-
 /**
  * If the locale data of Yioop! in the work directory is older than the
  * currently running Yioop! then this function is called to at least
@@ -71,7 +69,6 @@ function upgradeLocales()
     }
     $locale->extractMergeLocales($force_folders);
 }
-
 /**
  * Checks to see if the database data or work_dir folder of Yioop! is from an
  * older version of Yioop! than the currently running Yioop!
@@ -95,7 +92,6 @@ function upgradeDatabaseWorkDirectoryCheck()
     }
     exit();
 }
-
 /**
  * If the database data of Yioop is older than the version of the
  * currently running Yioop then this function is called to try
@@ -124,7 +120,6 @@ function upgradeDatabaseWorkDirectory()
         $upgradeDB($model->db);
     }
 }
-
 /**
  * Upgrades a Version 0 version of the Yioop! database to a Version 1 version
  * @param object $db datasource to use to upgrade
@@ -136,7 +131,6 @@ function upgradeDatabaseVersion1(&$db)
     $db->execute("CREATE TABLE USER_SESSION( USER_ID INTEGER PRIMARY KEY, ".
         "SESSION VARCHAR(4096))");
 }
-
 /**
  * Upgrades a Version 1 version of the Yioop! database to a Version 2 version
  * @param object $db datasource to use to upgrade
@@ -161,9 +155,7 @@ function upgradeDatabaseVersion2(&$db)
         'Modifier les lieux')");
     $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (8, 5,
         'Configurer')");
-
 }
-
 /**
  * Upgrades a Version 2 version of the Yioop! database to a Version 3 version
  * @param object $db datasource to use to upgrade
@@ -236,9 +228,7 @@ function upgradeDatabaseVersion3(&$db)
         'Quản lý miền địa phương')");
     $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (10, 15,
         'Sắp xếp hoạt động dựa theo hoạch định')");
-
 }
-
 /**
  * Upgrades a Version 3 version of the Yioop! database to a Version 4 version
  * @param object $db datasource to use to upgrade
@@ -248,7 +238,6 @@ function upgradeDatabaseVersion4(&$db)
     $db->execute("UPDATE VERSION SET ID=4 WHERE ID=3");
     $db->execute("ALTER TABLE MACHINE ADD COLUMN PARENT VARCHAR(16)");
 }
-
 /**
  * Upgrades a Version 4 version of the Yioop! database to a Version 5 version
  * @param object $db datasource to use to upgrade
@@ -268,7 +257,6 @@ function upgradeDatabaseVersion5(&$db)
     }
     $db->setWorldPermissionsRecursive($static_page_path);
 }
-
 /**
  * Upgrades a Version 5 version of the Yioop! database to a Version 6 version
  * @param object $db datasource to use to upgrade
@@ -282,7 +270,6 @@ function upgradeDatabaseVersion6(&$db)
     }
     $db->setWorldPermissionsRecursive(PREP_DIR);
 }
-
 /**
  * Upgrades a Version 6 version of the Yioop! database to a Version 7 version
  * @param object $db datasource to use to upgrade
@@ -301,7 +288,6 @@ function upgradeDatabaseVersion7(&$db)
     $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (7, 5,
         'Éditeur de résultats')");
 }
-
 /**
  * Upgrades a Version 7 version of the Yioop! database to a Version 8 version
  * @param object $db datasource to use to upgrade
@@ -314,10 +300,8 @@ function upgradeDatabaseVersion8(&$db)
         " FETCHER_ID INT(4))");
     $db->execute("CREATE TABLE CRON_TIME (TIMESTAMP INT(11))");
     $db->execute("INSERT INTO CRON_TIME VALUES ('".time()."')");
-
     upgradeLocales();
 }
-
 /**
  * Upgrades a Version 8 version of the Yioop! database to a Version 9 version
  * @param object $db datasource to use to upgrade
@@ -373,7 +357,6 @@ function upgradeDatabaseVersion9(&$db)
     $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES (11, 15,
         'Sắp xếp hoạt động dựa theo hoạch định')");
 }
-
 /**
  * Upgrades a Version 9 version of the Yioop! database to a Version 10 version
  * @param object $db datasource to use to upgrade
@@ -397,7 +380,6 @@ function upgradeDatabaseVersion10(&$db)
         'DailyMotion', 'video', 'http://www.dailymotion.com/video/{}',
         'http://www.dailymotion.com/thumbnail/video/{}')");
 }
-
 /**
  * Upgrades a Version 10 version of the Yioop! database to a Version 11 version
  * @param object $db datasource to use to upgrade
@@ -412,7 +394,6 @@ function upgradeDatabaseVersion11(&$db)
     $db->execute("CREATE TABLE SUBSEARCH (LOCALE_STRING VARCHAR(16) PRIMARY KEY,
         FOLDER_NAME VARCHAR(16), INDEX_IDENTIFIER CHAR(13))");
 }
-
 /**
  * Upgrades a Version 11 version of the Yioop! database to a Version 12 version
  * @param object $db datasource to use to upgrade
@@ -441,7 +422,6 @@ function upgradeDatabaseVersion12(&$db)
     $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
             (1003, 1, 'Videos' )");
 }
-
 /**
  * Upgrades a Version 12 version of the Yioop! database to a Version 13 version
  * @param object $db datasource to use to upgrade
@@ -458,7 +438,6 @@ function upgradeDatabaseVersion13(&$db)
     }
     upgradeLocales(); //force locale upgrade
 }
-
 /**
  * Upgrades a Version 13 version of the Yioop! database to a Version 14 version
  * @param object $db datasource to use to upgrade
@@ -469,7 +448,6 @@ function upgradeDatabaseVersion14(&$db)
     $db->execute("UPDATE VERSION SET ID=14 WHERE ID=13");
     $db->execute("ALTER TABLE MEDIA_SOURCE ADD LANGUAGE VARCHAR(7)");
 }
-
 /**
  * Upgrades a Version 14 version of the Yioop! database to a Version 15 version
  * @param object $db datasource to use to upgrade
@@ -490,7 +468,6 @@ function upgradeDatabaseVersion15(&$db)
         'తెలుగు', 'lr-tb')");
     upgradeLocales();
 }
-
 /**
  * Upgrades a Version 15 version of the Yioop! database to a Version 16 version
  * @param object $db datasource to use to upgrade
@@ -524,10 +501,8 @@ function upgradeDatabaseVersion16(&$db)
         mkdir($new_classifiers_path);
     }
     $db->setWorldPermissionsRecursive($new_classifiers_path);
-
     upgradeLocales();
 }
-
 /**
  * Upgrades a Version 16 version of the Yioop! database to a Version 17 version
  * @param object $db datasource to use to upgrade
@@ -554,7 +529,6 @@ function upgradeDatabaseVersion17(&$db)
 
     upgradeLocales();
 }
-
 /**
  * Upgrades a Version 17 version of the Yioop! database to a Version 18 version
  * @param object $db datasource to use to upgrade
@@ -580,7 +554,6 @@ function upgradeDatabaseVersion18(&$db)
 
     upgradeLocales();
 }
-
 /**
  * Upgrades a Version 18 version of the Yioop! database to a Version 19 version
  * This is a major upgrade in that crawlCrypt was changed, so old passwords
@@ -625,9 +598,7 @@ function upgradeDatabaseVersion19(&$db)
     $db->dbname = NULL;
     $sql = "DROP TABLE USER_OLD";
     $db->execute($sql);
-
 }
-
 /**
  * Used to insert a new activity into the database at a given acitivity_id
  *
@@ -643,7 +614,6 @@ function upgradeDatabaseVersion19(&$db)
  */
 function addActivityAtId(&$db, $string_id, $method_name, $activity_id)
 {
-
     $db->execute("UPDATE ACTIVITY SET ACTIVITY_ID = ACTIVITY_ID + 1 WHERE ".
         "ACTIVITY_ID >= ?", array($activity_id));
     $sql = "SELECT * FROM ACTIVITY WHERE ACTIVITY_ID >= ?
@@ -674,7 +644,6 @@ function addActivityAtId(&$db, $string_id, $method_name, $activity_id)
     $db->execute("INSERT INTO TRANSLATION VALUES (?, ?)",
         array($translation_id, $string_id));
 }
-
 /**
  * Adds or replaces a translation for a database message string for a given
  * IANA locale tag.

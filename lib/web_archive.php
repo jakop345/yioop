@@ -30,14 +30,11 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * Loads crawlLog functions if needed
  */
 require_once "utility.php";
-
 /**
  *
  * Code used to manage web archive files
@@ -49,7 +46,6 @@ require_once "utility.php";
  */
 class WebArchive
 {
-
     /**
      * Filename used to store the web archive.
      * @var string
@@ -72,32 +68,27 @@ class WebArchive
      * @var int
      */
     var $count;
-
     /**
      * version number of the current archive
      * @var float
      */
     var $version;
-
     /**
      * Says whether the archive is a string archive
      * @var bool
      */
     var $is_string;
-
     /**
      * If archive is stored as a string rather than persistently to disk
      * then $storage is used to hold the string
      * @var string
      */
     var $storage;
-
     /**
      * Version number to use in the WebArchive header if constructing a new
      * archive
      */
     const WEB_ARCHIVE_VERSION = 1.0;
-
     /**
      * Makes or initializes a WebArchive object using the supplied parameters
      *
@@ -134,7 +125,6 @@ class WebArchive
             fclose($fh);
         }
     }
-
     /**
      * Read the info block associated with this web archive.
      * The info block is meta data for the archive stored at the end of
@@ -157,7 +147,6 @@ class WebArchive
             return NULL;
         }
     }
-
     /**
      * Serializes and applies the compressor to an info block and write it at
      * the end of the web archive
@@ -200,7 +189,6 @@ class WebArchive
             fclose($fh);
         }
     }
-
     /**
      * Seeks in the WebArchive file to the end of the last Object.
      *
@@ -220,10 +208,8 @@ class WebArchive
         $len_block = $this->compressor->uncompressInt(
             fread($fh, $compressed_int_len));
         fseek($fh, - ($len_block), SEEK_END);
-
         return $len_block - $compressed_int_len;
     }
-
     /**
      * Adds objects to the WebArchive
      *
@@ -243,21 +229,16 @@ class WebArchive
     function addObjects($offset_field, &$objects,
         $data = NULL, $callback = NULL, $return_flag = true)
     {
-
         $is_string = $this->is_string;
         if(!$is_string) {
             $fh =  fopen($this->filename, "r+");
-
             $this->seekEndObjects($fh);
-
             $offset = ftell($fh);
             ftruncate($fh, $offset);
         } else {
             $offset = strlen($this->storage);
         }
-
         $out = "";
-
         if($return_flag) {
             $new_objects = $objects;
         } else {
@@ -267,39 +248,31 @@ class WebArchive
         $compressed_int_len = $this->compressor->compressedIntLen();
         for($i = 0; $i < $num_objects; $i++) {
             $new_objects[$i][$offset_field] = $offset;
-
             $file = serialize($new_objects[$i]);
             $compressed_file = $this->compressor->compress($file);
             $len = strlen($compressed_file);
             $out .= $this->compressor->compressInt($len) . $compressed_file;
             $offset += $len + $compressed_int_len;
         }
-
         $this->count += $num_objects;
-
         if($is_string) {
             $this->storage .= $out;
         } else {
             fwrite($fh, $out, strlen($out));
         }
-
         if($data != NULL && $callback != NULL) {
             $data = $callback($data, $new_objects, $offset_field);
         }
-
         if(!$is_string) {
             $this->writeInfoBlock($fh, $data);
             fclose($fh);
         }
-
         if($return_flag) {
             return $new_objects;
         } else {
             return;
         }
-
     }
-
     /**
      * Open the web archive file associated with this WebArchive object.
      *
@@ -314,7 +287,6 @@ class WebArchive
         $fh = fopen($this->filename, $mode);
         return $fh;
     }
-
     /**
      * Closes a file handle (which should be of a web archive)
      */
@@ -323,7 +295,6 @@ class WebArchive
         if($this->is_string) return;
         fclose($fh);
     }
-
     /**
      * Gets $num many objects out of the web archive starting at byte $offset
      *
@@ -339,14 +310,12 @@ class WebArchive
      */
     function getObjects($offset, $num, $next_flag = true, $fh = NULL)
     {
-
         $open_flag = false;
         if($fh == NULL) {
             $fh =  $this->open();
             $open_flag = true;
         }
         $is_string = $this->is_string;
-
         $objects = array();
         $compressed_int_len = $this->compressor->compressedIntLen();
         if($is_string) {
@@ -354,18 +323,14 @@ class WebArchive
         }
         if((!$is_string &&fseek($fh, $offset) == 0 ) || ($is_string
             && $offset < $storage_len)) {
-
             for($i = 0; $i < $num; $i++) {
                 if(!$is_string && feof($fh)) {break; }
                 if($is_string && $offset >= $storage_len) {break; }
-
                 $object = NULL;
                 $compressed_len = ($is_string)
                     ? substr($this->storage, $offset, $compressed_int_len)
                     : fread($fh, $compressed_int_len);
-
                 $len = $this->compressor->uncompressInt($compressed_len);
-
                 if($len > 0 && $len < MAX_ARCHIVE_OBJECT_SIZE) {
                     $compressed_file = ($is_string)
                         ? substr($this->storage, $offset + $compressed_int_len,
@@ -373,7 +338,6 @@ class WebArchive
                         : fread($fh, $len);
                     $file = $this->compressor->uncompress($compressed_file);
                     $object = @unserialize($file);
-
                     $offset += $compressed_int_len + $len;
                     $objects[] = array($offset, $object);
                 } else {
@@ -381,19 +345,15 @@ class WebArchive
                         "when looked for offset $offset");
                 }
             }
-
             if($next_flag) {
                 $this->iterator_pos = $offset;
             }
         }
-
         if($open_flag) {
             $this->close($fh);
         }
-
         return $objects;
     }
-
     /**
      * Returns $num many objects from the web archive starting at the current
      * iterator position, leaving the iterator position unchanged
@@ -405,7 +365,6 @@ class WebArchive
     {
         return $this->getObjects($this->iterator_pos, $num, false);
     }
-
     /**
      * Returns $num many objects from the web archive starting at the
      * current iterator position. The iterator is advance to the object
@@ -418,7 +377,6 @@ class WebArchive
     {
         return $this->getObjects($this->iterator_pos, $num);
     }
-
     /**
      * Resets the iterator for this web archive to the first object
      * in the archive
@@ -427,6 +385,5 @@ class WebArchive
     {
         $this->iterator_pos = 0;
     }
-
 }
 ?>

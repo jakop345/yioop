@@ -30,14 +30,11 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  *  Load base helper class if needed
  */
 require_once BASE_DIR."/views/helpers/helper.php";
-
 /**
  * Helper used to draw links and snippets for RSS feeds
  *
@@ -45,7 +42,6 @@ require_once BASE_DIR."/views/helpers/helper.php";
  * @package seek_quarry
  * @subpackage helper
  */
-
 class FeedsHelper extends Helper implements CrawlConstants
 {
 
@@ -141,7 +137,6 @@ class FeedsHelper extends Helper implements CrawlConstants
         </div>
         <?php
     }
-
     /**
      *  Write as an string in the current locale the difference between the
      *  publication date of a post and the current time

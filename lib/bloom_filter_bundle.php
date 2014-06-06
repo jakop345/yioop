@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  *
  * A BloomFilterBundle is a directory of BloomFilterFile.
@@ -47,7 +45,6 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  */
 class BloomFilterBundle
 {
-
     /**
      * Reference to the filter which will be used to store new data
      * @var object
@@ -77,7 +74,6 @@ class BloomFilterBundle
      * The default maximum size of a filter in a filter bundle
      */
     const default_filter_size = 10000000;
-
     /**
      * Creates or loads if already exists the directory structure and
      * BloomFilterFiles used by this bundle
@@ -93,9 +89,7 @@ class BloomFilterBundle
         if(!is_dir($dir_name)) {
             mkdir($dir_name);
         }
-
         $this->loadMetaData();
-
         if($this->num_filters == 0) {
             $this->current_filter =
                 new BloomFilterFile($dir_name."/filter_0.ftr", $filter_size);
@@ -108,10 +102,7 @@ class BloomFilterBundle
             $this->current_filter =
                 BloomFilterFile::load($dir_name."/filter_$last_filter.ftr");
         }
-
-
     }
-
     /**
      * Inserts a $value into the BloomFilterBundle
      *
@@ -134,13 +125,9 @@ class BloomFilterBundle
             $this->num_filters++;
             $this->saveMetaData();
         }
-
         $this->current_filter->add($value);
-
         $this->current_filter_count++;
-
     }
-
     /**
      * Removes from the passed array those elements $elt who either are in
      * the filter bundle or whose $elt[$field_name] is in the bundle.
@@ -191,9 +178,7 @@ class BloomFilterBundle
                 }
             }
         }
-
     }
-
     /**
      * Loads from the filter bundles' meta.txt the meta data associated with
      * this filter bundle and stores this data into field variables
@@ -212,7 +197,6 @@ class BloomFilterBundle
             $this->filter_size = self::default_filter_size;
         }
     }
-
     /**
      * Saves the meta data (number of filter, number of items stored, and size)
      * of the bundle
@@ -223,10 +207,8 @@ class BloomFilterBundle
         $meta['NUM_FILTERS'] = $this->num_filters;
         $meta['CURRENT_FILTER_COUNT' ]= $this->current_filter_count;
         $meta['FILTER_SIZE'] = $this->filter_size;
-
         file_put_contents($this->dir_name.'/meta.txt', serialize($meta));
     }
-
     /**
      *  Empties the contents of the bloom filter bundle and resets
      *  it to start storing new data.
@@ -245,7 +227,6 @@ class BloomFilterBundle
         $this->current_filter->save();
         $this->saveMetaData();
     }
-
     /**
      * Used to save to disk all the file data associated with this bundle
      */
@@ -254,6 +235,5 @@ class BloomFilterBundle
         $this->saveMetaData();
         $this->current_filter->save();
     }
-
 }
 ?>

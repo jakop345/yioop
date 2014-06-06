@@ -30,15 +30,12 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  *Loads base class for iterating
  */
 require_once BASE_DIR.
     '/lib/archive_bundle_iterators/text_archive_bundle_iterator.php';
-
 /**
  * Used to iterate through the records of a collection of one or more open
  * directory RDF files stored in a WebArchiveBundle folder. Open Directory
@@ -59,14 +56,11 @@ class OdpRdfArchiveBundleIterator extends TextArchiveBundleIterator
      *  @var array
      */
     var $header;
-
-
     /**
      * How many bytes to read into buffer from gzip stream in one go
      * @var int
      */
     const BLOCK_SIZE = 1024;
-
     /**
      * Creates an open directory rdf archive iterator with the given parameters.
      *
@@ -91,7 +85,6 @@ class OdpRdfArchiveBundleIterator extends TextArchiveBundleIterator
         $url_parts = @parse_url($this->header['base_address']);
         $this->header['ip_address'] = gethostbyname($url_parts['host']);
     }
-
     /**
      * Estimates the important of the site according to the weighting of
      * the particular archive iterator
@@ -103,8 +96,6 @@ class OdpRdfArchiveBundleIterator extends TextArchiveBundleIterator
     {
         return min($site[self::WEIGHT], 15);
     }
-
-
     /**
      * Gets the text content of the first dom node satisfying the
      * xpath expression $path in the dom document $dom
@@ -123,7 +114,6 @@ class OdpRdfArchiveBundleIterator extends TextArchiveBundleIterator
         }
         return "";
     }
-
     /**
      * Gets the value of the attribute $attribute for each dom node
      * satisfying the xpath expression $path in the dom document $dom
@@ -149,7 +139,6 @@ class OdpRdfArchiveBundleIterator extends TextArchiveBundleIterator
         }
         return $values;
     }
-
     /**
      * Gets the value of the attribute $attribute of the first dom node
      * satisfying the xpath expression $path in the dom document $dom
@@ -169,7 +158,6 @@ class OdpRdfArchiveBundleIterator extends TextArchiveBundleIterator
         }
         return "";
     }
-
     /**
      * Gets the next doc from the iterator
      * @param bool $no_process do not do any processing on page data
@@ -203,12 +191,9 @@ class OdpRdfArchiveBundleIterator extends TextArchiveBundleIterator
         $site[self::SERVER_VERSION] = "unknown";
         $site[self::OPERATING_SYSTEM] = "unknown";
         $this->$processMethod($dom, $site);
-
         $site[self::HASH] = FetchUrl::computePageHash($site[self::PAGE]);
-
         return $site;
     }
-
     /**
      *  Computes an HTML page for a Topic tag parsed from the ODP RDF
      *  document
@@ -244,9 +229,7 @@ class OdpRdfArchiveBundleIterator extends TextArchiveBundleIterator
             ."<body><h1>$title</h1>\n";
         $site[self::PAGE] .= $this->linksToHtml($links);
         $site[self::PAGE] .= "</body></html>";
-
     }
-
     /**
      *  Computes an HTML page for an ExternalPage tag parsed from the ODP RDF
      *  document
@@ -275,7 +258,6 @@ class OdpRdfArchiveBundleIterator extends TextArchiveBundleIterator
         $site[self::PAGE] .= $this->linksToHtml($links);
         $site[self::PAGE] .= "<div>$description</div></body></html>";
     }
-
     /**
      *  Computes links for prefix topics of an ODP topic path
      *
@@ -294,7 +276,6 @@ class OdpRdfArchiveBundleIterator extends TextArchiveBundleIterator
         }
         return $links;
     }
-
     /**
      *  Makes an unordered HTML list out of an associative array of
      *  url => link_text pairs.
@@ -315,6 +296,5 @@ class OdpRdfArchiveBundleIterator extends TextArchiveBundleIterator
         }
         return $html;
     }
-
 }
 ?>

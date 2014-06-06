@@ -30,14 +30,11 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(php_sapi_name() != 'cli') {echo "BAD REQUEST"; exit();}
-
 /** Calculate base directory of script @ignore*/
 define("BASE_DIR", substr(
     dirname(realpath($_SERVER['PHP_SELF'])), 0,
     -strlen("/bin")));
-
 /** Load in global configuration settings */
 require_once BASE_DIR.'/configs/config.php';
 if(!PROFILE) {
@@ -45,15 +42,12 @@ if(!PROFILE) {
         "its web interface on localhost.\n";
     exit();
 }
-
 /**
  * Load FileCache class in case used
  */
 require_once(BASE_DIR."/lib/file_cache.php");
-
 /** NO_CACHE means don't try to use memcache*/
 define("NO_CACHE", true);
-
 /** USE_FILECACHE will let us use this tool to store long running
  *  queries into the filecache
  */
@@ -67,19 +61,15 @@ if(USE_FILECACHE) {
 }
 /** Loads common constants for web crawling*/
 require_once BASE_DIR."/lib/crawl_constants.php";
-
 /** Loads common constants for web crawling*/
 require_once BASE_DIR."/lib/locale_functions.php";
-
 /**Load base controller class, if needed. */
 require_once BASE_DIR."/controllers/search_controller.php";
-
 /*
  *  We'll set up multi-byte string handling to use UTF-8
  */
 mb_internal_encoding("UTF-8");
 mb_regex_encoding("UTF-8");
-
 /**
  * Tool to provide a command line query interface to indexes stored in
  * Yioop! database. Running with no arguments gives a help message for
@@ -95,29 +85,23 @@ class QueryTool implements CrawlConstants
      */
     function __construct()
     {
-
     }
-
     /**
      * Runs the QueryTool on the supplied command line arguments
      */
     function start()
     {
         global $argv, $INDEXING_PLUGINS;
-
         if(!isset($argv[1])) {
             $this->usageMessageAndExit();
         }
-
         $query = $argv[1];
         $results_per_page = (isset($argv[2])) ? $argv[2] : 10;
         $limit = (isset($argv[3])) ? $argv[3] : 0;
         setLocaleObject(getLocaleTag());
-
         $start_time = microtime();
         $controller = new SearchController($INDEXING_PLUGINS);
         $data = $controller->queryRequest($query, $results_per_page, $limit);
-
         if(!isset($data['PAGES'])) {
             $data['PAGES'] = array();
         }
@@ -182,7 +166,6 @@ function getLocaleTag()
 
     return  (isset($argv[4])) ? $argv[4] : DEFAULT_LOCALE;
 }
-
 $query_tool =  new QueryTool();
 $query_tool->start();
 ?>

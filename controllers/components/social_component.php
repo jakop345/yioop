@@ -447,9 +447,13 @@ class SocialComponent extends Component implements CrawlConstants
     }
 
     /**
+     *  Uses $_REQUEST and $user_id to look up all the userss that a group
+     *  has to subject to $_REQUEST['user_limit'] and
+     *  $_REQUEST['user_filter']. Information about these roles is added as
+     *  fields to $data[NUM_USERS_GROUP'] and $data['GROUP_USERS']
      *
-     *  @param array &$data
-     *  @param int $group_id
+     *  @param array &$data data for the manageGroups view.
+     *  @param int $user_id user to look up groups for
      */
     function getGroupUsersData(&$data, $group_id)
     {
@@ -1179,7 +1183,6 @@ class SocialComponent extends Component implements CrawlConstants
         }
         return $data;
     }
-
     /**
      * Called to include the Javascript Wiki Editor (wiki.js) on a page
      * and to send any localizations needed from PHP to Javascript-land
@@ -1244,7 +1247,6 @@ class SocialComponent extends Component implements CrawlConstants
             $data['SCRIPT'] .= "editorize('$id');\n";
         }
     }
-
     /**
      * Handles admin request related to the crawl mix activity
      *
@@ -1433,7 +1435,6 @@ class SocialComponent extends Component implements CrawlConstants
 
         return $data;
     }
-
     /**
      * Handles admin request related to the editing a crawl mix activity
      *
@@ -1548,7 +1549,6 @@ class SocialComponent extends Component implements CrawlConstants
                     tl('social_component_mix_saved')."</h1>');";
             }
         }
-
         $data['SCRIPT'] .= 'fragments = [';
         $not_first = "";
         foreach($mix['FRAGMENTS'] as $fragment_id => $fragment_data) {

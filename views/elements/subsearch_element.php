@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * Element responsible for drawing links to common subsearches
  *
@@ -40,7 +38,6 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @package seek_quarry
  * @subpackage element
  */
-
 class SubsearchElement extends Element
 {
     /**
@@ -105,7 +102,6 @@ class SubsearchElement extends Element
                 ?>
             </ul>
             </div>
-
         <?php
         }
 }

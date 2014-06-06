@@ -30,22 +30,17 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
-
 if(php_sapi_name() != 'cli') {echo "BAD REQUEST"; exit();}
-
 /*
    Calculate base directory of script
  */
 define("BASE_DIR", substr(
     dirname(realpath($_SERVER['PHP_SELF'])), 0,
     -strlen("/bin")));
-
 /*
    We must specify that we want logging enabled
  */
 define("NO_LOGGING", false);
-
 /*
    Load in global configuration settings
  */
@@ -55,26 +50,20 @@ if(!PROFILE) {
         "its web interface on localhost.\n";
     exit();
 }
-
 /** Used to initialize and terminate the daemon */
 require_once BASE_DIR."/lib/crawl_daemon.php";
 /** Used to create, update, and delete user-trained classifiers. */
 require_once BASE_DIR."/lib/classifiers/classifier.php";
-
 /*
     We'll set up multi-byte string handling to use UTF-8
  */
 mb_internal_encoding("UTF-8");
 mb_regex_encoding("UTF-8");
-
-
 /*
    If possible, set the memory limit high enough to fit all of the features and
    training documents into memory.
  */
 ini_set("memory_limit", "500M");
-
-
 /**
  * This class is used to finalize a classifier via the web interface.
  *
@@ -118,8 +107,6 @@ class ClassifierTrainer
         CrawlDaemon::stop('classifier_trainer', $label);
     }
 }
-
 $classifier_trainer = new ClassifierTrainer();
 $classifier_trainer->start();
-
 ?>

@@ -30,12 +30,9 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /** Used to load common constants among crawl components */
 require_once BASE_DIR."/lib/crawl_constants.php";
-
 /**
  * Has methods to parse user-defined page rules to apply documents
  * to be indexed.
@@ -92,7 +89,6 @@ require_once BASE_DIR."/lib/crawl_constants.php";
  * @package seek_quarry
  * @subpackage library
  */
-
 class PageRuleParser implements CrawlConstants
 {
     /**
@@ -100,7 +96,6 @@ class PageRuleParser implements CrawlConstants
      * @var array
      */
     var $rule_trees;
-
     /**
      * If outputting to auxiliary file is being done, the current folder to
      * use for such output
@@ -108,7 +103,6 @@ class PageRuleParser implements CrawlConstants
      * @var string
      */
     var $output_folder="";
-
     /**
      * If outputting to auxiliary file is being done, the current file format
      * to output with (either SQL or CSV)
@@ -124,7 +118,6 @@ class PageRuleParser implements CrawlConstants
      * @var string
      */
     var $output_table="";
-
     /**
      * Name of field which will be used as a stack for push and popping other
      * fields values
@@ -132,7 +125,6 @@ class PageRuleParser implements CrawlConstants
      * @var string
      */
     var $stack;
-
     /**
      * Constructs a PageRuleParser using the supplied page_rules
      *
@@ -143,7 +135,6 @@ class PageRuleParser implements CrawlConstants
     {
         $this->rule_trees = $this->parseRules($page_rules);
     }
-
     /**
      * Parses a string of pages rules into parse trees that can be executed
      * later
@@ -208,7 +199,6 @@ class PageRuleParser implements CrawlConstants
         }
         return $rule_trees;
     }
-
     /**
      * Executes either the internal $rule_trees or the passed $rule_trees
      * on the provided $page_data associative array
@@ -231,7 +221,6 @@ class PageRuleParser implements CrawlConstants
             }
         }
     }
-
     /**
      *  Used to execute a single command rule on $page_data
      *
@@ -259,7 +248,6 @@ class PageRuleParser implements CrawlConstants
             $this->$func($tree['arg'], $page_data);
         }
     }
-
     /**
      *  Used to execute a single assignment rule on $page_data
      *
@@ -300,7 +288,6 @@ class PageRuleParser implements CrawlConstants
             $page_data[$field] .= $value;
         }
     }
-
     /**
      * Either returns $var_name or the value of the CrawlConstant with name
      * $var_name.
@@ -315,7 +302,6 @@ class PageRuleParser implements CrawlConstants
         }
         return $var_name;
     }
-
     /**
      *  Adds a meta word u:$field:$page_data[$field_name] to the array
      *  of meta words for this page
@@ -334,7 +320,6 @@ class PageRuleParser implements CrawlConstants
         }
         $page_data[CrawlConstants::META_WORDS][] = $meta_word;
     }
-
     /**
      *  Adds a $keywords => $link_text pair to the KEYWORD_LINKS array fro
      *  this page based on the value $field on the page. The pair is extracted
@@ -362,7 +347,6 @@ class PageRuleParser implements CrawlConstants
         }
         $page_data[CrawlConstants::KEYWORD_LINKS][$key_words] = $link_text;
     }
-
     /**
      *  Set field variable to be used as a stack
      *
@@ -381,7 +365,6 @@ class PageRuleParser implements CrawlConstants
             $page_data[$this->stack] = array($page_data[$this->stack]);
         }
     }
-
     /**
      *  Pushes an element or items in an array stored in field onto the current
      *  stack
@@ -405,7 +388,6 @@ class PageRuleParser implements CrawlConstants
                 $page_data[$var_field]);
         }
     }
-
     /**
      *  Pop an element or items in an array stored in field onto the current
      *  stack
@@ -422,12 +404,11 @@ class PageRuleParser implements CrawlConstants
         }
         $page_data[$var_field] = array_pop($page_data[$this->stack]);
     }
-
-
     /**
      *  Set output folder
      *
-     *  @param $dir
+     *  @param $dir output directory in which to write data.txt files containing
+     *      the contents of some fields after writeOutput commands
      *  @param array &$page_data an associative array of containing summary
      *      info of a web page/record
      */
@@ -435,7 +416,6 @@ class PageRuleParser implements CrawlConstants
     {
         $this->output_folder = realpath(trim($dir));
     }
-
     /**
      *  Set output format
      *
@@ -449,7 +429,6 @@ class PageRuleParser implements CrawlConstants
             $this->output_format = $format;
         }
     }
-
     /**
      *  Set output table
      *
@@ -461,7 +440,6 @@ class PageRuleParser implements CrawlConstants
     {
             $this->output_table = $table;
     }
-
     /**
      *  If $page_data[$field] is a string, splits it into an array on comma,
      *  trims leading and trailing spaces from each item and stores the result
@@ -483,7 +461,6 @@ class PageRuleParser implements CrawlConstants
             }
         }
     }
-
     /**
      *  If $page_data[$field] is an array, implode it into a string on comma,
      *  and stores the result back into $page_data[$field]
@@ -499,7 +476,6 @@ class PageRuleParser implements CrawlConstants
             $page_data[$var_field] = implode(",", $page_data[$var_field]);
         }
     }
-
     /**
      *  Unsets the key $field (or the crawl constant it corresponds to)
      *  in $page_data. If it is a crawlconstant it doesn't unset it --
@@ -518,7 +494,6 @@ class PageRuleParser implements CrawlConstants
             $page_data[$var_field] = "";
         }
     }
-
     /**
      *  Write the value of a field to the output folder in the current
      *  format. If the field is not set nothing is written
@@ -580,5 +555,4 @@ class PageRuleParser implements CrawlConstants
         }
     }
 }
-
 ?>

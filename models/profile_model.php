@@ -30,14 +30,11 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * For getPath
  */
 require_once(BASE_DIR.'/lib/url_parser.php');
-
 /**
  * This is class is used to handle
  * getting and saving the profile.php of the current search engine instance
@@ -85,7 +82,6 @@ class ProfileModel extends Model
     {
         parent::__construct($db_name, $connect);
     }
-
     /**
      * Creates a folder to be used to maintain local information about this
      * instance of the Yioop/SeekQuarry engine
@@ -119,7 +115,6 @@ class ProfileModel extends Model
         }
         return true;
     }
-
     /**
      * Outputs a profile.php  file in the given directory containing profile
      * data based on new and old data sources
@@ -178,10 +173,8 @@ class ProfileModel extends Model
  * @copyright 2009-2012
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 EOT;
-
         foreach($this->profile_fields as $field) {
             if(isset($new_profile_data[$field])) {
                 $profile[$field] = $new_profile_data[$field];
@@ -201,7 +194,6 @@ EOT;
                         UrlParser::getPath($_SERVER['REQUEST_URI']);
                 } else {
                     $profile[$field] = UrlParser::getPath(NAME_SERVER);
-
                 }
             }
             if($field == "ROBOT_DESCRIPTION") continue;
@@ -221,10 +213,8 @@ EOT;
             }
             return true;
         }
-
         return false;
     }
-
     /**
      * Creates a  directory and sets it to world permission if it doesn't
      * aleady exist
@@ -244,7 +234,6 @@ EOT;
         }
         return -1;
     }
-
     /**
      * Check if $dbinfo provided the connection details for a Yioop/SeekQuarry
      * database. If it does provide a valid db connection but no data then try
@@ -284,10 +273,8 @@ EOT;
             if(!$this->copyTable($table, $default_dbm, $test_dbm))
                 {return false;}
         }
-
         return true;
     }
-
     /**
      * On a blank database this method create all the tables necessary for
      * Yioop
@@ -309,13 +296,6 @@ EOT;
             "CREATE TABLE ACTIVITY (ACTIVITY_ID $serial PRIMARY KEY
                 $auto_increment, TRANSLATION_ID INTEGER,
                 METHOD_NAME VARCHAR(256))",
-
-			"CREATE TABLE CAPTCHA (CAPTCHA_ID $serial PRIMARY KEY $auto_increment,
-	                TRANSLATION_ID INTEGER, METHOD_NAME VARCHAR(256) )",     
-	                        
-	        "CREATE TABLE QUESTION_CHOICE_MAPPING (TRANSLATION_ID_QUESTION INTEGER,
-	                TRANSLATION_ID_CHOICES INTEGER )",            
-
             "CREATE INDEX ACTIVITY_TRANSLATION_ID_INDEX ON
                  ACTIVITY (TRANSLATION_ID)",
             "CREATE TABLE CRAWL_MIXES (TIMESTAMP NUMERIC(11) PRIMARY KEY,
@@ -380,8 +360,6 @@ EOT;
                 PRIMARY KEY(TIMESTAMP, FRAGMENT_ID))",
             "CREATE TABLE ROLE (ROLE_ID $serial PRIMARY KEY $auto_increment,
                 NAME VARCHAR(512))",
-			"CREATE TABLE PREFERENCES (PREFERENCES_ID $serial PRIMARY KEY $auto_increment,
-		                TRANSLATION_ID INTEGER, METHOD_NAME VARCHAR(256))",     
             "CREATE TABLE ROLE_ACTIVITY (ROLE_ID INTEGER, ACTIVITY_ID INTEGER,
                 PRIMARY KEY(ROLE_ID, ACTIVITY_ID))",
             "CREATE TABLE SUBSEARCH (LOCALE_STRING VARCHAR(32) PRIMARY KEY,
@@ -423,7 +401,6 @@ EOT;
         }
         return true;
     }
-
     /**
      * Checks if $dbinfo provides info to connect to an working instance of
      * app db.
@@ -494,7 +471,6 @@ EOT;
         }
         return $test_dbm;
     }
-
     /**
      * Copies the contents of table in the first database into the same named
      * table in a second database. It assumes the table exists in both databases
@@ -520,7 +496,6 @@ EOT;
         }
         return true;
     }
-
     /**
      * Modifies the config.php file so the WORK_DIRECTORY define points at
      * $directory
@@ -542,7 +517,6 @@ EOT;
         if(file_put_contents(BASE_DIR."/configs/config.php", $out)) return true;
         return false;
     }
-
     /**
      * Reads a profile from a profile.php file in the provided directory
      *
@@ -559,7 +533,6 @@ EOT;
         }
         return $profile;
     }
-
     /**
      * Finds the first occurrence of define('$defined', something) in $string
      * and returns something

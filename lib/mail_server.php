@@ -34,12 +34,10 @@
  * To record exception messages from the mail server
  */
 require_once BASE_DIR.'/lib/analytics_manager.php';
-
 /**
  * Timing functions
  */
 require_once BASE_DIR."/lib/utility.php";
-
 /**
  * A small class for communicating with an SMTP server. Used to avoid
  * configuration issues that might be needed with PHP's built-in mail()
@@ -63,13 +61,11 @@ class MailServer
      * @var string
      */
     var $sender_email;
-
     /**
      * Hostname of default mail sender
      * @var string
      */
     var $sender_host;
-
     /**
      * Domain name of the SMTP server
      * @var string
@@ -127,7 +123,6 @@ class MailServer
      * Ready for the actual mail input
      */
     const START_INPUT = 354;
-
     /**
      *  Encapuslates the domain and credentials of a SMTP server
      *  in a MailServer object
@@ -159,7 +154,6 @@ class MailServer
         $this->connection = NULL;
         $this->messages = "";
     }
-
     /**
      *  Connects to and if needs be authenticates with a SMTP server
      *
@@ -209,7 +203,6 @@ class MailServer
         }
         return true;
     }
-
     /**
      *  Closes the currently active SMTP session
      */
@@ -218,7 +211,6 @@ class MailServer
         $this->smtpCommand('QUIT');
         fclose($this->connection);
     }
-
     /**
      *  Reads data from an SMTP server until a command response code detected
      *
@@ -234,7 +226,6 @@ class MailServer
         $this->messages .= $data;
         return substr($data, 0, self::SMTP_CODE_LEN);
     }
-
     /**
      *  Sends a single SMTP command to the current SMTP server and
      *  then returns the SMTP response code
@@ -248,7 +239,6 @@ class MailServer
         fputs($this->connection, $command . self::EOL);
         return $this->readResponseGetCode();
     }
-
     /**
      *  Sends an email (much like PHP's mail command, but not requiring
      *  a configured smtp server on the current machine)
@@ -276,14 +266,12 @@ class MailServer
         $mail .= "From: " . $from . $eol;
         $mail .= "To: ". $to . $eol;
         $mail .= $eol . $eol . $message. $eol . ".";
-
         $commands = array(
             "MAIL FROM: <$from>" => self::OKAY,
             "RCPT TO: <$to>" => self::OKAY,
             "DATA" => self::START_INPUT,
             $mail => self::OKAY
         );
-
         if($this->startSession()) {
             foreach($commands as $command => $good_response) {
                 $response = $this->smtpCommand($command);
@@ -317,5 +305,4 @@ class MailServer
         }
     }
 }
-
 ?>

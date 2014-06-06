@@ -30,15 +30,11 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  *  Loads base datasource class if necessary
  */
 require_once "datasource_manager.php";
-
-
 /**
  * Pdo DatasourceManager
  *
@@ -59,13 +55,11 @@ class PdoManager extends DatasourceManager
      *  @var resource
      */
     var $pdo = NULL;
-
     /**
      * The number of rows affected by the last exec
      * @var int
      */
     var $num_affected = 0;
-
     /**
      *  if DBMS is one like postgres which lower cases table names that aren't
      *  in quotes that this field has the name of the database;
@@ -73,7 +67,6 @@ class PdoManager extends DatasourceManager
      * @var mixed
      */
     var $to_upper_dbms;
-
     /** {@inheritdoc} */
     function connect($db_host = DB_HOST, $db_user = DB_USER,
         $db_password = DB_PASSWORD, $db_name = DB_NAME)
@@ -93,14 +86,12 @@ class PdoManager extends DatasourceManager
         }
         return $this->pdo;
     }
-
     /** {@inheritdoc} */
     function disconnect()
     {
         unset($this->pdo);
         $this->pdo = NULL;
     }
-
     /** {@inheritdoc} */
     function exec($sql, $params = array())
     {
@@ -135,14 +126,11 @@ class PdoManager extends DatasourceManager
         $last_sql = $sql;
         return $result;
     }
-
     /** {@inheritdoc} */
     function affectedRows()
     {
         return $this->num_affected;
     }
-
-
     /** {@inheritdoc} */
     function insertID($table = "")
     {
@@ -152,7 +140,6 @@ class PdoManager extends DatasourceManager
         }
         return $this->pdo->lastInsertId();
     }
-
     /** {@inheritdoc} */
     function fetchArray($result)
     {
@@ -169,8 +156,6 @@ class PdoManager extends DatasourceManager
         }
         return $out_row;
     }
-
-
     /** {@inheritdoc} */
     function escapeString($str)
     {

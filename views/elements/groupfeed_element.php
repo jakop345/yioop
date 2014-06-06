@@ -30,12 +30,9 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /** Loads common constants for web crawling*/
 require_once BASE_DIR."/lib/crawl_constants.php";
-
 /**
  * Element responsible for draw the feeds a user is subscribed to
  *
@@ -271,7 +268,6 @@ class GroupfeedElement extends Element implements CrawlConstants
             $this->renderScripts($data);
         }
     }
-
     /**
      *  Used to render the Javascript that appears at the non-status updating
      *  portion of the footer of this element.

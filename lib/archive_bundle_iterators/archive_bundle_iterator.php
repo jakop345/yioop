@@ -30,12 +30,9 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /** Loads common constants for web crawling*/
 require_once BASE_DIR."/lib/crawl_constants.php";
-
 /**
  * Abstract class used to model iterating documents indexed in
  * an WebArchiveBundle or set of such bundles.
@@ -68,7 +65,6 @@ abstract class ArchiveBundleIterator implements CrawlConstants
      * @var string
      */
     var $result_dir;
-
     /**
      * Stores the current progress to the file iterate_status.txt in the result
      * dir such that a new instance of the iterator could be constructed and
@@ -86,7 +82,6 @@ abstract class ArchiveBundleIterator implements CrawlConstants
         file_put_contents("{$this->result_dir}/iterate_status.txt",
             serialize($info));
     }
-
     /**
      * Restores the internal state from the file iterate_status.txt in the
      * result dir such that the next call to nextPages will pick up from just
@@ -104,8 +99,6 @@ abstract class ArchiveBundleIterator implements CrawlConstants
         $this->current_offset = $info['current_offset'];
         return $info;
     }
-
-
     /**
      * Advances the iterator to the $limit page, with as little
      * additional processing as possible
@@ -119,7 +112,6 @@ abstract class ArchiveBundleIterator implements CrawlConstants
             $this->nextPages($limit, true);
         }
     }
-
     /**
      * Estimates the important of the site according to the weighting of
      * the particular archive iterator
@@ -128,7 +120,6 @@ abstract class ArchiveBundleIterator implements CrawlConstants
      *      ranking method
      */
     abstract function weight(&$site);
-
     /**
      * Gets the next $num many docs from the iterator
      * @param int $num number of docs to get
@@ -136,7 +127,6 @@ abstract class ArchiveBundleIterator implements CrawlConstants
      * @return array associative arrays for $num pages
      */
     abstract function nextPages($num, $no_process=false);
-
     /**
      * Resets the iterator to the start of the archive bundle
      */

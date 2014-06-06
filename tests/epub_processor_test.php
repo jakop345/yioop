@@ -30,19 +30,15 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  *  Load search engine-wide configuration file
  */
 require_once BASE_DIR.'/configs/config.php';
-
 /**
  *  Load the EpubProcessor class we are going to test
  */
 require_once BASE_DIR."/lib/processors/epub_processor.php";
-
 /**
  *  Load the base unit test class
  */
@@ -62,14 +58,12 @@ require_once BASE_DIR."/lib/unit_test.php";
  * @package seek_quarry
  * @subpackage test
  */
-
 class EpubProcessorTest extends UnitTest implements CrawlConstants
 {
     /**
      * Creates a new EpubProcessor object so that
      * we can process an .epub format file.
      */
-
     function setUp()
     {
         $epub_object = new EpubProcessor();
@@ -79,14 +73,12 @@ class EpubProcessorTest extends UnitTest implements CrawlConstants
         $summary = $epub_object->process($page, $url);
         $this->test_objects['summary'] = $summary;
     }
-
     /**
      * Delete any files associated with our test on EpubProcessor
      */
     function tearDown()
     {
     }
-
     /**
      * Test case to check whether the title of the epub document
      * is retrieved correctly.
@@ -99,7 +91,6 @@ class EpubProcessorTest extends UnitTest implements CrawlConstants
         $description = "Test Passed with correct title";
         $this->assertEqual($x, $correct_title,$description);
     }
-
     /**
      * Test case to check whether the language of the document is
      * retrieved correctly.
@@ -112,7 +103,6 @@ class EpubProcessorTest extends UnitTest implements CrawlConstants
         $description = "Test Passed with correct Language";
         $this->assertEqual($x, $correct_language,$description);
     }
-
     /**
      * Test case to check whether the description of the document is
      * not empty.

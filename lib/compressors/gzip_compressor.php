@@ -30,20 +30,15 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * Loads the base class if needed
  */
 require_once "compressor.php";
-
 /**
  * Loads utility class for packInt/unpackInt
  */
 require_once BASE_DIR."/lib/utility.php";
-
-
 /**
  * Implementation of a Compressor using GZIP/GUNZIP as the filter.
  * More details on these algorithms can be found at
@@ -58,7 +53,6 @@ class GzipCompressor implements Compressor
     /** Constructor does nothing
      */
     function __construct() {}
-
     /**
      * Applies the Compressor compress filter to a string before it is inserted
      * into a WebArchive. In this case, applying the filter means gzipping.
@@ -70,7 +64,6 @@ class GzipCompressor implements Compressor
     {
         return gzencode($str, 9);
     }
-
     /**
      * Used to unapply the compress filter as when data is read out of a
      * WebArchive. In this case, unapplying the filter means gunzipping.
@@ -82,7 +75,6 @@ class GzipCompressor implements Compressor
     {
         return gzinflate(substr($str, 10)); // 10 bytes to skip gzip header
     }
-
     /**
      * Used to compress an int as a fixed length string in the format of
      * the compression algorithm underlying the compressor. For gzip
@@ -98,7 +90,6 @@ class GzipCompressor implements Compressor
         return "\x1f\x8b\x08\x00". packInt($my_int) .
             "\x00\x03\x03\x00\x00\x00\x00\x00\x00\x00\x00\x00";
     }
-
     /**
      * Used to uncompress an int from a fixed length string in the format of
      * the compression algorithm underlying the compressor. For gzip
@@ -115,7 +106,6 @@ class GzipCompressor implements Compressor
     {
         return unpackInt(substr($my_compressed_int, 4, 4));
     }
-
     /**
      * Computes the length of an int when packed using the underlying
      * compression algorithm as a fixed length string. For gzip
@@ -129,7 +119,6 @@ class GzipCompressor implements Compressor
     {
         return 20;
     }
-
     /**
      * File extension that should be associated with this compressor
      * @return string name of dos file extension

@@ -30,12 +30,9 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /** Loads common constants for web crawling*/
 require_once BASE_DIR."/lib/crawl_constants.php";
-
 /**
  * Web page used to present search results
  * It is also contains the search box for
@@ -45,14 +42,12 @@ require_once BASE_DIR."/lib/crawl_constants.php";
  * @package seek_quarry
  * @subpackage view
  */
-
 class RssView extends View implements CrawlConstants
 {
     /** This view is drawn on a web layout
      *  @var string
      */
     var $layout = "rss";
-
     /**
      *  Draws the main landing pages as well as search result pages
      *
@@ -66,7 +61,6 @@ class RssView extends View implements CrawlConstants
     {
         if(isset($data['PAGES'])) {
         ?>
-
             <?php
             foreach($data['PAGES'] as $page) {?>
                 <item>
@@ -74,7 +68,6 @@ class RssView extends View implements CrawlConstants
                     if(isset($page[self::TYPE])) {
                         $this->helper("filetype")->render($page[self::TYPE]);
                     }?></title>
-
                 <link><?php if(!isset($page[self::TYPE]) ||
                     (isset($page[self::TYPE])
                     && $page[self::TYPE] != "link")) {
@@ -92,7 +85,6 @@ class RssView extends View implements CrawlConstants
                 }
                 ?></description>
                 </item>
-
             <?php
             } //end foreach
         }

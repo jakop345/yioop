@@ -30,12 +30,9 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /** Base class definition */
 require_once BASE_DIR."/lib/classifiers/classifier_algorithm.php";
-
 /**
  * Implements the Naive Bayes text classification algorithm.
  *
@@ -54,13 +51,11 @@ class NaiveBayes extends ClassifierAlgorithm
      * @var float
      */
     var $gamma = 1.0;
-
     /**
      * Parameter used to weight negative examples.
      * @var float
      */
     var $epsilon = 1.0;
-
     /**
      * Beta vector of feature weights resulting from the training phase. The
      * dot product of this vector with a feature vector yields the log
@@ -69,7 +64,6 @@ class NaiveBayes extends ClassifierAlgorithm
      * @var array
      */
     var $beta;
-
     /**
      * Computes the beta vector from the given examples and labels. The
      * examples are represented as a sparse matrix where each row is an example
@@ -88,7 +82,6 @@ class NaiveBayes extends ClassifierAlgorithm
         $a = array_fill(0, $n, 0);
         $this->beta = array_fill(0, $n, 0.0);
         $beta =& $this->beta;
-
         foreach ($X as $i => $row) {
             foreach ($row as $j => $Xij) {
                 if ($y[$i] == 1) {
@@ -98,13 +91,11 @@ class NaiveBayes extends ClassifierAlgorithm
                 }
             }
         }
-
         $beta[0] = $this->logit($p[0], $a[0]);
         for ($j = 1; $j < $n; $j++) {
             $beta[$j] = $this->logit($p[$j], $a[$j]) - $beta[0];
         }
     }
-
     /**
      * Constructs beta by sampling from the Gamma distribution for each
      * feature, parameterized by the number of times the feature appears in
@@ -127,7 +118,6 @@ class NaiveBayes extends ClassifierAlgorithm
             $p[$j] = $this->sampleGammaDeviate(1 + $t_l);
             $a[$j] = $this->sampleGammaDeviate(1 + $t_nl);
         }
-
         $this->beta = array();
         $beta =& $this->beta;
         $beta[0] = $this->logit($p[0], $a[0]);
@@ -135,7 +125,6 @@ class NaiveBayes extends ClassifierAlgorithm
             $beta[$j] = $this->logit($p[$j], $a[$j]) - $beta[0];
         }
     }
-
     /**
      * Returns the pseudo-probability that a new instance is a positive example
      * of the class the beta vector was trained to recognize. It only makes
@@ -160,9 +149,7 @@ class NaiveBayes extends ClassifierAlgorithm
         }
         return 1.0 / (1.0 + exp(-$l));
     }
-
     /* PRIVATE INTERFACE */
-
     /**
      * Computes the log odds of a numerator and denominator, corresponding to
      * the number of positive and negative examples exhibiting some feature.
@@ -176,7 +163,6 @@ class NaiveBayes extends ClassifierAlgorithm
         $odds = ($pos + $this->gamma) / ($neg + $this->epsilon);
         return log($odds);
     }
-
     /**
      * Computes a Gamma deviate with beta = 1 and integral, small alpha. With
      * these assumptions, the deviate is just the sum of alpha exponential

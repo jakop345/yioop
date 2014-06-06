@@ -340,14 +340,12 @@ class Fetcher implements CrawlConstants
      * @var string
      */
     var $arc_dir;
-
     /**
      * If an web archive crawl (i.e. a re-crawl) is active then this field
      * holds the iterator object used to iterate over the archive
      * @var object
      */
     var $archive_iterator;
-
     /**
      * Keeps track of whether during the recrawl we should notify a
      * queue_server scheduler about our progress in mini-indexing documents
@@ -355,45 +353,38 @@ class Fetcher implements CrawlConstants
      * @var bool
      */
     var $recrawl_check_scheduler;
-
     /**
      * If the crawl_type is self::ARCHIVE_CRAWL, then crawl_index is the
      * timestamp of the existing archive to crawl
      * @var string
      */
     var $crawl_index;
-
     /**
      * Whether to cache pages or just the summaries
      * @var bool
      */
     var $cache_pages;
-
     /**
      * Which fetcher instance we are (if fetcher run as a job and more that one)
      * @var string
      */
     var $fetcher_num;
-
     /**
      * Maximum number of bytes to download of a webpage
      * @var int
      */
     var $page_range_request;
-
     /**
      * Max number of chars to extract for description from a page to index.
      * Only words in the description are indexed.
      * @var int
      */
     var $max_description_len;
-
     /**
      * An array to keep track of hosts which have had a lot of http errors
      * @var array
      */
     var $hosts_with_errors;
-
     /**
      * When processing recrawl data this says to assume the data has
      * already had its inks extracted into a field and so this doesn't
@@ -402,7 +393,6 @@ class Fetcher implements CrawlConstants
      * @var bool
      */
     var $no_process_links;
-
     /**
      * Maximum number of bytes which can be uploaded to the current
      * queue server's web app in one go
@@ -410,31 +400,32 @@ class Fetcher implements CrawlConstants
      * @var int
      */
     var $post_max_size;
-
     /**
+     * Contains which classifiers to use for the current crawl
+     * Classifiers can be used to label web documents with a meta word
+     * if the classifiers threshold is met
      * @var array
      */
-    var $active_classifers;
-
+    var $active_classifiers;
     /**
+     * Contains which classifiers to use for the current crawl
+     * that are being used to rank web documents. The score that the
+     * classifier gives to a document is used for this ranking purposes
      * @var array
      */
     var $active_rankers;
-
     /**
      * To keep track of total number of Git internal urls
      *
      * @var int
      */
     var $total_git_urls;
-
     /**
      * To store all the internal git urls fetched
      *
      * @var array
      */
     var $all_git_urls;
-
     /**
      * To map programming languages with their extensions
      *
@@ -457,7 +448,6 @@ class Fetcher implements CrawlConstants
      * @var array
      */
     var $proxy_servers;
-
     /**
      * Before receiving any data from a queue server's web app this is
      * the default assumed post_max_size in bytes
@@ -468,23 +458,19 @@ class Fetcher implements CrawlConstants
      * constant indicating Git repository
      */
     const REPOSITORY_GIT = 'git';
-
     /**
      * constant indicating Git repository
      */
     const GIT_URL_CONTINUE = '@@@@';
-
     /**
      * An indicator to tell no actions to be taken
      */
     const INDICATOR_NONE = 'none';
-
     /**
      * A indicator to represent next position after the access code in Git
      * tree object
      */
      const HEX_NULL_CHARACTER = "\x00";
-
     /**
      * Sets up the field variables so that crawling can begin
      */
@@ -551,7 +537,6 @@ class Fetcher implements CrawlConstants
         $this->crawl_order = self::PAGE_IMPORTANCE;
         $this->summarizer_option = self::BASIC_SUMMARIZER;
     }
-
     /**
      *  This is the function that should be called to get the fetcher to start
      *  fetching. Calls init to handle the command-line arguments then enters
@@ -569,10 +554,8 @@ class Fetcher implements CrawlConstants
         CrawlDaemon::init($argv, "fetcher");
         crawlLog("\n\nInitialize logger..", $this->fetcher_num."-fetcher",
             true);
-
         $this->loop();
     }
-
     /**
      * Main loop for the fetcher.
      *
@@ -722,7 +705,6 @@ class Fetcher implements CrawlConstants
 
         crawlLog("Fetcher shutting down!!");
     }
-
     /**
      * Get a list of urls from the current fetch batch provided by the queue
      * server. Then downloads these pages. Finally, reschedules, if
@@ -814,7 +796,6 @@ class Fetcher implements CrawlConstants
         crawlLog("Downloading complete");
         return $downloaded_pages;
     }
-
     /**
      * Extracts NUM_MULTI_CURL_PAGES from the curent Archive Bundle that is
      * being recrawled.
@@ -854,7 +835,6 @@ class Fetcher implements CrawlConstants
         }
         return $pages;
     }
-
     /**
      * Deletes any crawl web archive bundles not in the provided array of crawls
      *
@@ -903,7 +883,6 @@ class Fetcher implements CrawlConstants
             }
         }
     }
-
     /**
      * Makes a request of the name server machine to get the timestamp of the
      * currently running crawl to see if it changed
@@ -1052,7 +1031,6 @@ class Fetcher implements CrawlConstants
         crawlLog("End Name Server Check");
         return $time_change;
     }
-
     /**
      * Get status, current crawl, crawl order, and new site information from
      * the queue_server.
@@ -1137,7 +1115,6 @@ class Fetcher implements CrawlConstants
         crawlLog("Time to check Scheduler ".(changeInMicrotime($start_time)));
         return $info;
     }
-
     /**
      *  During an archive crawl this method is used to get from the name server
      *  a collection of pages to process. The fetcher will later process these
@@ -1148,7 +1125,6 @@ class Fetcher implements CrawlConstants
     function checkArchiveScheduler()
     {
         $start_time = microtime();
-
         /*
             It's still important to switch queue servers, so that we send new
             data to each server each time we fetch
@@ -1250,7 +1226,6 @@ class Fetcher implements CrawlConstants
             changeInMicrotime($start_time));
         return $info;
     }
-
     /**
      * Function to check if memory for this fetcher instance is getting low
      * relative to what the system will allow.
@@ -1261,7 +1236,6 @@ class Fetcher implements CrawlConstants
     {
        return memory_get_usage() > (metricToInt(ini_get("memory_limit")) * 0.7);
     }
-
     /**
      * At least once, and while memory is low picks at server at random and send
      * any fetcher data we have to it.
@@ -1293,7 +1267,6 @@ class Fetcher implements CrawlConstants
             $i < $num_servers * ceil(log($num_servers)) );
             //coupon collecting expected i before have seen all
     }
-
     /**
      * Sets parameters for fetching based on provided info struct
      * ($info typically would come from the queue server)
@@ -1423,7 +1396,6 @@ class Fetcher implements CrawlConstants
             $this->max_description_len = $info[self::MAX_DESCRIPTION_LEN];
         }
     }
-
     /**
      * Prepare an array of up to NUM_MULTI_CURL_PAGES' worth of sites to be
      * downloaded in one go using the to_crawl array. Delete these sites
@@ -1433,11 +1405,8 @@ class Fetcher implements CrawlConstants
      */
     function getFetchSites()
     {
-
         $web_archive = $this->web_archive;
-
         $start_time = microtime();
-
         $seeds = array();
         $delete_indices = array();
         $num_items = count($this->to_crawl);
@@ -1451,7 +1420,6 @@ class Fetcher implements CrawlConstants
             $to_crawl_flag = false;
         }
         reset($crawl_source);
-
         if($num_items > NUM_MULTI_CURL_PAGES) {
             $num_items = NUM_MULTI_CURL_PAGES;
         }
@@ -1506,7 +1474,6 @@ class Fetcher implements CrawlConstants
             }
             $site_pair = each($crawl_source);
         } //end while
-
         foreach($delete_indices as $delete_index) {
             $extension = UrlParser::getDocumentType(
                 $this->to_crawl[$delete_index][0]);
@@ -1532,13 +1499,11 @@ class Fetcher implements CrawlConstants
                 }
             }
         }
-
         crawlLog("Fetch url list to download time ".
             (changeInMicrotime($start_time)));
 
         return $seeds;
     }
-
     /**
      * Sorts out pages
      * for which no content was downloaded so that they can be scheduled
@@ -1564,10 +1529,8 @@ class Fetcher implements CrawlConstants
         }
         crawlLog("  Sort downloaded/not downloaded ".
             (changeInMicrotime($start_time)));
-
         return array($downloaded, $not_downloaded);
     }
-
     /**
      * Processes an array of downloaded web pages with the appropriate page
      * processor.
@@ -1583,16 +1546,11 @@ class Fetcher implements CrawlConstants
         $PAGE_PROCESSORS = $this->page_processors;
         crawlLog("Start process pages... Current Memory:".memory_get_usage());
         $start_time = microtime();
-
         $prefix = $this->fetcher_num."-";
-
         $stored_site_pages = array();
         $summarized_site_pages = array();
-
         $num_items = $this->web_archive->count;
-
         $i = 0;
-
         foreach($site_pages as $site) {
             $response_code = $site[self::HTTP_CODE];
             $was_error = false;
@@ -1889,7 +1847,6 @@ class Fetcher implements CrawlConstants
                 $i++;
             }
         } // end for
-
         $num_pages = count($stored_site_pages);
         $filter_stored = array_filter($stored_site_pages);
         if($num_pages > 0 && $this->cache_pages) {
@@ -1913,10 +1870,8 @@ class Fetcher implements CrawlConstants
         }
         crawlLog("  Process pages time: ".(changeInMicrotime($start_time)).
              " Current Memory: ".memory_get_usage());
-
         return $summarized_site_pages;
     }
-
     /**
      * Page processors are allowed to extract up to MAX_LINKS_TO_EXTRACT
      * This method attempts to cull from the doc_info struct the
@@ -1935,7 +1890,6 @@ class Fetcher implements CrawlConstants
         if(!isset($doc_info[self::LINKS])) {
             return;
         }
-
         $links = array();
         $allowed_name = "a".$member_cache_time;
         $disallowed_name = "d".$member_cache_time;
@@ -1961,8 +1915,6 @@ class Fetcher implements CrawlConstants
         }
         $doc_info[$field] = UrlParser::pruneLinks($links);
     }
-
-
     /**
      * Copies fields from the array of site data to the $i indexed
      * element of the $summarized_site_pages and $stored_site_pages array
@@ -1984,7 +1936,6 @@ class Fetcher implements CrawlConstants
             self::ROBOT_PATHS, self::GOT_ROBOT_TXT, self::CRAWL_DELAY,
             self::AGENT_LIST, self::ROBOT_METAS, self::WARC_ID,
             self::CACHE_PAGE_VALIDATORS);
-
         foreach($summary_fields as $field) {
             if(isset($site[$field])) {
                 $stored_site_pages[$i][$field] = $site[$field];
@@ -1997,7 +1948,6 @@ class Fetcher implements CrawlConstants
             }
         }
     }
-
     /**
      * The pageProcessing method of an IndexingPlugin generates
      * a self::SUBDOCS array of additional "micro-documents" that
@@ -2050,7 +2000,6 @@ class Fetcher implements CrawlConstants
             }
         }
     }
-
     /**
      * Updates the $this->found_sites array with data from the most recently
      * downloaded sites. This means updating the following sub arrays:
@@ -2111,20 +2060,17 @@ class Fetcher implements CrawlConstants
 
                 }
             } //end else
-
             //Add cache page validation data
             if(isset($site[self::CACHE_PAGE_VALIDATORS])) {
                 $this->found_sites[self::CACHE_PAGE_VALIDATION_DATA][] =
                     array($site[self::URL], $site[self::CACHE_PAGE_VALIDATORS]);
             }
-
             if(isset($this->hosts_with_errors[$host]) &&
                 $this->hosts_with_errors[$host] > DOWNLOAD_ERROR_THRESHOLD) {
                 $this->found_sites[self::ROBOT_TXT][$host][
                     self::CRAWL_DELAY] = ERROR_CRAWL_DELAY;
                 crawlLog("setting crawl delay $host");
             }
-
             if(isset($this->found_sites[self::TO_CRAWL])) {
                 $this->found_sites[self::TO_CRAWL] =
                     array_filter($this->found_sites[self::TO_CRAWL]);
@@ -2139,7 +2085,6 @@ class Fetcher implements CrawlConstants
                 $subdoc_info = "(Subdoc: {$site[self::SUBDOCTYPE]})";
             }
             crawlLog($site_index.". $subdoc_info ".$site[self::URL]);
-
         } // end for
         crawlLog("  Done Update Found Sites Array Time ".
             (changeInMicrotime($start_time)));
@@ -2157,10 +2102,7 @@ class Fetcher implements CrawlConstants
                 $this->selectCurrentServerAndUpdateIfNeeded(true);
             crawlLog("  Update Server Time ".(changeInMicrotime($start_time)));
         }
-
-
     }
-
     /**
      * Used to add a set of links from a web page to the array of sites which
      * need to be crawled.
@@ -2196,9 +2138,7 @@ class Fetcher implements CrawlConstants
                 $different_weight = $remaining_weight/$num_different;
                     //favour links between different company level domains
             }
-
         }
-
         $old_cld = $this->getCompanyLevelDomain($old_url);
         for($i = 0; $i < $num_links; $i++) {
             $url = $link_urls[$i];
@@ -2226,7 +2166,6 @@ class Fetcher implements CrawlConstants
             }
         }
     }
-
     /**
      *  Returns the number of links in the array $links which
      *  which share the same company level domain (cld) as $url
@@ -2251,7 +2190,6 @@ class Fetcher implements CrawlConstants
         }
         return $cnt;
     }
-
     /**
      * Calculates the company level domain for the given url
      *
@@ -2278,7 +2216,6 @@ class Fetcher implements CrawlConstants
         }
         return $subdomains[2];
     }
-
     /**
      * Updates the queue_server about sites that have been crawled.
      *
@@ -2343,7 +2280,6 @@ class Fetcher implements CrawlConstants
             $byte_counts["CACHE_PAGE_VALIDATION"] =
                 $bytes_cache_page_validation;
         }
-
         //handle schedule data
         $schedule_data = array();
         if(isset($this->found_sites[self::TO_CRAWL][$current_server])) {
@@ -2405,7 +2341,6 @@ class Fetcher implements CrawlConstants
             $byte_counts["TOTAL"] += $bytes_index;
             $byte_counts["INDEX"] = $bytes_index;
         }
-
         if($byte_counts["TOTAL"] <= 0) {
             crawlLog("No data to send aborting update scheduler...");
             return;
@@ -2424,7 +2359,6 @@ class Fetcher implements CrawlConstants
                 self::fetch_batch_name."{$this->crawl_time}.txt");
         }
     }
-
     /**
      * Computes a string of compressed urls from the seen urls and extracted
      * links destined for the current queue server. Then unsets these
@@ -2474,7 +2408,6 @@ class Fetcher implements CrawlConstants
         }
         return $compress_urls;
     }
-
     /**
      * Sends to crawl, robot, and index data to the current queue server.
      * If this data is more than post_max_size, it splits it into chunks
@@ -2593,7 +2526,6 @@ class Fetcher implements CrawlConstants
             "Updated Queue Server, sent approximately" .
             " {$byte_counts['TOTAL']} bytes:");
     }
-
     /**
      * Builds an inverted index shard (word --> {docs it appears in})
      * for the current batch of SEEN_URLS_BEFORE_UPDATE_SCHEDULER many pages.
@@ -2820,12 +2752,10 @@ class Fetcher implements CrawlConstants
         crawlLog("  Build mini inverted index time ".
             (changeInMicrotime($start_time)));
     }
-
 }
 /*
  *  Instantiate and runs the Fetcher
  */
 $fetcher =  new Fetcher();
 $fetcher->start();
-
 ?>

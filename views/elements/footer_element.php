@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * Element responsible for drawing footer links on search view and static view
  * pages
@@ -41,7 +39,6 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @package seek_quarry
  * @subpackage element
  */
-
 class FooterElement extends Element
 {
     /**
@@ -59,7 +56,7 @@ class FooterElement extends Element
         }
         $tools = (isset($data[CSRF_TOKEN])) ? "?a=more&amp;".CSRF_TOKEN.
             "=".$data[CSRF_TOKEN] : "?a=more";
-    ?>
+            ?>
             <div>
             - <a href="<?php e($path_info); ?>/blog.php"><?php
             e(tl('footer_element_blog')); ?></a> -
@@ -74,7 +71,6 @@ class FooterElement extends Element
                 e('<br /> - ');
             }
             ?>
-
             <a href="http://www.seekquarry.com/"><?php
             e(tl('footer_element_developed_seek_quarry')); ?></a> -
             </div>

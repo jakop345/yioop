@@ -32,7 +32,6 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR') ||
     defined('PROFILE_FILE_NAME')) {echo "BAD REQUEST"; exit();}
 /*
@@ -46,7 +45,6 @@ if(!defined('BASE_DIR') ||
  */
 ini_set('pcre.recursion_limit', 3000);
 ini_set('pcre.backtrack_limit', 1000000);
-
 /** Don't display any query info*/
 define('NO_DEBUG_INFO', 0);
 /** bit of DEBUG_LEVEL used to indicate test cases should be displayable*/
@@ -55,23 +53,19 @@ define('TEST_INFO', 1);
 define('QUERY_INFO', 2);
 /** bit of DEBUG_LEVEL used to indicate php messages should be displayed*/
 define('ERROR_INFO', 4);
-
 /** Maintenance mode restricts access to local machine*/
 define("MAINTENANCE_MODE", false);
-
 if(file_exists(BASE_DIR."/configs/local_config.php")) {
     /** Include any locally specified defines (could use as an alternative
         way to set work directory) */
     require_once(BASE_DIR."/configs/local_config.php");
 }
-
 // following two variable might be set in local_config.php
 if(!defined('TIME_ZONE')) {
     date_default_timezone_set('America/Los_Angeles');
 } else {
     date_default_timezone_set(TIME_ZONE);
 }
-
 /**
  * @global array which activities are in which Component classes (use this
  *      array so don't have to instantiate classes to find out. Keys are
@@ -84,9 +78,8 @@ $COMPONENT_ACTIVITIES = array(
         "resultsEditor", "searchSources"),
     "social" => array("manageGroups", "groupFeeds", "mixCrawls", "wiki"),
     "system" => array("manageMachines", "manageLocales",
-        "serverSettings", "captchaSettings", "configure")
+        "serverSettings", "security", "configure")
 );
-
 /** setting profile.php to something else in loac_config.php allows one to have
     two different yioop instances share the same work_directory but maybe have
     different
@@ -96,55 +89,49 @@ $COMPONENT_ACTIVITIES = array(
 if(!defined('PROFILE_FILE_NAME')) {
     define('PROFILE_FILE_NAME', "/profile.php");
 }
-
 if(MAINTENANCE_MODE && $_SERVER["SERVER_ADDR"] != $_SERVER["REMOTE_ADDR"]) {
     echo "This Yioop! installation is undergoing maintenance, please come ".
         "back later!";
     exit();
 }
-
 if(!defined('WORK_DIRECTORY')) {
-/*+++ The next block of code is machine edited, change at 
+/*+++ The next block of code is machine edited, change at
 your own risk, please use configure web page instead +++*/
 define('WORK_DIRECTORY', '');
 /*++++++*/
 // end machine edited code
 }
-
-
+/** Directory for local versions of web app classes*/
 define('APP_DIR', WORK_DIRECTORY."/app");
+/** Directory to place files such as dictionaries that will be
+   converted to Bloom filter using token_tool.php. Similarly,
+   can be used to hold files which will be used to prepare
+   a file to assist in crawling or serving search results
+*/
 define('PREP_DIR', WORK_DIRECTORY."/prepare");
+/** Locale dir to use in case LOCALE_DIR does not exist yet or is
+ *  missing some file
+ */
 define('FALLBACK_LOCALE_DIR', BASE_DIR."/locale");
-
 /** name of the cookie used to manage the session
  * (store language and perpage settings), define CSRF token
  */
 define ('SESSION_NAME', "yioopbiscuit");
 define('CSRF_TOKEN', "YIOOP_TOKEN");
-
-/** Captcha Mode*/
+/** Captcha mode indicating to use a text captcha*/
 define('TEXT_CAPTCHA', 1);
+/** Captcha mode indicating to use a hash cash computation for a captcha*/
 define('HASH_CAPTCHA', 2);
-define('GRAPHICAL_CAPTCHA', 3);
-
-//Captcha Type
-define('CAPTCHA', 1);
-define('RECOVERY', 2);
-
-//Captcha Possibilities
-define('MOST', 1);
-define('LEAST', 2);
-
+/** Captcha mode indicating to use a classic image based captcha*/
+define('IMAGE_CAPTCHA', 3);
 /** Authentication Mode Possibility*/
 define('NORMAL_AUTHENTICATION', 1);
 /** Authentication Mode Possibility*/
 define('ZKP_AUTHENTICATION', 2);
-
 /** If ZKP Authentication via Fiat Shamir Protocol used how many iterations
-    to do
+ *  to do
  */
 define('FIAT_SHAMIR_ITERATIONS', 20);
-
 if(file_exists(WORK_DIRECTORY.PROFILE_FILE_NAME)) {
     require_once(WORK_DIRECTORY.PROFILE_FILE_NAME);
     define('PROFILE', true);
@@ -231,20 +218,15 @@ if(file_exists(WORK_DIRECTORY.PROFILE_FILE_NAME)) {
     $INDEXING_PLUGINS = array();
 
 }
-
 if((DEBUG_LEVEL & ERROR_INFO) == ERROR_INFO) {
     error_reporting(-1);
 } else {
     error_reporting(0);
 }
-
 /** if true tests are diplayable*/
 define('DISPLAY_TESTS', ((DEBUG_LEVEL & TEST_INFO) == TEST_INFO));
-
 /** if true query statistics are diplayed */
 define('QUERY_STATISTICS', ((DEBUG_LEVEL & QUERY_INFO) == QUERY_INFO));
-
-
 //check if mobile css and formatting should be used or not
 if(isset($_SERVER['HTTP_USER_AGENT'])) {
     $agent = $_SERVER['HTTP_USER_AGENT'];
@@ -262,15 +244,11 @@ if(!PROFILE) {
     return;
 }
 /*+++ End machine generated code, feel free to edit the below as desired +++*/
-
 /** this is the User-Agent names the crawler provides
  * a web-server it is crawling
  */
 define('USER_AGENT',
     'Mozilla/5.0 (compatible; '.USER_AGENT_SHORT.'; +'.NAME_SERVER.'bot.php)');
-
-
-
 /**
  * @global array addresses of memcached servers to use assuming memcached is
  * available
@@ -283,19 +261,15 @@ if(USE_MEMCACHE) {
     unset($memcache_hosts);
     unset($host);
 }
-
 /** maximum size of a log file before it is rotated */
 define("MAX_LOG_FILE_SIZE", 5000000);
-
 /** number of log files to rotate amongst */
 define("NUMBER_OF_LOG_FILES", 5);
-
 /**
  * how long in seconds to keep a cache of a robot.txt
  * file before re-requesting it
  */
 define('CACHE_ROBOT_TXT_TIME', 86400);
-
 /**
  * Whether the scheduler should track ETag and Expires headers.
  * If you want to turn this off set the variable to false in
@@ -304,30 +278,24 @@ define('CACHE_ROBOT_TXT_TIME', 86400);
 if(!defined('USE_ETAG_EXPIRES')) {
     define('USE_ETAG_EXPIRES', true);
 }
-
 /**
  * if the robots.txt has a Crawl-delay larger than this
  * value don't crawl the site.
  * maximum value for this is 255
  */
 define('MAXIMUM_CRAWL_DELAY', 64);
-
 /** maximum number of active crawl-delayed hosts */
 define('MAX_WAITING_HOSTS', 250);
-
 /** Minimum weight in priority queue before rebuilt */
 define('MIN_QUEUE_WEIGHT', 1/100000);
-
 /**  largest sized object allowed in a web archive (used to sanity check
  *   reading data out of a web archive)
  */
 define('MAX_ARCHIVE_OBJECT_SIZE', 100000000);
-
 /** Treat earlier timestamps as being an indexes of format version 0 */
 if(!defined('VERSION_0_TIMESTAMP')) {
     define('VERSION_0_TIMESTAMP', 1369754208);
 }
-
 /**
  * Code to determine how much memory current machine has
  */
@@ -339,7 +307,6 @@ if(strstr(PHP_OS, "WIN")) {
     $data = preg_split("/\s+/", file_get_contents("/proc/meminfo"));
     $memory = 1024 * intval($data[1]);
 }
-
 /**
  *  Factor to multiply sizes of Yioop data structures with in low ram memory
  *  setting (2GB)
@@ -361,7 +328,6 @@ if($memory < 2200000000) {
      */
     define('MEMORY_PROFILE', MEMORY_STANDARD);
 }
-
 /**
  * bloom filters are used to keep track of which urls are visited,
  * this parameter determines up to how many
@@ -369,35 +335,25 @@ if($memory < 2200000000) {
  * read to and from disk.
  */
 define('URL_FILTER_SIZE', MEMORY_PROFILE * 5000000);
-
 /**
  * maximum number of urls that will be held in ram
  * (as opposed to in files) in the priority queue
  */
 define('NUM_URLS_QUEUE_RAM', MEMORY_PROFILE * 80000);
-
 /** number of documents before next gen */
 define('NUM_DOCS_PER_GENERATION', MEMORY_PROFILE *10000);
-
-
 /** precision to round floating points document scores */
 define('PRECISION', 10);
-
 /** maximum number of links to extract from a page on an initial pass*/
 define('MAX_LINKS_TO_EXTRACT', MEMORY_PROFILE * 80);
-
 /** maximum number of links to keep after initial extraction*/
 define('MAX_LINKS_PER_PAGE', 50);
-
 /** Estimate of the average number of links per page a document has*/
 define('AVG_LINKS_PER_PAGE', 24);
-
 /** maximum number of links to consider from a sitemap page */
 define('MAX_LINKS_PER_SITEMAP', MEMORY_PROFILE * 80);
-
 /**  maximum number of words from links to consider on any given page */
 define('MAX_LINKS_WORD_TEXT', 100);
-
 /**  maximum length of urls to try to queue, this is important for
  *   memory when creating schedule, since the amount of memory is
  *   going to be greater than the product MAX_URL_LENGTH*MAX_FETCH_SIZE
@@ -405,18 +361,15 @@ define('MAX_LINKS_WORD_TEXT', 100);
  *   on the base class which does implement it in extractHttpHttpsUrls
  */
 define('MAX_URL_LENGTH', 512);
-
 /** request this many bytes out of a page -- this is the default value to
  *  use if the user doesn't set this value in the page options GUI
  */
 define('PAGE_RANGE_REQUEST', 50000);
-
 /**
  * Max number of chars to extract for description from a page to index.
  * Only words in the description are indexed.
  */
 define('MAX_DESCRIPTION_LEN', 2000);
-
 /**
  *  Allow pages to be recrawled after this many days -- this is the
  *  default value to use if the user doesn't set this value in the page options
@@ -424,62 +377,49 @@ define('MAX_DESCRIPTION_LEN', 2000);
  *  A nonpositive value means the filter will never be deleted.
  */
 define('PAGE_RECRAWL_FREQUENCY', -1);
-
 /** number of multi curl page requests in one go */
 define('NUM_MULTI_CURL_PAGES', 100);
-
 /** number of pages to extract from an archive in one go */
 define('ARCHIVE_BATCH_SIZE', 100);
-
 /** time in seconds before we give up on multi page requests*/
 define('PAGE_TIMEOUT', 30);
-
 /** time in seconds before we give up on a single page request*/
 define('SINGLE_PAGE_TIMEOUT', 60);
-
 /** max time in seconds in a process before write a log message if
     crawlTimeoutLog is called repeatedly from a loop
  */
 define('LOG_TIMEOUT', 30);
-
 /**
  *  Maximum time a crawl daemon process can go before calling
  *  @see CrawlDaemon::processHandler
  */
 define('PROCESS_TIMEOUT', 240);
-
 /**
  *  Number of error page 400 or greater seen from a host before crawl-delay
  *  host and dump remainder from current schedule
  */
 define('DOWNLOAD_ERROR_THRESHOLD', 50);
-
 /** Crawl-delay to set in the event that DOWNLOAD_ERROR_THRESHOLD exceeded*/
 define('ERROR_CRAWL_DELAY', 20);
-
 /** how often should we make in OPIC the sum of weights totals MAX_URLS */
 define('NORMALIZE_FREQUENCY', 10000);
-
 /**
  * @global array file extensions which can be handled by the search engine,
  * other extensions will be ignored. This array is populated in the individual
  * lib/processors page processors
  */
 $INDEXED_FILE_TYPES = array("unknown");
-
 /**
  * @global array filetypes which should be considered images. This
  *      array is populated in the individual lib/processors page processors
  */
 $IMAGE_TYPES = array();
-
 /**
  * @global array associates mimetypes that can be processed by the search
  * engine with the processor class that can process them. This
  * array is populated in the individual lib/processors page processors
  */
 $PAGE_PROCESSORS = array();
-
 /**
  * @global array of indexing plugins, array itself is populated in the plugins
  *      after the plugin checks if it can run.
@@ -495,96 +435,97 @@ foreach(glob("$plugin_dir*_plugin.php") as $filename) {
         $INDEXING_PLUGINS[] = $tmp_plug_name;
     }
 }
-
 /** get locally defined indexing plugins */
 $plugin_dir = APP_DIR."/lib/indexing_plugins/";
 $plugin_dir_len = strlen($plugin_dir);
 foreach(glob("$plugin_dir*_plugin.php") as $filename) {
     $INDEXING_PLUGINS[] = substr($filename, $plugin_dir_len, -$plugin_ext_len);
 }
-
+/**
+ * Used in Modified 9 encoding. The ith array entry represents the number of
+ * i bit elements that can be stored in a word using modified 9 (0th index
+ * location is a dummy value 0 as can't store 0 bit numbers)
+ * @global array
+ */
 $MOD9_PACK_POSSIBILITIES = array(
     0, 24, 12, 7, 6, 5, 4, 3, 3, 3, 2, 2, 2, 2,
     2,  1,  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
     1, 1, 1, 1);
-
+/**
+ * Used in Modified 9 encoding. Key values are the number of elements we would
+ * like to store in the current word. Values are the bit prefix to use on first
+ * byte of word. Notices bits 7 and 6 (128 and 64) are not parts of prefixes
+ * as used for continuation bits.
+ * @global array
+ */
 $MOD9_NUM_ELTS_CODES = array(
     24 => 63, 12 => 62, 7 => 60, 6 => 56, 5 => 52, 4 => 48, 3 => 32,
     2 => 16, 1 => 0);
-
+/**
+ * Keys of this array are prefix codes from the high order byte of a word
+ * encoded using Modified 9, values are the number of bits used to encode
+ * an element if that prefix code was used.
+ * @global array
+ */
 $MOD9_NUM_BITS_CODES = array( 63 => 1, 62 => 2, 60 => 3, 56 => 4, 52 => 5,
     48 => 6, 32 => 9, 16 => 14, 0 => 28);
-
+/**
+ * Keys of this array are prefix codes from the high order byte of a word
+ * encoded using Modified 9, values are the number of elts stored in the
+ * remaining bits of the word
+ * @global array
+ */
 $MOD9_NUM_ELTS_DECODES = array(
     63 => 24, 62 => 12, 60=> 7, 56 => 6, 52 => 5, 48 => 4, 32 => 3,
     16 => 2, 0 => 1);
-
 /** Characters we view as not part of words, not same as POSIX [:punct:]*/
 define ('PUNCT', "\.|\,|\:|\;|\"|\'|\[|\/|\%|\?|-|".
     "\]|\{|\}|\(|\)|\!|\||\&|\`|\’|\‘|©|®|™|℠|…|\/|\>|，|\=|。|）|：|、|".
     "”|“|《|》|（|「|」|★|【|】|·|\+|\*|；|！|—|―");
-
 /** Percentage ASCII text before guess we dealing with english*/
 define ('EN_RATIO', 0.9);
-
 /** Number of total description deemed title */
 define ('AD_HOC_TITLE_LENGTH', 50);
-
 /** Used to say number of bytes in histogram bar (stats page) for file
     download sizes
  */
 define('DOWNLOAD_SIZE_INTERVAL', 5000);
-
 /** Used to say number of secs in histogram bar for file download times*/
 define('DOWNLOAD_TIME_INTERVAL', 0.5);
-
 /**
  * How many non robot urls the fetcher successfully downloads before
  * between times data sent back to queue server
  */
 define ('SEEN_URLS_BEFORE_UPDATE_SCHEDULER', MEMORY_PROFILE * 95);
-
 /** maximum number of urls to schedule to a given fetcher in one go */
 define ('MAX_FETCH_SIZE', MEMORY_PROFILE * 1000);
-
 /** fetcher must wait at least this long between multi-curl requests */
 define ('MINIMUM_FETCH_LOOP_TIME', 5);
-
 /** an idling fetcher sleeps this long between queue_server pings*/
 define ('FETCH_SLEEP_TIME', 15);
-
 /** an a queue_server minimum loop idle time*/
 define ('QUEUE_SLEEP_TIME', 5);
-
 /** How often mirror script tries to synchronize with machine it is mirroring*/
 define ('MIRROR_SYNC_FREQUENCY', 3600);
 /** How often mirror script tries to notify machine it is mirroring that it
 is still alive*/
 define ('MIRROR_NOTIFY_FREQUENCY', 60);
-
 /** Max time before dirty index (queue_server) and
     filters (fetcher) will be force saved in seconds*/
 define('FORCE_SAVE_TIME', 3600);
-
 /** Number of seconds of no fetcher contact before crawl is deemed dead*/
 define("CRAWL_TIME_OUT", 1800);
-
 /** maximum number of terms allowed in a conjunctive search query */
 define ('MAX_QUERY_TERMS', 10);
-
 /** When to switch to using suffice tree approach */
 define ('SUFFIX_TREE_THRESHOLD', 3);
-
 /** default number of search results to display per page */
 define ('NUM_RESULTS_PER_PAGE', 10);
-
 /** Number of recently crawled urls to display on admin screen */
 define ('NUM_RECENT_URLS_TO_DISPLAY', 10);
-
 /** Maximum time a set of results can stay in query cache before it is
     invalidated */
 define ('MAX_QUERY_CACHE_TIME', 2 * 86400); //two days
-
 /** Minimum time a set of results can stay in query cache before it is
     invalidated */
 define ('MIN_QUERY_CACHE_TIME', 3600); //one hour
@@ -609,7 +550,6 @@ define('MAX_MIX_FRAGMENTS', 10);
  *  they are displayed (not in DB)
  */
 define ('NAME_TRUNCATE_LEN', 7);
-
 /** ID of the root user */
 define('ROOT_ID', 1);
 /** Role of the root user */
@@ -620,7 +560,6 @@ define('USER_ROLE', 2);
 define('PUBLIC_GROUP_ID', 2);
 /** ID of the group to which all Yioop users belong */
 define('PUBLIC_USER_ID', 2);
-
 /** USER STATUS value used for a user who can log in and perform activities */
 define('ACTIVE_STATUS', 1);
 /**

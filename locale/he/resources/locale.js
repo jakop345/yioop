@@ -29,7 +29,6 @@
  * @copyright 2009 - 2014s
  * @filesource
  */
-
 /*
  * The alphabet for this locale
  */
@@ -41,7 +40,6 @@ var alpha = "ת תּ שׂ שׁר ק ץ צף פ פּ עס ן נ םמ ל " +
  * Transliteration maping for this locale
  */
 var roman_array = {};
-
 /*
  * To analyze the query and generate actual input query from the
  * transliterated query

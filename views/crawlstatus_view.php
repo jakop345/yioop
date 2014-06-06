@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * This view is used to display information about
  * crawls that have been made by this seek_quarry instance
@@ -41,10 +39,8 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @package seek_quarry
  * @subpackage view
  */
-
 class CrawlstatusView extends View
 {
-
     /**
      * An Ajax call from the Manage Crawl Element in Admin View triggers
      * this view to be instantiated. The renderView method then draws statistics
@@ -57,7 +53,6 @@ class CrawlstatusView extends View
         $base_url = "?c=admin&amp;a=manageCrawls&amp;".
             CSRF_TOKEN."=".$data[CSRF_TOKEN]."&amp;arg=";
         ?>
-
         <h2><?php e(tl('crawlstatus_view_currently_processing')); ?></h2>
         <p><b><?php e(tl('crawlstatus_view_description')); ?></b> <?php
         if(isset($data['DESCRIPTION']) && $data["CRAWL_RUNNING"]) {

@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * Used to draw the admin screen on which users can create groups, delete
  * groups and add and delete users and roles to a group
@@ -263,8 +261,6 @@ class ManagegroupsElement extends Element
         </div>
         <?php
     }
-
-
     /**
      *  Draws the add groups and edit groups forms
      *
@@ -478,7 +474,6 @@ class ManagegroupsElement extends Element
         </script>
         <?php
     }
-
     /**
      *  Draws form used to invite users to the current group
      *  @param array $data from the admin controller with a
@@ -526,8 +521,6 @@ class ManagegroupsElement extends Element
         </div>
         <?php
     }
-
-
     /**
      *  Draws the form used to change the owner of a group
      *  @param array $data from the admin controller with a
@@ -575,9 +568,8 @@ class ManagegroupsElement extends Element
         </form>
         <?php
     }
-
     /**
-     *  Draws the search for roles forms
+     *  Draws the search for groups forms
      *
      *  @param array $data consists of values of role fields set
      *      so far as well as values of the drops downs on the form
@@ -606,7 +598,7 @@ class ManagegroupsElement extends Element
             "access" => $data['ACCESS_CODES']
         );
         $view->helper("searchform")->render($data, $controller, $activity,
-                $view, $title, $return_form_name, $fields, $dropdowns);
+            $view, $title, $return_form_name, $fields, $dropdowns);
     }
 }
 ?>

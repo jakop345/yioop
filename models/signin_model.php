@@ -30,14 +30,11 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /** For the base model class */
 require_once BASE_DIR."/models/model.php";
 /** For the crawlHash function */
 require_once BASE_DIR."/lib/utility.php";
-
 /**
  * This is class is used to handle
  * db results needed for a user to login
@@ -89,7 +86,6 @@ class SigninModel extends Model
         } while(!$result && $i < 2);
         return $result;
     }
-    
     /**
      * To verify  username and password in case of ZKP authentication
      * via the Fiat Shamir protocol
@@ -110,11 +106,10 @@ class SigninModel extends Model
         }
         $row = $db->fetchArray($result);
         $v = $row['ZKP_PASSWORD'];
-        $rp = bcmul($x, bcmod(bcpow($v, $e), $n));
-        $lp = bcmul($y, $y);
+        $rp = bcmod(bcmul($x, bcmod(bcpow($v, $e), $n)), $n);
+        $lp = bcmod(bcmul($y, $y), $n);
         return ($username == $row['USER_NAME'] && bccomp($rp, $lp) == 0);
     }
-
     /**
      * Checks that a username email pair is valid
      *
@@ -123,7 +118,6 @@ class SigninModel extends Model
      * @return bool  where the email is that of the given user
      *      (or at least hashes to the same thing)
      */
-
     function checkValidEmail($username, $email)
     {
         $db = $this->db;
@@ -138,7 +132,6 @@ class SigninModel extends Model
 
         return ($username == $row['USER_NAME'] && $email == $row['EMAIL']) ;
     }
-
     /**
      *  Get the user_name associated with a given userid
      *
@@ -155,7 +148,6 @@ class SigninModel extends Model
         $username = $row['USER_NAME'];
         return $username;
    }
-
      /**
      *  Get the email associated with a given user_id
      *
@@ -172,7 +164,6 @@ class SigninModel extends Model
         $email = $row['EMAIL'];
         return $email;
    }
-
     /**
      *  Changes the email of a given user
      *
@@ -187,7 +178,6 @@ class SigninModel extends Model
         $result = $this->db->execute($sql, array($email, $username));
         return $result != false;
     }
-
     /**
      *  Changes the password of a given user
      *
@@ -202,7 +192,6 @@ class SigninModel extends Model
             array(crawlCrypt($password), $username) );
         return $result != false;
     }
-
     /**
      *  Changes the password of a given user in case of ZKP authentication
      *

@@ -30,24 +30,24 @@
  * @copyright 2009 - 2014
  * @filesource
  */
- 
- /** Super class of all the test classes testing javascript functions.
- *  @author Chris Pollett
+/**
+ * For this class' parent class
+ */
+require_once BASE_DIR.'/lib/unit_test.php';
+/**
+ *  Super class of all the test classes testing Javascript functions.
+ *
+ *  @author Akash Patel
  *  @package seek_quarry
  *  @subpackage test
  */
- class JavaScriptTest extends UnitTest
- {
+class JavascriptUnitTest extends UnitTest
+{
     function setUp()
     {
-    
     }
-    
     function tearDown()
     {
-    
     }
- 
- }
- 
- ?>
+}
+?>

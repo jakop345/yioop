@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  *  Load the Trie class we'll be testing
  */
@@ -41,7 +39,6 @@ require_once BASE_DIR."/lib/trie.php";
  *  Load the crawlHash function
  */
 require_once BASE_DIR.'/lib/utility.php';
-
 /**
  *  Used to test that the Trie class properly stores words that
  *  could be used for an autosuggest dictionary
@@ -59,16 +56,13 @@ class TrieTest extends UnitTest
     {
         $this->test_objects["TRIE"] = new Trie();
     }
-
     /**
      * Since a Trie is not a PersistentStructure we don't need to do
      * anything to tear it down
      */
     function tearDown()
     {
-
     }
-
     /**
      * Check if we add something into our Trie, add returns the correct
      * sub-tree or false if does not exists
@@ -83,7 +77,6 @@ class TrieTest extends UnitTest
                     " " => NULL)),
                 "Add subsequence of an existing string should return subtree");
     }
-
     /**
      * Check if we look up something in our Trie, that correct subtree
      * is returned or false if does not exists
@@ -99,7 +92,6 @@ class TrieTest extends UnitTest
         $this->assertFalse($this->test_objects['TRIE']->exists(
                 "helmut"), "If not in Trie should get false");
     }
-
     /**
      * Check that if we can get all the terms from a trie that begin
      * with a given prefix

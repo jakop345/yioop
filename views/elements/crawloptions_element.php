@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * Element responsible for displaying options about how a crawl will be
  * performed. For instance, what are the seed sites for the crawl, what
@@ -43,10 +41,8 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @package seek_quarry
  * @subpackage element
  */
-
 class CrawloptionsElement extends Element
 {
-
     /**
      * Draws configurable options about how a web crawl should be conducted
      *

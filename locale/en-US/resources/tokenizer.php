@@ -28,9 +28,7 @@
  *  @copyright 2009 - 2014
  *  @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /* If you would like to use wordnet for thesaurus reordering of query results
    define the following variable in your configs/local_config.php file with
    the path to the WordNet executable.
@@ -38,7 +36,6 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 if(!defined("WORDNET_EXEC")) {
     define("WORDNET_EXEC", "");
 }
-
 /**
  * This class has a colloection of methods for English locale specific
  * tokenization. In particular, it has a stemmer, a stop word remover (for
@@ -65,7 +62,6 @@ class EnTokenizer
      */
     static $no_stem_list = array("titanic", "programming", "fishing", 'ins',
         "blues", "factorial", "pbs");
-
     /**
      * Phrases we would like yioop to rewrite before performing a query
      * @var array
@@ -94,14 +90,18 @@ class EnTokenizer
      * @var int
      */
     static $j;
-
+    /**
+     *  The constructor for a tokenizer can be used to say that a thesaurus
+     *  for final query reordering is present. For english we do this if
+     *  the WORDNET_EXEC variable is set. In which case we use WordNet for
+     *  our reordering
+     */
     function __construct()
     {
         if(WORDNET_EXEC != "") {
             $this->use_thesaurus = true;
         }
     }
-
     /**
      *  Stub function which could be used for a word segmenter.
      *  Such a segmenter on input thisisabunchofwords would output
@@ -115,7 +115,6 @@ class EnTokenizer
     {
         return $pre_segment;
     }
-
     /**
      * Computes similar words and scores from WordNet output based on word type.
      *
@@ -313,7 +312,6 @@ class EnTokenizer
         'without','wont','words','world',
         'would','wouldnt','www','x','y','yes','yet','you','youd','youll','your',
         'youre','yours','yourself','yourselves','youve','z','zero');
-
         $page = preg_replace('/\b('.implode('|',$stop_words).')\b/', '',
             mb_strtolower($page));
         return $page;
@@ -347,7 +345,6 @@ class EnTokenizer
 
         return substr(self::$buffer, 0, self::$k + 1);
     }
-
     /**
      * Takes a phrase and tags each term in it with its part of speech.
      * So each term in the original phrase gets mapped to term~part_of_speech
@@ -371,7 +368,6 @@ class EnTokenizer
             $tagged_tokens);
         return $tagged_phrase;
     }
-
     /**
      * Checks to see if the ith character in the buffer is a consonant
      *
@@ -394,9 +390,7 @@ class EnTokenizer
                 return true;
         }
     }
-
     //private methods for stemming
-
     /**
      * m() measures the number of consonant sequences between 0 and j. if c is
      * a consonant sequence and v a vowel sequence, and [.] indicates arbitrary
@@ -418,10 +412,7 @@ class EnTokenizer
             if (!self::cons($i)) break;
             $i++;
         }
-
         $i++;
-
-
         while(true) {
             while(true) {
                 if ($i > self::$j) return $n;
@@ -440,13 +431,11 @@ class EnTokenizer
             $i++;
         }
     }
-
     /**
      * Checks if 0,...$j contains a vowel
      *
      * @return bool whether it does not
      */
-
     private static function vowelinstem()
     {
         for ($i = 0; $i <= self::$j; $i++) {
@@ -454,20 +443,17 @@ class EnTokenizer
         }
         return false;
     }
-
     /**
      * Checks if $j,($j-1) contain a double consonant.
      *
      * @return bool if it does or not
      */
-
     private static function doublec($j)
     {
         if ($j < 1) return false;
         if (self::$buffer[$j] != self::$buffer[$j - 1]) return false;
         return self::cons($j);
     }
-
     /**
      * Checks whether the letters at the indices $i-2, $i-1, $i in the buffer
      * have the form consonant - vowel - consonant and also if the second c is
@@ -479,25 +465,20 @@ class EnTokenizer
      *</pre>
      * @return bool whether the letters at indices have the given form
      */
-
     private static function cvc($i)
     {
         if ($i < 2 || !self::cons($i) || self::cons($i - 1) ||
             !self::cons($i - 2)) return false;
-
         $ch = self::$buffer[$i];
         if ($ch == 'w' || $ch == 'x' || $ch == 'y') return false;
-
         return true;
     }
-
     /**
      * Checks if the buffer currently ends with the string $s
      *
      * @param string $s string to use for check
      * @return bool whether buffer currently ends with $s
      */
-
     private static function ends($s)
     {
         $len = strlen($s);
@@ -510,14 +491,12 @@ class EnTokenizer
 
         return true;
     }
-
     /**
      * setto($s) sets (j+1),...k to the characters in the string $s, readjusting
      * k.
      *
      * @param string $s string to modify the end of buffer with
      */
-
     private static function setto($s)
     {
         $len = strlen($s);
@@ -525,7 +504,6 @@ class EnTokenizer
         self::$buffer = substr_replace(self::$buffer, $s, $loc, $len);
         self::$k = self::$j + $len;
     }
-
     /**
      * Sets the ending in the buffer to $s if the number of consonant sequences
      * between $k and $j is positive.
@@ -558,7 +536,6 @@ class EnTokenizer
      *     meetings  ->  meet
      * </pre>
      */
-
     private static function step1ab()
     {
         if (self::$buffer[self::$k] == 's') {
@@ -590,19 +567,15 @@ class EnTokenizer
             }
        }
     }
-
     /**
      * step1c() turns terminal y to i when there is another vowel in the stem.
      */
-
     private static function step1c()
     {
         if (self::ends("y") && self::vowelinstem()) {
             self::$buffer[self::$k] = 'i';
         }
     }
-
-
     /**
      * step2() maps double suffices to single ones. so -ization ( = -ize plus
      * -ation) maps to -ize etc.Note that the string before the suffix must give
@@ -649,14 +622,11 @@ class EnTokenizer
                 break;
             case 'g':
                 if (self::ends("logi")) { self::r("log"); break; }
-
         }
     }
-
     /**
      * step3() deals with -ic-, -full, -ness etc. similar strategy to step2.
      */
-
     private static function step3()
     {
         switch (self::$buffer[self::$k])
@@ -678,7 +648,6 @@ class EnTokenizer
                 break;
         }
     }
-
     /**
      * step4() takes off -ant, -ence etc., in context <c>vcvc<v>.
      */
@@ -738,11 +707,9 @@ class EnTokenizer
         }
         if (self::m() > 1) self::$k = self::$j;
     }
-
     /** step5() removes a final -e if m() > 1, and changes -ll to -l if
      *  m() > 1.
      */
-
     private static function step5()
     {
         self::$j = self::$k;
@@ -754,9 +721,7 @@ class EnTokenizer
         if (self::$buffer[self::$k] == 'l' &&
             self::doublec(self::$k) && self::m() > 1) self::$k--;
     }
-
     //private methods for part of speech taggin
-
     /**
      *  Split input text into terms and output an array with one element
      *  per term, that element consisting of array with the term token 
@@ -876,7 +841,6 @@ class EnTokenizer
         }
         return $result;
     }
-
     /**
      * Takes an array of pairs (token, tag) that came from phrase
      * and builds a new phrase where terms look like token~tag.

@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * Layout used for the seek_quarry Website
  * including pages such as search landing page
@@ -44,7 +42,6 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  */
 class WebLayout extends Layout
 {
-
     /**
      * Responsible for drawing the header of the document containing
      * Yioop! title and including basic.js. It calls the renderView method of
@@ -59,10 +56,8 @@ class WebLayout extends Layout
     {
     ?>
     <!DOCTYPE html>
-
     <html lang="<?php e($data['LOCALE_TAG']);
         ?>" dir="<?php e($data['LOCALE_DIR']);?>">
-
         <head>
         <title><?php if(isset($data['page']) &&
             isset($this->view->head_objects[$data['page']]['title']))
@@ -100,14 +95,12 @@ class WebLayout extends Layout
         <?php
             $data['MOBILE'] = (MOBILE) ? 'mobile': '';
         ?>
-
         <body class="html-<?php e($data['BLOCK_PROGRESSION']);?> html-<?php
             e($data['LOCALE_DIR']);?> html-<?php e($data['WRITING_MODE'].' '.
             $data['MOBILE']);?>" >
         <div id="message" ></div><?php
         $this->view->renderView($data);
         if(QUERY_STATISTICS) { ?>
-
         <div class="query-statistics">
         <?php
             e("<h1>".tl('web_layout_query_statistics')."</h1>");
@@ -124,12 +117,10 @@ class WebLayout extends Layout
                         "</b></div></div>");
             }
         ?>
-
         </div>
         <?php
         }
         ?>
-
         <script type="text/javascript" src="./scripts/basic.js" ></script>
         <?php
         if(isset($data['INCLUDE_SCRIPTS'])) {

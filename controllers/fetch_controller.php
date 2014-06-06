@@ -30,25 +30,20 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 // to allow the calulation of longer archive schedules
 ini_set('max_execution_time', 60);
-
 /** Load base controller class if needed */
 require_once BASE_DIR."/controllers/controller.php";
 /** Loads common constants for web crawling*/
 require_once BASE_DIR."/lib/crawl_constants.php";
 /** For user-trained classification of page summaries*/
 require_once BASE_DIR."/lib/classifiers/classifier.php";
-
 /** get available archive iterators */
 foreach(glob(BASE_DIR."/lib/archive_bundle_iterators/*_bundle_iterator.php")
     as $filename) {
     require_once $filename;
 }
-
 /**
  * This class handles data coming to a queue_server from a fetcher
  * Basically, it receives the data from the fetcher and saves it into
@@ -67,7 +62,6 @@ class FetchController extends Controller implements CrawlConstants
      */
     var $activities = array("schedule", "archiveSchedule", "update",
         "crawlTime");
-
     /**
      *  Number of seconds that must elapse after last call before doing
      *  cron activities (mainly check liveness of fetchers which should be
@@ -82,12 +76,10 @@ class FetchController extends Controller implements CrawlConstants
     function processRequest()
     {
         $data = array();
-
         /* do a quick test to see if this is a request seems like
            from a legitimate machine
          */
         if(!$this->checkRequest()) {return; }
-
         $activity = $_REQUEST['a'];
         $robot_table_name = CRAWL_DIR."/".self::robot_table_name;
         $robot_table = array();
@@ -105,7 +97,6 @@ class FetchController extends Controller implements CrawlConstants
             $this->call($activity);
         }
     }
-
     /**
      * Checks if there is a schedule of sites to crawl available and
      * if so present it to the requesting fetcher, and then delete it.
@@ -115,16 +106,13 @@ class FetchController extends Controller implements CrawlConstants
         $view = "fetch";
         // set up query
         $data = array();
-
         if(isset($_REQUEST['crawl_time'])) {;
             $crawl_time = $this->clean($_REQUEST['crawl_time'], 'int');
         } else {
             $crawl_time = 0;
         }
-
         $schedule_filename = CRAWL_DIR."/schedules/".
             self::schedule_name."$crawl_time.txt";
-
         if(file_exists($schedule_filename)) {
             $data['MESSAGE'] = file_get_contents($schedule_filename);
             unlink($schedule_filename);
@@ -140,10 +128,8 @@ class FetchController extends Controller implements CrawlConstants
             $info[self::STATUS] = self::NO_DATA_STATE;
             $data['MESSAGE'] = base64_encode(serialize($info))."\n";
         }
-
         $this->displayView($view, $data);
     }
-
     /**
      * Checks to see whether there are more pages to extract from the current
      * archive, and if so returns the next batch to the requesting fetcher. The
@@ -157,13 +143,11 @@ class FetchController extends Controller implements CrawlConstants
     {
         $view = "fetch";
         $request_start = time();
-
         if(isset($_REQUEST['crawl_time'])) {;
             $crawl_time = $this->clean($_REQUEST['crawl_time'], 'int');
         } else {
             $crawl_time = 0;
         }
-
         $messages_filename = CRAWL_DIR.'/schedules/name_server_messages.txt';
         $lock_filename = WORK_DIRECTORY."/schedules/name_server_lock.txt";
         if($crawl_time > 0 && file_exists($messages_filename)) {
@@ -186,7 +170,6 @@ class FetchController extends Controller implements CrawlConstants
             $fetch_pages = false;
             $info = array();
         }
-
         $pages = array();
         $got_lock = true;
         if(file_exists($lock_filename)) {
@@ -254,10 +237,8 @@ class FetchController extends Controller implements CrawlConstants
         $info[self::DATA] = $pages_string;
         $info_string = serialize($info);
         $data['MESSAGE'] = $info_string;
-
         $this->displayView($view, $data);
     }
-
     /**
      * Checks if the queue server crawl needs to be restarted
      * @param string $crawl_type if it does use restart the crawl as a crawl
@@ -304,7 +285,6 @@ class FetchController extends Controller implements CrawlConstants
             }
         }
     }
-
     /**
      * Processes Robot, To Crawl, and Index data sent from a fetcher
      * Acknowledge to the fetcher if this data was received okay.
@@ -355,7 +335,6 @@ class FetchController extends Controller implements CrawlConstants
                     " of data uploaded.";
             }
         }
-
         $info =array();
         if($logging != "") {
             $info[self::LOGGING] = $logging;
@@ -374,7 +353,6 @@ class FetchController extends Controller implements CrawlConstants
         }
         $info[self::MEMORY_USAGE] = memory_get_peak_usage();
         $info[self::POST_MAX_SIZE] = metricToInt(ini_get("post_max_size"));
-
         if(file_exists(CRAWL_DIR."/schedules/crawl_status.txt")) {
             $change = false;
             $crawl_status = unserialize(
@@ -388,7 +366,6 @@ class FetchController extends Controller implements CrawlConstants
                         $_REQUEST['fetcher_peak_memory'];
                     $change = true;
                 }
-
             }
             if(!isset($crawl_status['WEBAPP_PEAK_MEMORY']) ||
                 $info[self::MEMORY_USAGE] >
@@ -405,14 +382,11 @@ class FetchController extends Controller implements CrawlConstants
         } else {
             $info[self::CRAWL_TIME] = 0;
         }
-
         $info[self::MEMORY_USAGE] = memory_get_peak_usage();
         $data = array();
         $data['MESSAGE'] = serialize($info);
-
         $this->displayView($view, $data);
     }
-
     /**
      * After robot, schedule, and index data have been uploaded and reassembled
      * as one big data file/string, this function splits that string into
@@ -440,7 +414,6 @@ class FetchController extends Controller implements CrawlConstants
         $address = str_replace(":", "_", $address);
         $time = time();
         $day = floor($time/self::ONE_DAY);
-
         $byte_counts = array();
         if(isset($_REQUEST['byte_counts'])) {
             $byte_counts = unserialize(webdecode($_REQUEST['byte_counts']));
@@ -482,7 +455,6 @@ class FetchController extends Controller implements CrawlConstants
         }
         return $logging;
     }
-
     /**
      * Adds a file with contents $data and with name containing $address and
      * $time to a subfolder $day of a folder $dir
@@ -494,28 +466,23 @@ class FetchController extends Controller implements CrawlConstants
     function addScheduleToScheduleDirectory($schedule_name, &$data_string)
     {
         $dir = CRAWL_DIR."/schedules/".$schedule_name.$_REQUEST['crawl_time'];
-
         $address = str_replace(".", "-", $_SERVER['REMOTE_ADDR']);
         $address = str_replace(":", "_", $address);
         $time = time();
         $day = floor($time/self::ONE_DAY);
-
         if(!file_exists($dir)) {
             mkdir($dir);
             chmod($dir, 0777);
         }
-
         $dir .= "/$day";
         if(!file_exists($dir)) {
             mkdir($dir);
             chmod($dir, 0777);
         }
-
         $data_hash = crawlHash($data_string);
         file_put_contents($dir."/At".$time."From".$address.
             "WithHash$data_hash.txt", $data_string);
     }
-
     /**
      * Checks for the crawl time according either to crawl_status.txt or to
      * network_status.txt, and presents it to the requesting fetcher, along
@@ -527,13 +494,11 @@ class FetchController extends Controller implements CrawlConstants
         $info[self::STATUS] = self::CONTINUE_STATE;
         $view = "fetch";
         $cron_model = $this->model("cron");
-
         if(isset($_REQUEST['crawl_time'])) {;
             $prev_crawl_time = $this->clean($_REQUEST['crawl_time'], 'int');
         } else {
             $prev_crawl_time = 0;
         }
-
         $cron_time = $cron_model->getCronTime("fetcher_restart");
         $delta = time() - $cron_time;
         if($delta > self::CRON_INTERVAL) {
@@ -542,7 +507,6 @@ class FetchController extends Controller implements CrawlConstants
         } else if ($delta == 0) {
             $cron_model->updateCronTime("fetcher_restart");
         }
-
         $local_filename = CRAWL_DIR."/schedules/crawl_status.txt";
         $network_filename = CRAWL_DIR."/schedules/network_status.txt";
         if(file_exists($local_filename)) {
@@ -555,7 +519,6 @@ class FetchController extends Controller implements CrawlConstants
             $crawl_time = 0;
         }
         $info[self::CRAWL_TIME] = $crawl_time;
-
         $status_filename = CRAWL_DIR."/schedules/name_server_messages.txt";
         if($crawl_time != 0 && file_exists($status_filename)) {
             $status = unserialize(file_get_contents($status_filename));
@@ -604,7 +567,6 @@ class FetchController extends Controller implements CrawlConstants
                 }
             }
         }
-
         $info[self::QUEUE_SERVERS] =
             $this->model("machine")->getQueueServerUrls();
         $info[self::SAVED_CRAWL_TIMES] = $this->getCrawlTimes();
@@ -614,10 +576,8 @@ class FetchController extends Controller implements CrawlConstants
         }
         $data = array();
         $data['MESSAGE'] = serialize($info);
-
         $this->displayView($view, $data);
     }
-
     /**
      *  Used to do periodic maintenance tasks for the Name Server.
      *  For now, just checks if any fetchers which the user turned on
@@ -627,7 +587,6 @@ class FetchController extends Controller implements CrawlConstants
     {
         $this->model("machine")->restartCrashedFetchers();
     }
-
     /**
      * Gets a list of all the timestamps of previously stored crawls
      *

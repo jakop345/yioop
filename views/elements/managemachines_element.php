@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * Used to draw the admin screen on which admin users can add/delete
  * and manage machines which might act as fetchers or queue_servers.
@@ -43,10 +41,8 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @package seek_quarry
  * @subpackage element
  */
-
 class ManagemachinesElement extends Element
 {
-
     /**
      * Draws the ManageMachines element to the output buffer
      *
@@ -63,14 +59,12 @@ class ManagemachinesElement extends Element
             e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" name="a" value="manageMachines" />
         <input type="hidden" name="arg" value="addmachine" />
-
         <table class="name-table">
         <tr><th><label for="machine-name"><?php
             e(tl('managemachines_element_machine_name'))?></label></th>
             <td><input type="text" id="machine-name" name="name"
                 maxlength="80" class="wide-field" /></td>
         </tr>
-
         <tr><th><label for="machine-url"><?php
             e(tl('managemachines_element_machineurl'))?></label></th>
             <td><input type="text" id="machine-url" name="url"
@@ -128,10 +122,10 @@ class ManagemachinesElement extends Element
         function doUpdate()
         {
              var sec = 1000;
-             var minute = 60*sec;
+             var minute = 60 * sec;
              machineStatusUpdate();
              updateId = setInterval("machineStatusUpdate()", 30*sec);
-             setTimeout("clearUpdate()", 20*minute + sec);
+             setTimeout("clearUpdate()", 20 * minute + sec);
         }
         function toggleReplica(is_replica)
         {
@@ -149,7 +143,6 @@ class ManagemachinesElement extends Element
             setDisplay('m3', m3_value);
         }
         </script>
-
         </div>
     <?php
     }

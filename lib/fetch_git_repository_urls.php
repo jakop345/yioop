@@ -30,12 +30,9 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /** Load in global configuration settings */
 require_once BASE_DIR.'/configs/config.php';
-
 /**
  * Library of functions used to fetch Git internal urls
  *
@@ -49,183 +46,149 @@ class FetchGitRepositoryUrls implements CrawlConstants
      * An indicator to tell no actions to be taken
      */
     const INDICATOR_NONE = 'none';
-
     /**
      * An indicator to indicate git repository
      */
     const INDICATOR_GIT = 'git';
-
     /**
      * An indicator to tell more git urls need to be fetched
      */
     const GIT_URL_CONTINUE = '@@@@';
-
     /**
      * An indicator to tell starting position of Git url to be used
      */
     const GIT_BASE_URL_START = 0;
-
     /**
      * An indicator to tell ending position of Git url to be used
      */
     const GIT_BASE_URL_END = '###';
-
     /**
      * A fixed component to be used with Git base url to form Git first url
      */
     const GIT_URL_EXTENSION = 'info/refs?service=git-upload-pack';
-
     /**
      * A fixed component to be used with Git urls to get next Git urls
      */
     const GIT_URL_OBJECT = 'objects/';
-
     /**
      * A fixed indicator used to get last letter of git base url
      */
     const GIT_BASE_URL_END_POSITION = -1;
-
     /**
      * A fixed indicator used to get last letter of git base url
      */
     const GIT_BASE_END_LETTER = 1;
-
     /**
      * A fixed position used to indicate starting point to fetch next Git url
      * from the master file
      */
     const GIT_NEXT_URL_START = 0;
-
     /**
      * A fixed position used to indicate ending position to fetch next Git url
      * from the master file
      */
     const GIT_NEXT_URL_END = 40;
-
     /**
      * A fixed indicator used to make desired Git folder structure from SHA hash
      */
     const GIT_URL_SPLIT = '/';
-
     /**
      * A fixed indicator used to mark starting position of SHA hash of Git
      * master tree
      */
     const GIT_MASTER_TREE_HASH_START = 16;
-
     /**
      * A fixed indicator used to mark ending position of SHA hash of Git
      * master tree
      */
     const GIT_MASTER_TREE_HASH_END = 41;
-
     /**
      * A fixed indicator used to mark starting position of SHA hash used to
      * indicate Git object folder
      */
     const GIT_FOLDER_NAME_START = 0;
-
     /**
      * A fixed indicator used to mark ending position of SHA hash used to
      * indicate Git object folder
      */
     const GIT_FOLDER_NAME_END = 2;
-
     /**
      * A fixed indicator used to mark starting position of SHA hash used to
      * indicate Git object file
      */
     const GIT_FILE_NAME_START = 2;
-
     /**
      * A fixed indicator used to mark ending position of SHA hash used to
      * indicate Git object file
      */
     const GIT_FILE_NAME_END = 38;
-
     /**
      * A fixed indicator used to indicate Git blob object
      */
      const GIT_BLOB_OBJECT = "blob";
-
     /**
      * A fixed indicator used to indicate Git tree object
      */
      const GIT_TREE_OBJECT = "tree";
-
     /**
      * A cURL time out parameter
      */
      const CURL_TIMEOUT = 5;
-
     /**
      * A cURL transfer parameter
      */
      const CURL_TRANSFER = 1;
-
     /**
      * Git blob access code starting position
      */
      const BLOB_ACCESS_CODE_START = 0;
-
     /**
      * Git blob access code ending position
      */
      const BLOB_ACCESS_CODE_END = 6;
-
     /**
      * Git tree access code starting position
      */
      const TREE_ACCESS_CODE_START = 0;
-
     /**
      * Git tree access code ending position
      */
      const TREE_ACCESS_CODE_END = 5;
-
     /**
      * Git SHA hash binary starting position
      */
      const SHA_HASH_BINARY_START = 0;
-
     /**
      * Git SHA hash binary ending position
      */
      const SHA_HASH_BINARY_END = 20;
-
     /**
      * A indicator for starting of Git file or folder name
      */
      const GIT_NAME_START = 0;
-
     /**
      * A indicator to represent next position after the access code in Git
      * blob object
      */
      const GIT_BLOB_NEXT = 7;
-
     /**
      * A indicator to represent next position after the access code in Git
      * tree object
      */
      const GIT_TREE_NEXT = 6;
-
     /**
      * A indicator to represent next position after the access code in Git
      * tree object
      */
      const HEX_NULL_CHARACTER = "\x00";
-
     /**
      * A indicator to represent that a git file is a blob file
      */
     const GIT_BLOB_INDICATOR = '100';
-
     /**
      * A indicator to represent that a git file is a tree file
      */
     const GIT_TREE_INDICATOR = '400';
-
     /**
      * A list of meta words that might be extracted from a query
      * @var array
@@ -234,13 +197,11 @@ class FetchGitRepositoryUrls implements CrawlConstants
         'cvs' => 'cvs', 'vss' => 'vss', 'mercurial' => 'mercurial',
         'monotone' => 'monotone', 'bazaar' => 'bazaar', 'darcs' => 'darcs',
         'arch' => 'arch');
-
     /**
      * An array used to store all the Git internal urls
      * @var array
      */
     static $all_git_urls;
-
     /**
      * Checks repository type based on extension
      *
@@ -258,7 +219,6 @@ class FetchGitRepositoryUrls implements CrawlConstants
         }
         return $repository_type;
     }
-
     /**
      * Checks repository type based on extension
      *
@@ -341,7 +301,6 @@ class FetchGitRepositoryUrls implements CrawlConstants
         $git_internal_urls['all'] = $all_git_urls;
         return $git_internal_urls;
     }
-
     /**
      * Get the Git internal urls from the parent Git url
      *
@@ -376,7 +335,6 @@ class FetchGitRepositoryUrls implements CrawlConstants
             $git_base_url);
         return $git_next_urls;
     }
-
     /**
      * Get the Git second url which points to Git master tree structure
      *
@@ -398,7 +356,6 @@ class FetchGitRepositoryUrls implements CrawlConstants
             $git_url_connector;
         return $git_next_url;
     }
-
     /**
      * Get the Git third url which contains the information about the
      *     organization of entire git repository
@@ -420,7 +377,6 @@ class FetchGitRepositoryUrls implements CrawlConstants
         $git_next_url = $git_base_url . self::GIT_URL_OBJECT . $git_object_path;
         return $git_next_url;
     }
-
     /**
      * Get the Git content from url which will be used to get the
      *     next git url
@@ -444,7 +400,6 @@ class FetchGitRepositoryUrls implements CrawlConstants
         }
         return $git_object_content;
     }
-
     /**
      * Get the Git blob and tree objects
      *
@@ -502,7 +457,6 @@ class FetchGitRepositoryUrls implements CrawlConstants
         }
         return $blob_url;
     }
-
     /**
      * checks the position of access code for null values
      *
@@ -526,7 +480,6 @@ class FetchGitRepositoryUrls implements CrawlConstants
         $git_object_positions['tree'] = $git_tree_position;
         return $git_object_positions;
     }
-
     /**
      * Get the details of the blob file i.e blob file name, sha hash and content
      *
@@ -569,7 +522,6 @@ class FetchGitRepositoryUrls implements CrawlConstants
         $git_blob_content['indicator'] = self::GIT_BLOB_OBJECT;
         return $git_blob_content;
     }
-
     /**
      * Get the details of the tree file i.e folder name, sha hash and
      * blob url inside the tree
@@ -612,7 +564,6 @@ class FetchGitRepositoryUrls implements CrawlConstants
         $git_tree_content['indicator'] = $blob_url;
         return $git_tree_content;
     }
-
     /**
      * Checks the nested structure inside git tree object
      *
@@ -628,7 +579,6 @@ class FetchGitRepositoryUrls implements CrawlConstants
         $blob_url = self::getObjects($git_uncompressed_content, $git_base_url);
         return $blob_url;
     }
-
     /**
      * Makes the git clone internal url for blob objects
      *
@@ -648,7 +598,6 @@ class FetchGitRepositoryUrls implements CrawlConstants
             $git_object_path;
         return $git_object_url;
     }
-
     /**
      * Makes the cURL call to get the contents
      *

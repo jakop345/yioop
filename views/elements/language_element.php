@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * Element used to display available languages in the settings view
  *
@@ -41,7 +39,6 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @package seek_quarry
  * @subpackage element
  */
-
 class LanguageElement extends Element
 {
     /**
@@ -53,7 +50,7 @@ class LanguageElement extends Element
      */
     function render($data)
     {
-    ?>
+        ?>
         <select id="locale" name="lang" dir="ltr" size="4">
         <?php
         foreach ($data['LANGUAGES'] as $locale_tag => $locale_name) {
@@ -66,7 +63,7 @@ class LanguageElement extends Element
         }
         ?>
         </select>
-    <?php
+        <?php
     }
 
 }

@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * Marker interface used to say that a class has supports a join()
  * callback method. IndexArchiveBundle has methods which take objects
@@ -47,7 +45,6 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @subpackage library
  * @see WebQueueBundle
  */
-
 interface Join
 {
     /**

@@ -30,15 +30,11 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /** Load search engine-wide configuration file */
 require_once BASE_DIR.'/configs/config.php';
-
 /** Load the priority queue class library we'll be testing */
 require_once BASE_DIR."/lib/priority_queue.php";
-
 /**
  * Used to test the PriorityQueue class that is used to figure out which URL
  * to crawl next
@@ -62,7 +58,6 @@ class PriorityQueueTest extends UnitTest
             new PriorityQueue(WORK_DIRECTORY."/queue2.txt",
                 100, 4, CrawlConstants::MIN);
     }
-
     /**
      * Since our queues are persistent structures, we delete files that might be
      * associated with them when we tear down
@@ -72,7 +67,6 @@ class PriorityQueueTest extends UnitTest
         @unlink(WORK_DIRECTORY."/queue1.txt");
         @unlink(WORK_DIRECTORY."/queue2.txt");
     }
-
     /**
      * Insert five items into a priority queue. Checks that the resulting heap
      * array matches the expected array calculated by hand. Weights of some
@@ -130,7 +124,6 @@ class PriorityQueueTest extends UnitTest
             $this->test_objects['FILE1']->getContents(), $expected_array,
             "Queue after deletes has expected content");
     }
-
     /**
      * Inserts five elements inserted into a minimum priority queue. The
      * resulting heap array is compared to expected. Then repeated polling is
@@ -143,33 +136,24 @@ class PriorityQueueTest extends UnitTest
         $this->test_objects['FILE2']->insert("caaa", 4.5);
         $this->test_objects['FILE2']->insert("daaa", 5.0);
         $this->test_objects['FILE2']->insert("eaaa", 7.5);
-
         $expected_array = array(array("caaa", 4.5), array("daaa", 5.0),
             array("aaaa", 5.5), array("baaa", 6.5), array("eaaa", 7.5));
         $this->assertEqual(
             $this->test_objects['FILE2']->getContents(), $expected_array,
             "Queue has expected order after initial inserts");
-
         $elt = $this->test_objects['FILE2']->poll();
         $this->assertEqual($elt[0], "caaa", "Remove caaa from queue okay");
-
         $elt = $this->test_objects['FILE2']->poll();
         $this->assertEqual($elt[0], "daaa", "Remove daaa from queue okay");
-
         $elt = $this->test_objects['FILE2']->poll();
         $this->assertEqual($elt[0], "aaaa", "Remove aaaa from queue okay");
-
         $elt = $this->test_objects['FILE2']->poll();
         $this->assertEqual($elt[0], "baaa", "Remove baaa from queue okay");
-
         $elt = $this->test_objects['FILE2']->poll();
         $this->assertEqual($elt[0], "eaaa", "Remove eaaa from queue okay");
-
         $this->assertEqual(
             $this->test_objects['FILE2']->getContents(),
             array(), "Queue should be empty after deletes");
-
     }
-
 }
 ?>

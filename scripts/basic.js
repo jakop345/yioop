@@ -29,7 +29,6 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 /*
  *  Display a two second message in the message div at the top of the web page
  *
@@ -41,7 +40,6 @@ function doMessage(msg)
     message_tag.innerHTML = msg;
     msg_timer = setInterval("undoMessage()", 2000);
 }
-
 /*
  *  Undisplays the message display in the message div and clears associated
  *  message display timer
@@ -52,7 +50,6 @@ function undoMessage()
     message_tag.innerHTML = "";
     clearInterval(msg_timer);
 }
-
 /*
  *  Function to set up a request object even in  older IE's
  *
@@ -75,7 +72,6 @@ function makeRequest()
     }
     return request;
 }
-
 /*
  *  Make an AJAX request for a url and put the results as inner HTML of a tag
  *  If the response is the empty string then the tag is not replaced
@@ -100,7 +96,6 @@ function getPage(tag, url)
         request.send();
     }
 }
-
 /*
  *  Shorthand for document.createElement()
  *
@@ -110,7 +105,6 @@ function ce(input)
 {
     return document.createElement(input);
 }
-
 /*
  *  Shorthand for document.getElementById()
  *
@@ -120,7 +114,6 @@ function elt(id)
 {
     return document.getElementById(id);
 }
-
 /*
  *  Shorthand for document.getElementsByTagName()
  *
@@ -130,7 +123,6 @@ function tag(name)
 {
     return document.getElementsByTagName(name);
 }
-
 /*
  *  Sets whether an elt is styled as display:none or block
  *
@@ -149,7 +141,6 @@ function setDisplay(id, value)
     }
     obj.style.display = value;
 }
-
 /*
  * Toggles an element between display:none and display block
  *  @param String id  the id of the DOM element one wants

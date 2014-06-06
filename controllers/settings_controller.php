@@ -30,14 +30,11 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  *  Load base controller class, if needed
  */
 require_once BASE_DIR."/controllers/controller.php";
-
 /**
  * Controller used to handle search requests to SeekQuarry
  * search site. Used to both get and display
@@ -61,22 +58,18 @@ class SettingsController extends Controller
         $view = "settings";
         $changed_settings_flag = false;
         $crawl_model = $this->model("crawl");
-
         if(isset($_SESSION['USER_ID'])) {
             $user = $_SESSION['USER_ID'];
         } else {
             $user = $_SERVER['REMOTE_ADDR'];
         }
-
         $data[CSRF_TOKEN] = $this->generateCSRFToken($user);
         $token_okay = $this->checkCSRFToken(CSRF_TOKEN, $user);
-
         $languages = $this->model("locale")->getLocaleList();
         foreach($languages as $language) {
             $data['LANGUAGES'][$language['LOCALE_TAG']] =
                 $language['LOCALE_NAME'];
         }
-
         if($token_okay && isset($_REQUEST['lang']) &&
             in_array($_REQUEST['lang'], array_keys($data['LANGUAGES']))) {
             $_SESSION['l'] = $_REQUEST['lang'];
@@ -84,7 +77,6 @@ class SettingsController extends Controller
             $changed_settings_flag = true;
         }
         $data['LOCALE_TAG'] = getLocaleTag();
-
         $n = NUM_RESULTS_PER_PAGE;
         $data['PER_PAGE'] =
             array($n => $n, 2*$n => 2*$n, 5*$n=> 5*$n, 10*$n=>10*$n);
@@ -98,7 +90,6 @@ class SettingsController extends Controller
         } else {
             $data['PER_PAGE_SELECTED'] = NUM_RESULTS_PER_PAGE;
         }
-
         if ($token_okay &&  isset($_REQUEST['perpage'])) {
             $_SESSION['OPEN_IN_TABS'] = (isset($_REQUEST['open_in_tabs'])) ?
                 true : false;
@@ -108,9 +99,7 @@ class SettingsController extends Controller
         } else {
             $data['OPEN_IN_TABS'] = false;
         }
-
         $machine_urls = $this->model("machine")->getQueueServerUrls();
-
         $crawls = $crawl_model->getCrawlList(false, true, $machine_urls,
             true);
         $data['CRAWLS'] = array();
@@ -142,7 +131,6 @@ class SettingsController extends Controller
         }
         $this->displayView($view, $data);
     }
-
     /**
      *  Changes settings for a logged in user, this might involve storing
      *  data into the active session.
@@ -174,7 +162,5 @@ class SettingsController extends Controller
         }
         return $changed_settings_flag;
     }
-
 }
-
 ?>

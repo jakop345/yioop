@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * This element is used to display the list of available activities
  * in the AdminView
@@ -42,10 +40,8 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @package seek_quarry
  * @subpackage element
  */
-
 class ActivityElement extends Element
 {
-
     /**
      * Displays a list of admin activities
      *
@@ -54,7 +50,6 @@ class ActivityElement extends Element
     function render($data)
     {
     ?>
-
         <?php
         if(isset($data['ACTIVITIES'])) {
             if(MOBILE) {
@@ -85,7 +80,6 @@ class ActivityElement extends Element
                 function activityChange() {
                     document.location = activity_select.value;
                 }
-
                 activity_select.onchange = activityChange;
                 </script>
                 </div>

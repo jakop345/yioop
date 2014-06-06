@@ -30,25 +30,20 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
- * View repsonsible for drawing the form where a user can suggest aURL
+ * View repsonsible for drawing the form where a user can suggest a URL
  *
  * @author Chris Pollett
  * @package seek_quarry
  * @subpackage view
  */
-
 class SuggestView extends View
 {
-
     /** This view is drawn on a web layout
      *  @var string
      */
     var $layout = "web";
-
     /**
      *  Draws the form where a user can suggest a url
      *
@@ -90,8 +85,8 @@ class SuggestView extends View
             <input type="hidden" name="c" value="register" />
             <input type="hidden" name="a" value="suggestUrl" />
             <input type="hidden" name="arg" value="save" />
-            <input type="hidden" name="build_time" value=" <?php 
-                e($data['build_time']); ?>" /> 
+            <input type="hidden" name="build_time" value="<?php
+                e($data['build_time']); ?>" />
                 <div class="register">
                     <table>
                         <tr>
@@ -109,51 +104,52 @@ class SuggestView extends View
                         </tr>
                         <tr>
                         <?php
-                        if(!isset($_SESSION["random_string"]) && 
-                            !isset($_SESSION["graphical_captcha_string"])) {
-                                $question_sets = 
-                                    array(tl('register_view_human_check') => 
-                                    $data['CAPTCHA']);
-                                $i = 0;
-                                foreach($question_sets as $name => $set) {
-                                    $first = true;
-                                    $num = count($set);
-                                        foreach($set as $question) {
-                                            if($first) { ?>
-                                                <tr><th class="table-label"
-                                                    rowspan='<?php e($num); 
-                                                        ?>'>
-                                                    <?php e($name); ?>
-                                                </th><td 
-                                                class="table-input border-top">
-                                                <?php
-                                            } else { ?>
-                                                <tr><td class="table-input">
-                                                    <?php
-                                            }
-                                            $this->helper("options")->render(
-                                            "question-$i", "question_$i",
-                                            $question, $data["question_$i"]);
-                                
-                                            $first = false;
-                                            e(in_array("question_$i", $missing)
-                                                ?'<span class="red">*
-                                                    </span>':'');
-                                            e("</td></tr>");
-                                            $i++;
-                                        }
+                        if(!isset($_SESSION["random_string"]) &&
+                            !isset($_SESSION["captcha_text"])) {
+                            $question_sets =
+                                array(tl('register_view_human_check') =>
+                                $data['CAPTCHA']);
+                            $i = 0;
+                            foreach($question_sets as $name => $set) {
+                                $first = true;
+                                $num = count($set);
+                                foreach($set as $question) {
+                                    if($first) {
+                                        ?>
+                                        <tr><th class="table-label"
+                                            rowspan='<?php e($num); ?>'><?php
+                                            e($name); ?>
+                                        </th><td class="table-input border-top">
+                                        <?php
+                                    } else {
+                                        ?>
+                                        <tr><td class="table-input">
+                                        <?php
+                                    }
+                                    $this->helper("options")->render(
+                                        "question-$i", "question_$i",
+                                    $question, $data["question_$i"]);
+                                    $first = false;
+                                    e(in_array("question_$i", $missing)
+                                        ?'<span class="red">*</span>':'');
+                                    e("</td></tr>");
+                                    $i++;
                                 }
+                            }
                         }
-                        if (isset($_SESSION["graphical_captcha_string"])) {
-                            $graphical_element_data = array();
-                            $graphical_element_data["captcha_string"] = 
-                                $_SESSION["graphical_captcha_string"];
-                            e('<tr><th class="table-label">'.
-                                tl('register_view_human_check').
-                                '</th><td>');
-                            $this->element("graphicalcaptcha")->render(
-                                $graphical_element_data);
-                            e("</td></tr>");
+                        if(isset($data['CAPTCHA_IMAGE'])) {
+                            ?>
+                            <tr><th class="table-label" rowspan='2'><label
+                                for="user-captcha-text"><?php
+                                e(tl('suggest_view_human_check'));
+                                ?></label></th><td><img class="captcha"
+                                src="<?php
+                                e($data['CAPTCHA_IMAGE']); ?>" alt="CAPTCHA">
+                                </td></tr><tr><td>
+                                <input type="text" maxlength="6"
+                                id="user-captcha-text" class="narrow-field"
+                                name="user_captcha_text"/></td></tr>
+                            <?php
                         }
                         ?>
                         <tr>

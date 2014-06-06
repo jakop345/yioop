@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /** Loads common constants for web crawling*/
 require_once BASE_DIR."/lib/crawl_constants.php";
 /**
@@ -68,7 +66,6 @@ class IndexManager implements CrawlConstants
      *  @var array
      */
     static $dictionary = array();
-
     /**
      *  Returns a reference to the managed copy of an IndexArchiveBundle object
      *  with a given timestamp or an IndexShard in the case where
@@ -103,7 +100,6 @@ class IndexManager implements CrawlConstants
         }
         return self::$indexes[$index_name];
     }
-
     /**
      *  Returns the version of the index, so that Yioop can determine
      *  how to do word lookup.The only major change to the format was
@@ -125,7 +121,6 @@ class IndexManager implements CrawlConstants
         }
         return 1;
     }
-
     /**
      *  Gets an array posting list positions for each shard in the
      *  bundle $index_name for the word id $hash
@@ -220,11 +215,9 @@ class IndexManager implements CrawlConstants
                $index->dictionary->getWordInfo($hash, true, $shift, $mask,
                $threshold);
        }
-
        return IndexManager::$dictionary[$index_name][$hash][$shift][$mask][
            $threshold];
     }
-
     /**
      *  Returns the number of document that a given term or phrase appears in
      *  in the given index

@@ -34,12 +34,10 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 /** Version number for upgrade function
  *  @var int
  */
 define('YIOOP_VERSION', 19);
-
 /** Calculate base directory of script
  *  @ignore
  */
@@ -49,7 +47,6 @@ $pathinfo = pathinfo($_SERVER['SCRIPT_NAME']);
 $http = isset($_SERVER['HTTPS']) ? "https://" : "http://";
 //used in register controller to create links back to server
 define("BASE_URL", $http.$_SERVER['SERVER_NAME'].$pathinfo["dirname"]."/");
-
 /**
  * Check for paths of the form index.php/something which yioop doesn't support
  */
@@ -66,7 +63,6 @@ if(strcmp($path_name, $s_name) == 0) {
 if(!isset($_SERVER["PATH_INFO"])) {
     $_SERVER["PATH_INFO"] = ".";
 }
-
 /**
  * Load the configuration file
  */
@@ -100,7 +96,6 @@ require_once BASE_DIR."/lib/upgrade_functions.php";
  * Load FileCache class in case used
  */
 require_once(BASE_DIR."/lib/file_cache.php");
-
 if(USE_MEMCACHE && class_exists("Memcache")) {
     $CACHE = new Memcache();
     foreach($MEMCACHES as $mc) {
@@ -114,15 +109,12 @@ if(USE_MEMCACHE && class_exists("Memcache")) {
 } else {
     define("USE_CACHE", false);
 }
-
 if(!function_exists('mb_internal_encoding')) {
     echo "PHP Zend Multibyte Support must be enabled for Yioop! to run.";
     exit();
 }
-
 mb_internal_encoding("UTF-8");
 mb_regex_encoding("UTF-8");
-
 if (function_exists('lcfirst') === false) {
     /**
      *  Lower cases the first letter in a string
@@ -136,7 +128,6 @@ if (function_exists('lcfirst') === false) {
         return (string)(strtolower(substr($str, 0, 1)).substr($str, 1));
     }
 }
-
 $available_controllers = array( "admin", "archive",  "cache", "classifier",
     "crawl", "fetch", "group", "machine", "resource", "search", "settings",
     "statistics", "static");
@@ -148,14 +139,12 @@ if(in_array(REGISTRATION_TYPE, array('no_activation', 'email_registration',
     'admin_activation'))) {
     $available_controllers[] = "register";
 }
-
 //the request variable c is used to determine the controller
 if(!isset($_REQUEST['c'])) {
     $controller_name = "search";
 } else {
     $controller_name = $_REQUEST['c'];
 }
-
 if(!checkAllowedController($controller_name))
 {
     if(WEB_ACCESS) {
@@ -164,12 +153,10 @@ if(!checkAllowedController($controller_name))
         $controller_name = "admin";
     }
 }
-
 // if no profile exists we force the page to be the configuration page
 if(!PROFILE || (defined("FIX_NAME_SERVER") && FIX_NAME_SERVER)) {
     $controller_name = "admin";
 }
-
 $locale_tag = guessLocale();
 
 if(upgradeDatabaseWorkDirectoryCheck()) {
@@ -178,14 +165,11 @@ if(upgradeDatabaseWorkDirectoryCheck()) {
 if(upgradeLocalesCheck()) {
     upgradeLocales();
 }
-
 $locale = NULL;
 setLocaleObject($locale_tag);
-
 if(file_exists(APP_DIR."/index.php")) {
     require_once(APP_DIR."/index.php");
 }
-
 /**
  * Loads controller responsible for calculating
  * the data needed to render the scene
@@ -198,9 +182,7 @@ if(file_exists(APP_DIR."/controllers/".$controller_name."_controller.php")) {
 }
 $controller_class = ucfirst($controller_name)."Controller";
 $controller = new $controller_class($INDEXING_PLUGINS);
-
 $controller->processRequest();
-
 /**
  * Verifies that the supplied controller string is a controller for the
  * SeekQuarry app

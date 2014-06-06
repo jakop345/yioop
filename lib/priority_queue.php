@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  *  Load in base class
  */
@@ -49,7 +47,6 @@ require_once "utility.php";
  * Constants shared amoung classes involved in storing web crawl data
  */
 require_once "crawl_constants.php";
-
 /**
  *
  * Code used to manage a memory efficient priority queue.
@@ -78,7 +75,6 @@ class PriorityQueue extends StringArray implements CrawlConstants
      * @var int
      */
     var $weight_size = 4; //size of a float
-
     /**
      * Number of items that are currently stored in the queue
      * @var int
@@ -89,14 +85,12 @@ class PriorityQueue extends StringArray implements CrawlConstants
      * @var string
      */
     var $min_or_max;
-
     /**
      * An object that implements the Notifier interface (for instance,
      * WebQueueArchive)
      * @var object
      */
     var $notifier; // who to call if move an item in queue
-
     /**
      * Makes a priority queue (implemented as an array heap) with the given
      * operating parameters
@@ -116,17 +110,12 @@ class PriorityQueue extends StringArray implements CrawlConstants
     {
         $this->num_values = $num_values;
         $this->value_size = $value_size;
-
         $this->min_or_max = $min_or_max;
         $this->count = 0;
-
         $this->notifier = $notifier;
-
         parent::__construct($fname, $num_values,
             $value_size + $this->weight_size, $save_frequency);
-
     }
-
     /**
      * Gets the data stored at the ith location in the priority queue
      *
@@ -142,7 +131,6 @@ class PriorityQueue extends StringArray implements CrawlConstants
         }
         return $this->getRow($i);
     }
-
     /**
      * Removes and returns the ith element out of the Priority queue.
      * Since this is a priority queue the first element in the queue
@@ -162,17 +150,13 @@ class PriorityQueue extends StringArray implements CrawlConstants
             return false;
         }
         $extreme = $this->peek($i);
-
         $last_entry = $this->getRow($this->count);
         $this->putRow($i, $last_entry);
         $this->count--;
-
         $this->percolateDown($i);
         $this->checkSave();
-
         return $extreme;
     }
-
     /**
      * Inserts a new item into the priority queue.
      *
@@ -188,14 +172,10 @@ class PriorityQueue extends StringArray implements CrawlConstants
         }
         $this->count++;
         $cur = $this->count;
-
         $this->putRow($cur, array($data, $weight));
-
         $loc = $this->percolateUp($cur);
-
         return $loc;
     }
-
     /**
      * Add $delta to the $ith element in the priority queue and then adjusts
      * the queue to store the heap property
@@ -211,9 +191,7 @@ class PriorityQueue extends StringArray implements CrawlConstants
         }
         list($data, $old_weight) = $tmp;
         $new_weight = $old_weight + $delta;
-
         $this->putRow($i, array($data, $new_weight));
-
         if($new_weight > $old_weight) {
             if($this->min_or_max == self::MIN) {
                 $this->percolateDown($i);
@@ -227,9 +205,7 @@ class PriorityQueue extends StringArray implements CrawlConstants
                 $this->percolateUp($i);
             }
         }
-
     }
-
     /**
      * Pretty prints the contents of the queue viewed as an array.
      *
@@ -241,7 +217,6 @@ class PriorityQueue extends StringArray implements CrawlConstants
             print "Entry: $i Value: ".$row[0]." Weight: ".$row[1]."\n";
         }
     }
-
     /**
      * Return the contents of the priority queue as an array of
      * value weight pairs.
@@ -254,10 +229,8 @@ class PriorityQueue extends StringArray implements CrawlConstants
         for($i = 1; $i <= $this->count; $i++) {
             $rows[] = $this->peek($i);
         }
-
         return $rows;
     }
-
     /**
      * Scaless the weights of elements in the queue so that the sum fo the new
      * weights is $new_total
@@ -277,7 +250,6 @@ class PriorityQueue extends StringArray implements CrawlConstants
             crawlLog(
                 "Total queue weight was zero!! Doing uniform renormalization!");
         }
-
         for($i = 1; $i <= $count; $i++) {
             $row = $this->getRow($i);
             if($total_weight > 0) {
@@ -288,7 +260,6 @@ class PriorityQueue extends StringArray implements CrawlConstants
             $this->putRow($i, $row);
         }
     }
-
     /**
      * If the $ith element in the PriorityQueue violates the heap
      * property with its parent node (children should be of lower
@@ -301,15 +272,12 @@ class PriorityQueue extends StringArray implements CrawlConstants
     function percolateUp($i)
     {
         if($i <= 1) return $i;
-
         $start_row = $this->getRow($i);
         $parent = $i;
-
         while ($parent > 1) {
             $child = $parent;
             $parent = floor($parent/2);
             $row = $this->getRow($parent);
-
             if($this->compare($row[1], $start_row[1]) < 0) {
                 $this->putRow($child, $row);
             } else {
@@ -317,12 +285,9 @@ class PriorityQueue extends StringArray implements CrawlConstants
                 return $child;
             }
         }
-
         $this->putRow(1, $start_row);
         return 1;
-
     }
-
     /**
      * If the ith element in the PriorityQueue violates the heap
      * property with some child node (children should be of lower
@@ -334,29 +299,20 @@ class PriorityQueue extends StringArray implements CrawlConstants
     function percolateDown($i)
     {
         $start_row = $this->getRow($i);
-
         $count = $this->count;
-
         $parent = $i;
         $child = 2*$parent;
-
         while ($child <= $count) {
-
             $left_child_row = $this->getRow($child);
-
             if($child < $count) { // this 'if' checks if there is a right child
                 $right_child_row = $this->getRow($child + 1);
-
                 if($this->compare($left_child_row[1], $right_child_row[1]) < 0){
                     $child++;
                 }
             }
-
             $child_row = $this->getRow($child);
-
             if($this->compare($start_row[1], $child_row[1]) < 0) {
                 $this->putRow($parent, $child_row);
-
             } else {
                 $this->putRow($parent, $start_row);
                 return;
@@ -364,10 +320,8 @@ class PriorityQueue extends StringArray implements CrawlConstants
             $parent = $child;
             $child = 2 * $parent;
         }
-
         $this->putRow($parent, $start_row);
     }
-
     /**
      * Computes the difference of the two values $value1 and $value2
      *
@@ -386,7 +340,6 @@ class PriorityQueue extends StringArray implements CrawlConstants
          return $value1 - $value2;
       }
     }
-
     /**
      * Gets the ith element of the PriorityQueue viewed as an array
      *
@@ -398,19 +351,13 @@ class PriorityQueue extends StringArray implements CrawlConstants
     {
         $value_size = $this->value_size;
         $weight_size = $this->weight_size;
-
         $row = $this->get($i);
-
         $value = substr($row, 0, $value_size);
-
         $pre_weight = substr($row, $value_size, $weight_size);
         $weight_array = unpack("f", $pre_weight);
         $weight = $weight_array[1];
-
         return array($value, $weight);
-
     }
-
     /**
      * Add data to the $i row of the priority queue viewed as an array
      * Calls the notifier associated with this queue about the change
@@ -423,14 +370,11 @@ class PriorityQueue extends StringArray implements CrawlConstants
     function putRow($i, $row)
     {
         $raw_data = $row[0].pack("f", $row[1]);
-
         $this->put($i, $raw_data);
-
         if($this->notifier != NULL) {
             $this->notifier->notify($i, $row);
         }
     }
-
     /**
      * Computes and returns the weight of all items in prority queue
      *
@@ -444,7 +388,6 @@ class PriorityQueue extends StringArray implements CrawlConstants
             $row = $this->getRow($i);
             $total_weight += $row[1];
         }
-
         return $total_weight;
     }
 

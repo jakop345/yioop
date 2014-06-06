@@ -30,25 +30,23 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  *  Element responsible for displaying the user account features
  *  that someone can modify for their own SeekQuarry/Yioop account.
- *  For now, you can only change your password
  *
  * @author Chris Pollett
  * @package seek_quarry
  * @subpackage element
  */
-
 class ManageaccountElement extends Element
 {
     /**
-     *  Draws a change password form.
+     *  Draws a view with a summary of a user's account together with
+     *  a form for updating user info such as password as well as with
+     *  useful links for groups, etc
      *
-     *  @param array $data   anti-CSRF token
+     *  @param array $data anti-CSRF token
      */
     function render($data)
     {
@@ -66,7 +64,7 @@ class ManageaccountElement extends Element
             (isset($data['EDIT_PASSWORD'])) ? "&amp;edit_pass=false":
             "&amp;edit_pass=true");
         $disabled = (isset($data['EDIT_USER'])) ? "" : "disabled='disabled'";
-    ?>
+        ?>
         <div class="current-activity">
             <h2><?php e(tl('manageaccount_element_welcome',
                 $data['USERNAME'])); ?></h2>

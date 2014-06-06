@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * Loads the base class
  */
@@ -41,7 +39,6 @@ require_once "string_array.php";
  * Needed for crawlHash
  */
 require_once "utility.php";
-
 /**
  *
  * Code used to manage a memory efficient hash table
@@ -54,7 +51,6 @@ require_once "utility.php";
  */
 class HashTable extends StringArray
 {
-
     /**
      * The size in bytes for keys stored in the hash table
      *
@@ -85,7 +81,6 @@ class HashTable extends StringArray
      * @var int
      */
     var $count;
-
     /**
      * Flag for hash table lookup methods
      */
@@ -98,12 +93,10 @@ class HashTable extends StringArray
      * Flag for hash table lookup methods
      */
     const RETURN_VALUE = -1;
-
     /**
      * Flag for hash table lookup methods
      */
     const RETURN_BOTH = -2;
-
     /**
      * Makes a persistently stored (i.e., on disk and ram)  hash table using the
      * supplied parameters
@@ -122,13 +115,10 @@ class HashTable extends StringArray
         $this->value_size = $value_size;
         $this->null = pack("x". $this->key_size);
         $this->deleted = pack("H2x".($this->key_size - 1), "FF");
-
         $this->count = 0;
-
         parent::__construct($fname, $num_values,
             $key_size + $value_size, $save_frequency);
     }
-
     /**
      * Inserts the provided $key - $value pair into the hash table
      *
@@ -147,7 +137,6 @@ class HashTable extends StringArray
         if($probe === false) {
             $probe = $this->lookup($key, self::ALWAYS_RETURN_PROBE);
         }
-
         if($probe === false) {
             /* this is a little slow
                the idea is we can't use deleted slots until we are sure
@@ -161,30 +150,21 @@ class HashTable extends StringArray
                 return false;
             }
         }
-
         //there was a free slot so write entry...
         $data = pack("x". ($this->key_size + $this->value_size));
-
         //first the key
-
         for ($i = 0; $i < $this->key_size; $i++) {
             $data[$i] = $key[$i];
         }
-
         //then the value
-
         for ($i = 0; $i < $this->value_size; $i++) {
             $data[$i + $this->key_size] = $value[$i];
         }
-
         $this->put($probe, $data);
         $this->count++;
         $this->checkSave();
-
         return true;
     }
-
-
     /**
      * Tries to lookup the key in the hash table either return the
      * location where it was found or the value associated with the key.
@@ -205,7 +185,6 @@ class HashTable extends StringArray
         return $this->lookupArray(
             $key, array($this->null), $return_probe_value);
     }
-
     /**
      * Tries to lookup the key in the hash table either return the
      * location where it was found or the value associated with the key.
@@ -232,16 +211,12 @@ class HashTable extends StringArray
         $return_probe_value = self::RETURN_VALUE)
     {
         $index = $this->hash($key);
-
         $num_values = $this->num_values;
         $probe_array = array(self::RETURN_PROBE_ON_KEY_FOUND,
             self::ALWAYS_RETURN_PROBE);
-
         for($j = 0; $j < $num_values; $j++)  {
             $probe = ($index + $j) % $num_values;
-
             list($index_key, $index_value) = $this->getEntry($probe);
-
             if(in_array($index_key, $null_array)) {
                 if($return_probe_value == self::ALWAYS_RETURN_PROBE) {
                     return $probe;
@@ -262,11 +237,8 @@ class HashTable extends StringArray
         if($return_probe_value == self::RETURN_BOTH) {
             $result = array($probe, $index_value);
         }
-
         return $result;
-
     }
-
     /**
      * Deletes the data associated with the provided key from the hash table
      *
@@ -279,22 +251,15 @@ class HashTable extends StringArray
     {
         $deleted = pack("H2x".($this->key_size + $this->value_size - 1), "FF");
             //deletes
-
         if($probe === false) {
             $probe = $this->lookup($key, self::RETURN_PROBE_ON_KEY_FOUND);
         }
-
         if($probe === false) { return false; }
-
         $this->put($probe, $deleted);
-
         $this->count--;
         $this->checkSave();
-
         return true;
-
     }
-
     /**
      * Get the ith entry of the array for the hash table (no hashing here)
      *
@@ -306,10 +271,8 @@ class HashTable extends StringArray
         $raw = $this->get($i);
         $key = substr($raw, 0, $this->key_size);
         $value = substr($raw, $this->key_size, $this->value_size);
-
         return array($key, $value);
     }
-
     /**
      * Hashes the provided key to an index in the array of the hash table
      *
@@ -323,7 +286,6 @@ class HashTable extends StringArray
         $index = floor($pre_index * $this->num_values/(2 << 23));
         return $index;
     }
-
     /**
      * Pretty prints the contents of the hash table viewed as an array.
      *

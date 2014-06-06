@@ -29,9 +29,8 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 /*
- *  To find the nonce for the input parameters given by the server.
+ *  Finds the nonce for the input parameters given by the server.
  *
  *  @param Object nonce_for_string a DOM element to put the value of a nonce
  *  @param Object random_string a DOM element to get the value of random_string
@@ -50,10 +49,9 @@ function findNonce(nonce_for_string, random_string, time, level)
         input.setAttribute('type', 'hidden');
     }
 }
-
 /*
- *  This function calculates the sha1 on the strings until
- *  numeber of a leading zeroes in the sha1 value matches with a level
+ *  This function calculates the sha1 of a string until
+ *  number of a leading zeroes in the sha1 value matchesa level
  *  parameter.
  *
  *  @param String random_string a string sent by the server

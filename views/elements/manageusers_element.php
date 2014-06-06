@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  *  Element responsible for drawing the activity screen for User manipulation
  *  in the AdminView.
@@ -41,10 +39,8 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @package seek_quarry
  * @subpackage element
  */
-
 class ManageusersElement extends Element
 {
-
     /**
      * Draws a screen in which an admin can add users, delete users,
      * and manipulate user roles.
@@ -172,7 +168,6 @@ class ManageusersElement extends Element
         </div>
         <?php
     }
-
     /**
      *  Draws the add user and edit user forms
      *
@@ -470,7 +465,6 @@ class ManageusersElement extends Element
         </script>
         <?php
     }
-
     /**
      *  Draws the search for users forms
      *
@@ -497,8 +491,8 @@ class ManageusersElement extends Element
             "status" => $data['STATUS_CODES']
         );
         $view->helper("searchform")->render($data, $controller, $activity,
-                $view, $title, $return_form_name, $fields, $dropdowns,
-                $postfix);
+            $view, $title, $return_form_name, $fields, $dropdowns,
+            $postfix);
     }
 }
 ?>

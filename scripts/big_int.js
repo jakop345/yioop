@@ -30,22 +30,18 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 /*
  * Constant for number of bits per element
  */
 var bits_per_element = 15;
-
 /*
  * Constant to mask the overflow value
  */
 var mask = 32767;
-
 /*
  * Constant to define radix
  */
 var radix = mask + 1;
-
 /*
  * To add BigInt and int number
  *
@@ -59,9 +55,8 @@ function addInteger(x, n)
     addBigIntToInt(new_x, n);
     return trimBigInt(new_x, 1);
 }
-
 /*
- * To return the BigInt with given number of leading zeroes
+ * Returns the BigInt with given number of leading zeroes
  *
  * @param BigInt x input number
  * @param int k expected number of leading zeroes
@@ -77,9 +72,8 @@ function trimBigInt(x, k)
     copyBigIntFromBigInt(y, x);
     return y;
 }
-
 /*
- * To expand BigInt with atleast n elements.
+ * Expands a BigInt to at least an n element array,
  * adding zeroes if needed
  *
  * @param BigInt x first operand
@@ -93,9 +87,8 @@ function expandBigInt(x, n)
     copyBigIntFromBigInt(result, x);
     return result;
 }
-
 /*
- * To convert normal int to BigInt.Pad the array with leading zeros so
+ * Converts a normal int to BigInt. It pads the array with leading zeros so
  * that it has at least minSize elements
  *
  * @param int t input number
@@ -112,9 +105,8 @@ function int2BigInt(t, bits, min_size)
     copyBigIntFromInt(buffer, t);
     return buffer;
 }
-
 /*
- * To copy one BigInt to another BigInt
+ * Copies one BigInt to another BigInt
  * x must be an array at least as big as y
  *
  * @param BigInt x input number
@@ -124,14 +116,13 @@ function int2BigInt(t, bits, min_size)
 function copyBigIntFromBigInt(x, y)
 {
     var len = (x.length < y.length) ? x.length : y.length;
-    for (var i = 0; i < len; i++) {
+    for(var i = 0; i < len; i++) {
         x[i] = y[i];
     }
     for (var i = len; i < x.length ; i++) {
         x[i] = 0;
     }
 }
-
 /*
  * Makes a Big Integer out of the supplied int
  *
@@ -141,14 +132,14 @@ function copyBigIntFromBigInt(x, y)
  */
 function copyBigIntFromInt(x, n)
 {
+    var c = n;
     for (var i = 0; i < x.length; i++) {
-        x[i] = n & mask;
-        n >>= bits_per_element;
+        x[i] = c & mask;
+        c >>= bits_per_element;
     }
 }
-
 /*
- * To perform x=x+n where x is a BigInt and n is an integer
+ * To perform x = x + n where x is a BigInt and n is an integer
  *
  * @param BigInt x input number
  * @param int n input number
@@ -171,10 +162,9 @@ function addBigIntToInt(x, n)
         if (!c) { return; }
     }
 }
-
 /*
- * To convert the string into the BigInt
- * Pad the array with leading zeros so that it has at least min_size elements.
+ * Converts a string into a BigInt. It pads the array with leading zeros 
+ * so that it has at least min_size elements.
  * The array will always have at least one leading zero, unless base=-1
  * If base is less than 36 we use the digit_str below to convert (say for hex
  * or decimal numbers). Otherwise, we assume the base is 256 and just use 
@@ -221,9 +211,8 @@ function str2BigInt(s, base, min_size)
     }
     return y;
 }
-
 /*
- * convert a BigInt into a string in a given base, from base 2 up to base 95
+ * Converts a BigInt into a string in a given base, from base 2 up to base 95
  *
  * @param BigInt x input number
  * @param int base base of the output number
@@ -251,22 +240,20 @@ function bigInt2Str(x, base)
      }
     return s;
 }
-
 /*
- * To make the copy of the BigInt
+ * Makes a copy of a BigInt
  *
  * @param BigInt x input number
  * @return BigInt buffer copy of the BigInt x
  */
 function dup(x)
 {
-    var buffer = new Array();
+    var buffer = new Array(x.length);
     copyBigIntFromBigInt(buffer, x);
     return buffer;
 }
-
 /*
- * To check whether BigInt is zero or not.
+ * Checks whether BigInt is zero or not.
  * Returns 0 if the BigInt is zero otherwise return 1
  * @param BigInt x input number
  * @return int
@@ -277,9 +264,8 @@ function isZero(x) {
     }
     return 1;
 }
-
 /*
- * To do x = floor(x/n) for BigInt x and integer n, and
+ * Computes x = floor(x/n) for BigInt x and integer n, and
  *
  * @param BigInt x numerator
  * @param int n denomenator
@@ -296,9 +282,8 @@ function divInt(x, n)
     }
     return r;
 }
-
 /*
- * To multiply BigInt with Int.
+ * Multiplies BigInt with Int.
  *
  * @param BigInt x input number
  * @param int n input number
@@ -321,7 +306,6 @@ function multInt(x, n)
         carry = (carry >> bits_per_element) - borrow;
     }
 }
-
 /*
  * Performs x * y on BigInt's.
  *
@@ -336,7 +320,6 @@ function mult(x, y)
     multEquals(ans, y);
     return trimBigInt(ans, 1);
 }
-
 /*
  * Performs x *= y (so the result is x)
  *
@@ -354,21 +337,20 @@ function multEquals(x, y)
     }
     copyBigIntFromBigInt(x, result);
 }
-
 /*
- * To perform linear combination
- * for BigInts x and y, and integers a, b and ys
+ * Computes x += y*b*d^{ys}, where d is our base.
+ * This correponds to one row of table needed to compute x*y
  *
  * @param BigInt x to store the result
  * @param BigInt y input number
- * @param integer b single digit of the second number
+ * @param integer b digit position in the second number
  * @param integer ys to get bit shift operator
  */
 function linearCombShift(x, y, b, ys)
 {
     var i, c, k;
     k = x.length < ys + y.length ? x.length : ys + y.length;
-    for(c = 0,i = ys; i < k; i++) {
+    for(c = 0, i = ys; i < k; i++) {
         c += x[i] + b * y[i - ys];
         x[i] = c & mask;
         c >>= bits_per_element;
@@ -379,9 +361,8 @@ function linearCombShift(x, y, b, ys)
         c >>= bits_per_element;
     }
 }
-
 /*
- * To perform divide operation
+ * Performs BigInt divide operation
  *
  * @param BigInt x Dividend
  * @param BigInt y Divisor
@@ -480,8 +461,6 @@ function leftShift(x, n)
     }
     x[i] = mask & (x[i] << n);
 }
-
-
 /*
  * Performs right shift operation on BigInt by given number of bits
  * @param BigInt x input number
@@ -505,7 +484,6 @@ function rightShift(x, n)
     }
     x[i] >>= n;
 }
-
 /*
  * To check whether BigInt is negative or not
  *
@@ -516,7 +494,6 @@ function negative(x)
     var result = (x[x.length - 1] >> (bits_per_element - 1)) & 1;
     return result;
 }
-
 /*
  * To perfrom shift operation on y and add it to the x
  *
@@ -539,9 +516,8 @@ function addShift(x, y, ys)
         sum >>= bits_per_element;
     }
 }
-
 /*
- * It right shifts the x by given number of bits and check
+ * Right shifts the x by given number of bits and check
  * whether it is greater than y
  *
  * @param BigInt x nonnegative input number
@@ -575,9 +551,8 @@ function greaterShift(x, y, shift)
  }
     return 0;
 }
-
 /*
- * To left shift y by given number of bits and performs
+ * Left shift y by given number of bits and performs
  * subtraction operation. The result is stored in x
  *
  * @param BigInt x BigInt number
@@ -599,7 +574,6 @@ function subShift(x, y, ys)
         sum >>= bits_per_element;
     }
 }
-
 /*
  * Computes x mod n
  *
@@ -614,7 +588,6 @@ function bigMod(x, n)
     var result = trim(ans, 1);
     return result;
 }
-
 /*
  * Computes x mod n with the result stored in x
  *
@@ -625,13 +598,18 @@ function modCalculation(x, n)
 {
     var dividend = new Array(0);
     var divisor = new Array(0);
-    dividend = dup(x);
-    divisor = dup(x);
+    if(dividend.length != x.length) {
+        dividend = dup(x);
+    } else {
+        copyBigIntFromBigInt(dividend, x);
+    }
+    if(divisor.length != x.length) {
+        divisor = dup(x);
+    }
     divide(dividend, n, divisor, x);
 }
-
 /*
- * To return x with exactly k leading zeroes
+ * Returns x with exactly k leading zeroes
  *
  * @param BigInt x BigInt number
  * @param integer k expected number of leading zeroes in x
@@ -645,7 +623,6 @@ function trim(x, k)
     copyBigIntFromBigInt(y, x);
     return y;
 }
-
 /*
  * Computes modulus x*y mod n using BigInt's
  *
@@ -660,7 +637,6 @@ function multMod(x, y, n)
     multModOperation(result, y, n);
     return trim(result, 1);
 }
-
 /*
  * Computes modulus x*y mod n using BigInt's stores the result in x potential
  * leaving  the output untrimmed (this is an auxiliary method for multMod)
@@ -675,16 +651,15 @@ function multMod(x, y, n)
     var input_number = new Array(2 * x.length);
     copyBigIntFromInt(input_number, 0);
     for (var i = 0; i < y.length; i++){
-        if (y[i]) {
+        if(y[i]) {
             linearCombShift(input_number, x, y[i], i);
         }
     }
     modCalculation(input_number, n);
     copyBigIntFromBigInt(x, input_number);
 }
-
 /*
- * To expand BigInt for the given number of elements.
+ * Expands BigInt to the given number of elements.
  * Leading zeros are added
  *
  * @param BigInt x BigInt number

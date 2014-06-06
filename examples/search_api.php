@@ -30,15 +30,12 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 /**
  * This file contains an example script to show the different
  * methods of the Yioop! search api
  */
-
 // this example should be only run from the command-line
 if(php_sapi_name() != 'cli') {echo "BAD REQUEST"; exit();}
-
 /** Calculate base directory of script @ignore
  *  If you have Yioop! in a separate folder from your web-site
  *  You should change BASE_DIR to the location of the Yioop! directory
@@ -46,18 +43,13 @@ if(php_sapi_name() != 'cli') {echo "BAD REQUEST"; exit();}
 define("BASE_DIR", substr(
     dirname(realpath($_SERVER['PHP_SELF'])), 0,
     -strlen("/examples")));
-
-
 /** Load in global configuration settings; you need this*/
 require_once BASE_DIR.'/configs/config.php';
-
-
 if(!PROFILE) {
     echo "Please configure the search engine instance by visiting" .
         "its web interface on localhost.\n";
     exit();
 }
-
 /*
  * We now move the search API test index over to the WORK_DIRECTORY
  * if it isn't already there. In a real-world set-up a user would have
@@ -72,7 +64,6 @@ if(!file_exists($archive) ||
    echo "\nSearch API test index doesn't exist, so can't run demo\n\n";
    exit();
 }
-
 if(class_exists("ZipArchive")) {
     $zip = new ZipArchive();
     $zipH = $zip->open($archive);
@@ -98,7 +89,6 @@ if (function_exists('lcfirst') === false) {
         return (string)(strtolower(substr($str, 0, 1)).substr($str, 1));
     }
 }
-
 /**
  * The next block of code till +++++ is needed only if you want
  * to support file or mem_caching of queries repsonses
@@ -121,7 +111,6 @@ if(USE_FILECACHE) {
     define("USE_CACHE", false);
 }
 /* +++++ */
-
 // from here till ###### is boiler-plate you would need to set up a query
 /**
     Loads common constants for web crawling --
@@ -129,10 +118,8 @@ if(USE_FILECACHE) {
     we get back.
 */
 require_once BASE_DIR."/lib/crawl_constants.php";
-
 /**Load search controller class needed to get search results*/
 require_once BASE_DIR."/controllers/search_controller.php";
-
 /*
  *  Set-up multi-byte string handling to use UTF-8
  */
@@ -143,15 +130,12 @@ mb_regex_encoding("UTF-8");
 require_once BASE_DIR."/lib/locale_functions.php";
 $locale = NULL;
 setLocaleObject("en-US");
-
 /**
  * If the index being used made use of any indexing plugins, we can
  * declare them here.
  */
 $indexing_plugins = array();
-
 $controller = new SearchController($indexing_plugins);
-
 // ######
 
 /*
@@ -197,17 +181,14 @@ $index_timestamp = "1317414322";;
 $data = $controller->cacheRequest($url, $ui_flags,
     $search_terms, $index_timestamp);
 echo $data;
-
 /*
   We now delete the example index to clean-up our test. In real-life
   you wouldn't want to delete your query index after making one query
 */
 unlinkRecursive(CRAWL_DIR."/cache/Archive1317414322");
 unlinkRecursive(CRAWL_DIR."/cache/IndexData1317414322");
-
 // demo over, bye-bye for now!
 exit();
-
 /**
  * Short function to pretty-print the data gotten back from a Yioop! query
  * @param array $data  what we got back from doing a query
@@ -234,7 +215,6 @@ function outputQueryData($data) {
         $data['LIMIT'] + $data['RESULTS_PER_PAGE'])."\n";
     echo "TOTAL ROWS: ".$data['TOTAL_ROWS']."\n";
 }
-
 /**
  * Recursively delete a directory
  *
@@ -245,7 +225,6 @@ function unlinkRecursive($dir, $deleteRootToo = true)
 {
     traverseDirectory($dir, "deleteFileOrDir", $deleteRootToo);
 }
-
 /**
  * Recursively traverse a directory structure and call a callback function
  *
@@ -253,13 +232,11 @@ function unlinkRecursive($dir, $deleteRootToo = true)
  * @param function $callback Function to call as traverse structure
  * @param boolean $rootToo do op on top-level directory as well
  */
-
 function traverseDirectory($dir, $callback, $rootToo = true)
 {
     if(!$dh = @opendir($dir)) {
         return;
     }
-
     while (false !== ($obj = readdir($dh))) {
         if($obj == '.' || $obj == '..') {
             continue;
@@ -269,13 +246,9 @@ function traverseDirectory($dir, $callback, $rootToo = true)
         }
         @$callback($dir . '/' . $obj);
     }
-
     closedir($dh);
-
     if ($rootToo) {
         @$callback($dir);
     }
-
 }
-
 ?>

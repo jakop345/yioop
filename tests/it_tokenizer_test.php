@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  *  Load the Italian Tokenizer via phrase_parser (5.4 hack)
  */
@@ -41,7 +39,6 @@ require_once BASE_DIR."/lib/phrase_parser.php";
  *  Load the run function
  */
 require_once BASE_DIR.'lib/unit_test.php';
-
 /**
  * My code for testing the Italian stemming algorithm. The inputs for the
  * algorithm are words in
@@ -53,18 +50,21 @@ require_once BASE_DIR.'lib/unit_test.php';
  * @package seek_quarry
  * @subpackage test
  */
-
 class ItTokenizerTest extends UnitTest
 {
+    /**
+     * Each test we set up a new Italian Tokenizer object
+     */
     function setUp()
     {
         $this->test_objects['FILE1'] = new ItTokenizer();
     }
-
+    /**
+     * Nothing done for unit test tear done
+     */
     function tearDown()
     {
     }
-
     /**
      * Tests whether the stem funtion for the Italian stemming algorithm
      * stems words according to the rules of stemming. The function tests stem

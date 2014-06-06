@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * Element responsible for displaying info about starting, stopping, deleting,
  * and using a crawl. It makes use of the CrawlStatusView
@@ -41,10 +39,8 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @package seek_quarry
  * @subpackage element
  */
-
 class ManagecrawlsElement
 {
-
     /**
      * Draw form to start a new crawl, has div place holder and ajax code to
      * get info about current crawl
@@ -90,7 +86,6 @@ class ManagecrawlsElement
             var crawlTag = elt('crawlstatus');
             getPage(crawlTag, startUrl);
         }
-
         function clearUpdate()
         {
              clearInterval(updateId );
@@ -107,7 +102,6 @@ class ManagecrawlsElement
              setTimeout("clearUpdate()", 20*minute + sec);
         }
         </script>
-
         </div>
     <?php
     }

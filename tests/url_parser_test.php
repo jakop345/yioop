@@ -30,14 +30,11 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  *  Load the url parser library we'll be testing
  */
 require_once BASE_DIR."/lib/url_parser.php";
-
 /**
  *  Used to test that the UrlParser class. For now, want to see that the
  *  method canonicalLink is working correctly and that
@@ -55,14 +52,12 @@ class UrlParserTest extends UnitTest
     function setUp()
     {
     }
-
     /**
      * UrlParser uses static methods so doesn't do anything right now
      */
     function tearDown()
     {
     }
-
     /**
      * Check if can go from a relative link, base link to a complete link
      * in various different ways
@@ -115,16 +110,12 @@ class UrlParserTest extends UnitTest
             array("#a", "http://www.example.com/c:d",
                 "http://www.example.com/c:d#a", "fragment 4"),
         );
-
         foreach($test_links as $test_link) {
             $result = UrlParser::canonicalLink($test_link[0],
                 $test_link[1], false);
             $this->assertEqual($result, $test_link[2], $test_link[3]);
         }
-
     }
-
-
     /**
      * Check is a path matches with a list of paths presumably coming from
      * a robots.txt file
@@ -169,7 +160,6 @@ class UrlParserTest extends UnitTest
                 $robot_paths), $result, $description);
         }
     }
-
     /**
      * Tests simplifyUrl function used on SERP pages
      */
@@ -191,7 +181,6 @@ class UrlParserTest extends UnitTest
             $this->assertEqual($result, $test_url[2], $test_url[3]);
         }
     }
-
     /**
      * urlMemberSiteArray is a function called by both allowedToCrawlSite
      * disallowedToCrawlSite to test if a url belongs to alist of

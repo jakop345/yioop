@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * Summaries and word document list stored in WebArchiveBundle's so load it
  */
@@ -53,8 +51,6 @@ require_once 'utility.php';
  *Loads common constants for web crawling
  */
 require_once 'crawl_constants.php';
-
-
 /**
  * Encapsulates a set of web page summaries and an inverted word-index of terms
  * from these summaries which allow one to search for summaries containing a
@@ -86,7 +82,6 @@ require_once 'crawl_constants.php';
  */
 class IndexArchiveBundle implements CrawlConstants
 {
-
     /**
      * Folder name to use for this IndexArchiveBundle
      * @var string
@@ -102,7 +97,6 @@ class IndexArchiveBundle implements CrawlConstants
      * @var int
      */
     var $num_partitions_summaries;
-
     /**
      * structure contains info about the current generation:
      * its index (ACTIVE), and the number of words it contains
@@ -120,7 +114,6 @@ class IndexArchiveBundle implements CrawlConstants
      * @var object
      */
     var $summaries;
-
     /**
      * IndexDictionary for all shards in the IndexArchiveBundle
      * This contains entries of the form (word, num_shards with word,
@@ -129,7 +122,6 @@ class IndexArchiveBundle implements CrawlConstants
      * @var object
      */
     var $dictionary;
-
     /**
      * Index Shard for current generation inverted word index
      * @var object
@@ -157,11 +149,9 @@ class IndexArchiveBundle implements CrawlConstants
     function __construct($dir_name, $read_only_archive = true,
         $description = NULL, $num_docs_per_generation = NUM_DOCS_PER_GENERATION)
     {
-
         $this->dir_name = $dir_name;
         $index_archive_exists = false;
         $is_dir = is_dir($this->dir_name);
-
         if(!$is_dir && !$read_only_archive) {
             mkdir($this->dir_name);
             mkdir($this->dir_name."/posting_doc_shards");
@@ -188,11 +178,8 @@ class IndexArchiveBundle implements CrawlConstants
             $this->version = $this->summaries->version;
         }
         $this->num_docs_per_generation = $num_docs_per_generation;
-
         $this->dictionary = new IndexDictionary($this->dir_name."/dictionary");
-
     }
-
     /**
      * Add the array of $pages to the summaries WebArchiveBundle pages being
      * stored in the partition $generation and the field used
@@ -212,7 +199,6 @@ class IndexArchiveBundle implements CrawlConstants
         $this->summaries->addPages($offset_field, $pages);
         $this->summaries->addCount($visited_urls_count, "VISITED_URLS_COUNT");
     }
-
     /**
      * Adds the provided mini inverted index data to the IndexArchiveBundle
      * Expects initGenerationToAdd to be called before, so generation is correct
@@ -222,15 +208,12 @@ class IndexArchiveBundle implements CrawlConstants
      */
     function addIndexData($index_shard)
     {
-
         crawlLog("**ADD INDEX DIAGNOSTIC INFO...");
         $start_time = microtime();
-
         $this->getActiveShard()->appendIndexShard($index_shard);
         crawlLog("Append Index Shard: Memory usage:".memory_get_usage() .
           " Time: ".(changeInMicrotime($start_time)));
     }
-
     /**
      * Determines based on its size, if index_shard should be added to
      * the active generation or in a new generation should be started.
@@ -252,7 +235,6 @@ class IndexArchiveBundle implements CrawlConstants
         $memory_limit = metricToInt(ini_get("memory_limit"));
         crawlLog("Memory Indexer limit is ".$memory_limit.". Usage is ".
             memory_get_usage());
-
         if($current_num_docs + $add_num_docs > $this->num_docs_per_generation
             || (0.65 * $memory_limit) < memory_get_usage() ) {
             if($blocking == true) {
@@ -266,10 +248,8 @@ class IndexArchiveBundle implements CrawlConstants
             crawlLog("Switch Index Shard time:".
                 changeInMicrotime($switch_time));
         }
-
         return $this->generation_info['ACTIVE'];
     }
-
     /**
      * Starts a new generation,  the dictionary of the old shard is copied to
      * the bundles dictionary and a log-merge performed if needed. This
@@ -295,7 +275,6 @@ class IndexArchiveBundle implements CrawlConstants
         file_put_contents($this->dir_name."/generation.txt",
             serialize($this->generation_info));
     }
-
     /**
      * Adds the words from this shard to the dictionary
      * @param object $callback object with join function to be
@@ -313,7 +292,6 @@ class IndexArchiveBundle implements CrawlConstants
                 $this->num_docs_per_generation, true);
         $this->dictionary->addShardDictionary($this->current_shard, $callback);
     }
-
     /**
      * Sets the current shard to be the active shard (the active shard is
      * what we call the last (highest indexed) shard in the bundle. Then
@@ -333,7 +311,6 @@ class IndexArchiveBundle implements CrawlConstants
         }
         return $this->current_shard;
      }
-
     /**
      * Returns the shard which is currently being used to read word-document
      * data from the bundle. If one wants to write data to the bundle use
@@ -351,7 +328,6 @@ class IndexArchiveBundle implements CrawlConstants
             }
             $current_index_shard_file = $this->dir_name.
                 "/posting_doc_shards/index". $this->generation_info['CURRENT'];
-
             if(file_exists($current_index_shard_file)) {
                 if(isset($this->generation_info['DISK_BASED']) &&
                     $this->generation_info['DISK_BASED'] == true) {
@@ -378,7 +354,6 @@ class IndexArchiveBundle implements CrawlConstants
         }
         return $this->current_shard;
      }
-
     /**
      * Sets the current shard to be the $i th shard in the index bundle.
      *
@@ -399,7 +374,6 @@ class IndexArchiveBundle implements CrawlConstants
             return true;
         }
      }
-
     /**
      * Gets the page out of the summaries WebArchiveBundle with the given
      * offset and generation
@@ -416,7 +390,6 @@ class IndexArchiveBundle implements CrawlConstants
         }
         return $this->summaries->getPage($offset, $generation);
     }
-
     /**
      * Forces the current shard to be saved
      */
@@ -424,8 +397,6 @@ class IndexArchiveBundle implements CrawlConstants
     {
         $this->getActiveShard()->save(false, true);
     }
-
-
     /**
      * Computes the number of occurrences of each of the supplied list of
      * word_keys
@@ -450,10 +421,8 @@ class IndexArchiveBundle implements CrawlConstants
                 $words_array[$word_key] = $count;
             }
         }
-
         return $words_array;
     }
-
     /**
      * Gets the description, count of summaries, and number of partitions of the
      * summaries store in the supplied directory. If the file
@@ -477,13 +446,10 @@ class IndexArchiveBundle implements CrawlConstants
             $info['NUM_DOCS_PER_PARTITION'] = 0;
             $info['WRITE_PARTITION'] = 0;
             $info['DESCRIPTION'] = serialize($crawl);
-
             return $info;
         }
-
         return WebArchiveBundle::getArchiveInfo($dir_name."/summaries");
     }
-
     /**
      * Sets the archive info (DESCRIPTION, COUNT,
      * NUM_DOCS_PER_PARTITION) for the web archive bundle associated with
@@ -497,7 +463,6 @@ class IndexArchiveBundle implements CrawlConstants
     {
         WebArchiveBundle::setArchiveInfo($dir_name."/summaries", $info);
     }
-
     /**
      * Returns the mast time the archive info of the bundle was modified.
      *

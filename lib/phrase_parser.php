@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * Load in locale specific tokenizing code
  */
@@ -49,28 +47,23 @@ require_once BASE_DIR."/lib/nword_grams.php";
  * Reads in constants used as enums used for storing web sites
  */
 require_once BASE_DIR."/lib/crawl_constants.php";
-
 /**
  * Needed for calculateMetas and calculateLinkMetas (used in Fetcher and
  * pageOptions in AdminController)
  */
 require_once BASE_DIR."/lib/url_parser.php";
-
 /**
  * For crawlHash
  */
 require_once BASE_DIR."/lib/utility.php";
-
 /**
  * Used by numDocsTerm
  */
 require_once BASE_DIR."/lib/index_manager.php";
-
 /**
  * Used to in extractMaximalTermsAndFilterPhrases to build a SuffixTree
  */
 require_once BASE_DIR."/lib/suffix_tree.php";
-
 /**
  * So know which part of speech tagger to use
  */
@@ -96,35 +89,29 @@ class PhraseParser
             'path:', 'robot:', 'safe:', 'server:', 'site:', 'size:',
             'time:', 'u:', 'version:','weight:', 'w:'
             );
-
     /**
      * Those meta words whose values will be encoded as part of word_ids
      * @var array
      */
     static $materialized_metas = array("class:", "media:", "safe:");
-
     /**
      * A list of meta words that might be extracted from a query
      * @var array
      */
     static $programming_language_map = array('java' => 'java',
             'py' => 'python');
-
     /**
      * Constant storing the string
      */
     const TOKENIZER = 'Tokenizer';
-
     /**
      * Indicates the control word for programming languages
      */
     const CONTROL_WORD_INDICATOR = ':';
-
     /**
      * Indicates the control word for programming languages
      */
     const REGEX_INITIAL_POSITION = 1;
-
     /**
      * Converts a summary of a web page into a string of space separated words
      *
@@ -151,7 +138,6 @@ class PhraseParser
 
         return $page_string;
     }
-
     /**
      * Extracts all phrases (sequences of adjacent words) from $string. Does
      * not extract terms within those phrase. Array key indicates position
@@ -232,7 +218,6 @@ class PhraseParser
         }
         return $terms;
     }
-
     /**
      * Extracts all phrases (sequences of adjacent words) from $string. Does
      * not extract terms within those phrase. Returns an associative array
@@ -252,7 +237,6 @@ class PhraseParser
 
         return $phrase_counts;
     }
-
     /**
      * Extracts all phrases (sequences of adjacent words) from $string. Does
      * extract terms within those phrase.
@@ -269,7 +253,6 @@ class PhraseParser
         }
         return self::extractMaximalTermsAndFilterPhrases($string, $lang);
     }
-
     /**
      * This functions tries to convert acronyms, e-mail, urls, etc into
      * a format that does not involved punctuation that will be stripped
@@ -328,7 +311,6 @@ class PhraseParser
         $string = preg_replace_callback($url_or_email_pattern,
             $replace_function2, $string);
     }
-
     /**
      * Splits string according to punctuation and white space then
      * extracts (stems/char grams) of terms and n word grams from the string
@@ -361,7 +343,6 @@ class PhraseParser
         }
         return $maximal_phrases;
     }
-
     /**
      * Given a string splits it into terms by running any applicable
      * segmenters, chargrammers, or stemmers of the given locale
@@ -389,7 +370,6 @@ class PhraseParser
         }
         return $terms;
     }
-
     /**
      * Given a string tokenizes into Java tokens
      *
@@ -495,7 +475,6 @@ class PhraseParser
         }
         return $results;
     }
-
     /**
      * Given a string tokenizes into Python tokens
      *
@@ -630,7 +609,6 @@ class PhraseParser
         }
         return $results;
     }
-
     /**
      * Given an array of pre_terms returns the characters n-grams for the
      * given terms where n is the length Yioop uses for the language in
@@ -666,10 +644,8 @@ class PhraseParser
         } else {
             $terms = & $pre_terms;
         }
-
         return $terms;
     }
-
     /**
      * Returns the characters n-grams for the given terms where n is the length
      * Yioop uses for the language in question. If a stemmer is used for
@@ -683,16 +659,13 @@ class PhraseParser
     static function getCharGramsTerm($terms, $lang)
     {
         global $CHARGRAMS;
-
         mb_internal_encoding("UTF-8");
         if(isset($CHARGRAMS[$lang])) {
             $n = $CHARGRAMS[$lang];
         } else {
             return array();
         }
-
         $ngrams = array();
-
         foreach($terms as $term) {
             $pre_gram = $term;
             $last_pos = mb_strlen($pre_gram) - $n;
@@ -709,7 +682,6 @@ class PhraseParser
         }
         return $ngrams;
     }
-
     /**
      * Given a string to segment into words (where strings might
      * not contain spaces), this function segments them according to the given
@@ -737,7 +709,6 @@ class PhraseParser
         $terms = mb_split("\s+", trim($term_string));
         return $terms;
     }
-
     /**
      * Splits supplied string based on white space, then stems each
      * terms according to the stemmer for $lanf if exists
@@ -767,7 +738,6 @@ class PhraseParser
         }
         return $stems;
     }
-
     /**
      * Loads and instantiates a tokenizer object for a language if exists
      *
@@ -802,7 +772,6 @@ class PhraseParser
         $tokenizers[$lang] = $tokenizer_obj;
         return $tokenizer_obj;
     }
-
     /**
      * Calculates the meta words to be associated with a given downloaded
      * document. These words will be associated with the document in the
@@ -816,12 +785,10 @@ class PhraseParser
     static function calculateMetas(&$site, $video_sources = array())
     {
         $meta_ids = array();
-
         // handles user added meta words
         if(isset($site[CrawlConstants::META_WORDS])) {
             $meta_ids = $site[CrawlConstants::META_WORDS];
         }
-
         /*
             Handle the built-in meta words. For example
             store the sites the doc_key belongs to,
@@ -849,7 +816,6 @@ class PhraseParser
                 }
             }
         }
-
         $meta_ids[] = 'info:'.$site[CrawlConstants::URL];
         $meta_ids[] = 'info:'.crawlHash($site[CrawlConstants::URL]);
         $meta_ids[] = 'code:all';
@@ -898,14 +864,12 @@ class PhraseParser
                 $meta_ids[] = 'location:'.$location;
             }
         }
-
         if(isset($site[CrawlConstants::IP_ADDRESSES]) ){
             $meta_ids[] = 'ip:all';
             foreach($site[CrawlConstants::IP_ADDRESSES] as $address) {
                 $meta_ids[] = 'ip:'.$address;
             }
         }
-
         $meta_ids[] = 'media:all';
         if($video_sources != array()) {
             if(UrlParser::isVideoUrl($site[CrawlConstants::URL],
@@ -970,11 +934,8 @@ class PhraseParser
         if(isset($site[CrawlConstants::SUBDOCTYPE])){
             $meta_ids[] = $site[CrawlConstants::SUBDOCTYPE].':all';
         }
-
         return $meta_ids;
     }
-
-
     /**
      * Used to compute all the meta ids for a given link with $url
      * and $link_text that was on a site with $site_url.
@@ -993,8 +954,7 @@ class PhraseParser
             $location_link = true;
             $link_meta_ids[] = $link_text;
             $link_meta_ids[] = "location:all";
-            $link_meta_ids[] = "location:".
-                crawlHash($site_url);
+            $link_meta_ids[] = "location:" . crawlHash($site_url);
         }
         $link_type = UrlParser::getDocumentType($url);
         $link_meta_ids[] = "media:all";
@@ -1171,8 +1131,6 @@ class PhraseParser
         $out_segment = strrev($out_segment);
         return $out_segment;
     }
-
-
     /**
      *  Scores documents according to the lack or nonlack of sexually explicit
      *  terms. Tries to work for several languages. Very crude classifier.
@@ -1213,19 +1171,16 @@ vaffanculo fok hoer kut lul やりまん 打っ掛け
         if(count($word_lists) == 0) {
             return 0;
         }
-
         if($unsafe_terms == array()) {
             $unsafe_lists = PhraseParser::extractPhrasesInLists($unsafe_phrase,
                 "en-US");
             $unsafe_terms = array_keys($unsafe_lists);
         }
-
         $num_unsafe_terms = 0;
         $unsafe_count = 0;
         $words = array_keys($word_lists);
 
         $unsafe_found = array_intersect($words, $unsafe_terms);
-
         foreach($unsafe_found as $term) {
             $count = count($word_lists[$term]);
             if($count > 0 ) {
@@ -1233,7 +1188,6 @@ vaffanculo fok hoer kut lul やりまん 打っ掛け
                 $num_unsafe_terms++;
             }
         }
-
         $score = $num_unsafe_terms * $unsafe_count/($len + 1);
         return $score;
     }

@@ -33,7 +33,6 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 /* set-up static privacy page for display */
 $_REQUEST['c'] = "static";
 $_REQUEST['p'] = "privacy";

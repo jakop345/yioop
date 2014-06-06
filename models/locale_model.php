@@ -30,15 +30,11 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /** Loads base model class if necessary */
 require_once BASE_DIR."/models/model.php";
-
 /** Loads code to be able to make canonical urls */
 require_once BASE_DIR."/lib/url_parser.php";
-
 /**
  * Function for comparing two locale arrays by locale tag so can sort
  *
@@ -54,7 +50,6 @@ function lessThanLocale($a, $b) {
     }
     return ($a["LOCALE_TAG"] < $b["LOCALE_TAG"]) ? -1 : 1;
 }
-
 /**
  * Used to encapsulate information about a locale (data about a language in
  * a given region).
@@ -140,7 +135,6 @@ class LocaleModel extends Model
         if(!file_exists("$tag_prefix/statistics.txt") ||
             filemtime("$tag_prefix/statistics.txt") <
             filemtime("$tag_prefix/configure.ini")) {
-
             $tmp = parse_ini_with_fallback(
                 "$tag_prefix/configure.ini");
             $num_ids = 0;
@@ -162,7 +156,6 @@ class LocaleModel extends Model
         }
         return $locale;
     }
-
     /**
      * Loads the provided locale's configure file (containing transalation) and
      * calls setlocale to set up locale specific string formatting
@@ -189,22 +182,16 @@ class LocaleModel extends Model
         }
         $this->locale_name = $row['LOCALE_NAME'];
         $this->writing_mode = $row['WRITING_MODE'];
-
-
         $locale_tag_parts = explode("_", $locale_tag);
         setlocale(LC_ALL, $locale_tag, $locale_tag.'.UTF-8',
             $locale_tag.'.UTF8',  $locale_tag.".TCVN", $locale_tag.".VISCII",
             $locale_tag_parts[0], $locale_tag_parts[0].'.UTF-8',
             $locale_tag_parts[0].'.UTF8', $locale_tag_parts[0].".TCVN");
-
         //hacks for things that didn't work from the above
         if($locale_tag == 'vi_VN') {
-            setlocale(LC_NUMERIC, 'fr_FR.UTF-8');
-        }
+            setlocale(LC_NUMERIC, 'fr_FR.UTF-8');        }
 
     }
-
-
     /**
      *  Returns information about all available locales
      *
@@ -281,7 +268,6 @@ class LocaleModel extends Model
         }
         return true;
     }
-
     /**
      *   Returns the locale name, tag, and writing mode for tag $locale_tag
      *
@@ -300,7 +286,6 @@ class LocaleModel extends Model
         }
         return $row;
     }
-
     /**
      *   Returns the name of the locale for tag $locale_tag
      *
@@ -319,7 +304,6 @@ class LocaleModel extends Model
         }
         return $row["LOCALE_NAME"];
     }
-
     /**
      * Adds information concerning a new locale to the database
      *
@@ -339,9 +323,7 @@ class LocaleModel extends Model
             mkdir(LOCALE_DIR."/$locale_tag");
             $this->db->setWorldPermissionsRecursive(LOCALE_DIR."/$locale_tag");
         }
-
     }
-
     /**
      *  Remove a locale from the database
      *
@@ -355,7 +337,6 @@ class LocaleModel extends Model
             $this->db->unlinkRecursive(LOCALE_DIR."/$locale_tag", true);
         }
     }
-
     /**
      *  Used to update the fields stored in a LOCALE row according to
      *  an array holding new values
@@ -379,7 +360,6 @@ class LocaleModel extends Model
         $params[] = $locale_id;
         $this->db->execute($sql, $params);
     }
-
     /**
      * For each translatable identifier string (either static from a
      * configure ini file, or dynamic from the db)
@@ -420,8 +400,6 @@ class LocaleModel extends Model
         }
         return $data;
     }
-
-
     /**
      * Updates the identifier_string-translation pairs
      * (both static and dynamic) for a given locale
@@ -461,8 +439,6 @@ class LocaleModel extends Model
         $this->updateLocale(
             $general_ini, $strings, LOCALE_DIR, $locale_tag, $data);
     }
-
-
     /**
      * Translate an array consisting of an identifier string together with
      *      additional variable parameters into the current locale.
@@ -498,8 +474,6 @@ class LocaleModel extends Model
         }
         return $msg_string;
     }
-
-
     /**
      *  Get the current IANA language tag being used by the search engine
      *
@@ -509,8 +483,6 @@ class LocaleModel extends Model
     {
         return $this->locale_tag;
     }
-
-
     /**
      *  The text direction of the current locale being used by the text engine
      *
@@ -523,24 +495,18 @@ class LocaleModel extends Model
             case "lr-tb":
                 return "ltr";
             break;
-
             case "rl-tb":
                 return "rtl";
             break;
-
             case "tb-rl":
                 return "ltr";
             break;
-
             case "tb-lr":
                 return "ltr";
             break;
         }
-
         return "ltr";
     }
-
-
     /**
      * The direction that blocks (such as p or div tags) should be drawn in
      * the current locale
@@ -550,28 +516,23 @@ class LocaleModel extends Model
      */
     function getBlockProgression()
     {
-
         switch($this->writing_mode)
         {
             case "lr-tb":
                 return "tb";
             break;
-
             case "rl-tb":
                 return "tb";
             break;
-
             case "tb-rl":
                 return "rl";
             break;
-
             case "tb-lr":
                 return "lr";
             break;
         }
         return "tb";
     }
-
     /**
      * Get the writing mode of the current locale (text and block directions)
      *
@@ -581,7 +542,6 @@ class LocaleModel extends Model
     {
         return $this->writing_mode;
     }
-
     /**
      * Used to extract identifier strings from files with correct extensions,
      * then these strings are merged with existing extracted strings for each
@@ -602,11 +562,8 @@ class LocaleModel extends Model
             $this->getTranslateStrings($this->extract_dirs, $this->extensions);
         $general_ini = parse_ini_with_fallback(LOCALE_DIR."/general.ini");
         $this->updateLocales($general_ini, $strings, $force_folders);
-
         return array($general_ini, $strings);
     }
-
-
     /**
      *  Cycles through locale subdirectories in LOCALE_DIR, for each
      *  locale it merges out the current general_ini and strings data.
@@ -639,8 +596,6 @@ class LocaleModel extends Model
             }
         }
     }
-
-
     /**
      * Updates the configure.ini file and static pages for a particular locale.
      *
@@ -741,7 +696,6 @@ EOT;
         $out .= "\n";
         file_put_contents($cur_path.'/configure.ini', $out);
     }
-
     /**
      *  Computes a string of the form string_id = 'translation' for a string_id
      *  from among translation array data in $new_configure (most preferred,
@@ -765,7 +719,6 @@ EOT;
             $fallback_configure, $string_id, $default_value)).'"';
         return $translation;
     }
-
     /**
      *  Translates a string_id from among translation array data in
      *  $new_configure (most preferred, probably come from recent web form
@@ -783,33 +736,36 @@ EOT;
     function lookupTranslation($new_configure, $old_configure,
         $fallback_configure, $string_id, $default_value = "")
     {
-        $new_translation = $this->isTranslated($new_configure, $string_id);
-        $old_translation = $this->isTranslated($old_configure, $string_id);
+        $new_translation = $this->isTranslated($string_id, $new_configure);
+        $old_translation = $this->isTranslated($string_id, $old_configure);
         if($new_translation || ( isset($new_configure[$string_id]) &&
             $new_configure[$string_id] === "" && $old_translation )) {
             $translation = $new_configure[$string_id];
-        } else if($this->isTranslated($old_configure, $string_id)) {
+        } else if($this->isTranslated($string_id, $old_configure)) {
             $translation = $old_configure[$string_id];
-        } else if($this->isTranslated($fallback_configure, $string_id)) {
+        } else if($this->isTranslated($string_id, $fallback_configure)) {
             $translation = $fallback_configure[$string_id];
         } else {
             $translation = $default_value;
         }
         return $translation;
     }
-
     /**
      * Checks if the given string_id has a translation in translations
      *
+     * @param string $string_id what to check if translated
      * @param array $translations of form string_id => translation
+     *      defaults to current configuration
      * @return bool whether a translation of nonzero length exists
      */
-    function isTranslated($translations, $string_id)
+    function isTranslated($string_id, $translations = false)
     {
+        if($translations === false) {
+            $translations = $this->configure['strings'];
+        }
         return isset($translations[$string_id]) &&
             strlen($translations[$string_id]) > 0;
     }
-
     /**
      *  Copies over subfolder items of the correct file extensions
      *  which exists in a fallback directory, but not in the actual directory
@@ -842,7 +798,6 @@ EOT;
         }
         $this->db->setWorldPermissionsRecursive($locale_pages_path);
     }
-
     /**
      * Searches the directories provided looking for files matching the
      * extensions provided. When such a file is found it is loaded and scanned
@@ -875,11 +830,8 @@ EOT;
                 }
             }
         }
-
         return $strings;
     }
-
-
     /**
      * Traverses a directory and its subdirectories looking for files
      * whose extensions come from the extensions array. As the traversal
@@ -896,28 +848,24 @@ EOT;
      */
     function traverseExtractRecursive($dir, $extensions)
     {
-      $strings = array();
-
-      if(!is_dir($dir) || !$dh = @opendir($dir)) {
-         return array();
-      }
-
+        $strings = array();
+        if(!is_dir($dir) || !$dh = @opendir($dir)) {
+            return array();
+        }
         while (($obj = readdir($dh)) !== false) {
-         if($obj == '.' || $obj == '..') {
-             continue;
-         }
-
-         $cur_path = $dir . '/' . $obj;
-         if (is_dir($cur_path)) {
-             $dir_strings =
-                $this->traverseExtractRecursive($cur_path, $extensions);
-             if(count($dir_strings) > 0) {
-                  $strings[] = ";";
-                  $strings[] = "; $cur_path";
-                  $strings = array_merge($strings, $dir_strings);
-             }
-         }
-
+            if($obj == '.' || $obj == '..') {
+                continue;
+            }
+            $cur_path = $dir . '/' . $obj;
+            if(is_dir($cur_path)) {
+                 $dir_strings =
+                    $this->traverseExtractRecursive($cur_path, $extensions);
+                 if(count($dir_strings) > 0) {
+                      $strings[] = ";";
+                      $strings[] = "; $cur_path";
+                      $strings = array_merge($strings, $dir_strings);
+                 }
+            }
             if(is_file($cur_path)) {
                 $path_parts = pathinfo($cur_path);
                 $extension = (isset($path_parts['extension'])) ?
@@ -940,7 +888,6 @@ EOT;
         }
         closedir($dh);
         return $strings;
-
     }
 }
  ?>

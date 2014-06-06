@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * This view is drawn when someone clicks
  * on the cached link of a web-page for which
@@ -42,14 +40,12 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @package seek_quarry
  * @subpackage view
  */
-
 class NocacheView extends View
 {
     /** This view is drawn on a web layout
      *  @var string
      */
     var $layout = "web";
-
     /**
      *  Draws a simple message saying no cache available of
      *  the requested page

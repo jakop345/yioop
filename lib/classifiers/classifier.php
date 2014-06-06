@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /** Common constants for page summaries */
 require_once BASE_DIR."/lib/crawl_constants.php";
 /** Used for keeping track of the vocabulary and feature map */
@@ -47,7 +45,6 @@ require_once BASE_DIR."/lib/classifiers/lasso_regression.php";
 require_once BASE_DIR."/lib/locale_functions.php";
 /** Used to tokenize page summaries */
 require_once BASE_DIR."/lib/phrase_parser.php";
-
 /**
  * The primary interface for building and using classifiers. An instance of
  * this class represents a single classifier in memory, but the class also
@@ -136,56 +133,47 @@ class Classifier implements CrawlConstants
      * to find the best candidate.
      */
     const BUFFER_SIZE = 51;
-
     /**
      * The number of Naive Bayes instances to use to calculate disagreement
      * during candidate selection.
      */
     const COMMITTEE_SIZE = 3;
-
     /**
      * The maximum disagreement score between candidates. This number depends
      * on committee size, and is used to provide a slightly more user-friendly
      * estimate of how much disagreement a document causes (between 0 and 1).
      */
     const MAX_DISAGREEMENT = 1.63652; // Depends on committee size
-
     /**
      * Lambda parameter used in the computation of a candidate document's
      * density (smoothing for 0-frequency terms).
      */
     const DENSITY_LAMBDA = 0.5;
-
     /**
      * Beta parameter used in the computation of a candidate document's density
      * (sharpness of the KL-divergence).
      */
     const DENSITY_BETA = 3.0;
-
     /**
      * Threshold used to convert a pseudo-probability to a hard classification
      * decision. Documents with pseudo-probability >= THRESHOLD are classified
      * as positive instances.
      */
     const THRESHOLD = 0.5;
-
     /**
      * Indicates that a classifier needs to be finalized before it can be used.
      */
     const UNFINALIZED = 0;
-
     /**
      * Indicates that a classifier is currently being finalized (this may take
      * a while).
      */
     const FINALIZING = 1;
-
     /**
      * Indicates that a classifier has been finalized, and is ready to be used
      * for classification.
      */
     const FINALIZED = 2;
-
     /**
      * Default per-classifier options, which may be overridden when
      * constructing a new classifier. The supported options are:
@@ -222,27 +210,23 @@ class Classifier implements CrawlConstants
         'final_fs' => array(
             'max' => 200),
         'final_algo' => 'lr');
-
     /**
      * The label applied to positive instances of the class learned by this
      * classifier (e.g., `spam').
      * @var string
      */
     var $class_label;
-
     /**
      * Creation time as a UNIX timestamp.
      * @var int
      */
     var $timestamp;
-
     /**
      * Language of documents in the training set (also how new documents will
      * be treated).
      * @var string
      */
     var $lang;
-
     /**
      * Whether or not this classifier has had any training examples added to
      * it, and consequently whether or not its Naive Bayes classification
@@ -250,33 +234,28 @@ class Classifier implements CrawlConstants
      * @var bool
      */
     var $fresh = true;
-
     /**
      * Finalization status, as determined by one of the three finalization
      * constants.
      * @var int
      */
     var $finalized = 0;
-
     /**
      * The number of positive examples in the training set.
      * @var int
      */
     var $positive = 0;
-
     /**
      * The number of negative examples in the training set.
      * @var int
      */
     var $negative = 0;
-
     /**
      * The total number of examples in the training set (sum of positive and
      * negative).
      * @var int
      */
     var $total = 0;
-
     /**
      * The estimated classification accuracy. This member may be null if the
      * accuracy has not yet been estimated, or out of date if examples have
@@ -285,12 +264,10 @@ class Classifier implements CrawlConstants
      * @var float
      */
     var $accuracy;
-
     /*
        The following properties are all serialized, compressed, and stored in
        individual files, then loaded on demand.
     */
-
     /**
      * The current pool of candidates for labeling. The first element in the
      * buffer is always the active document, and as active documents are
@@ -303,7 +280,6 @@ class Classifier implements CrawlConstants
      * @var array
      */
     var $buffer;
-
     /**
      * The training set, broken up into two fields of an associative array:
      * 'features', an array of document feature vectors; and 'labels', the
@@ -311,14 +287,12 @@ class Classifier implements CrawlConstants
      * @var array
      */
     var $docs;
-
     /**
      * The Features subclass instance used to manage the full set of features
      * seen across all documents in the training set.
      * @var object
      */
     var $full_features;
-
     /**
      * The Features subclass instance used to manage the reduced set of
      * features used only by Naive Bayes classification algorithms during the
@@ -326,14 +300,12 @@ class Classifier implements CrawlConstants
      * @var object
      */
     var $label_features;
-
     /**
      * The NaiveBayes classification algorithm used during training to
      * tentatively classify documents presented to the user for labeling.
      * @var object
      */
     var $label_algorithm;
-
     /**
      * The Features subclass instance used to map documents at classification
      * time to the feature vectors expected by classification algorithms. This
@@ -342,7 +314,6 @@ class Classifier implements CrawlConstants
      * @var object
      */
     var $final_features;
-
     /**
      * The finalized classification algorithm that will be used to classify new
      * web pages. Will usually be logistic regression, but may be Naive Bayes,
@@ -352,7 +323,6 @@ class Classifier implements CrawlConstants
      * @var object
      */
     var $final_algorithm;
-
     /**
      * The names of properties set by one of the prepareTo* methods; these
      * properties will be saved back to disk during serialization, while all
@@ -360,9 +330,7 @@ class Classifier implements CrawlConstants
      * @var array
      */
     var $loaded_properties = array();
-
     /* PUBLIC INTERFACE */
-
     /**
      * Initializes a new classifier with a class label, and options to override
      * the defaults. The timestamp associated with the classifier is taken from
@@ -379,7 +347,6 @@ class Classifier implements CrawlConstants
         $this->timestamp = time();
         $this->options = array_merge($this->options, $options);
     }
-
     /**
      * Magic method that determines which member data will be stored when
      * serializing this class. Only lightweight summary data are stored with
@@ -403,9 +370,7 @@ class Classifier implements CrawlConstants
             'total',
             'accuracy');
     }
-
     /* PREPARING FOR A TASK */
-
     /**
      * Prepare this classifier instance for labeling. This operation requires
      * all of the heavyweight member data save the final features and
@@ -432,7 +397,6 @@ class Classifier implements CrawlConstants
         $this->final_features = $this->label_features;
         $this->final_algorithm = $this->label_algorithm;
     }
-
     /**
      * Prepare to train a final classification algorithm on the full training
      * set. This operation requires the full training set and features, but not
@@ -454,7 +418,6 @@ class Classifier implements CrawlConstants
             $this->final_algorithm = new NaiveBayes();
         }
     }
-
     /**
      * Prepare to classify new web pages. This operation requires only the
      * final features and classification algorithm, which are expected to be
@@ -464,9 +427,7 @@ class Classifier implements CrawlConstants
     {
         $this->loadProperties('final_features', 'final_algorithm');
     }
-
     /* LABELING PHASE */
-
     /**
      * Updates the buffer and training set to reflect the label given to a new
      * document. The label may be -1, 1, or 0, where the first two correspond
@@ -551,7 +512,6 @@ class Classifier implements CrawlConstants
         }
         return $labels_changed;
     }
-
     /**
      * Iterates entirely through a crawl mix iterator, adding each document
      * (that hasn't already been labeled) to the training set with a single
@@ -590,7 +550,6 @@ class Classifier implements CrawlConstants
         }
         return $count;
     }
-
     /**
      * Drops any existing candidate buffer, re-initializes the buffer
      * structure, then calls refreshBuffer to fill it. Takes an optional buffer
@@ -616,7 +575,6 @@ class Classifier implements CrawlConstants
         );
         return $this->refreshBuffer($mix_iterator, $buffer_size);
     }
-
     /**
      * Adds as many new documents to the candidate buffer as necessary to reach
      * the specified buffer size, which defaults to the runtime parameter.
@@ -651,7 +609,6 @@ class Classifier implements CrawlConstants
         }
         return $num_pages;
     }
-
     /**
      * Computes from scratch the buffer densities of the documents in the
      * current candidate pool. This is an expensive operation that requires
@@ -694,7 +651,6 @@ class Classifier implements CrawlConstants
             $densities[] = exp($sum_i / $stats['num_docs']);
         }
     }
-
     /**
      * Finds the next best document for labeling amongst the documents in the
      * candidate buffer, moves that candidate to the front of the buffer, and
@@ -744,7 +700,6 @@ class Classifier implements CrawlConstants
         $this->moveBufferDocToFront($best_i);
         return array($doc, $max_disagreement / self::MAX_DISAGREEMENT);
     }
-
     /**
      * Trains the Naive Bayes classification algorithm used during labeling on
      * the current training set, and optionally updates the estimated accuracy.
@@ -765,7 +720,6 @@ class Classifier implements CrawlConstants
             $this->updateAccuracy($X, $y);
         }
     }
-
     /**
      * Estimates current classification accuracy using a Naive Bayes
      * classification algorithm. Accuracy is estimated by splitting the current
@@ -835,9 +789,7 @@ class Classifier implements CrawlConstants
         }
         $this->accuracy = $sum / 5;
     }
-
     /* FINALIZATION PHASE */
-
     /**
      * Trains the final classification algorithm on the full training set,
      * using a subset of the full feature set. The final algorithm will usually
@@ -854,9 +806,7 @@ class Classifier implements CrawlConstants
         $this->final_algorithm->train($X, $y);
         $this->finalized = self::FINALIZED;
     }
-
     /* CLASSIFICATION PHASE */
-
     /**
      * Classifies a page summary using the current final classification
      * algorithm and features, and returns the classification score. This
@@ -883,9 +833,7 @@ class Classifier implements CrawlConstants
         $x = $this->final_features->mapDocument($doc);
         return $this->final_algorithm->classify($x);
     }
-
     /* PRIVATE INTERFACE */
-
     /**
      * Adds a page to the end of the candidate buffer, keeping the associated
      * statistics up to date. During active training, each document in the
@@ -921,7 +869,6 @@ class Classifier implements CrawlConstants
             $this->buffer['stats']['num_docs']++;
         }
     }
-
     /**
      * Removes the document at the front of the candidate buffer. During active
      * training the cross-document statistics for terms occurring in the
@@ -942,7 +889,6 @@ class Classifier implements CrawlConstants
             $this->buffer['stats']['num_docs']--;
         }
     }
-
     /**
      * Moves a document in the candidate buffer up to the front, in preparation
      * for a label request. The document is specified by its index in the
@@ -957,7 +903,6 @@ class Classifier implements CrawlConstants
         list($doc) = array_splice($this->buffer['stats']['docs'], $i, 1);
         array_unshift($this->buffer['stats']['docs'], $doc);
     }
-
     /**
      * Tokenizes a string into a map from terms to within-string frequencies.
      *
@@ -983,20 +928,7 @@ class Classifier implements CrawlConstants
             }
         }
         return $out;
-        /*
-        if (is_null($this->lang)) {
-            $this->lang = guessLocaleFromString($description);
-        }
-        $phrases = PhraseParser::extractPhrasesInLists(
-            $description, $this->lang);
-        $phrase_counts = array();
-        foreach ($phrases as $phrase => $pos_list) {
-            $phrase_counts[$phrase] = count($pos_list);
-        }
-        return $phrase_counts;
-        */
     }
-
     /**
      * Loads class attributes from compressed, serialized files on disk, and
      * stores their names so that they will be saved back to disk later. Each
@@ -1025,7 +957,6 @@ class Classifier implements CrawlConstants
         }
         $this->loaded_properties = $properties;
     }
-
     /**
      * Stores the data associated with each property name listed in the
      * loaded_properties instance attribute back to disk. The data for each
@@ -1043,9 +974,7 @@ class Classifier implements CrawlConstants
             chmod($filename, 0777);
         }
     }
-
     /* PUBLIC STATIC INTERFACE */
-
     /**
      * Given a page summary (passed by reference) and a list of classifiers,
      * augments the summary meta words with the class label of each classifier
@@ -1096,7 +1025,6 @@ class Classifier implements CrawlConstants
             }
         }
     }
-
     /**
      * Returns an array of classifier instances currently stored in the
      * classifiers directory. The array maps class labels to their
@@ -1118,7 +1046,6 @@ class Classifier implements CrawlConstants
         }
         return $classifiers;
     }
-
     /**
      * Returns the minimal classifier instance corresponding to a class label,
      * or NULL if no such classifier exists on disk.
@@ -1136,7 +1063,6 @@ class Classifier implements CrawlConstants
         }
         return NULL;
     }
-
     /**
      * Given a list of class labels, returns an array mapping each class label
      * to an array of data necessary for initializing a classifier for that
@@ -1176,7 +1102,6 @@ class Classifier implements CrawlConstants
         }
         return $classifiers_data;
     }
-
     /**
      * The dual of loadClassifiersData, this static method reconstitutes a
      * Classifier instance from an array containing the necessary data. This
@@ -1202,7 +1127,6 @@ class Classifier implements CrawlConstants
         $classifier->loaded_properties = array_keys($data);
         return $classifier;
     }
-
     /**
      * Stores a classifier instance to disk, first separating it out into
      * individual files containing serialized and compressed property data. The
@@ -1227,7 +1151,6 @@ class Classifier implements CrawlConstants
         file_put_contents($filename, $serialized_data);
         chmod($filename, 0777);
     }
-
     /**
      * Deletes the directory corresponding to a class label, and all of its
      * contents. In the case that there is no classifier with the passed in
@@ -1244,7 +1167,6 @@ class Classifier implements CrawlConstants
             $db->unlinkRecursive($dirname);
         }
     }
-
     /**
      * Removes all but alphanumeric characters and underscores from a label, so
      * that it may be easily saved to disk and used in queries as a meta word.
@@ -1255,7 +1177,6 @@ class Classifier implements CrawlConstants
     {
         return preg_replace('/[^a-zA-Z0-9_]/', '', $label);
     }
-
     /**
      * Returns a name for the crawl mix associated with a class label.
      *
@@ -1267,7 +1188,6 @@ class Classifier implements CrawlConstants
     {
         return 'CLASSIFY_'.$label;
     }
-
     /**
      * Returns a key that can be used internally to refer internally to a
      * particular page summary.
@@ -1279,9 +1199,7 @@ class Classifier implements CrawlConstants
     {
         return md5($page[self::URL]);
     }
-
     /* PRIVATE STATIC INTERFACE */
-
     /**
      * Calculates the KL-divergence to the mean for a collection of discrete
      * two-element probability distributions. Each distribution is specified by

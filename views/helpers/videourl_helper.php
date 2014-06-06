@@ -30,14 +30,11 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  *  Load base helper class if needed
  */
 require_once BASE_DIR."/views/helpers/helper.php";
-
 /**
  * Helper used to draw thumbnails for video sites
  *
@@ -45,10 +42,8 @@ require_once BASE_DIR."/views/helpers/helper.php";
  * @package seek_quarry
  * @subpackage helper
  */
-
 class VideourlHelper extends Helper
 {
-
     /**
      *  Used to check if a url is the url of a video site and if so
      *  draw a link with a thumbnail from the video.
@@ -100,8 +95,6 @@ class VideourlHelper extends Helper
                 <?php
             }
         }
-
     }
-
 }
 ?>

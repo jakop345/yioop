@@ -30,14 +30,11 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /** Register File Types We Handle*/
 $INDEXED_FILE_TYPES[] = "rss";
 $PAGE_PROCESSORS["application/rss+xml"] = "RssProcessor";
 $PAGE_PROCESSORS["application/atom+xml"] = "RssProcessor";
-
 /**
  * Load base class, if needed.
  */
@@ -46,8 +43,7 @@ require_once BASE_DIR."/lib/processors/text_processor.php";
  * Load so can parse urls
  */
 require_once BASE_DIR."/lib/url_parser.php";
-
- /**
+/**
  * Used to create crawl summary information
  * for RSS or Atom files
  *
@@ -92,9 +88,7 @@ class RssProcessor extends TextProcessor
             }
         }
         return $summary;
-
     }
-
     /**
      *  Determines the language of the rss document by looking at the channel
      *  language tag
@@ -117,7 +111,6 @@ class RssProcessor extends TextProcessor
         }
         return $lang;
     }
-
     /**
      * Return a document object based on a string containing the contents of
      * an RSS page
@@ -129,13 +122,9 @@ class RssProcessor extends TextProcessor
     static function dom($page)
     {
         $dom = new DOMDocument();
-
         @$dom->loadXML($page);
-
         return $dom;
     }
-
-
     /**
      *  Returns html head title of a webpage based on its document object
      *
@@ -147,24 +136,19 @@ class RssProcessor extends TextProcessor
     static function title($dom, $atom = false)
     {
         $sites = array();
-
         $xpath = new DOMXPath($dom);
         if($atom){
             $xpath->registerNamespace('atom', "http://www.w3.org/2005/Atom");
         }
         $title_query = ($atom) ? "/feed/title|/atom:feed/atom:title" :
             "/rss/channel/title";
-
         $titles = $xpath->evaluate($title_query);
-
         $title = "";
         foreach($titles as $pre_title) {
             $title .= $pre_title->textContent;
         }
-
         return $title;
     }
-
     /**
      * Returns descriptive text concerning a webpage based on its document
      * object
@@ -175,11 +159,8 @@ class RssProcessor extends TextProcessor
      */
     static function description($dom, $atom = false) {
         $sites = array();
-
         $xpath = new DOMXPath($dom);
-
         $description = "";
-
         /*
           concatenate the contents of these dom elements up to
           the limit of description length
@@ -203,10 +184,8 @@ class RssProcessor extends TextProcessor
             }
         }
         $description = mb_ereg_replace("(\s)+", " ",  $description);
-
         return $description;
     }
-
     /**
      * Returns up to MAX_LINK_PER_PAGE many links from the supplied
      * dom object where links have been canonicalized according to
@@ -221,9 +200,7 @@ class RssProcessor extends TextProcessor
     static function links($dom, $site, $atom = false)
     {
         $sites = array();
-
         $xpath = new DOMXPath($dom);
-
         $link_nodes = array(
             "/rss/channel" => array( "url" =>"link", "text" => "title"),
             "/rss/channel/image" => array( "url" =>"url", "text" => "title"),
@@ -237,9 +214,7 @@ class RssProcessor extends TextProcessor
                     => array( "url" =>"link", "text" => "title"),
             );
         }
-
         $i = 0;
-
         foreach($link_nodes as $path => $url_text_pair) {
             $nodes = $xpath->evaluate($path);
             foreach($nodes as $node) {
@@ -255,13 +230,10 @@ class RssProcessor extends TextProcessor
                     break 2;
                 }
             }
-
         }
-
        return $sites;
     }
-
-   /**
+    /**
      * Returns a url text pair where the url comes from the link of
      * the given item node and the text comes from the text data for that node.
      * urls are canonicalized according to site.
@@ -306,7 +278,5 @@ class RssProcessor extends TextProcessor
         $text = mb_ereg_replace("(\s)+", " ",  $text);
         return array($url, $text);
     }
-
 }
-
 ?>

@@ -31,14 +31,12 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 /**
  * Default value of minimum degree. The minimum degree determines the minimum
  * and maximum number of keys and child nodes, for nodes
  * other than root node
  */
 define('MIN_DEGREE', 501);
-
 /**
  * This class implements the B-Tree data structure for storing int key based
  * key-value pairs based on the algorithms in Introduction To Algorithms,
@@ -60,7 +58,6 @@ class BTree
      * @var int
      */
     var $min_degree;
-
     /**
      * Storage for root node of the B-Tree
      * @var object
@@ -71,13 +68,11 @@ class BTree
      * @var int
      */
     var $id_count;
-
     /**
      * Directory for storing the B-Tree files
      * @var string
      */
     var $dir;
-
     /**
      * Creates/Loads B-Tree having specified directory and minimum_degree. The
      * default minimum_degree is 501.
@@ -102,7 +97,6 @@ class BTree
             $this->id_count = 1;
         }
     }
-
     /**
      * Reads node from file saved on disk
      * @param int $id is the Id of the node to be read
@@ -119,7 +113,6 @@ class BTree
             return false;
         }
     }
-
     /**
      * Writes node to disk
      * @param object $node is the node to be written to disk
@@ -131,7 +124,6 @@ class BTree
         file_put_contents($node_file, $contents);
         chmod($node_file, 0777);
     }
-
     /**
      * Writes the root node of this btree to disk
      */
@@ -139,7 +131,6 @@ class BTree
     {
         $this->writeNode($this->root);
     }
-
     /**
      * Deletes file associated with given node from disk
      * @param int $id is the id of the node whose file is to be deleted
@@ -153,7 +144,6 @@ class BTree
             crawlLog("Could not delete node $id from disk");
         }
     }
-
     /**
      * Saves value of node id counter
      * @param int $count is the id counter
@@ -164,7 +154,6 @@ class BTree
         $node_count = serialize($this->id_count);
         file_put_contents($count_file, $node_count);
     }
-
     /**
      * Deletes the node id count file
      */
@@ -172,7 +161,6 @@ class BTree
     {
         unlink($this->dir."/count.txt");
     }
-
     /**
      * Returns key-value pair in the B-Tree based on key
      * @param int $key is the key for whicht the key-value pair is to be
@@ -193,7 +181,6 @@ class BTree
             return NULL;
         }
     }
-
     /**
      * Searches for key-value pair for a given key in a node. If key value pair
      * is not found in the node, recursively searches in the root node of the
@@ -221,7 +208,6 @@ class BTree
             }
         }
     }
-
     /**
      * Inserts a key-value pair in the B-Tree
      * @param array $pair is the key-value pair to be inserted
@@ -245,7 +231,6 @@ class BTree
             $this->insertNodeNotFull($node, $pair);
         }
     }
-
     /**
      * Inserts a key-value pair in a leaf node that is not full. Searches for
      * the appropriate leaf node, splitting full nodes before descending
@@ -293,7 +278,6 @@ class BTree
             }
         }
     }
-
     /**
      * Splits a full node into two child node. The median key-value pair is
      * added to the parent node of the node being split.
@@ -335,7 +319,6 @@ class BTree
         $this->writeNode($temp);
         $this->writeNode($parent);
     }
-
     /**
      * Swaps value of two variables
      * @param $x is the first variable
@@ -347,7 +330,6 @@ class BTree
         $x = $y;
         $y = $temp;
     }
-
     /**
      * Creates an empty non-leaf node
      * @return object $node is the non-leaf node
@@ -361,7 +343,6 @@ class BTree
         $temp->is_leaf = false;
         return $temp;
     }
-
     /**
      * Performs binary search for a integer key on an array of integer key based
      * key-value pairs
@@ -389,7 +370,6 @@ class BTree
         }
         return array($flag, $low);
     }
-
     /**
      * Removes a key-value pair from the B-Tree
      * @param int $key associated with the key-value pair to be deleted
@@ -398,7 +378,6 @@ class BTree
     {
         $this->delete($this->root, $key);
     }
-
     /**
      * Deletes a key-value pair from the B-Tree from a node.
      * Handles deletion from leaf node and internal node. If the key-value pair
@@ -424,7 +403,6 @@ class BTree
             $this->delete($sub_tree_root, $key);
         }
     }
-
     /**
      * Shifts a key from a non-leaf root to it's child node using nodes
      * preceding and next to the key-value pair to be deleted. If the
@@ -451,7 +429,6 @@ class BTree
                 $next, $pos);
         }
     }
-
     /**
      * Deletes key-value pair from a leaf node in a B-Tree
      * @param object $node is the leaf node containing the key-value pair
@@ -476,7 +453,6 @@ class BTree
             $this->deleteCount();
         }
     }
-
     /**
      * Deletes key-value pair from a non-leaf node in a B-Tree
      * @param object $node is the non-leaf node containing the key-value pair
@@ -545,7 +521,6 @@ class BTree
             }
         }
     }
-
     /**
      * If the key to be deleted is not found in an internal node, finds the root
      * of the sub-tree that might contain the key to be deleted. If the node
@@ -616,7 +591,6 @@ class BTree
             }
         } else return $child;
     }
-
     /**
      * Gives a child node an extra key by moving a key from the parent to the
      * child node, and by moving a key from the child's left sibling to the
@@ -652,7 +626,6 @@ class BTree
         $parent->keys[$pos - 1] = $pred_pair;
         $this->writeNode($parent);
     }
-
     /**
      * Gives a child node an extra key by moving a key from the parent to the
      * child node, and by moving a key from the child's right sibling to the
@@ -690,7 +663,6 @@ class BTree
         $parent->keys[$pos] = $next_pair;
         $this->writeNode($parent);
     }
-
     /**
      * Merges the child node with it's right sibling. The separating key in the
      * parent node is added as the median key to the newly formed node
@@ -741,7 +713,6 @@ class BTree
             $this->writeNode($parent);
         }
     }
-
     /**
      * Gets the siblings ids based on link in parent node
      * @param object $parent is the parent node
@@ -763,11 +734,9 @@ class BTree
         return $siblings;
     }
 }
-
 /**
  * Class for B-Tree nodes
  */
-
 class BTNode
 {
     /**
@@ -775,31 +744,26 @@ class BTNode
      * @var int
      */
     var $id;
-
     /**
      * Flag for checking if node is a leaf node or internal node
      * @var boolean
      */
     var $is_leaf;
-
     /**
      * Storage for keeping track of node ids
      * @var int
      */
     var $count;
-
     /**
      * Storage for key-value pairs in a B-Tree node
      * @var array
      */
     var $keys;
-
     /**
      * Storage for links to child nodes in a B-Tree node
      * @var array
      */
     var $links;
-
     /**
      * Creates and initializes an empty leaf node with id -1
      * @var int

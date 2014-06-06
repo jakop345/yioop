@@ -30,14 +30,11 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  *  Load base helper class if needed
  */
 require_once BASE_DIR."/views/helpers/helper.php";
-
 /**
  * This is a helper class used to handle
  * displaying description. If it has recipe data
@@ -48,7 +45,6 @@ require_once BASE_DIR."/views/helpers/helper.php";
  * @package seek_quarry
  * @subpackage helper
  */
-
 class DisplayresultsHelper extends Helper
 {
     function render($data)

@@ -30,18 +30,14 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /** Load base controller class if needed */
 require_once BASE_DIR."/controllers/controller.php";
 /** Loads common constants for web crawling*/
 require_once BASE_DIR."/lib/crawl_constants.php";
 /** Loads url_parser to clean resource name*/
 require_once BASE_DIR."/lib/url_parser.php";
-
 define("NO_FEEDS", true);
-
 /**
  *  Responsible for handling requests about global crawl statistics for
  *  a web crawl. These statistics include: httpd code distribution,
@@ -71,14 +67,12 @@ class StatisticsController extends Controller implements CrawlConstants
      * @var string
      */
     var $stats_file;
-
     /**
      * For size and time distrbutions the number of times the miminal
      * recorded interval (DOWNLOAD_SIZE_INTERVAL for size) to check for
      * pages with that size/download time
      */
     const NUM_TIMES_INTERVAL = 50;
-
     /**
      * While computing the statistics page, number of seconds until a
      * page refresh and save of progress so far occurs
@@ -135,7 +129,6 @@ class StatisticsController extends Controller implements CrawlConstants
             include(BASE_DIR."/error.php");
             exit(); //bail
         }
-
         $this->stats_file = CRAWL_DIR."/cache/".self::statistics_base_name.
                 $this->index_time_stamp.".txt";
         $stats_file_exists = file_exists($this->stats_file);
@@ -179,7 +172,6 @@ class StatisticsController extends Controller implements CrawlConstants
         $this->view("statistics")->head_objects["robots"] = "NOINDEX, NOFOLLOW";
         $this->displayView($view, $data);
     }
-
     /**
      *  Runs the queries necessary to determine httpd code distribution,
      *  filetype distribution, num hosts, language distribution,
@@ -281,7 +273,6 @@ class StatisticsController extends Controller implements CrawlConstants
                 ".tn", ".to", ".tr", ".tt", ".tv", ".tw", ".tz", ".ua", ".ug",
                 ".uk", ".us", ".uy", ".uz", ".va", ".vc", ".ve", ".vg", ".vi",
                 ".vn", ".vu", ".wf", ".ws", ".ye", ".za", ".zm", ".zw" ),
-
         );
         for($i = 0; $i <= self::NUM_TIMES_INTERVAL; $i++) {
             $queries["SIZE"][] = $i * DOWNLOAD_SIZE_INTERVAL;
@@ -350,7 +341,6 @@ class StatisticsController extends Controller implements CrawlConstants
         file_put_contents($this->stats_file, serialize($data));
         return $data;
     }
-
     /**
      * Performs the provided $query of a web crawl (potentially distributed
      * across queue servers). Returns the count of the number of results that
@@ -365,6 +355,5 @@ class StatisticsController extends Controller implements CrawlConstants
             1, true, NULL, false, 0, $this->machine_urls);
         return (isset($results["TOTAL_ROWS"])) ? $results["TOTAL_ROWS"] : -1;
     }
-
 }
 ?>

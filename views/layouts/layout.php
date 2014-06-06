@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * Base layout Class. Layouts are used to
  * render the headers and footer of the page
@@ -49,7 +47,6 @@ class Layout
      * @var object
      */
     var $view;
-
     /**
      * The constructor sets the view that will be drawn inside the
      * Layout.
@@ -59,7 +56,6 @@ class Layout
     {
        $this->view = $v;
     }
-
     /**
      * The render method of Layout and its subclasses is responsible for drawing
      * the header of the document, calling the renderView method of the

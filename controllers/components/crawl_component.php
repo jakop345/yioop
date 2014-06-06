@@ -166,7 +166,6 @@ class CrawlComponent extends Component implements CrawlConstants
         }
         return $data;
     }
-
     /**
      * Called from @see manageCrawls to start a new crawl on the machines
      * $machine_urls. Updates $data array with crawl start message
@@ -230,7 +229,6 @@ class CrawlComponent extends Component implements CrawlConstants
         $crawl_model->sendStartCrawlMessage($crawl_params,
             $seed_info, $machine_urls);
     }
-
     /**
      * Reads the parameters for a crawl from an array gotten from a crawl.ini
      * file
@@ -302,7 +300,6 @@ class CrawlComponent extends Component implements CrawlConstants
             isset($seed_info['page_rules']['rule']) ?
             $seed_info['page_rules']['rule'] : array();
     }
-
     /**
      * Called from @see manageCrawls to edit the parameters for the next
      * crawl (or current crawl) to be carried out by the machines
@@ -538,8 +535,6 @@ class CrawlComponent extends Component implements CrawlConstants
         }
         return $data;
     }
-
-
     /**
      * Handles admin requests for creating, editing, and deleting classifiers.
      *
@@ -676,7 +671,6 @@ class CrawlComponent extends Component implements CrawlConstants
         }
         return $data;
     }
-
     /**
      * Handles the particulars of editing a classifier, which includes changing
      * its label and adding training examples.
@@ -757,7 +751,6 @@ class CrawlComponent extends Component implements CrawlConstants
             'crawl_component_scores:"'.
                 tl('crawl_component_scores').'"'.
             '};';
-
         /*
            We pass along authentication information to the client, so that it
            can authenticate any XmlHttpRequests that it makes in order to label
@@ -771,8 +764,6 @@ class CrawlComponent extends Component implements CrawlConstants
                 "'{$session}',".
                 "'{$time}');";
     }
-
-
     /**
      * Handles admin request related to controlling file options to be used
      * in a crawl
@@ -1249,7 +1240,6 @@ class CrawlComponent extends Component implements CrawlConstants
         }
         return $data;
     }
-
     /**
      * Handles admin request related to the search filter activity
      *
@@ -1334,9 +1324,6 @@ class CrawlComponent extends Component implements CrawlConstants
 
         return $data;
     }
-
-
-
     /**
      * Handles admin request related to the search sources activity
      *

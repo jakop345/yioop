@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /** Load base controller class if needed */
 require_once BASE_DIR."/controllers/controller.php";
 /** Loads common constants for web crawling */
@@ -58,7 +56,6 @@ foreach(glob(BASE_DIR."/lib/processors/*_processor.php") as $filename) {
  * @package seek_quarry
  * @subpackage controller
  */
-
 class AdminController extends Controller implements CrawlConstants
 {
     /**
@@ -68,7 +65,6 @@ class AdminController extends Controller implements CrawlConstants
      * @var array
      */
     var $activities = array("crawlStatus", "machineStatus");
-
     /**
      * An array of activities which are periodically updated within other
      * activities that they live. For example, within manage crawl,
@@ -76,7 +72,6 @@ class AdminController extends Controller implements CrawlConstants
      * @var array
      */
     var $status_activities = array("crawlStatus", "machineStatus");
-
     /**
      * This is the main entry point for handling requests to administer the
      * Yioop/SeekQuarry site
@@ -202,7 +197,6 @@ class AdminController extends Controller implements CrawlConstants
         $_SESSION['REMOTE_ADDR'] = $_SERVER['REMOTE_ADDR'];
         $this->displayView($view, $data);
     }
-
     /**
      * If there is no profile/work directory set up then this method
      * get called to by pass any login and go to the configure screen.
@@ -215,7 +209,6 @@ class AdminController extends Controller implements CrawlConstants
         $data[CSRF_TOKEN] = $this->generateCSRFToken("config");
         $this->displayView("admin", $data);
     }
-
     /**
      * Checks whether the user name and password sent presumably by the signin
      * form match a user in the database
@@ -240,7 +233,6 @@ class AdminController extends Controller implements CrawlConstants
         }
         return $result;
     }
-
     /**
      * Determines the user's current allowed activities and current activity,
      * then calls the method for the latter.
@@ -327,7 +319,6 @@ class AdminController extends Controller implements CrawlConstants
         }
         return $data;
     }
-
     /**
      * Used to handle crawlStatus REST activities requesting the status of the
      * current web crawl
@@ -341,14 +332,12 @@ class AdminController extends Controller implements CrawlConstants
         $data = array();
         $data['REFRESH'] = "crawlstatus";
         $crawl_model = $this->model("crawl");
-
         $crawl_time = $crawl_model->getCurrentIndexDatabaseName();
         if(isset($crawl_time) ) {
             $data['CURRENT_INDEX'] = (int)$crawl_time;
         } else {
             $data['CURRENT_INDEX'] = -1;
         }
-
         $machine_urls = $this->model("machine")->getQueueServerUrls();
         list($stalled, $status, $data['RECENT_CRAWLS']) =
             $crawl_model->combinedCrawlInfo($machine_urls);
@@ -356,9 +345,7 @@ class AdminController extends Controller implements CrawlConstants
         if($stalled) {
             $crawl_model->sendStopCrawlMessage($machine_urls);
         }
-
         $data = array_merge($data, $status);
-
         $data["CRAWL_RUNNING"] = false;
         if(isset($data['CRAWL_TIME']) && $data["CRAWL_TIME"] != 0) {
             //erase from previous crawl list any active crawl
@@ -381,7 +368,6 @@ class AdminController extends Controller implements CrawlConstants
             DEFAULT_ADMIN_PAGING_NUM);
         return $data;
     }
-
     /**
      * Gets data from the machine model concerning the on/off states
      * of the machines managed by this Yioop instance and then passes
@@ -408,8 +394,6 @@ class AdminController extends Controller implements CrawlConstants
         }
         return $data;
     }
-
-
     /**
      * Used to update the yioop installation profile based on $_REQUEST data
      *
@@ -452,9 +436,22 @@ class AdminController extends Controller implements CrawlConstants
             }
         }
     }
-
     /**
+     *  Used to set up view data for table search form (might make use of
+     *  $_REQUEST if form was submitted, results gotten, and we want to preserve
+     *  form drop down). Table search forms
+     *  are used by manageUsers, manageRoles, manageGroups, to do advanced
+     *  search of the entity they are responsible for.
      *
+     *  @param array &$data modified to contain the field data needed for
+     *      the view to draw the search form
+     *  @param array $comparison_fields those fields of the entity
+     *      in question ( for example, users) which we can search both with
+     *      string comparison operators and equality operators
+     *  @param array $equal_comparison_fields those fields of the entity in 
+     *      question which can only be search by equality/inequality operators
+     *  @param string $field_postfix suffix to append onto field names in
+     *      case there are multiple forms on the same page
      */
     function tableSearchRequestHandler(&$data, $comparison_fields = array(),
         $equal_comparison_fields = array(), $field_postfix = "")

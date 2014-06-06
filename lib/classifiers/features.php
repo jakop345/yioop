@@ -30,7 +30,6 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 /**
  * Manages a dataset's features, providing a standard interface for converting
  * documents to feature vectors, and for accessing feature statistics.
@@ -55,33 +54,28 @@ abstract class Features
      * @var array
      */
     var $vocab = array();
-
     /**
      * Maps terms to how often they occur in documents by label.
      * @var array
      */
     var $var_freqs = array();
-
     /**
      * Maps labels to the number of documents they're assigned to.
      * @var array
      */
     var $label_freqs = array(-1 => 0, 1 => 0);
-
     /**
      * Maps old feature indices to new ones when a feature subset operation has
      * been applied to restrict the number of features.
      * @var array
      */
     var $feature_map;
-
     /**
      * A list of the top terms according to the last feature subset operation,
      * if any.
      * @var array
      */
     var $top_terms = array();
-
     /**
      * Maps a new example to a feature vector, adding any new terms to the
      * vocabulary, and updating term and label statistics. The example should
@@ -118,7 +112,6 @@ abstract class Features
         ksort($features);
         return $features;
     }
-
     /**
      * Updates the label and term statistics to reflect a label change for an
      * example from the training set. A new label of 0 indicates that the
@@ -146,7 +139,6 @@ abstract class Features
             }
         }
     }
-
     /**
      * Returns the number of features, not including the intercept term
      * represented by feature zero. For example, if we had features 0..10,
@@ -158,7 +150,6 @@ abstract class Features
     {
         return count($this->vocab);
     }
-
     /**
      * Returns the positive and negative label counts for the training set.
      *
@@ -169,7 +160,6 @@ abstract class Features
     {
         return array($this->label_freqs[1], $this->label_freqs[-1]);
     }
-
     /**
      * Returns the statistics for a particular feature and label in the
      * training set. The statistics are counts of how often the term appears or
@@ -199,7 +189,6 @@ abstract class Features
             $N - $t - $l + $tl // ~t and ~l
         );
     }
-
     /**
      * Given a FeatureSelection instance, return a new clone of this Features
      * instance using a restricted feature subset. The new Features instance
@@ -247,7 +236,6 @@ abstract class Features
         $new_features->top_terms = array_values($top_features);
         return $new_features;
     }
-
     /**
      * Maps the indices of a feature vector to those used by a restricted
      * feature set, dropping and features that aren't in the map. If this
@@ -273,7 +261,6 @@ abstract class Features
         }
         return $mapped_features;
     }
-
     /**
      * Given an array of feature vectors mapping feature indices to counts,
      * returns a sparse matrix representing the dataset transformed according
@@ -289,7 +276,6 @@ abstract class Features
      *  feature vectors
      */
     abstract function mapTrainingSet($docs);
-
     /**
      * Maps a vector of terms mapped to their counts within a single document
      * to a transformed feature vector, exactly like a row in the sparse matrix
@@ -303,8 +289,6 @@ abstract class Features
      */
     abstract function mapDocument($tokens);
 }
-
-
 /**
  * A concrete Features subclass that represents a document as a binary
  * vector where a one indicates that a feature is present in the document, and
@@ -350,10 +334,8 @@ class BinaryFeatures extends Features
                 array_fill(0, count($features), 1));
             $X->setRow($i++, $new_features);
         }
-
         return $X;
     }
-
     /**
      * Converts a map from terms to  within-document term counts with the
      * corresponding sparse binary feature vector used for classification.
@@ -376,8 +358,6 @@ class BinaryFeatures extends Features
         return $x;
     }
 }
-
-
 /**
  * A concrete Features subclass that represents a document as a
  * vector of feature weights, where weights are computed using a modified form
@@ -397,10 +377,8 @@ class WeightedFeatures extends Features
     {
         $m = count($this->examples);
         $n = count($this->vocab);
-
         $this->D = $m;
         $this->n = array();
-
         // Fill in $n, the count of documents that contain each term
         foreach ($this->examples as $features) {
             foreach (array_keys($features) as $j) {
@@ -410,14 +388,11 @@ class WeightedFeatures extends Features
                     $this->n[$j] += 1;
             }
         }
-
         $X = new SparseMatrix($m, $n);
         $y = $this->exampleLabels;
-
         foreach ($this->examples as $i => $features) {
             $u = array();
             $sum = 0;
-
             // First compute the unnormalized TF * IDF term weights and keep
             // track of the sum of all weights in the document.
             foreach ($features as $j => $count) {
@@ -427,7 +402,6 @@ class WeightedFeatures extends Features
                 $u[$j] = $weight;
                 $sum += $weight * $weight;
             }
-
             // Now normalize each of the term weights.
             $norm = sqrt($sum);
             foreach (array_keys($features) as $j) {
@@ -435,15 +409,12 @@ class WeightedFeatures extends Features
             }
             $X->setRow($i, $features);
         }
-
         return array($X, $y);
     }
-
     function mapDocument($tokens)
     {
         $u = array();
         $sum = 0;
-
         ksort($this->current);
 
         foreach ($this->current as $j => $count) {
@@ -453,19 +424,15 @@ class WeightedFeatures extends Features
             $u[$j] = $weight;
             $sum += $weight * $weight;
         }
-
         $norm = sqrt($sum);
         $x = array();
         foreach (array_keys($this->current) as $j) {
             $x[$j] = $u[$j] / $norm;
         }
-
         $this->current = array();
         return $x;
     }
 }
-
-
 /**
  * A sparse matrix implementation based on an associative array of associative
  * arrays.
@@ -479,33 +446,29 @@ class WeightedFeatures extends Features
  * @package seek_quarry
  * @subpackage classifier
  */
-class SparseMatrix implements Iterator
+class SparseMatrix implements Iterator //Iterator is built-in to PHP
 {
     /**
      * The number of rows, regardless of whether or not some are empty.
      * @var int
      */
     var $m;
-
     /**
      * The number of columns, regardless of whether or not some are empty.
      * @var int
      */
     var $n;
-
     /**
      * The number of non-zero entries.
      * @var int
      */
     var $nonzero = 0;
-
     /**
      * The actual matrix data, an associative array mapping row indices to
      * associative arrays mapping column indices to their values.
      * @var array
      */
     var $data;
-
     /**
      * Initializes a new sparse matrix with specific dimensions.
      *
@@ -518,11 +481,30 @@ class SparseMatrix implements Iterator
         $this->n = $n;
         $this->data = array();
     }
-
-    function rows()    { return $this->m; }
-    function columns() { return $this->n; }
-    function nonzero() { return $this->nonzero; }
-
+    /**
+     * Accessor method which the number of rows in the matrix
+     * @return number of rows
+     */
+    function rows() 
+    {
+        return $this->m;
+    }
+    /**
+     * Accessor method which the number of columns in the matrix
+     * @return number of columns
+     */
+    function columns() 
+    {
+        return $this->n; 
+    }
+    /**
+     * Accessor method which the number of nonzero entries in the matrix
+     * @return number of nonzero entries
+     */
+    function nonzero()
+    {
+        return $this->nonzero;
+    }
     /**
      * Sets a particular row of data, keeping track of any new non-zero
      * entries.
@@ -535,7 +517,6 @@ class SparseMatrix implements Iterator
         $this->data[$i] = $row;
         $this->nonzero += count($row);
     }
-
     /**
      * Given two sets of row indices, returns two new sparse matrices
      * consisting of the corresponding rows.
@@ -559,9 +540,7 @@ class SparseMatrix implements Iterator
         }
         return array($a, $b);
     }
-
     /* Iterator Interface */
-
     function rewind() { reset($this->data); }
     function current() { return current($this->data); }
     function key() { return key($this->data); }

@@ -22,8 +22,8 @@
  *
  *  END LICENSE
  *
- * Web page used to display information about the web robot used in
- * the SeekQuarry/Yioop Search engine
+ * Web page used to display information about the terms cna condition for
+ * the use of this web site
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry

@@ -30,16 +30,13 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /** Load base controller class if needed */
 require_once BASE_DIR."/controllers/controller.php";
 /** We look cached web pages up in a WebArchiveBundle, so load this class */
 require_once BASE_DIR."/lib/web_archive_bundle.php";
 /** Loads common constants for web crawling */
 require_once BASE_DIR."/lib/crawl_constants.php";
-
 /**
  * Fetcher machines also act as archives for complete caches of web pages,
  * this controller is used to handle access to these web page caches
@@ -65,21 +62,14 @@ class ArchiveController extends Controller implements CrawlConstants
      */
     function processRequest()
     {
-
         $data = array();
-
-
         /* do a quick test to see if this is a request seems like from a
            legitimate machine
          */
         if(!$this->checkRequest()) {return; }
-
         $activity = $this->clean($_REQUEST['a'], "string");
         $this->call($activity);
-
     }
-
-
     /**
      * Retrieves the requested page from the WebArchiveBundle and echo it page,
      * base64 encoded
@@ -98,10 +88,7 @@ class ArchiveController extends Controller implements CrawlConstants
                 $crawl_time);
         $page = $web_archive->getPage($offset,
             $partition);
-
         echo base64_encode(serialize($page));
     }
-
-
 }
 ?>

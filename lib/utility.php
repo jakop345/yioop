@@ -34,8 +34,6 @@
  * @filesource
  */
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
-
 /**
  * User defined function to perform error handling for yioop if
  * the error box was checked in the configure menu.
@@ -80,7 +78,6 @@ function yioop_error_handler($errno, $errstr, $errfile, $errline,
     }
     echo "</pre>";
 }
-
 /**
  * Adds delimiters to a regex that may or may not have them
  *
@@ -99,7 +96,6 @@ function addRegexDelimiters($expression)
     }
     return $expression;
 }
-
 /**
  * Yioop replacement for parse_ini_file($name, true) in case
  * parse_ini_file is on the disable_functions list. Name has underscores
@@ -153,7 +149,6 @@ function parse_ini_with_fallback($file)
     }
     return $ini;
 }
-
 /**
  * Auxiliary function called from parse_ini_with_fallback to extract from
  * the $matches array produced by the former function's preg_match
@@ -180,7 +175,6 @@ function getIniAssignMatch($matches)
     }
     return false;
 }
-
 /**
  * Copies from $source string beginning at position $start, $length many
  * bytes to destination string
@@ -212,7 +206,6 @@ function charCopy($source, &$destination, $start, $length, $timeout_msg = "")
         }
     }
 }
-
 /**
  *  Encodes an integer using variable byte coding.
  *
@@ -229,7 +222,6 @@ function vByteEncode($pos_int)
     }
     return $result;
 }
-
 /**
  *  Decodes from a string using variable byte coding an integer.
  *
@@ -248,7 +240,6 @@ function vByteDecode(&$str, &$offset)
 
     return $pos_int;
 }
-
 /**
  * Makes an packed integer string from a docindex and the number of
  * occurrences of a word in the document with that docindex.
@@ -271,7 +262,6 @@ function packPosting($doc_index, $position_list, $delta = true)
     if(isset($delta_list[0])){
         $delta_list[0]++;
     }
-
     if( $doc_index >= (2 << 14) && isset($delta_list[0])
         && $delta_list[0] < (2 << 9)  && $doc_index < (2 << 17)) {
         $delta_list[0] += (((2 << 17) + $doc_index) << 9);
@@ -282,7 +272,6 @@ function packPosting($doc_index, $position_list, $delta = true)
     $encoded_list = encodeModified9($delta_list);
     return $encoded_list;
 }
-
 /**
  * Given a packed integer string, uses the top three bytes to calculate
  * a doc_index of a document in the shard, and uses the low order byte
@@ -302,7 +291,6 @@ function unpackPosting($posting, &$offset, $dedelta = true)
 {
     $delta_list = decodeModified9($posting, $offset);
     $doc_index = array_shift($delta_list);
-
     if(($doc_index & (2 << 26)) > 0) {
         $delta0 = ($doc_index & ((2 << 9) - 1));
         array_unshift($delta_list, $delta0);
@@ -315,14 +303,11 @@ function unpackPosting($posting, &$offset, $dedelta = true)
     if(isset($delta_list[0])) {
         $delta_list[0]--;
     }
-
     if($dedelta) {
         deDeltaList($delta_list);
     }
-
     return array($doc_index, $delta_list);
 }
-
 /**
  * This method is used while appending one index shard to another.
  * Given a string of postings adds $add_offset add to each offset to the
@@ -345,7 +330,6 @@ function addDocIndexPostings(&$postings, $add_offset)
         $posting_list = call_user_func_array( "array_merge",
             array_map("unpackListModified9", unpack("N*", $post_string)));
         if($posting_list === false) { continue; }
-
         $doc_index = array_shift($posting_list);
         if(($doc_index & (2 << 26)) > 0) {
             $post0 = ($doc_index & ((2 << 9) - 1));
@@ -356,9 +340,7 @@ function addDocIndexPostings(&$postings, $add_offset)
         } else {
             $doc_index--;
         }
-
         $doc_index += $add_offset;
-
         if($doc_index >= (2 << 14) && isset($posting_list[0])
             && $posting_list[0] < (2 << 9)  && $doc_index < (2 << 17)) {
             $posting_list[0] += (((2 << 17) + $doc_index) << 9);
@@ -370,8 +352,6 @@ function addDocIndexPostings(&$postings, $add_offset)
     }
     return $new_postings;
 }
-
-
 /**
  * Computes the difference of a list of integers.
  * i.e., (a1, a2, a3, a4) becomes (a1, a2-a1, a3-a2, a4-a3)
@@ -390,7 +370,6 @@ function deltaList($list)
     }
     return $delta_list;
 }
-
 /**
  * Given an array of differences of integers reconstructs the
  * original list. This computes the inverse of the deltaList function
@@ -407,7 +386,6 @@ function deDeltaList(&$delta_list)
         $delta_list[$i] += $delta_list[$i - 1];
     }
 }
-
 /**
  * Encodes a sequence of integers x, such that 1 <= x <= 2<<28-1
  * as a string.
@@ -443,9 +421,7 @@ function encodeModified9($list)
         {
             $cur_len++;
             $cur_size = (1 << $cur_len) - 1;
-
         }
-
         if($cnt < $MOD9_PACK_POSSIBILITIES[$cur_len]) {
             $pack_list[] = $elt;
             $cnt++;
@@ -467,10 +443,8 @@ function encodeModified9($list)
     $continue_bits = ($continue_bits == 3) ? 0 : 1;
     $list_string .= packListModified9($continue_bits,
         $MOD9_PACK_POSSIBILITIES[$cur_len], $pack_list);
-
     return $list_string;
 }
-
 /**
  * Packs the contents of a single word of a sequence being encoded
  * using Modified9.
@@ -497,8 +471,6 @@ function packListModified9($continue_bits, $cnt, $pack_list)
     $out_string[0] = chr(($continue_bits << 6) + $code + ord($out_string[0]));
     return $out_string;
 }
-
-
 /**
  * Returns the next complete posting string from $input_string being at offset.
  * Does not do any decoding.
@@ -534,7 +506,6 @@ function nextPostString(&$input_string, &$offset)
     }
     return $post_string;
 }
-
 /**
  * Decoded a sequence of positive integers from a string that has been
  * encoded using Modified 9
@@ -553,7 +524,6 @@ function decodeModified9($input_string, &$offset)
 }
 
 if(!extension_loaded("yioop") ) {
-
 /**
  * Decoded a single word with high two bits off according to modified 9
  *
@@ -602,7 +572,6 @@ function unpackListModified9($encoded_list)
     }
     return $decoded_list;
 }
-
 /**
  *  Given an int encoding encoding a doc_index followed by a position
  *  list using Modified 9, extracts just the doc_index.
@@ -646,7 +615,6 @@ function docIndexModified9($encoded_list)
             $int_string[0] = chr($first_char - $code);
             $encoded_list = (int)hexdec(bin2hex($int_string));
     }
-
     do {
         if($doc_index = (($encoded_list >> $shift) & $mask)) {
             $doc_index -= (($doc_index & $t26) > 0) ?
@@ -655,11 +623,8 @@ function docIndexModified9($encoded_list)
         }
         $shift -= $num_bits;
     } while($shift >= 0);
-
     return $doc_index; //shouldn't get here
-
 }
-
 /**
  * Unpacks an int from a 4 char string
  *
@@ -673,7 +638,6 @@ function unpackInt($str)
     }
     return false;
 }
-
 }// end extension_loaded check
 
 /**
@@ -686,8 +650,6 @@ function packInt($my_int)
 {
     return pack("N", $my_int);
 }
-
-
 /**
  * Unpacks a float from a 4 char string
  *
@@ -700,7 +662,6 @@ function unpackFloat($str)
     $tmp = unpack("f", $str);
     return $tmp[1];
 }
-
 /**
  * Packs an float into a 4 char string
  *
@@ -711,7 +672,6 @@ function packFloat($my_float)
 {
     return pack("f", $my_float);
 }
-
 /**
  * Converts a string to string where each char has been replaced by its
  * hexadecimal equivalent
@@ -727,7 +687,6 @@ function toHexString($str)
     }
     return $out;
 }
-
 /**
  * Converts a string to string where each char has been replaced by its
  * binary equivalent
@@ -743,7 +702,6 @@ function toBinString($str)
     }
     return $out;
 }
-
 /**
  * Converts a string of the form some int followed by K, M, or G.
  * into its integer equivalent. For example 4K would become 4000,
@@ -772,7 +730,6 @@ function metricToInt($metric_num)
     }
     return $num;
 }
-
 /**
  *  Logs a message to a logfile or the screen
  *
@@ -784,7 +741,6 @@ function metricToInt($metric_num)
  *      being used elsewhere in Yioop, so to remove the dependency bzip was
  *      replaced )).
  */
-
 function crawlLog($msg, $lname = NULL, $check_process_handler = false)
 {
     static $logname;
@@ -835,7 +791,6 @@ function crawlLog($msg, $lname = NULL, $check_process_handler = false)
         echo $out_msg."\n";
     }
 }
-
 /**
  * Writes a log message $msg if more than LOG_TIMEOUT time has passed since
  * the last time crawlTimeoutLog was callled. Useful in loops to write a message
@@ -859,7 +814,6 @@ function crawlTimeoutLog($msg)
     crawlLog($out_msg." Current memory usage:".memory_get_usage());
     $cache_time = microtime();
 }
-
 /**
  *  Computes an 8 byte hash of a string for use in storing documents.
  *
@@ -892,7 +846,6 @@ function crawlHash($string, $raw = false)
 
     return $hash;
 }
-
 /**
  *  Used to create a 20 byte hash of a string (typically a word)
  *  together with a string of meta data about the page that the word
@@ -921,7 +874,6 @@ function crawlHashWord($string, $raw = false, $meta_string = "")
     }
     return $hash;
 }
-
 /**
  *  Used to compute all hashes for a phrase based on each possible cond_max
  *  point. Here cond_max is the location of a substring of a phase which is
@@ -938,7 +890,6 @@ function allCrawlHashPaths($string, $metas = array(),
     if($encode_metas != array()) {
         $mask_num = min(11, count($encode_metas));
         $found_materialized_metas = findMaterialMetas($metas, $encode_metas);
-
         foreach($encode_metas as $meta) {
             $mask .= (isset($found_materialized_metas[$meta])) ? "\xFF": "\x00";
         }
@@ -1042,13 +993,11 @@ function allCrawlHashPaths($string, $metas = array(),
         $encode_metas = array();
         $j++;
     } while($pos > 0 && $old_pos != $pos);
-
     if(count($hashes) == 1) {
         return $hashes[0];
     }
     return $hashes;
 }
-
 /**
  * Give an array of values for meta words (for example, media:video, lang:en)
  * and an array of names of meta words to be encoded into word_id's
@@ -1081,7 +1030,6 @@ function findMaterialMetas($metas, $encode_metas)
     }
     return $found_materialized_metas;
 }
-
 /**
  * Give an array of values for meta words (for example, media:video)
  * and an array of names of meta words to be encoded into word_id's
@@ -1115,7 +1063,6 @@ function encodeMaterialMetas($metas, $encode_metas)
     }
     return $meta_string;
 }
-
 /**
  *  Given a string makes an 20 byte hash path - where first 8 bytes is
  *  a hash of the string before path start, last 12 bytes is the path
@@ -1303,7 +1250,6 @@ function crawlHashPath($string, $path_start = 0, $metas = array(),
     }
     return $hash;
 }
-
 /**
  *  Used to compare to ids for index dictionary lookup. ids
  *  might be either a crawlHash or a 8 byte crawlHash together
@@ -1345,7 +1291,6 @@ function compareWordHashes($id1, $id2, $shift = 0)
     $id2 = packInt(unpackInt(substr($id2, $pos, 4)) >> $shift);
     return strcmp($id1, $id2);
 }
-
 /**
  * Converts a crawl hash number to something closer to base64 coded but
  * so doesn't get confused in urls or DBs
@@ -1361,8 +1306,6 @@ function base64Hash($string)
 
     return $hash;
 }
-
-
 /**
  * Decodes a crawl hash number from base64 to raw ASCII
  *
@@ -1379,7 +1322,6 @@ function unbase64Hash($base64)
 
     return $raw;
 }
-
 /**
  * Encodes a string in a format suitable for post data
  * (mainly, base64, but str_replace data that might mess up post in result)
@@ -1395,7 +1337,6 @@ function webencode($str)
     $str = str_replace("=", "~", $str);
     return $str;
 }
-
 /**
  * Decodes a string encoded by webencode
  *
@@ -1409,7 +1350,6 @@ function webdecode($str)
     $str = str_replace("~", "=", $str);
     return base64_decode($str);
 }
-
 /**
  * The crawlHash function is used to encrypt passwords stored in the database.
  * It tries to use the best version the Blowfish variant of php's crypt
@@ -1476,7 +1416,6 @@ function partitionByHash($table, $field, $num_partition, $instance,
     }
     return $out_table;
 }
-
 /**
  * Used by a controller to say which queue_server should receive
  * a given input
@@ -1509,7 +1448,6 @@ function calculatePartition($input, $num_partition, $callback = NULL)
 
     return $hash_int;
 }
-
 /**
  * Measures the change in time in seconds between two timestamps to microsecond
  * precision
@@ -1526,15 +1464,16 @@ function changeInMicrotime($start, $end = NULL)
     return (substr($end, 11) - substr($start, 11))
         + (substr($end, 0, 9) - substr($start, 0, 9));
 }
-
 /**
- *
+ * Timestamp of current epoch with microsecond precision useful for situations
+ *      where time() might cause too many collisions (account creation, etc)
+ * @return string timestamp to microsecond of time in second since start of
+ *      current epoch
  */
 function microTimestamp()
 {
     return vsprintf('%d.%06d', gettimeofday());
 }
-
 /**
  *  Converts a CSS unit string into its equivalent in pixels. This is
  *  used by @see SvgProcessor.
@@ -1554,7 +1493,6 @@ function convertPixels($value)
     $unit = substr($value, $len - 2);
     switch($unit)
     {
-
         case "cm":
         case "pt":
             return intval(28*$num);
@@ -1581,8 +1519,6 @@ function convertPixels($value)
     }
     return intval($num);
 }
-
-
 /**
  * This is a callback function used in the process of recursively deleting a
  * directory
@@ -1600,7 +1536,6 @@ function deleteFileOrDir($file_or_dir)
         }
     }
 }
-
 /**
  * This is a callback function used in the process of recursively chmoding to
  * 777 all files in a folder
@@ -1618,7 +1553,6 @@ function setWorldPermissions($file)
     chmod($file, 0777);
     set_error_handler("yioop_error_handler");
 }
-
 /**
  * This is a callback function used in the process of recursively calculating
  * an array of file modification times and files sizes for a directorys
@@ -1635,9 +1569,7 @@ function fileInfo($file)
     $info["modified"] = filemtime($file);
     return array($info);
 }
-
 //ordering functions used in sorting
-
 /**
  *  Callback function used to sort documents by a field
  *
@@ -1658,7 +1590,6 @@ function orderCallback($word_doc_a, $word_doc_b, $order_field = NULL)
     return ((float)$word_doc_a[$field] >
         (float)$word_doc_b[$field]) ? -1 : 1;
 }
-
 /**
  *  Callback function used to sort documents by a field in reverse order
  *
@@ -1679,7 +1610,6 @@ function rorderCallback($word_doc_a, $word_doc_b, $order_field = NULL)
     return ((float)$word_doc_a[$field] >
         (float)$word_doc_b[$field]) ? 1 : -1;
 }
-
 /**
  * Callback to check if $a is less than $b
  *
@@ -1698,7 +1628,6 @@ function lessThan($a, $b) {
     }
     return ($a < $b) ? -1 : 1;
 }
-
 /**
  *  Callback to check if $a is greater than $b
  *
@@ -1717,7 +1646,6 @@ function greaterThan($a, $b) {
     }
     return ($a > $b) ? -1 : 1;
 }
-
 /**
  * shorthand for echo
  *
@@ -1727,7 +1655,6 @@ function e($text)
 {
     echo $text;
 }
-
 /**
  * Used to read a line of input from the command-line
  * @return string from the command-line
@@ -1740,7 +1667,6 @@ function readInput()
     fclose($stdin);
     return $line;
 }
-
 /**
  * Used to read a line of input from the command-line
  * (on unix machines without echoing it)
@@ -1757,7 +1683,6 @@ function readPassword()
 
     return $line;
 }
-
 /**
  * Used to read a several lines from the terminal up until
  * a last line consisting of just a "."
@@ -1774,7 +1699,6 @@ function readMessage()
 
     return rtrim($message);
 }
-
 /**
  * Checks if class_1 is the same as class_2 of has class_2 as a parent
  * Behaves like 3 param version (last param true) of PHP is_a function
@@ -1786,7 +1710,6 @@ function generalIsA($class_1, $class_2)
     if($class_1 == $class_2) return true;
     return (is_a($class_1, $class_2) || is_subclass_of($class_1, $class_2));
 }
-
 /**
  *  Given an array of arrays acting much like a database table, this
  *  returns a sequence of key value pairs, where the keys are the distinct
@@ -1809,7 +1732,6 @@ function arrayColumnCount($arr, $key_column, $count_column)
     }
     return $out_arr;
 }
-
 /**
  *  Given the contents of a start XML/HMTL tag strips out all the attributes
  *  non listed in $safe_attribute_list
@@ -1971,7 +1893,6 @@ function diff($data1, $data2, $html = false)
     }
     return $out_string;
 }
-
 /**
  *  Computes the longest common subsequence of two arrays
  *
@@ -2052,7 +1973,6 @@ function extractLCSFromTable($lcs_moves, $lines, $i, $j, $offset, &$lcs)
         extractLCSFromTable($lcs_moves, $lines, $i, $j - 1, $offset, $lcs);
     }
 }
-
 /**
  * This method generates Fiat-Shamir modulus. It uses
  * openssl public key method to generate the public key and
@@ -2080,7 +2000,6 @@ function extractLCSFromTable($lcs_moves, $lines, $i, $j, $offset, &$lcs)
     }
     return $tmp;
 }
-
 /**
  *  Returns a random prime of the given length in decimal
  *
@@ -2136,7 +2055,6 @@ function probablyPrime($num, $accuracy)
     }
     return true;
 }
-
 /**
  * Generates a random big number between the two big number $low and $high
  *
@@ -2165,7 +2083,6 @@ function bcrand($low, $high)
     $out = bcadd($rand_in_range, $low);
     return $out;
 }
-
 /**
  * Convert hexadecimal number to decimal using BC math PHP
  * library. It is used to convert very large hex value to decimal value

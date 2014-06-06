@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * Element used to draw forms to set up the various external servers
  * that might be connected with a Yioop installation
@@ -41,7 +39,6 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @package seek_quarry
  * @subpackage element
  */
-
 class ServersettingsElement extends Element
 {
     /**
@@ -57,7 +54,6 @@ class ServersettingsElement extends Element
         <div class="current-activity">
         <form id="serverSettingsForm" method="post" action=''>
         <input type="hidden" name="c" value="admin" />
-
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" name="a" value="serverSettings" />
@@ -110,10 +106,11 @@ class ServersettingsElement extends Element
             </fieldset>
             </div>
             <div class="top-margin">
-            <fieldset class="extra-wide-field"><legend><?php
+            <fieldset><legend><?php
                 e(tl('configure_element_database_setup'))?></legend>
                 <div ><label for="database-system"><b><?php
-                    e(tl('serversettings_element_database_system')); ?></b></label>
+                    e(tl('serversettings_element_database_system'));
+                    ?></b></label>
                     <?php $this->view->helper("options")->render(
                         "database-system", "DBMS",
                         $data['DBMSS'], $data['DBMS']);
@@ -149,7 +146,7 @@ class ServersettingsElement extends Element
             </fieldset>
             </div>
             <div class = "top-margin">
-            <fieldset class="extra-wide-field">
+            <fieldset >
                 <legend><label
                 for="account-registration"><?php
                 e(tl('serversettings_element_account_registration'));
@@ -237,34 +234,6 @@ class ServersettingsElement extends Element
                 </div>
             </fieldset>
             </div>
-            <div class="top-margin">
-            <fieldset>
-                <legend><label
-                for="captcha-setting"><?php
-                e(tl('serversettings_element_captcha_setting'));
-                ?>
-                </label></legend>
-                    <?php $this->view->helper("options")->render(
-                        "captcha-setting", "CAPTCHA_MODE",
-                         $data['CAPTCHA_MODES'],
-                         $data['CAPTCHA_MODE']);
-                ?>
-            </fieldset>
-            </div>
-            <div class="top-margin">
-            <fieldset>
-                <legend><label
-                for="authentication-mode"><?php
-                e(tl('serversettings_element_authentication_mode'));
-                ?>
-                </label></legend>
-                    <?php $this->view->helper("options")->render(
-                        "authentication-mode", "AUTHENTICATION_MODE",
-                         $data['AUTHENTICATION_MODES'],
-                         $data['AUTHENTICATION_MODE']);
-                ?>
-            </fieldset>
-            </div>
             <div class="top-margin center">
             <button class="button-box" type="submit"><?php
                 e(tl('serversettings_element_submit')); ?></button>
@@ -272,7 +241,6 @@ class ServersettingsElement extends Element
             </div>
         </form>
         </div>
-
     <?php
     }
 }

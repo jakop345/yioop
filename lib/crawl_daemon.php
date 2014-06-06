@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * Load system-wide defines
  */
@@ -45,7 +43,6 @@ require_once BASE_DIR."/lib/utility.php";
  *  Load common constants for crawling
  */
 require_once BASE_DIR."/lib/crawl_constants.php";
-
 /**
  * Used to run scripts as a daemon on *nix systems
  * To use CrawlDaemon need to declare ticks first in a scope that
@@ -57,7 +54,6 @@ require_once BASE_DIR."/lib/crawl_constants.php";
  */
 class CrawlDaemon implements CrawlConstants
 {
-
     /**
      * Name prefix to be used on files associated with this daemon
      * (such as lock like and messages)
@@ -65,7 +61,6 @@ class CrawlDaemon implements CrawlConstants
      * @static
      */
     static $name;
-
     /**
      *  Subname of the name prefix used on files associated with this daemon
      *  For example, the name might be fetcher, the subname might 2 to indicate
@@ -75,14 +70,12 @@ class CrawlDaemon implements CrawlConstants
      * @static
      */
      static $subname;
-
     /**
      * Used by processHandler to decide whether run as daemon or not
      * @var string
      * @static
      */
     static $mode;
-
     /**
      * Tick callback function used to update the timestamp in this processes
      * lock. If lock_file does not exist or more than PROCESS_TIMEOUT
@@ -121,7 +114,6 @@ class CrawlDaemon implements CrawlConstants
         file_put_contents($lock_file, $now);
         return true;
     }
-
     /**
      * Used to send a message the given daemon or run the program in the
      * foreground.
@@ -163,9 +155,7 @@ class CrawlDaemon implements CrawlConstants
                 "process, not as a daemon, output going to the terminal\n";
             exit();
         }
-
         $messages_file = self::getMesssageFileName(self::$name, self::$subname);
-
         switch($argv[1])
         {
             case "start":
@@ -193,7 +183,6 @@ class CrawlDaemon implements CrawlConstants
                 chmod($messages_file, 0777);
                 define("LOG_TO_FILES", false);
             break;
-
             case "child":
                 self::$mode = 'daemon';
                 $info = array();
@@ -203,14 +192,11 @@ class CrawlDaemon implements CrawlConstants
                 define("LOG_TO_FILES", true);
                     // if false log messages are sent to the console
             break;
-
             default:
                 exit();
             break;
         }
-
     }
-
     /**
      * Used to start a daemon running in the background
      *
@@ -269,7 +255,6 @@ class CrawlDaemon implements CrawlConstants
             exit();
         }
     }
-
     /**
      * Used to stop a daemon that is running in the background
      *
@@ -292,7 +277,6 @@ class CrawlDaemon implements CrawlConstants
             exit();
         }
     }
-
     /**
      * Used to return the string name of the messages file used to pass
      * messages to a daemon running in the background
@@ -310,7 +294,6 @@ class CrawlDaemon implements CrawlConstants
         return CRAWL_DIR."/schedules/".self::getNameString($name, $subname)
             . "_messages.txt";
     }
-
     /**
      * Used to return the string name of the lock file used to pass
      * by a daemon
@@ -328,7 +311,6 @@ class CrawlDaemon implements CrawlConstants
         return CRAWL_DIR."/schedules/".self::getNameString($name, $subname)
             . "_lock.txt";
     }
-
     /**
      * Used to return a string name for a given daemon instance
      *
@@ -341,9 +323,8 @@ class CrawlDaemon implements CrawlConstants
      */
     static function getNameString($name, $subname)
     {
-            return ($subname == "") ? $name : $subname."-".$name;
+        return ($subname == "") ? $name : $subname."-".$name;
     }
-
     /**
      * Returns the statuses of the running daemons
      *
@@ -375,6 +356,5 @@ class CrawlDaemon implements CrawlConstants
         }
         return $active_daemons;
     }
-
 }
  ?>

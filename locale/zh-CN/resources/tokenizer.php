@@ -52,12 +52,6 @@ class ZhTokenizer
     {
         return $page;
     }
-    
-    static function segment($pre_segment)
-    {
-        return PhraseParser::reverseMaximalMatch($pre_segment, "zh-CN");
-    }
-
     /**
      *  A word segmenter.
      *  Such a segmenter on input thisisabunchofwords would output
@@ -65,6 +59,21 @@ class ZhTokenizer
      *
      *  @param string $pre_segment  before segmentation
      *  @return string with words separated by space
+     */
+    static function segment($pre_segment)
+    {
+        return PhraseParser::reverseMaximalMatch($pre_segment, "zh-CN");
+    }
+
+    /**
+     * For a language with word stems computes a stem of a word. For
+     * Chinese just returns false.
+     *
+     * As an example of the stem of a word consider: jumps, jumping, jumpy,
+     * all have jump as a stem
+     *
+     * @param string $word the string to stem
+     * @return string the stem of $words
      */
     static function stem($word)
     {

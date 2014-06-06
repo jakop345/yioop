@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /** Loads processor used for */
 if(!isset($PAGE_PROCESSORS)) {
     $PAGE_PROCESSORS = array();
@@ -46,7 +44,6 @@ require_once BASE_DIR."/lib/utility.php";
 require_once BASE_DIR."/lib/crawl_constants.php";
 /** Used for guessLocaleFromString */
 require_once BASE_DIR."/lib/locale_functions.php";
-
 /**
  *  Used to extract emails, phone numbers, and addresses from a web page.
  *  These are extracted into the EMAILS, PHONE_NUMBERS, and
@@ -58,7 +55,6 @@ require_once BASE_DIR."/lib/locale_functions.php";
  */
 class AddressesPlugin extends IndexingPlugin implements CrawlConstants
 {
-
     /**
      *  Associative array of world countries and country code. Some
      *  entries are duplicated into country's local script
@@ -161,7 +157,6 @@ class AddressesPlugin extends IndexingPlugin implements CrawlConstants
         "VIETNAM" => "VN","VANUATU" => "VU","WALLIS AND FUTUNA" => "WF",
         "SAMOA" => "WS","YEMEN" => "YE", "MAYOTTE" => "YT",
         "SOUTH AFRICA" => "ZA","ZAMBIA" => "ZM", "ZIMBABWE" => "ZW");
-
     /**
      *  List of common regions, abbreviations, and local spellings of
      *  regions of the US, Canada, Australia, UK, as well as major cities
@@ -286,7 +281,6 @@ class AddressesPlugin extends IndexingPlugin implements CrawlConstants
         "DIU", "DL", "LD", "LAKSHADWEEP", "PY", "PUDUCHERRY", "PONDICHERRY",
         "澳門半島"
     );
-
     /**
      * This method is called by a PageProcessor in its handle() method
      * just after it has processed a web page. This method allows
@@ -327,7 +321,6 @@ class AddressesPlugin extends IndexingPlugin implements CrawlConstants
         $subdocs = array($this->parseSubdoc($page));
         return $subdocs;
     }
-
     /**
      *  Adjusts the document summary of a page after the page processor's
      *  process method has been called so that the subdoc's fields
@@ -363,7 +356,6 @@ class AddressesPlugin extends IndexingPlugin implements CrawlConstants
             $summary[self::SUBDOCS] = array_values($summary[self::SUBDOCS]);
         }
     }
-
     /**
      *  Parses EMAILS, PHONE_NUMBERS and ADDRESSES from $text and returns
      *  an array with these three fields containing sub-arrays of the given
@@ -442,7 +434,6 @@ class AddressesPlugin extends IndexingPlugin implements CrawlConstants
         $subdocs["ADDRESSES"] = $addresses;
         return $subdocs;
     }
-
     /**
      *  Checks if the passed sequence of lines has enough features of a
      *  postal address to call it an address. If so, return the address as
@@ -475,7 +466,6 @@ class AddressesPlugin extends IndexingPlugin implements CrawlConstants
         }
         return $address;
     }
-
     /**
      *  Used to check if a line countains a word associated with a province,
      *  state or major city.
@@ -503,7 +493,6 @@ class AddressesPlugin extends IndexingPlugin implements CrawlConstants
         }
         return false;
     }
-
     /**
      *  Used to check if a line countains either an email address or a phone
      *  number
@@ -523,7 +512,6 @@ class AddressesPlugin extends IndexingPlugin implements CrawlConstants
         }
         return false;
     }
-
     /**
      *  Extracts substrings from the provided $line that are in the format
      *  of an email address. Returns first email from line
@@ -539,7 +527,6 @@ class AddressesPlugin extends IndexingPlugin implements CrawlConstants
         preg_match_all($email_regex, $line, $emails);
         return $emails[0];
     }
-
     /**
      *  Checks for a phone number related keyword in the line and if
      *  found extracts digits which are presumed to be a phone number
@@ -568,13 +555,12 @@ class AddressesPlugin extends IndexingPlugin implements CrawlConstants
         }
         return $phones;
     }
-
     /**
-     *  Used to check if a line countains a word associated with a World
+     *  Used to check if a line contains a word associated with a World
      *  country or country code.
      *
      *  @param string $line from address to check
-     *  @return bool whether it contains  acountry term
+     *  @return bool whether it contains a country term
      */
     function checkCountry($line)
     {
@@ -595,8 +581,13 @@ class AddressesPlugin extends IndexingPlugin implements CrawlConstants
         }
         return false;
     }
-
-
+    /**
+     *  Used to check if a line contains a word associated with a ZIP
+     *  or Postal code
+     *
+     *  @param string $line from address to check
+     *  @return bool whether it contains such a code
+     */
     function checkZipPostalCodeWords($line)
     {
         $line = preg_replace("/\.|\s+/", " ", $line);
@@ -605,7 +596,6 @@ class AddressesPlugin extends IndexingPlugin implements CrawlConstants
         }
         return false;
     }
-
     /**
      *  Used to check if a given line in an address candidate has features
      *  associated with being a street address.
@@ -625,7 +615,6 @@ class AddressesPlugin extends IndexingPlugin implements CrawlConstants
         }
         return false;
     }
-
     /**
      * Returns an array of additional meta words which have been added by
      * this plugin
@@ -639,7 +628,6 @@ class AddressesPlugin extends IndexingPlugin implements CrawlConstants
         return array("email:" =>  100,
             "phone:" => 100);
     }
-
     /**
      * Which mime type page processors this plugin should do additional
      * processing for
@@ -651,5 +639,4 @@ class AddressesPlugin extends IndexingPlugin implements CrawlConstants
         return array("TextProcessor"); //will apply to all subclasses
     }
 }
-
 ?>

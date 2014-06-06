@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * Abstract classed used to model iterating documents indexed in
  * an IndexArchiveBundle or set of such bundles.
@@ -45,49 +43,41 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  */
 abstract class IndexBundleIterator implements CrawlConstants
 {
-
     /**
      * Estimate of the number of documents that this iterator can return
      * @var int
      */
     var $num_docs;
-
     /**
      * The number of documents already iterated over
      * @var int
      */
     var $seen_docs;
-
     /**
      * The number of documents in the current block
      * @var int
      */
     var $count_block;
-
     /**
      * Cache of what currentDocsWithWord returns
      * @var array
      */
     var $pages;
-
     /**
      * Says whether the value in $this->count_block is up to date
      * @var bool
      */
     var $current_block_fresh;
-
     /**
      * Number of documents returned for each block (at most)
      * @var int
      */
     var $results_per_block = self::RESULTS_PER_BLOCK;
-
     /**
      *  Default number of documents returned for each block (at most)
      * @var int
      */
     const RESULTS_PER_BLOCK = 200;
-
     /**
      * Computes a relevancy score for a posting offset with respect to this
      * iterator and generation
@@ -97,13 +87,11 @@ abstract class IndexBundleIterator implements CrawlConstants
      * @return float a relevancy score based on BM25F.
      */
     abstract function computeRelevance($generation, $posting_offset);
-
     /**
      * Returns the iterators to the first document block that it could iterate
      * over
      */
     abstract function reset();
-
     /**
      * Forwards the iterator one group of docs
      * @param array $gen_doc_offset a generation, doc_offset pair. If set,
@@ -112,7 +100,6 @@ abstract class IndexBundleIterator implements CrawlConstants
      *      this value
      */
     abstract function advance($gen_doc_offset = NULL);
-
     /**
      * Gets the doc_offset and generation for the next document that
      * would be return by this iterator
@@ -121,7 +108,6 @@ abstract class IndexBundleIterator implements CrawlConstants
      *  and generation; -1 on fail
      */
     abstract function currentGenDocOffsetWithWord();
-
     /**
      * Hook function used by currentDocsWithWord to return the current block
      * of docs if it is not cached
@@ -129,7 +115,6 @@ abstract class IndexBundleIterator implements CrawlConstants
      * @return mixed doc ids and score if there are docs left, -1 otherwise
      */
      abstract function findDocsWithWord();
-
     /**
      *  Compares two arrays each containing a (generation, offset) pair.
      *
@@ -153,8 +138,6 @@ abstract class IndexBundleIterator implements CrawlConstants
         }
         return 1;
      }
-
-
     /**
      * Gets the current block of doc ids and score associated with the
      * this iterators word
@@ -169,7 +152,6 @@ abstract class IndexBundleIterator implements CrawlConstants
         $this->current_block_fresh = true;
         return $this->findDocsWithWord();
     }
-
     /**
      * Gets the summaries associated with the keys provided the keys
      * can be found in the current block of docs returned by this iterator
@@ -208,7 +190,6 @@ abstract class IndexBundleIterator implements CrawlConstants
         }
         return $out_pages;
     }
-
     /**
      * Get the current block of doc summaries for the word iterator and advances
      * the current pointer to the next block of documents. If a doc index is
@@ -221,17 +202,12 @@ abstract class IndexBundleIterator implements CrawlConstants
     function nextDocsWithWord($doc_offset = NULL)
     {
         $doc_block = $this->getCurrentDocsForKeys();
-
         if($doc_block == -1 || !is_array($doc_block) ) {
             return NULL;
         }
-
         $this->advance($doc_offset);
-
         return $doc_block;
-
     }
-
     /**
      * Updates the seen_docs count during an advance() call
      */
@@ -246,7 +222,6 @@ abstract class IndexBundleIterator implements CrawlConstants
         $this->current_block_fresh = false;
         $this->seen_docs += $this->count_block;
     }
-
     /**
      * Sets the value of the result_per_block field. This field controls
      * the maximum number of results that can be returned in one go by
@@ -255,7 +230,8 @@ abstract class IndexBundleIterator implements CrawlConstants
      * @param int $num the maximum number of results that can be returned by
      *      a block
      */
-     function setResultsPerBlock($num) {
+     function setResultsPerBlock($num)
+     {
         $this->results_per_block = $num;
      }
 }

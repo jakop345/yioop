@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * We use a variety of bloom filters for handling robots.txt data
  */
@@ -74,7 +72,6 @@ require_once "btree.php";
  *  Needed for robot stuff
  */
 require_once 'crawl_constants.php';
-
 /**
  * Encapsulates the data structures needed to have a queue of to crawl urls
  *
@@ -92,7 +89,6 @@ require_once 'crawl_constants.php';
  */
 class WebQueueBundle implements Notifier
 {
-
     /**
      * The folder name of this WebQueueBundle
      * @var string
@@ -182,7 +178,6 @@ class WebQueueBundle implements Notifier
      * Holds the B-Tree used for saving etag and expires http data
      */
     var $etag_btree;
-
     /**
      * Associative array of (hash_url => index) pairs saying where a hash_url
      * has moved in the priority queue. These moves are buffered and later
@@ -190,7 +185,6 @@ class WebQueueBundle implements Notifier
      * @var array
      */
     var $notify_buffer;
-
     /**
      * The largest offset for the url WebArchive before we rebuild it.
      * Entries are never deleted from the url WebArchive even if they are
@@ -199,45 +193,36 @@ class WebQueueBundle implements Notifier
      * the queue.
      */
     const max_url_archive_offset = 200000000;
-
     /**
      * Number of bytes in for hash table key
      */
     const HASH_KEY_SIZE = 8;
-
     /**
      * 4 bytes offset,  4 bytes index, 4 bytes flags
      */
     const HASH_VALUE_SIZE = 12;
-
     /**
      * Length of an IPv6 ip address (IPv4 address are padded)
      */
     const IP_SIZE = 16;
-
     /**
      * Url type flag
      */
      const NO_FLAGS = 0;
-
     /**
      * Url type flag
      */
      const ROBOT = 1;
-
     /**
      * Url type flag
      */
      const SCHEDULABLE = 2;
-
     /** Size of int
      **/
     const INT_SIZE = 4;
-
     /** Size of notify buffer
      **/
     const NOTIFY_BUFFER_SIZE = 1000;
-
     /**
      * Makes a WebQueueBundle with the provided parameters
      *
@@ -255,11 +240,9 @@ class WebQueueBundle implements Notifier
         $this->filter_size = $filter_size;
         $this->num_urls_ram = $num_urls_ram;
         $this->min_or_max = $min_or_max;
-
         if(!file_exists($this->dir_name)) {
             mkdir($this->dir_name);
         }
-
         /*
             if we are resuming a crawl we discard the old priority queue and
             associated hash table and archive new queue data will be read in
@@ -268,11 +251,9 @@ class WebQueueBundle implements Notifier
         // set up the priority queue... stores (hash(url), weight) pairs.
         $this->to_crawl_queue = new PriorityQueue($dir_name."/queue.dat",
             $num_urls_ram, self::HASH_KEY_SIZE, $min_or_max, $this, 0);
-
         /* set up the hash table... stores (hash(url), offset into url archive,
           index in priority queue) triples.
          */
-
         /*to ensure we can always insert into table, because of how deletions
           work we will periodically want to
           rebuild our table we will also want to give a little more than the
@@ -290,26 +271,21 @@ class WebQueueBundle implements Notifier
         }
         $this->to_crawl_archive = new WebArchive(
             $url_archive_name, new NonCompressor(), false, true);
-
         //timestamp for url filters (so can delete if get too old)
         if(!file_exists($dir_name."/url_timestamp.txt")) {
             file_put_contents($dir_name."/url_timestamp.txt", time());
         }
-
         //filter bundle to check if we have already visited a URL
         $this->url_exists_filter_bundle = new BloomFilterBundle(
             $dir_name."/UrlExistsFilterBundle", $filter_size);
-
         //timestamp for robot filters (so can delete if get too old)
         if(!file_exists($dir_name."/robot_timestamp.txt")) {
             file_put_contents($dir_name."/robot_timestamp.txt", time());
         }
-
         //filter to check if we have already have a copy of a robot.txt file
         if(file_exists($dir_name."/got_robottxt.ftr")) {
             $this->got_robottxt_filter = BloomFilterFile::load(
                 $dir_name."/got_robottxt.ftr");
-
         } else {
             $this->got_robottxt_filter = new BloomFilterFile(
                 $dir_name."/got_robottxt.ftr", $filter_size);
@@ -326,10 +302,8 @@ class WebQueueBundle implements Notifier
         //set up storage for robots.txt info
         $robot_archive_name = $dir_name."/robot_archive".
             NonCompressor::fileExtension();
-
         $this->robot_archive = new WebArchive(
             $robot_archive_name, new NonCompressor(), false, true);
-
         if(file_exists($dir_name."/robot.dat")) {
             $this->robot_table =
                 HashTable::load($dir_name."/robot.dat");
@@ -338,24 +312,19 @@ class WebQueueBundle implements Notifier
                 "/robot.dat", 16*$num_urls_ram,
                  self::HASH_KEY_SIZE, self::INT_SIZE);
         }
-
-
         //filter to check for and determine crawl delay
         if(file_exists($dir_name."/crawl_delay.ftr")) {
             $this->crawl_delay_filter =
                 BloomFilterFile::load($dir_name."/crawl_delay.ftr");
-
         } else {
             $this->crawl_delay_filter =
                 new BloomFilterFile($dir_name."/crawl_delay.ftr", $filter_size);
         }
-
         //Initialize B-Tree for storing cache page validation data
         $this->etag_btree = new BTree($dir_name.'/EtagExpiresTree');
 
         $this->notify_buffer = array();
     }
-
     /**
      * Adds an array of (url, weight) pairs to the WebQueueBundle.
      *
@@ -369,17 +338,13 @@ class WebQueueBundle implements Notifier
         for($i = 0; $i < $count; $i++) {
             $add_urls[$i][0] = & $url_pairs[$i][0];
         }
-
         $objects = $this->to_crawl_archive->addObjects("offset", $add_urls);
-
         for($i = 0; $i < $count; $i++) {
             $url = & $url_pairs[$i][0];
             $weight = $url_pairs[$i][1];
             if(isset($objects[$i]['offset'])) {
                 $offset = $objects[$i]['offset'];
-
                 $data = packInt($offset).packInt(0).packInt(self::NO_FLAGS);
-
                 if($this->insertHashTable(crawlHash($url, true), $data)) {
                     /*
                        we will change 0 to priority queue index in the
@@ -395,12 +360,10 @@ class WebQueueBundle implements Notifier
             }
         }
         $this->notifyFlush();
-
         if(isset($offset) && $offset > self::max_url_archive_offset) {
              $this->rebuildUrlTable();
         }
     }
-
     /**
      * Check is the url queue already contains the given url
      * @param string $url what to check
@@ -412,7 +375,6 @@ class WebQueueBundle implements Notifier
         $lookup_url = $this->lookupHashTable($hash_url);
         return ($lookup_url == false) ? false : true;
     }
-
     /**
      * Adjusts the weight of the given url in the priority queue by amount delta
      *
@@ -433,7 +395,6 @@ class WebQueueBundle implements Notifier
         if($data !== false)
         {
             $queue_index = unpackInt(substr($data, 4 , 4));
-
             $this->to_crawl_queue->adjustWeight($queue_index, $delta);
             if($flush) {
                 $this->notifyFlush();
@@ -442,7 +403,6 @@ class WebQueueBundle implements Notifier
           crawlLog("Can't adjust weight. Not in queue $url");
         }
     }
-
     /**
      * Sets the flag which provides additional information about the
      * kind of url, for a url already stored in the queue. For instance,
@@ -463,13 +423,11 @@ class WebQueueBundle implements Notifier
             list($probe, $data) = $both;
             $non_flag = substr($data, 0 , 8);
             $new_data = $non_flag . packInt($flag);
-
             $this->insertHashTable($hash_url, $new_data, $probe);
         } else {
           crawlLog("Can't set flag. Not in queue $url");
         }
     }
-
     /**
      * Removes a url from the priority queue.
      *
@@ -487,23 +445,17 @@ class WebQueueBundle implements Notifier
         } else {
             $hash_url = crawlHash($url, true);
         }
-        $both =
-            $this->lookupHashTable($hash_url, HashTable::RETURN_BOTH);
-
+        $both = $this->lookupHashTable($hash_url, HashTable::RETURN_BOTH);
         if(!$both) {
             crawlLog("Not in queue $url");
             return;
         }
         list($probe, $data) = $both;
-
         $queue_index = unpackInt(substr($data, 4 , 4));
-
         $this->to_crawl_queue->poll($queue_index);
         $this->notifyFlush();
         $this->deleteHashTable($hash_url, $probe);
-
     }
-
     /**
      * Gets the url and weight of the ith entry in the priority queue
      * @param int $i entry to look up
@@ -517,22 +469,16 @@ class WebQueueBundle implements Notifier
             crawlLog("web queue peek error on index $i");
             return false;
         }
-
         list($hash_url, $weight) = $tmp;
-
         $both = $this->lookupHashTable($hash_url, HashTable::RETURN_BOTH);
         if($both === false ) {
             crawlLog("web queue hash lookup error $hash_url");
             return false;
         }
         list($probe, $data) =  $both;
-
         $offset = unpackInt(substr($data, 0 , 4));
         $flag = unpackInt(substr($data, 8 , 4));
-
         $url_obj = $this->to_crawl_archive->getObjects($offset, 1, true, $fh);
-
-
         if(isset($url_obj[0][1][0])) {
             $url = $url_obj[0][1][0];
         } else {
@@ -540,20 +486,17 @@ class WebQueueBundle implements Notifier
         }
         return array($url, $weight, $flag, $probe);
     }
-
     /**
      * Pretty prints the contents of the queue bundle in order
      */
     function printContents()
     {
         $count = $this->to_crawl_queue->count;
-
         for($i = 1; $i <= $count; $i++) {
             list($url, $weight, $flag, $probe) = $this->peekQueue($i);
             print "$i URL: $url WEIGHT:$weight FLAG: $flag PROBE: $probe\n";
         }
     }
-
     /**
      * Gets the contents of the queue bundle as an array of ordered
      * url,weight, flag triples
@@ -568,7 +511,6 @@ class WebQueueBundle implements Notifier
         }
         return $contents;
     }
-
     /**
      * Makes the weight sum of the to-crawl priority queue sum to $new_total
      * @param int $new_total amount weights should sum to. All weights will be
@@ -580,9 +522,7 @@ class WebQueueBundle implements Notifier
         // we don't chance positions when normalize
         $this->to_crawl_queue->notify_buffer = array();
     }
-
     //Filter and Filter Bundle Methods
-
     /**
      * Opens the url WebArchive associated with this queue bundle in the
      * given read/write mode
@@ -593,7 +533,6 @@ class WebQueueBundle implements Notifier
     {
         return $this->to_crawl_archive->open($mode);
     }
-
     /**
      * Closes a file handle to the url WebArchive
      * @param resource $fh a valid handle to the url WebArchive file
@@ -602,7 +541,6 @@ class WebQueueBundle implements Notifier
     {
         $this->to_crawl_archive->close($fh);
     }
-
     /**
      * Adds the supplied url to the url_exists_filter_bundle
      * @param string $url url to add
@@ -611,7 +549,6 @@ class WebQueueBundle implements Notifier
     {
         $this->url_exists_filter_bundle->add($url);
     }
-
     /**
      * Removes all url objects from $url_array which have been seen
      * @param array &$url_array objects to check if have been seen
@@ -624,7 +561,6 @@ class WebQueueBundle implements Notifier
         $this->url_exists_filter_bundle->differenceFilter(
             $url_array, $field_names);
     }
-
     /**
      * Adds the supplied $host to the got_robottxt_filter
      * @param string $host url to add
@@ -633,7 +569,6 @@ class WebQueueBundle implements Notifier
     {
         $this->got_robottxt_filter->add($host);
     }
-
     /**
      * Checks if we have a fresh copy of robots.txt info for $host
      * @param string $host url to check
@@ -643,7 +578,6 @@ class WebQueueBundle implements Notifier
     {
         return $this->got_robottxt_filter->contains($host);
     }
-
     /**
      * Adds all the paths for a host to the Robots Web Archive.
      * @param string $host name that the paths are to be added for.
@@ -661,7 +595,6 @@ class WebQueueBundle implements Notifier
             $this->robot_table->insert(crawlHash($host, true), $data);
         }
     }
-
     /**
      * Checks if the given $url is allowed to be crawled based on stored
      * robots.txt info.
@@ -702,7 +635,6 @@ class WebQueueBundle implements Notifier
         }
         return $robots_okay || !$robots_not_okay;
     }
-
     /**
      * Gets the timestamp of the oldest robot data still stored in
      * the queue bundle
@@ -710,13 +642,10 @@ class WebQueueBundle implements Notifier
      */
     function getRobotTxtAge()
     {
-
         $creation_time = intval(
             file_get_contents($this->dir_name."/robot_timestamp.txt"));
-
         return (time() - $creation_time);
     }
-
     /**
      * Add an entry to the web_queue_bundles DNS cache
      *
@@ -734,7 +663,6 @@ class WebQueueBundle implements Notifier
         }
         $this->dns_table->insert($hash_host, $packed_ip);
     }
-
     /**
      * Add an entry to the web_queue_bundles DNS cache
      *
@@ -759,7 +687,6 @@ class WebQueueBundle implements Notifier
         }
         return $ip_address;
     }
-
     /**
      * Gets the timestamp of the oldest url filter data still stored in
      * the queue bundle
@@ -767,13 +694,10 @@ class WebQueueBundle implements Notifier
      */
     function getUrlFilterAge()
     {
-
         $creation_time = intval(
             file_get_contents($this->dir_name."/url_timestamp.txt"));
-
         return (time() - $creation_time);
     }
-
     /**
      * Sets the Crawl-delay of $host to passes $value in seconds
      *
@@ -784,7 +708,6 @@ class WebQueueBundle implements Notifier
     {
         $this->crawl_delay_filter->add("-1".$host);
             //used to say a crawl delay has been set
-
         for($i = 0; $i < 8; $i++) {
             if(($value & 1) == 1) {
                 $this->crawl_delay_filter->add("$i".$host);
@@ -792,7 +715,6 @@ class WebQueueBundle implements Notifier
             $value = $value >> 1;
         }
     }
-
     /**
      * Gets the Crawl-delay of $host from the crawl delay bloom filter
      *
@@ -811,10 +733,8 @@ class WebQueueBundle implements Notifier
                 $value += (1 << $i);
             }
         }
-
         return $value;
     }
-
     /**
      * Mainly, a Factory style wrapper around the HashTable's constructor.
      * However, this function also sets up a rebuild frequency. It is used
@@ -852,7 +772,6 @@ class WebQueueBundle implements Notifier
     {
         return $this->to_crawl_table->lookup($key, $return_probe_value);
     }
-
     /**
      * Removes an entries from the to crawl hash table
      * @param int $probe if the location in the hash table is already known
@@ -867,7 +786,6 @@ class WebQueueBundle implements Notifier
             $this->rebuildHashTable();
         }
     }
-
     /**
      * Inserts the $key, $value pair into this web queue's to crawl table
      *
@@ -886,7 +804,6 @@ class WebQueueBundle implements Notifier
         }
         return $this->to_crawl_table->insert($key, $value, $probe);
     }
-
     /**
      * Makes a new HashTable without deleted rows
      *
@@ -912,7 +829,6 @@ class WebQueueBundle implements Notifier
             $this->dir_name."/tmp_table.dat", $num_values);
         $null = $this->to_crawl_table->null;
         $deleted = $this->to_crawl_table->deleted;
-
         for($i = 0; $i < $num_values; $i++) {
             crawlTimeoutLog("..still rebuilding hash table. At entry %s of %s",
             $i, $num_values);
@@ -922,7 +838,6 @@ class WebQueueBundle implements Notifier
                 $tmp_table->insert($key, $value);
             }
         }
-
         $this->to_crawl_table = NULL;
         gc_collect_cycles();
         if(file_exists($this->dir_name."/hash_table.dat")) {
@@ -935,7 +850,6 @@ class WebQueueBundle implements Notifier
         $tmp_table->filename = $this->dir_name."/hash_table.dat";
         $this->to_crawl_table = $tmp_table;
     }
-
    /**
     * Since offsets are integers, even if the queue is kept relatively small,
     * periodically we will need to rebuild the archive for storing urls.
@@ -952,9 +866,7 @@ class WebQueueBundle implements Notifier
             NonCompressor::fileExtension();
         $tmp_archive =
             new WebArchive($tmp_archive_name, new NonCompressor(), false, true);
-
         for($i = 1; $i <= $count; $i++) {
-
             list($url, $weight, $flag, $probe) = $this->peekQueue($i);
             $url_container = array(array($url));
             $objects = $tmp_archive->addObjects("offset", $url_container);
@@ -964,21 +876,16 @@ class WebQueueBundle implements Notifier
                 crawlLog("Error inserting $url into rebuild url archive file");
                 continue;
             }
-
             $hash_url = crawlHash($url, true);
             $data = packInt($offset).packInt($i).packInt($flag);
 
             $this->insertHashTable($hash_url, $data, $probe);
         }
-
         $this->to_crawl_archive = NULL;
         gc_collect_cycles();
-
         $tmp_archive->filename = $url_archive_name;
         $this->to_crawl_archive =  $tmp_archive;
-
     }
-
     /**
      * Delete the Bloom filters used to store robots.txt file info.
      * Then construct empty new ones.
@@ -994,15 +901,12 @@ class WebQueueBundle implements Notifier
         @unlink($this->dir_name."/robot.dat");
         @unlink($robot_archive_name);
         $this->crawl_delay_table = array();
-
         file_put_contents($this->dir_name."/robot_timestamp.txt", time());
-
         $this->got_robottxt_filter = NULL;
         $this->crawl_delay_filter = NULL;
         $this->robot_archive = NULL;
         $this->robot_table = NULL;
         gc_collect_cycles();
-
         $this->got_robottxt_filter =
             new BloomFilterFile(
                 $this->dir_name."/got_robottxt.ftr", $this->filter_size);
@@ -1015,7 +919,6 @@ class WebQueueBundle implements Notifier
             "/robot.dat", 8*$this->num_urls_ram,
              self::HASH_KEY_SIZE, self::HASH_VALUE_SIZE);
     }
-
     /**
      * Delete the Hash table used to store DNS lookup info.
      * Then construct an empty new one.
@@ -1031,7 +934,6 @@ class WebQueueBundle implements Notifier
         $this->dns_table = new HashTable($this->dir_name."/dns_table.dat",
             $num_values, self::HASH_KEY_SIZE, self::IP_SIZE);
     }
-
     /**
      * Empty the crawled url filter for this web queue bundle; resets the
      * the timestamp of the last time this filter was emptied.
@@ -1039,10 +941,8 @@ class WebQueueBundle implements Notifier
     function emptyUrlFilter()
     {
         file_put_contents($this->dir_name."/url_timestamp.txt", time());
-
         $this->url_exists_filter_bundle->reset();
     }
-
     /**
      * Callback which is called when an item in the priority queue changes
      * position. The position is updated in the hash table.
@@ -1062,7 +962,6 @@ class WebQueueBundle implements Notifier
             $this->notifyFlush(); //prevent memory from being exhausted
         }
     }
-
     /**
      * Used to flush changes of hash_url indexes caused by adjusting weights
      * in the bundle's priority queue to its hash table.

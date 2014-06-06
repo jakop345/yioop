@@ -30,29 +30,23 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * Load crawlHash  and timing functions
  */
 require_once BASE_DIR."/lib/utility.php";
-
 /**
  * For getting mail message timing statistics if present
  */
 require_once BASE_DIR.'/lib/analytics_manager.php';
-
 /**
  * Base class for models which might be used by a Controller
  */
 require_once BASE_DIR."/models/model.php";
-
 /**
  * Base class for components which might be used by a Controller
  */
 require_once BASE_DIR."/controllers/components/component.php";
-
 /**
  * Base class for views which might be used by a View
  */
@@ -67,26 +61,22 @@ require_once BASE_DIR."/views/view.php";
  */
 abstract class Controller
 {
-
     /**
      * Array of instances of views  used by this controller
      * @var array
      */
     var $view_instances = array();
-
     /**
      * Array of instances of models used by this controller
      * @var array
      */
     var $model_instances;
-
     /**
      * Says which activities (roughly methods invoke from the web) this
      * controller will respond to
      * @var array
      */
     var $activities = array();
-
     /**
      * Components are collections of activities (a little like traits) which
      * can be reused.
@@ -94,22 +84,21 @@ abstract class Controller
      * @var array
      */
     var $component_activities = array();
-
     /**
-     *
+     *  Associative array of activity => component activity is on, used
+     *  by @see Controller::call method to actually invoke a given activity
+     *  on a given component
+     *  @var array
      */
     var $activity_component = array();
-
     /**
      * Says which post processing indexing plugins are available
      * @var array
      */
     var $indexing_plugins = array();
-
     function __construct($indexing_plugins = array())
     {
         global $INDEXED_FILE_TYPES, $COMPONENT_ACTIVITIES;
-
         foreach($COMPONENT_ACTIVITIES as $component => $activities) {
             foreach($activities as $activity) {
                 $this->activity_component[$activity] = $component;
@@ -122,7 +111,10 @@ abstract class Controller
         $this->model_instances = array();
         $this->view_instances = array();
     }
-
+    /**
+     *  This function should be overriden to web handle requests
+     */
+    public abstract function processRequest();
     /**
      * Dynamic loader for Component objects which might live on the current
      * Component
@@ -145,7 +137,6 @@ abstract class Controller
         }
         return $this->component_instances[$component];
     }
-
     /**
      * Dynamic loader for Model objects which might live on the current
      * Controller
@@ -165,7 +156,6 @@ abstract class Controller
         }
         return $this->model_instances[$model];
     }
-
     /**
      * Dynamic loader for Plugin objects which might live on the current
      * View
@@ -188,7 +178,6 @@ abstract class Controller
         }
         return $this->plugin_instances[$plugin];
     }
-
     /**
      * Dynamic loader for View objects which might live on the current
      * Controller
@@ -208,12 +197,6 @@ abstract class Controller
         }
         return $this->view_instances[$view];
     }
-
-    /**
-     *  This function should be overriden to web handle requests
-     */
-    public abstract function processRequest();
-
     /**
      *  Send the provided view to output, drawing it with the given
      *  data variable, using the current locale for translation, and
@@ -267,7 +250,6 @@ abstract class Controller
         }
         $this->view($view)->render($data);
     }
-
     /**
      *
      */
@@ -373,8 +355,6 @@ abstract class Controller
         $data[$d['PREV_END']] = $data[$d['START_ROW']];
         $data[$d['NUM_TOTAL']] = $num_rows;
      }
-
-
     /**
      *  Used to invoke an activity method of the current controller or one
      *  its components
@@ -389,7 +369,6 @@ abstract class Controller
         }
         return $this->$activity();
      }
-
     /**
      * Generates a cross site request forgery preventing token based on the
      * provided user name, the current time and the hidden AUTH_KEY
@@ -405,7 +384,6 @@ abstract class Controller
         $_SESSION['CSRF_TIME'] = $time;
         return crawlHash($user.$time.AUTH_KEY)."|$time";
     }
-
     /**
      * Checks if the form CSRF (cross-site request forgery preventing) token
      * matches the given user and has not expired (1 hour till expires)
@@ -426,12 +404,16 @@ abstract class Controller
                 $token_okay = true;
             }
         }
-
         return $token_okay;
     }
-
     /**
-     *  @param string $token_name
+     *  Checks if the timestamp in $_REQUEST[$token_name] 
+     *  matches the timestamp of the last CSRF token accessed by this user.
+     *  This is to avoid accidental replays of postings etc if the back button
+     *  used.
+     *
+     *  @param string $token_name name of a $_REQUEST field used to hold a
+     *      CSRF_TOKEN
      */
      function checkCSRFTime($token_name)
      {
@@ -443,10 +425,8 @@ abstract class Controller
                 $token_okay = true;
             }
         }
-
         return $token_okay;
      }
-
     /**
      * Used to clean strings that might be tainted as originate from the user
      *
@@ -477,7 +457,6 @@ abstract class Controller
                     $clean_value = false;
                 }
             break;
-
             case "int":
                 if(isset($value)) {
                     $clean_value = intval($value);
@@ -487,7 +466,6 @@ abstract class Controller
                     $clean_value = 0;
                 }
             break;
-
             case "float":
                 if(isset($value)) {
                     $clean_value = floatval($value);
@@ -497,7 +475,6 @@ abstract class Controller
                     $clean_value = 0;
                 }
             break;
-
             case "double":
                 if(isset($value)) {
                     $clean_value = doubleval($value);
@@ -507,7 +484,6 @@ abstract class Controller
                     $clean_value = 0;
                 }
             break;
-
             case "hash";
                 if(isset($value)) {
                     if(strlen($value) == strlen(crawlHash("A")) &&
@@ -518,7 +494,6 @@ abstract class Controller
                     $clean_value = $default;
                 }
             break;
-
             case "string":
                 if(isset($value)) {
                     $value2 = str_replace("&amp;", "&", $value);

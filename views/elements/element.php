@@ -31,7 +31,6 @@
  * @filesource
  */
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * Base Element Class.
  * Elements are classes are used to render portions of
@@ -44,7 +43,6 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @package seek_quarry
  * @subpackage element
  */
-
 abstract class Element
 {
     /**
@@ -52,7 +50,6 @@ abstract class Element
      * @var object
      */
     var $view;
-
     /**
      *  constructor stores a reference to the view this element will reside on
      *
@@ -62,7 +59,6 @@ abstract class Element
     {
         $this->view = $view;
     }
-
     /**
      *  This method is responsible for actually drawing the view.
      *  It should be implemented in subclasses.

@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * This view is displayed by the fetch_controller.php
  * to send information to a fetcher about things like
@@ -42,14 +40,12 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @package seek_quarry
  * @subpackage view
  */
-
 class FetchView extends View
 {
     /** No layout is used for this view
      *  @var string
      */
     var $layout = "";
-
     /**
      *  Draws message to be used by a fetcher. It might for example
      *  contains a schedule of sites to crawl

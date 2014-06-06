@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * Element responsible for drawing links to settings and login panels
  *
@@ -40,10 +38,8 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @package seek_quarry
  * @subpackage element
  */
-
 class SigninElement extends Element
 {
-
     /**
      *  Method responsible for drawing links to settings and login panels
      *
@@ -51,7 +47,7 @@ class SigninElement extends Element
      */
     function render($data)
     {
-    ?>
+        ?>
         <div class="user-nav" >
         <ul>
         <?php
@@ -81,10 +77,9 @@ class SigninElement extends Element
             }
         }
         ?>
-
         </ul>
         </div>
-    <?php
+        <?php
     }
 }
 ?>

@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * Contains the forms for managing search sources for video, news, etc.
  * Also, contains form for managing subsearches which appear in SearchView
@@ -42,10 +40,8 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @package seek_quarry
  * @subpackage element
  */
-
 class SearchsourcesElement extends Element
 {
-
     /**
      * Renders search source and subsearch forms
      *
@@ -57,7 +53,7 @@ class SearchsourcesElement extends Element
         $base_url = $pre_base_url . "&amp;a=searchSources";
         $localize_url = $pre_base_url . "&amp;a=manageLocales".
             "&amp;arg=editstrings&amp;selectlocale=".$data['LOCALE_TAG'];
-    ?>
+        ?>
         <div class="current-activity">
         <?php if($data["SOURCE_FORM_TYPE"] == "editsource") {
             ?>

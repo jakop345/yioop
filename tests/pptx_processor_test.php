@@ -30,15 +30,11 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /** Load search engine-wide configuration file */
 require_once BASE_DIR.'configs/config.php';
-
 /** Load PPTX class we'll test */
 require_once BASE_DIR."lib/processors/pptx_processor.php";
-
 /**
  * UnitTest for the PptxProcessor class. It is used to process
  * pptx files which are xml based zip format
@@ -62,7 +58,6 @@ class PptxProcessorTest extends UnitTest implements CrawlConstants
         $summary = $processor->process($page, $url);
         $this->test_objects['summary'] = $summary;
     }
-
     /**
      * Test object is set to null
      */
@@ -80,7 +75,6 @@ class PptxProcessorTest extends UnitTest implements CrawlConstants
         $this->assertEqual($objects[self::TITLE],
             $title,"Correct Title Retrieved");
     }
-
     /**
      * Checks Language of pptx is correct or not
      */
@@ -91,7 +85,6 @@ class PptxProcessorTest extends UnitTest implements CrawlConstants
         $this->assertEqual(
             $objects[self::LANG], $lang,"Correct Language Retrieved");
     }
-
     /**
      * Checks the links are correct or not
      */
@@ -110,7 +103,6 @@ class PptxProcessorTest extends UnitTest implements CrawlConstants
             $i++;
         }
     }
-
     /**
      * Checks if description is not null
      */

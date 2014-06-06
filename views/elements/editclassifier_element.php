@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * This element renders the initial edit page for a classifier, where the user
  * can update the classifier label and find documents to label and add to the

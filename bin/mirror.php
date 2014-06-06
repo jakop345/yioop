@@ -30,10 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
-
 if(php_sapi_name() != 'cli') {echo "BAD REQUEST"; exit();}
-
 /**
  * Calculate base directory of script
  * @ignore
@@ -41,9 +38,7 @@ if(php_sapi_name() != 'cli') {echo "BAD REQUEST"; exit();}
 define("BASE_DIR", substr(
     dirname(realpath($_SERVER['PHP_SELF'])), 0,
     -strlen("/bin")));
-
 ini_set("memory_limit","850M"); //so have enough memory to crawl big pages
-
 /** Load in global configuration settings */
 require_once BASE_DIR.'/configs/config.php';
 if(!PROFILE) {
@@ -51,15 +46,12 @@ if(!PROFILE) {
         "its web interface on localhost.\n";
     exit();
 }
-
 /** CRAWLING means don't try to use memcache
  * @ignore
  */
 define("NO_CACHE", true);
-
 /** get the database library based on the current database type */
 require_once BASE_DIR."/models/datasources/".DBMS."_manager.php";
-
 /** for crawlHash and crawlLog */
 require_once BASE_DIR."/lib/utility.php";
 /** for crawlDaemon function */
@@ -68,13 +60,11 @@ require_once BASE_DIR."/lib/crawl_daemon.php";
 require_once BASE_DIR."/lib/fetch_url.php";
 /** Loads common constants for web crawling*/
 require_once BASE_DIR."/lib/crawl_constants.php";
-
 /*
  *  We'll set up multi-byte string handling to use UTF-8
  */
 mb_internal_encoding("UTF-8");
 mb_regex_encoding("UTF-8");
-
 /**
  * This class is responsible for syncing crawl archives between machines using
  *  the SeekQuarry/Yioop search engine
@@ -106,43 +96,36 @@ class Mirror implements CrawlConstants
      * @var string
      */
     var $last_sync;
-
     /**
      * Last time the machine being mirrored was notified mirror.php is still
      * running
      * @var string
      */
     var $last_notify;
-
     /**
      * File name where last sync time is written
      * @var string
      */
     var $last_sync_file;
-
     /**
      * Time of start of current sync
      * @var string
      */
     var $start_sync;
-
     /**
      * Files to download for current sync
      * @var string
      */
     var $sync_schedule;
-
     /**
      * Directory to sync
      * @var string
      */
     var $sync_dir;
-
     /**
      * Maximum number of bytes from a file to download in one go
      */
     const DOWNLOAD_RANGE = 50000000;
-
     /**
      * Sets up the field variables so that syncing can begin
      *
@@ -152,7 +135,6 @@ class Mirror implements CrawlConstants
     {
         $db_class = ucfirst(DBMS)."Manager";
         $this->db = new $db_class();
-
         $this->name_server = $name_server;
         $this->last_sync_file = CRAWL_DIR."/schedules/last_sync.txt";
         if(file_exists($this->last_sync_file)) {
@@ -166,7 +148,6 @@ class Mirror implements CrawlConstants
         $this->sync_schedule = array();
         $this->sync_dir = CRAWL_DIR."/cache";
     }
-
     /**
      *  This is the function that should be called to get the mirror to start
      *  syncing. Calls init to handle the command line arguments then enters
@@ -179,7 +160,6 @@ class Mirror implements CrawlConstants
         crawlLog("\n\nInitialize logger..", "mirror", true);
         $this->loop();
     }
-
     /**
      * Main loop for the mirror script.
      *
@@ -187,9 +167,7 @@ class Mirror implements CrawlConstants
     function loop()
     {
         crawlLog("In Sync Loop");
-
         $info[self::STATUS] = self::CONTINUE_STATE;
-
         while (CrawlDaemon::processHandler()) {
             $syncer_message_file = CRAWL_DIR.
                 "/schedules/mirror_messages.txt";
@@ -199,29 +177,22 @@ class Mirror implements CrawlConstants
                 if(isset($info[self::STATUS]) &&
                     $info[self::STATUS] == self::STOP_STATE) {continue;}
             }
-
             $info = $this->checkScheduler();
-
             if($info === false) {
                 crawlLog("Cannot connect to queue server...".
                     " will try again in ".MIRROR_NOTIFY_FREQUENCY." seconds.");
                 sleep(MIRROR_NOTIFY_FREQUENCY);
                 continue;
             }
-
             if($info[self::STATUS] == self::NO_DATA_STATE) {
                 crawlLog("No data from queue server. Sleeping...");
                 sleep(MIRROR_SYNC_FREQUENCY);
                 continue;
             }
-
             $this->copyNextSyncFile();
-
         } //end while
-
         crawlLog("Mirror shutting down!!");
     }
-
     /**
      * Gets status and, if done processing all other mirroring activities,
      * gets a new list of files that have changed since the last synchronization
@@ -233,11 +204,8 @@ class Mirror implements CrawlConstants
      */
     function checkScheduler()
     {
-
         $info = array();
-
         $name_server = $this->name_server;
-
         $start_time = microtime();
         $time = time();
         $session = md5($time . AUTH_KEY);
@@ -254,7 +222,6 @@ class Mirror implements CrawlConstants
             }
             $this->last_notify = $time;
             $info_string = trim($info_string);
-
             $info = unserialize(gzuncompress(base64_decode($info_string)));
             if(isset($info[self::STATUS]) &&
                 $info[self::STATUS] == self::CONTINUE_STATE) {
@@ -277,12 +244,9 @@ class Mirror implements CrawlConstants
             file_put_contents($this->last_sync_file,
                 serialize($this->last_sync));
         }
-
         crawlLog("  Time to check Scheduler ".(changeInMicrotime($start_time)));
-
         return $info;
     }
-
     /**
      *  Downloads the next file from the schedule of files to download received
      *  from the web app.
@@ -342,7 +306,6 @@ class Mirror implements CrawlConstants
                 fclose($fh);
             }
         }
-
     }
 }
 /*

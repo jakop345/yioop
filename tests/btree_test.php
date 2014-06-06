@@ -31,24 +31,19 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
  if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
  /**
   * Load BTree
   */
  require_once BASE_DIR."/lib/btree.php";
-
  /**
   * Load crawlHash
   */
  require_once BASE_DIR."/lib/utility.php";
-
  /**
   * For base model class
   */
  require_once BASE_DIR."/models/model.php";
-
  /**
  * Used to test insert, lookup,  and deletion of key-value pairs on the B-Tree.
  *
@@ -56,19 +51,20 @@
  * @package seek_quarry
  * @subpackage test
  */
-
 /**
+ * Test directory to hold btree used for these unit tests
  */
 define('BTREE_TEST_DIR', WORK_DIRECTORY."/btree_test");
 /**
+ * Minimum degree of BTree
  */
 define('DEGREE', 2);
 /**
+ * Number of key value pairs to insert for unit tests
  */
 define('NUM_VALS', 25);
-
- class BTreeTest extends UnitTest
- {
+class BTreeTest extends UnitTest
+{
     /**
      * Minimum degree is set to 2 and the number of key-value pairs is set to 25
      */
@@ -85,7 +81,6 @@ define('NUM_VALS', 25);
         $model = new Model();
         $model->db->unlinkRecursive(BTREE_TEST_DIR);
     }
-
     /**
      * Test to check that an empty B-Tree is not saved to disk.
      * A B-Tree object is created. The test directory is checked for B-Tree
@@ -107,7 +102,6 @@ define('NUM_VALS', 25);
         $this->assertEqual(0, count($all_files), 'Empty B-Tree not saved
             saved to disk');
     }
-
     /**
      * Test to check insertion and lookup in a B-Tree
      * Key-value pairs are inserted in the B-Tree and then looked up using keys.
@@ -116,7 +110,7 @@ define('NUM_VALS', 25);
     {
         //Insert values
         $key_value_pairs = array();
-        for($i = 1;$i <= NUM_VALS;$i++) {
+        for($i = 1; $i <= NUM_VALS; $i++) {
             $value = crawlHash(rand(1, 1000), true);
             $key = crawlHash($value, true);
             $this->test_objects['FILE1']->insert(array($key, $value));
@@ -133,7 +127,6 @@ define('NUM_VALS', 25);
                 to lookup value');
         }
     }
-
     /**
      * Test to check that a key is deleted successfully from a leaf node
      * Key-value pairs are inserted in the B-Tree. key-value pairs present in
@@ -143,25 +136,21 @@ define('NUM_VALS', 25);
     function deleteFromLeafNodeTestCase()
     {
         //Insert values
-        for($i = 1;$i <= NUM_VALS;$i++) {
+        for($i = 1; $i <= NUM_VALS; $i++) {
             $this->test_objects['FILE1']->insert(array($i, $i));
         }
-
         //Keys in leaf nodes
         $leaf_keys = array(1, 3, 5, 9, 10);
         foreach($leaf_keys as $key) {
             $this->test_objects['FILE1']->remove($key);
         }
-
         //Lookup deleted keys
         foreach($leaf_keys as $key) {
             $this->assertEqual(NULL,
                 $this->test_objects['FILE1']->findValue($key),
                 'Key successfully deleted from leaf node');
         }
-
     }
-
     /**
      * Test to check that a key is deleted successfully from an internal node
      * Key-value pairs are first added to the B-Tree. Key-value pairs are then
@@ -171,23 +160,21 @@ define('NUM_VALS', 25);
     function deleteFromInternalNodeTestCase()
     {
         //Insert values
-        for($i = 1;$i <= NUM_VALS;$i++) {
+        for($i = 1; $i <= NUM_VALS; $i++) {
             $value = crawlHash(rand(1, 1000), true);
             $key = crawlHash($value, true);
             $this->test_objects['FILE1']->insert(array($key, $value));
         }
 
         $deleted = array();
-        for($i = 1;$i <= NUM_VALS - 10; $i++) {
+        for($i = 1; $i <= NUM_VALS - 10; $i++) {
             $internal_key = $this->test_objects['FILE1']->root->keys[0][0];
             $this->test_objects['FILE1']->remove($internal_key);
             $this->assertEqual(NULL,
                 $this->test_objects['FILE1']->findValue($internal_key),
                 'Key deleted successfully from internal node');
         }
-
     }
-
     /**
      * Function to check that keys are successfully deleted from the B-Tree
      * Random key-value pairs are firs inserted in the B-Tree. From the inserted
@@ -199,23 +186,20 @@ define('NUM_VALS', 25);
     {
         //Insert values
         $key_value_pairs = array();
-        for($i = 1;$i <= NUM_VALS;$i++) {
+        for($i = 1; $i <= NUM_VALS; $i++) {
             $value = crawlHash(rand(1, 1000), true);
             $key = crawlHash($value, true);
             $this->test_objects['FILE1']->insert(array($key, $value));
             $key_value_pairs[] = array($key, $key);
         }
-
         //Delete Values
         $deleted = array();
-
-        for($i = 1;$i <= NUM_VALS;$i++) {
+        for($i = 1; $i <= NUM_VALS; $i++) {
             $index = mt_rand(0, NUM_VALS - 1);
             $key = $key_value_pairs[$index][0];
             $this->test_objects['FILE1']->remove($key);
             $deleted[] = $key;
         }
-
         //Lookup values
         foreach($deleted as $deleted_key) {
             $this->assertEqual(NULL,

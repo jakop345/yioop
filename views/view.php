@@ -30,19 +30,14 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 if(php_sapi_name() != 'cli') {
     $locale_version = tl('view_locale_version4');
 }
-
 //base class for Element's needed for this View
 require_once BASE_DIR."/views/elements/element.php";
-
 //base class for  Helper's needed for this View
 require_once BASE_DIR."/views/helpers/helper.php";
-
 //base class for Layout on which the View will be drawn
 require_once BASE_DIR."/views/layouts/layout.php";
 /**
@@ -53,19 +48,16 @@ require_once BASE_DIR."/views/layouts/layout.php";
  * @package seek_quarry
  * @subpackage view
  */
-
 abstract class View
 {
     /** The name of the type of layout object that the view is drawn on
      *  @var string
      */
     var $layout = "";
-
     /** The reference to the layout object that the view is drawn on
      *  @var object
      */
     var $layout_object;
-
     /**
      *  The constructor reads in any Element and Helper subclasses which are
      *  needed to draw the view. It also reads in the Layout subclass on which
@@ -88,7 +80,6 @@ abstract class View
 
         $this->layout_object = new $layout_name($this);
     }
-
     /**
      * Dynamic loader for Element objects which might live on the current
      * View
@@ -109,7 +100,6 @@ abstract class View
         }
         return $this->element_instances[$element];
     }
-
     /**
      * Dynamic loader for Helper objects which might live on the current
      * View
@@ -129,7 +119,6 @@ abstract class View
         }
         return $this->helper_instances[$helper];
     }
-
     /**
      * This method is responsible for drawing both the layout and the view. It
      * should not be modified to change the display of then view. Instead,
@@ -141,7 +130,6 @@ abstract class View
     function render($data) {
         $this->layout_object->render($data);
     }
-
     /**
      * This abstract method is implemented in sub classes with code which
      * actually draws the view. The current layouts render method calls this

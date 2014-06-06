@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * Element responsible for displaying the form where users can input string
  * translations for a given locale
@@ -42,10 +40,8 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @package seek_quarry
  * @subpackage element
  */
-
 class EditlocalesElement extends Element
 {
-
     /**
      * Draws a form with strings to translate and a text field for the
      * translation into
@@ -79,7 +75,7 @@ class EditlocalesElement extends Element
             $data['show'], true); ?>
         <label for="string-filter"><b><?php e(tl('editlocales_element_filter'));
         ?></b></label><input type="text" id="string-filter" name="filter"
-            value="<?php e($data['filter']); ?>" maxlength="10"
+            value="<?php e($data['filter']); ?>" maxlength="20"
             onchange="this.form.submit()"
             class="narrow-field" /> <button class="button-box"
             type="submit"><?php

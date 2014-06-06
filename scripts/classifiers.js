@@ -29,7 +29,6 @@
  * @copyright 2009 - 2014s
  * @filesource
  */
-
 /**
  * Implements the client interface for finding and labeling documents.
  *
@@ -49,13 +48,11 @@ var Classifier = (function() {
      * @var int
      */
     var MAX_UNLABELLED_BUFFER_SIZE = 51;
-
     /**
      * The maximum number of previously-labeled document records to display.
      * @var int
      */
     var MAX_LABELLED = 20;
-
     /**
      * How long to wait before adding another '.' to the end of a loading
      * message. The advantage of choosing 333 is that the time to display three
@@ -63,10 +60,8 @@ var Classifier = (function() {
      * @var int
      */
     var LOADING_REDRAW = 333;
-
     // We return this at the bottom, so this is Classifier's public interface.
     var self = {};
-
     /**
      * Gathers references to all relevant DOM elements, initializes state, and
      * adds event handlers. Because AJAX requests to the administrative areas
@@ -119,7 +114,6 @@ var Classifier = (function() {
             return false;
         }
     };
-
     /**
      * Event handler called when the user clicks on any of the "In class", "Not
      * in class", and "Skip" links associated with a document. This method
@@ -145,16 +139,13 @@ var Classifier = (function() {
                 label = 0;
                 break;
         }
-
         // Only send a request if something has changed.
         if (doc.label === undefined || doc.label != label) {
             self.sendNewLabel(doc, label);
         }
-
         // Update the class for benefit of the CSS
         doc.element.className = 'labelled ' + action;
         doc.label = label;
-
         /*
            If the labelled (or skipped) document was the active document, then
            push it down on the labeled queue, shifting off the oldest document
@@ -171,9 +162,7 @@ var Classifier = (function() {
 
         return false;
     }
-
     /* PRIVATE INTERFACE */
-
     /**
      * Sends a request to load up a new candidate pool based on the selected
      * index, index action, and optional query. The response behavior differs
@@ -226,7 +215,6 @@ var Classifier = (function() {
             }
         });
     }
-
     /*
      * Encodes any labels stored in the labels var as POST data, and sends a
      * request to add these labels (using the document url as a key) to
@@ -351,7 +339,6 @@ var Classifier = (function() {
             self.elt.label_docs_queue.appendChild(newRow);
         }
     }
-
     /**
      * Removes the active document from the DOM and from the internal set of
      * documents completely. This is done when abandoning the current candidate
@@ -366,7 +353,6 @@ var Classifier = (function() {
         }
         self.activeDocument = null;
     }
-
     /**
      * Updates the display of the counts of positive and negative examples and
      * the estimated accuracy.  Each time the server responds to a request, it
@@ -386,7 +372,6 @@ var Classifier = (function() {
                 (response.accuracy * 100).toFixed(1));
         }
     }
-
     /**
      * Updates the display of the number of documents currently in the
      * candidate pool. Since candidates are being iterated over on the server
@@ -415,7 +400,6 @@ var Classifier = (function() {
         }
         self.setStatus(msg);
     }
-
     /**
      * A shortcut for setting the HTML of the element that displays document
      * counts.
@@ -483,7 +467,6 @@ var Classifier = (function() {
         }, label);
         return tags('p', {}, '[', link, ']');
     }
-
     /**
      * Builds an HTML string that displays the classification confidence and
      * disagreement score associated with a document, using data sent from the
@@ -502,9 +485,7 @@ var Classifier = (function() {
             (doc.disagreement * 100).toFixed(1));
         return format('<b>{1}</b> ({2})', prediction, scores);
     }
-
     /* UTILITY FUNCTIONS */
-
     /**
      * Builds a string containing a pair of HTML tags with optional attributes
      * and nested elements. All arguments but the tag name are optional, but if
@@ -543,7 +524,6 @@ var Classifier = (function() {
         element.push('</' + tagname + '>');
         return element.join('');
     }
-
     /**
      * This function is just like the tags function, but creates a self-closing
      * tag (e.g., <img.../>), which by necessity cannot contain nested
@@ -558,7 +538,6 @@ var Classifier = (function() {
     {
         return makeOpenTag(tagname, attributes, ' />');
     }
-
     /**
      * A utility function to construct the opening tag of an HTML element, or a
      * self-closing tag, along with optional attributes.
@@ -579,7 +558,6 @@ var Classifier = (function() {
         tag.push(endtag);
         return tag.join('');
     }
-
     /**
      * A simple string formatter that substitutes string arguments into a
      * template string. The template string should contain substrings with the
@@ -603,7 +581,6 @@ var Classifier = (function() {
             return typeof arg == 'object' ? JSON.stringify(arg) : arg;
         });
     }
-
     /**
      * Builds an XmlHttpRequest with optional POST data to be sent to the
      * server, and calls the appropriate continuation function when the request
@@ -695,7 +672,6 @@ var Classifier = (function() {
             request.send();
         }
     }
-
     /**
      * Recursively builds a query string from an object, URI-encoding any
      * strings. Nested objects are handled using the standard HTTP notation for
@@ -721,7 +697,6 @@ var Classifier = (function() {
         }
         return str.join("&");
     }
-
     /**
      * Removes a particular class from the passed-in element if it's present;
      * otherwise does nothing.
@@ -762,7 +737,6 @@ var Classifier = (function() {
         var re = RegExp('(^| )'+className+'( |$)');
         return el.className.search(re) != -1;
     }
-
     /**
      * Places an element into a loading state, optionally adding a class and
      * setting some text, and provides a method to call in order to cancel the
@@ -834,6 +808,5 @@ var Classifier = (function() {
             }
         };
     }
-
     return self;
 })();

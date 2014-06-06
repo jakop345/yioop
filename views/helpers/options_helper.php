@@ -30,14 +30,11 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  *  Load base helper class if needed
  */
 require_once BASE_DIR."/views/helpers/helper.php";
-
 /**
  * This is a helper class is used to handle
  * draw select options form elements
@@ -46,7 +43,6 @@ require_once BASE_DIR."/views/helpers/helper.php";
  * @package seek_quarry
  * @subpackage helper
  */
-
 class OptionsHelper extends Helper
 {
 
@@ -87,6 +83,5 @@ class OptionsHelper extends Helper
         </select>
         <?php
     }
-
 }
 ?>

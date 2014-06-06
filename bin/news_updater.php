@@ -30,10 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
-
 if(php_sapi_name() != 'cli') {echo "BAD REQUEST"; exit();}
-
 /**
  * Calculate base directory of script
  * @ignore
@@ -41,9 +38,7 @@ if(php_sapi_name() != 'cli') {echo "BAD REQUEST"; exit();}
 define("BASE_DIR", substr(
     dirname(realpath($_SERVER['PHP_SELF'])), 0,
     -strlen("/bin")));
-
 ini_set("memory_limit", "1300M");
-
 /** Load in global configuration settings */
 require_once BASE_DIR.'/configs/config.php';
 if(!PROFILE) {
@@ -51,22 +46,18 @@ if(!PROFILE) {
         "its web interface on localhost.\n";
     exit();
 }
-
 /** CRAWLING means don't try to use memcache
  * @ignore
  */
 define("NO_CACHE", true);
-
 /** We do want logging, but crawl model and other will try to turn off
  *  if we don't set this
  */
 define("NO_LOGGING", false);
-
 /**
  * Shortest time through one iteration of news updater's loop
  */
 define("MINIMUM_UPDATE_LOOP_TIME", 10);
-
 /** for crawlDaemon function */
 require_once BASE_DIR."/lib/crawl_daemon.php";
 
@@ -90,7 +81,6 @@ if(file_exists(APP_DIR."/models/source_model.php")) {
  */
 mb_internal_encoding("UTF-8");
 mb_regex_encoding("UTF-8");
-
 if (function_exists('lcfirst') === false) {
     /**
      *  Lower cases the first letter in a string
@@ -104,7 +94,6 @@ if (function_exists('lcfirst') === false) {
         return (string)(strtolower(substr($str, 0, 1)).substr($str, 1));
     }
 }
-
 /**
  *  Separate process/command-line script which can be used to update
  *  news sources for Yioop. This is as an alternative to using the web app
@@ -122,7 +111,6 @@ class NewsUpdater implements CrawlConstants
     var $update_time;
     /**
      * Sets up the field variables so that newsupdating can begin
-     *
      */
     function __construct()
     {
@@ -130,7 +118,6 @@ class NewsUpdater implements CrawlConstants
         $this->retry_time = 0;
         $this->update_time = 0;
     }
-
     /**
      *  This is the function that should be called to get the newsupdater to
      *  start to start updating. Calls init to handle the command-line
@@ -151,12 +138,10 @@ class NewsUpdater implements CrawlConstants
     function loop()
     {
         crawlLog("In News Update Loop");
-
         $info[self::STATUS] = self::CONTINUE_STATE;
         $local_archives = array("");
         while (CrawlDaemon::processHandler()) {
             $start_time = microtime();
-
             crawlLog("Checking if news feeds should be updated...");
             $this->newsUpdate();
             $sleep_time = max(0, ceil(
@@ -166,10 +151,8 @@ class NewsUpdater implements CrawlConstants
                 sleep($sleep_time);
             }
         } //end while
-
         crawlLog("News Updater shutting down!!");
     }
-
     /**
      *  If news_update time has passed, then updates news feeds associated with
      *  this Yioop instance
@@ -205,7 +188,6 @@ class NewsUpdater implements CrawlConstants
             }
             $something_updated = true;
         }
-
         /*
             if anything changed rebuild shard
          */

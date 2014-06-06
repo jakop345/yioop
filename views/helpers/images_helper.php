@@ -30,14 +30,11 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  *  Load base helper class if needed
  */
 require_once BASE_DIR."/views/helpers/helper.php";
-
 /**
  * Helper used to draw thumbnails strips for images
  *
@@ -45,10 +42,8 @@ require_once BASE_DIR."/views/helpers/helper.php";
  * @package seek_quarry
  * @subpackage helper
  */
-
 class ImagesHelper extends Helper implements CrawlConstants
 {
-
     /**
      *  Takes page summaries for image pages and the current query
      *  and draw a thumbnail strip so that clicking on an image goes to
@@ -93,6 +88,5 @@ class ImagesHelper extends Helper implements CrawlConstants
         </div>
         <?php
     }
-
 }
 ?>

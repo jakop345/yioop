@@ -30,15 +30,12 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  *Loads base class for iterating
  */
 require_once BASE_DIR.
     '/lib/archive_bundle_iterators/archive_bundle_iterator.php';
-
 /** For datasource managers */
 $data_sources = glob(BASE_DIR."/models/datasources/*_manager.php");
 foreach($data_sources as $data_source) {
@@ -46,7 +43,6 @@ foreach($data_sources as $data_source) {
 }
 /** For webencode */
 require_once BASE_DIR.'/lib/utility.php';
-
 /**
  * Used to iterate through the records that result from an SQL query to a
  * database
@@ -65,27 +61,23 @@ class DatabaseBundleIterator extends ArchiveBundleIterator
      * @var string
      */
     var $iterate_dir;
-
     /**
      * SQL query whose records we are index
      * @var string
      */
     var $sql;
-
     /**
      * DB Records are imported as a text string where column_separator
      * is used to delimit the end of a column
      * @var string
      */
     var $column_separator;
-
     /**
      * For a given DB record each column is converted to a string:
      * name_of_column field_value_separator value_of_column
      * @var string
      */
     var $field_value_separator;
-
     /**
      * What character encoding is used for the DB records
      * @var string
@@ -97,7 +89,6 @@ class DatabaseBundleIterator extends ArchiveBundleIterator
      *  @var resource
      */
     var $db;
-
     /**
      *  Current result row of query iterator has processed to
      *  @var int
@@ -122,14 +113,11 @@ class DatabaseBundleIterator extends ArchiveBundleIterator
         $this->iterate_dir = $iterate_dir;
         $this->result_timestamp = $result_timestamp;
         $this->result_dir = $result_dir;
-
         $ini = parse_ini_with_fallback(
             "{$this->iterate_dir}/arc_description.ini");
-
         $this->dbinfo = array("DBMS" => DBMS, "DB_HOST" => DB_HOST,
             "DB_NAME" => DB_NAME, "DB_USER" => DB_USER,
             "DB_PASSWORD" => DB_PASSWORD);
-
         foreach($this->dbinfo as $key => $value) {
             $ini_key = strtolower($key);
             if(isset($ini[$ini_key])) {
@@ -141,7 +129,6 @@ class DatabaseBundleIterator extends ArchiveBundleIterator
         $this->db->connect($this->dbinfo['DB_HOST'],
             $this->dbinfo['DB_USER'], $this->dbinfo['DB_PASSWORD'],
             $this->dbinfo['DB_NAME']);
-
         if(isset($ini['sql'])) {
             $this->sql = $ini['sql'];
         } else {
@@ -153,13 +140,11 @@ class DatabaseBundleIterator extends ArchiveBundleIterator
         } else {
            $this->field_value_separator = "\n----\n";
         }
-
         if(isset($ini['column_separator'])) {
             $this->column_separator = $ini['column_separator'];
         } else {
            $this->column_separator = "\n====\n";
         }
-
         if(isset($ini['encoding'])) {
             $this->encoding = $ini['encoding'];
         } else {
@@ -169,14 +154,12 @@ class DatabaseBundleIterator extends ArchiveBundleIterator
         if(!file_exists($result_dir)) {
             mkdir($result_dir);
         }
-
         if(file_exists("{$this->result_dir}/iterate_status.txt")) {
             $this->restoreCheckpoint();
         } else {
             $this->reset();
         }
     }
-
     /**
      * Estimates the important of the site according to the weighting of
      * the particular archive iterator
@@ -188,7 +171,6 @@ class DatabaseBundleIterator extends ArchiveBundleIterator
     {
         return false;
     }
-
     /**
      * Resets the iterator to the start of the archive bundle
      */
@@ -201,7 +183,6 @@ class DatabaseBundleIterator extends ArchiveBundleIterator
             unlink("{$this->result_dir}/iterate_status.txt");
         }
     }
-
     /**
      * Gets the next at most $num many docs from the iterator. It might return
      * less than $num many documents if the partition changes or the end of the
@@ -252,11 +233,9 @@ class DatabaseBundleIterator extends ArchiveBundleIterator
         if($page_count < $num) {
             $this->end_of_iterator = true;
         }
-
         $this->saveCheckpoint();
         return $pages;
     }
-
     /**
      * Advances the iterator to the $limit page, with as little
      * additional processing as possible
@@ -268,7 +247,6 @@ class DatabaseBundleIterator extends ArchiveBundleIterator
         $this->reset();
         $this->limit = $limit;
     }
-
     /**
      * Used to save the result row we are at so that the iterator can start
      * from that row the next time it is invoked.
@@ -281,14 +259,12 @@ class DatabaseBundleIterator extends ArchiveBundleIterator
         file_put_contents("{$this->result_dir}/iterate_status.txt",
             serialize($info));
     }
-
     /**
      * Restores  the internal state from the file iterate_status.txt in the
      * result dir such that the next call to nextPages will pick up from just
      * after the last checkpoint.
      *
      * @return array the data serialized when saveCheckpoint was called
-
      */
     function restoreCheckPoint()
     {

@@ -29,7 +29,6 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 /*
     editor.css
 
@@ -40,17 +39,14 @@
     display: block;
     margin: 0 auto;
 }
-
 .wiki-editor div
 {
     padding: 5px;
 }
-
 .wiki-buttons
 {
     margin-bottom:2px;
 }
-
 .wiki-buttons input
 {
     border-style: solid;
@@ -174,7 +170,6 @@
         ../resources/wiki_button_images/wikibtn-search-widget.png)
         no-repeat;
 }
-
 .wikibtn-bold:hover,
 .wikibtn-bullets:hover,
 .wikibtn-heading:hover,

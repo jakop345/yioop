@@ -30,16 +30,13 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /** Loads base model class if necessary*/
 require_once BASE_DIR."/models/model.php";
 /** For crawlHash function */
 require_once BASE_DIR."/lib/utility.php";
 /** Used to fetches web pages to get statuses of individual machines*/
 require_once BASE_DIR."/lib/fetch_url.php";
-
 /**
  * Used to remember the last time the web app ran periodic activities
  *
@@ -69,7 +66,6 @@ class CronModel extends Model
         $this->cron_table === NULL;
         $this->cron_file = WORK_DIRECTORY."/data/cron_time.txt";
     }
-
     /**
      *  Returns the timestamp of last time cron run. Not using db as sqlite
      *  seemed to have locking issues if the transaction takes a while
@@ -88,7 +84,6 @@ class CronModel extends Model
         }
         return $time;
     }
-
     /**
      * Loads into $this->cron_table the associative array of key =>timestamps
      * that is a cron table
@@ -102,7 +97,6 @@ class CronModel extends Model
             $this->cron_table = array();
         }
     }
-
     /**
      * Updates the Cron timestamp to the current time.
      * @param bool $transaction if you are doing a sequence of cron updates
@@ -121,7 +115,6 @@ class CronModel extends Model
             @chmod($this->cron_file, 0777);
         }
     }
-
     /**
      * Saerializes and save the current cron table to disk
      */

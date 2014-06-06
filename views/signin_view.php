@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * This View is responsible for drawing the login
  * screen for the admin panel of the Seek Quarry app
@@ -41,15 +39,12 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @package seek_quarry
  * @subpackage view
  */
-
 class SigninView extends View
 {
-
     /** This view is drawn on a web layout
      *  @var string
      */
     var $layout = "web";
-
     /**
      *  Draws the login web page.
      *
@@ -102,7 +97,6 @@ class SigninView extends View
                 e(tl('signin_view_login')); ?></button>
             </td><td>&nbsp;</td></tr>
             </table>
-
         </div>
         </form>
         <div class="signin-exit">

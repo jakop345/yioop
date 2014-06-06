@@ -30,19 +30,14 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /** Register File Types We Handle*/
 $INDEXED_FILE_TYPES[] = "ppt";
 $PAGE_PROCESSORS["application/vnd.ms-powerpoint"] = "PptProcessor";
-
 /**
  * Load base class, if needed
  */
 require_once BASE_DIR."/lib/processors/text_processor.php";
-
-
 /**
  * Used to create crawl summary information
  * for PPT files
@@ -60,7 +55,6 @@ class PptProcessor extends TextProcessor
     const READ_LEN_TEXT_SEG = 4;
     const SCAN_TEXT_SEG = 5;
     const ALWAYS_IGNORE = 6;
-
     /**
      * Computes a summary based on a string of a binary Powerpoint document
      * (as opposed to the modern xml powerpoint format).
@@ -83,15 +77,11 @@ class PptProcessor extends TextProcessor
     {
         $text = "";
         if(is_string($page)) {
-
             $text_objects = array();
             $cur_id = 0;
-
             $state = self::PPT_IGNORING;
-
             $cur_char_pos = 0;
             $len = strlen($page);
-
             while ($cur_char_pos < $len) {
                 $ascii = ord($page[$cur_char_pos]);
                 switch($state)
@@ -101,7 +91,6 @@ class PptProcessor extends TextProcessor
                             $state = self::ZEROONE_IGNORING;
                         }
                     break;
-
                     case self::ZEROONE_IGNORING:
                         if($ascii == 0) {
                             $state = self::ZEROTWO_IGNORING;
@@ -109,7 +98,6 @@ class PptProcessor extends TextProcessor
                              $state = self::PPT_IGNORING;
                         }
                     break;
-
                     case self::ZEROTWO_IGNORING:
                         if($ascii == 168) {
                             $state = self::FIRST_CHAR_TEXT_SEG;
@@ -117,7 +105,6 @@ class PptProcessor extends TextProcessor
                             $state = self::PPT_IGNORING;
                         }
                     break;
-
                     case self::FIRST_CHAR_TEXT_SEG:
                         if($ascii == 15) {
                             $state = self::READ_LEN_TEXT_SEG;
@@ -126,8 +113,7 @@ class PptProcessor extends TextProcessor
                         } else {
                             $state = self::PPT_IGNORING;
                         }
-                    break;
-
+                    break
                     case self::READ_LEN_TEXT_SEG:
                         if($text_len_pos < 4) {
                             $text_len += ($ascii << ($text_len_pos * 8));
@@ -138,7 +124,6 @@ class PptProcessor extends TextProcessor
                             $out_text = chr($ascii);
                         }
                     break;
-
                     case self::SCAN_TEXT_SEG:
                         if(strpos($out_text,
                             "lick to edit Master title style") > 0) {
@@ -155,26 +140,17 @@ class PptProcessor extends TextProcessor
                             $state = self::PPT_IGNORING;
                         }
                     break;
-
                     case self::ALWAYS_IGNORE:
                     break;
-
                 }
-
                 $cur_char_pos++;
             }
-
             $text = implode("\n", $text_objects);
-
-
         }
-
         if($text == "") {
             $text = $url;
         }
-
         $summary = parent::process($text, $url);
-
         return $summary;
     }
 

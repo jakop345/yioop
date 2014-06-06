@@ -30,15 +30,11 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /** Loads the base class */
 require_once BASE_DIR."/models/model.php";
-
 /** IndexShards used to store feed indexes*/
 require_once BASE_DIR."/lib/index_shard.php";
-
 /** For text manipulation of feeds*/
 require_once BASE_DIR."/lib/phrase_parser.php";
 /**
@@ -51,10 +47,8 @@ require_once BASE_DIR."/lib/phrase_parser.php";
  */
 class SourceModel extends Model
 {
-
     /** Mamimum number of feeds to download in one try */
     const MAX_FEEDS_ONE_GO = 100;
-
     /**
      *  @param mixed $args
      */
@@ -65,7 +59,6 @@ class SourceModel extends Model
         }
         return "MEDIA_SOURCE";
     }
-
     /**
      *  Returns a list of media sources such as (video, rss sites) and their
      *  URL and thumb url formats, etc
@@ -102,11 +95,8 @@ class SourceModel extends Model
             $i++;
         }
         unset($sources[$i]); //last one will be null
-
         return $sources;
-
     }
-
     /**
      *  Return the media source by the name of the source
      *  @param string $timestamp of the media source to look up
@@ -124,7 +114,6 @@ class SourceModel extends Model
         $row = $db->fetchArray($result);
         return $row;
     }
-
     /**
      *  Used to add a new video, rss, or other sources to Yioop
      *
@@ -150,7 +139,6 @@ class SourceModel extends Model
         $db->execute($sql, array(time(), $name, $source_type, $source_url,
             $thumb_url, $language));
     }
-
     /**
      *  Used to update the fields stored in a MEDIA_SOURCE row according to
      *  an array holding new values
@@ -174,7 +162,6 @@ class SourceModel extends Model
         $params[] = $timestamp;
         $this->db->execute($sql, $params);
     }
-
     /**
      * Deletes the media source whose id is the given timestamp
      *
@@ -194,10 +181,8 @@ class SourceModel extends Model
             }
         }
         $sql = "DELETE FROM MEDIA_SOURCE WHERE TIMESTAMP=?";
-
         $this->db->execute($sql, array($timestamp));
     }
-
     /**
      * Returns a list of the subsearches used by the current Yioop instances
      * including their names translated to the current locale
@@ -247,7 +232,6 @@ class SourceModel extends Model
         unset($subsearches[$i]); //last one will be null
         return $subsearches;
     }
-
     /**
      *  Return the media source by the name of the source
      *  @param string $folder_name 
@@ -264,7 +248,6 @@ class SourceModel extends Model
         $row = $db->fetchArray($result);
         return $row;
     }
-
     /**
      * Adds a new subsearch to the list of subsearches. This are displayed
      * at the top od the Yioop search pages.
@@ -286,7 +269,6 @@ class SourceModel extends Model
         $sql = "INSERT INTO TRANSLATION VALUES (?, ?)";
         $db->execute($sql, array(time(), $locale_string));
     }
-
     /**
      *  Used to update the fields stored in a SUBSEARCH row according to
      *  an array holding new values
@@ -309,7 +291,6 @@ class SourceModel extends Model
         $params[] = $folder_name;
         $this->db->execute($sql, $params);
     }
-
     /**
      * Deletes a subsearch from the subsearch table and removes its
      * associated translations
@@ -336,7 +317,6 @@ class SourceModel extends Model
         $sql = "DELETE FROM TRANSLATION WHERE IDENTIFIER_STRING = ?";
         $db->execute($sql, array($locale_string));
     }
-
     /**
      *  For each feed source downloads the feeds, checks which items are
      *  not in the database, adds them. This method does not update
@@ -422,7 +402,6 @@ class SourceModel extends Model
         }
         return true;
     }
-
     /**
      * Copies all feeds items newer than $age to a new shard, then deletes
      * old index shard and database entries older than $age. Finally sets copied
@@ -444,7 +423,6 @@ class SourceModel extends Model
         if(!$prune_shard) {
             return false;
         }
-
         $pre_feeds = $this->getMediaSources("rss");
         if(!$pre_feeds) { return false; }
         $feeds = array();
@@ -453,7 +431,6 @@ class SourceModel extends Model
             $feeds[$pre_feed['NAME']] = $pre_feed;
         }
         $db = $this->db;
-
         // we now rebuild the inverted index with the remaining items
         $sql = "SELECT * FROM FEED_ITEM ".
             "WHERE PUBDATE >= ? ".
@@ -492,13 +469,11 @@ class SourceModel extends Model
         $prune_shard->save();
         @chmod($prune_shard_name, 0777);
         @chmod($feed_shard_name, 0777);
-
         @rename($prune_shard_name, $feed_shard_name);
         @chmod($feed_shard_name, 0777);
         $sql = "DELETE FROM FEED_ITEM WHERE PUBDATE < ?";
         $db->execute($sql, array($too_old));
     }
-
     /**
      * Adds $item to  FEED_ITEM table in db if it isn't already there
      *
@@ -545,7 +520,6 @@ class SourceModel extends Model
         if(!$result) return false;
         return true;
     }
-
     /**
      *  Used to calculate the meta words for RSS feed items
      *

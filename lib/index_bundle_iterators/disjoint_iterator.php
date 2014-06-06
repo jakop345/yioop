@@ -30,15 +30,11 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
-
 /**
  *Loads base class for iterating
  */
 require_once BASE_DIR.'/lib/index_bundle_iterators/index_bundle_iterator.php';
-
 /**
  * Used to iterate over the documents which occur in a set of disjoint iterators
  * all belonging to the same index
@@ -60,20 +56,17 @@ class DisjointIterator extends IndexBundleIterator
      * @var int
      */
     var $num_iterators;
-
     /**
      * The number of iterated docs before the restriction test
      * @var int
      */
     var $seen_docs_unfiltered;
-
     /**
      * Index of the iterator amongst those we are disjoint unioning of
      * least gen_doc_offset
      * @var int
      */
     var $least_offset_index;
-
     /**
      * Creates an disjoint union iterator with the given parameters.
      *
@@ -107,7 +100,6 @@ class DisjointIterator extends IndexBundleIterator
         }
         $this->leastGenDocOffsetsAmongstIterators();
     }
-
     /**
      * Returns the iterators to the first document block that it could iterate
      * over
@@ -123,7 +115,6 @@ class DisjointIterator extends IndexBundleIterator
         $this->seen_docs_unfiltered = 0;
         $this->leastGenDocOffsetsAmongstIterators();
     }
-
     /**
      * Computes a relevancy score for a posting offset with respect to this
      * iterator and generation
@@ -141,7 +132,6 @@ class DisjointIterator extends IndexBundleIterator
             $this->least_offset_index]->computeRelevance(
                 $generation, $posting_offset);
     }
-
     /**
      * Hook function used by currentDocsWithWord to return the current block
      * of docs if it is not cached
@@ -161,7 +151,6 @@ class DisjointIterator extends IndexBundleIterator
         $this->pages = $docs;
         return $docs;
     }
-
     /**
      * Gets the doc_offset and generation for the next document that
      * would be return by this iterator
@@ -175,7 +164,6 @@ class DisjointIterator extends IndexBundleIterator
         }
         return $this->leastGenDocOffsetsAmongstIterators();
     }
-
     /**
      * Finds the next generation and doc offset amongst all the iterators
      * that is of least value
@@ -204,7 +192,6 @@ class DisjointIterator extends IndexBundleIterator
         }
         return $least_gen_offset;
     }
-
     /**
      * Forwards the iterator one group of docs
      * @param array $gen_doc_offset a generation, doc_offset pair. If set,
@@ -255,7 +242,6 @@ class DisjointIterator extends IndexBundleIterator
                 $this->seen_docs_unfiltered);
         }
     }
-
     /**
      * This method is supposed to set
      * the value of the result_per_block field. This field controls

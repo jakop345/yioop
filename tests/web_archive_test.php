@@ -30,21 +30,16 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /** Load search engine-wide configuration file */
 require_once BASE_DIR.'/configs/config.php';
-
 /**   Loads the WebArchive class we are going to test */
 require_once BASE_DIR."/lib/web_archive.php";
-
 /**
  *  A compressor determines how objects are written into a web_archive.
  *  This require loads a gzip-based compressor.
  */
 require_once BASE_DIR."/lib/compressors/gzip_compressor.php";
-
 /**
  * UnitTest for the WebArchive class. A web archive is used to store
  * array-based objects persistently to a file. This class tests storing and
@@ -64,7 +59,6 @@ class WebArchiveTest extends UnitTest
         $this->test_objects['FILE1'] =
             new WebArchive(WORK_DIRECTORY."/ar1.sqwa", new GzipCompressor());
     }
-
     /**
      * Delete any files associated with out test web archive
      */
@@ -72,7 +66,6 @@ class WebArchiveTest extends UnitTest
     {
         @unlink(WORK_DIRECTORY."/ar1.sqwa");
     }
-
     /**
      * Inserts three objects into a web archive. To look up an object in a web
      * archive we need to know its byte offset into the archive file. This test
@@ -96,9 +89,7 @@ class WebArchiveTest extends UnitTest
         $this->assertTrue($offset_flag,
             "First offset into archive is zero and ".
             "later ones are strictly increasing");
-
     }
-
     /**
      * Does two addObjects of three objects each. Then does a getObjects to get
      * six object using offset 0 into the web archive. This should return the
@@ -110,27 +101,20 @@ class WebArchiveTest extends UnitTest
             array(array("hello"), array("how are you"), array("good thanks"));
         $more_items =
             array(array("he3llo"),array("how4 are you"), array("good5 thanks"));
-
         $objects = $this->test_objects['FILE1']->addObjects("offset",  $items);
         $new_objects =
             $this->test_objects['FILE1']->addObjects("offset", $more_items);
-
         $all_items = array_merge($items, $more_items);
         $retrieved_items = $this->test_objects['FILE1']->getObjects(0,6);
-
         $retrieved_count = count($retrieved_items);
         $this->assertEqual(
             $retrieved_count, 6, "number of items retrieved is what asked for");
-
         for($i = 0; $i < $retrieved_count; $i++) {
             $this->assertEqual(
                 $retrieved_items[$i][1][0], $all_items[$i][0],
                 "object $i retrieved correctly");
         }
-
-
     }
-
     /**
      * If the file associated with a web archive already exists when the
      * constructor is called, then the constructor will load the existing web
@@ -148,7 +132,6 @@ class WebArchiveTest extends UnitTest
         $objects = $this->test_objects['FILE1']->addObjects("offset",  $items);
         $new_objects =
             $this->test_objects['FILE1']->addObjects("offset", $more_items);
-
         $this->test_objects['REF_FILE1'] =
             new WebArchive(WORK_DIRECTORY."/ar1.sqwa", new GzipCompressor());
         $this->assertEqual(

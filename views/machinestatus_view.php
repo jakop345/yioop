@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * This view is used to display information about
  * the on/off state of the queue_servers and fetchers managed by
@@ -42,7 +40,6 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @package seek_quarry
  * @subpackage view
  */
-
 class MachinestatusView extends View
 {
     /**
@@ -94,7 +91,6 @@ class MachinestatusView extends View
             $data['NO_FLOAT_TABLE'] = true;
             $this->helper("pagingtable")->render($data);
         }
-        
         foreach($data['MACHINES'] as $k => $m) {
             if(!is_numeric($k)) {
                 continue;

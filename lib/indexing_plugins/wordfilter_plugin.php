@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /** Loads processor used for */
 require_once BASE_DIR."/lib/processors/text_processor.php";
 /** Base indexing plugin class*/
@@ -41,7 +39,6 @@ require_once BASE_DIR."/lib/indexing_plugins/indexing_plugin.php";
 require_once BASE_DIR."/lib/utility.php";
 /** Loads common constants for web crawling */
 require_once BASE_DIR."/lib/crawl_constants.php";
-
 /**
  * WordFilterPlugin is used to filter documents by terms during a crawl.
  *
@@ -165,7 +162,6 @@ term0:NOTCONTAIN,JUSTFOLLOW
 term1:NOPROCESS
 term2:NOFOLLOW,NOSNIPPET
 EOD;
-
     /**
      * A string containing a parsable set of filter_rules to be used by
      * the WordFilterPlugin. The format of these rules is described in the
@@ -174,7 +170,6 @@ EOD;
      * @var string
      */
      var $rules_string = "";
-
     /**
      * This method adds robots metas to or removes entirely a summary
      * produced by a text page processor or its subsclasses depending on
@@ -211,7 +206,6 @@ EOD;
             }
         }
     }
-
     /**
      * Used to check if $precondition is met by the document
      * consisting of the concatenation of $title and $description
@@ -238,8 +232,6 @@ EOD;
         }
         return true;
     }
-
-
     /**
      *  Saves to a file $this->rules_string, a field which contains the string
      *  rules that are being used with this plugin
@@ -249,7 +241,6 @@ EOD;
         $config_file = WORK_DIRECTORY."/data/word_filter_plugin.txt";
         file_put_contents($config_file, $this->rules_string);
     }
-
     /**
      *  Reads plugin configuration data from data/word_filter_plugin.txt
      *  on the name server into $this->rule_string. Then parse this string
@@ -267,7 +258,6 @@ EOD;
         $configuration = $this->parseRules();
         return $configuration;
     }
-
     /**
      * Ttakes a configuration array of rules and sets them as the rules for
      *  this instance of the plugin. Typically used on a
@@ -283,7 +273,6 @@ EOD;
         $this->filter_rules = $configuration;
         $this->serializeRules();
     }
-
     /**
      *  Behaves as a "controller" for the configuration page of the plugin.
      *  It is called by the AdminController pageOptions activity method to
@@ -323,7 +312,6 @@ EOD;
         $this->saveConfiguration();
         $data["filter_rules"] = $this->rules_string;
     }
-
     /**
      * Parse rules into array format from the string $this->rules_string
      * into the array $this->filter_rules. $this->filter_rules is used
@@ -358,7 +346,6 @@ EOD;
         $this->filter_rules = $configuration;
         return $configuration;
     }
-
     /**
      * This is used to convert the array in $this->filter_rules into a string
      * format in $this->rules_string which would be sutiable for saving to
@@ -383,7 +370,6 @@ EOD;
         }
         $this->rules_string = $rules_string;
     }
-
     /**
      *  Used to draw the HTML configure screen for the word filter plugin.
      *
@@ -416,7 +402,6 @@ EOD;
         </form>
         <?php
     }
-
     /**
      * Which mime type page processors this plugin should do additional
      * processing for
@@ -427,8 +412,5 @@ EOD;
     {
         return array("TextProcessor"); //will apply to all subclasses
     }
-
-
 }
-
 ?>

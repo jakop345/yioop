@@ -30,15 +30,11 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /** Loads the base class */
 require_once BASE_DIR."/models/model.php";
-
 /** Used for the crawlHash function */
 require_once BASE_DIR."/lib/utility.php";
-
 /**
  * This class is used to handle
  * database statements related to User Administration
@@ -59,12 +55,10 @@ class UserModel extends Model
     var $search_table_column_map = array("first"=>"FIRST_NAME",
         "last" => "LAST_NAME", "user" => "USER_NAME", "email"=>"EMAIL",
         "status"=>"STATUS");
-
     /**
      * @var array
      */
     var $any_fields = array("status");
-
     /**
      * @param mixed $args
      */
@@ -86,7 +80,6 @@ class UserModel extends Model
     {
         return "USER_ID != '".PUBLIC_USER_ID."'";
     }
-
     /**
      *  Get a list of admin activities that a user is allowed to perform.
      *  This includes their name and their associated method.
@@ -109,7 +102,6 @@ class UserModel extends Model
         $result = $db->execute($sql, array($locale_tag));
         $row = $db->fetchArray($result);
         $locale_id = $row['LOCALE_ID'];
-
         $sql = "SELECT DISTINCT A.ACTIVITY_ID AS ACTIVITY_ID, ".
             "T.TRANSLATION_ID AS TRANSLATION_ID, A.METHOD_NAME AS METHOD_NAME,".
             " T.IDENTIFIER_STRING AS IDENTIFIER_STRING FROM ACTIVITY A, ".
@@ -117,7 +109,6 @@ class UserModel extends Model
             "WHERE UR.USER_ID = ? ".
             "AND UR.ROLE_ID=RA.ROLE_ID AND T.TRANSLATION_ID=A.TRANSLATION_ID ".
             "AND RA.ACTIVITY_ID = A.ACTIVITY_ID ORDER BY A.ACTIVITY_ID ASC";
-
         $result = $db->execute($sql, array($user_id));
         $i = 0;
         $sub_sql = "SELECT TRANSLATION AS ACTIVITY_NAME ".
@@ -139,10 +130,8 @@ class UserModel extends Model
             $i++;
         }
         unset($activities[$i]); //last one will be null
-
         return $activities;
     }
-
     /**
      *  Checks if a user is allowed to perform the activity given by
      *  method name
@@ -167,7 +156,6 @@ class UserModel extends Model
         }
         return false;
     }
-
     /**
      * Returns $_SESSION variable of given user from the last time
      * logged in.
@@ -187,7 +175,6 @@ class UserModel extends Model
         }
         return NULL;
     }
-
     /**
      * Stores into DB the $session associative array of given user
      *
@@ -204,7 +191,6 @@ class UserModel extends Model
             "VALUES (?, ?)";
         $this->db->execute($sql, array($user_id, $session_string));
     }
-
     /**
      * Get a username by user_id
      *
@@ -219,7 +205,6 @@ class UserModel extends Model
         $row = $db->fetchArray($result);
         return $row['USER_NAME'];
     }
-
     /**
      * Get the status of user by user_id
      *
@@ -234,7 +219,6 @@ class UserModel extends Model
         $row = $db->fetchArray($result);
         return $row['STATUS'];
     }
-
     /**
      * Returns a row from the USERS table based on a username (case-insensitive)
      *
@@ -253,7 +237,6 @@ class UserModel extends Model
         $row = $db->fetchArray($result);
         return $row;
     }
-
     /**
      *  Looks up a USERS row based on their $email (potentially not unique)
      *  and the time at which their account was create in microseconds
@@ -274,7 +257,6 @@ class UserModel extends Model
         $row = $db->fetchArray($result);
         return $row;
     }
-
     /**
      * Get a status of user by user_id
      *
@@ -304,7 +286,6 @@ class UserModel extends Model
             crawlCrypt($username.AUTH_KEY.$creation_time),
             $creation_time, $zkp_password));
     }
-
     /**
      * Add a user with a given username and password to the list of users
      * that can login to the admin panel
@@ -342,7 +323,6 @@ class UserModel extends Model
         $result_id = $db->execute($sql, array($user_id, USER_ROLE));
         return $user_id;
     }
-
     /**
      * Deletes a user by username from the list of users that can login to
      * the admin panel
@@ -364,7 +344,6 @@ class UserModel extends Model
         $sql = "DELETE FROM USERS WHERE USER_ID=?";
         $result = $db->execute($sql, array($user_id));
     }
-
     /**
      *  Used to update the fields stored in a USERS row according to
      *  an array holding new values

@@ -30,15 +30,11 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
-
 /** For base class*/
 require_once BASE_DIR."/models/parallel_model.php";
 /** For deleting save points*/
 require_once BASE_DIR."/controllers/search_controller.php";
-
 /** used to prevent cache page requests from being logged*/
 if(!defined("POST_PROCESSING") && !defined("NO_LOGGING")) {
     define("NO_LOGGING", true);
@@ -68,7 +64,6 @@ class CrawlModel extends ParallelModel implements CrawlConstants
      * @var string
      */
     var $suggest_url_file;
-
     /**
      *  {@inheritdoc}
      */
@@ -77,7 +72,6 @@ class CrawlModel extends ParallelModel implements CrawlConstants
         $this->suggest_url_file = WORK_DIRECTORY."/data/suggest_url.txt";
         parent::__construct($db_name, $connect);
     }
-
     /**
      *
      */
@@ -85,7 +79,6 @@ class CrawlModel extends ParallelModel implements CrawlConstants
     {
         return "CRAWL_MIXES";
     }
-
     /**
      *
      */
@@ -146,8 +139,6 @@ class CrawlModel extends ParallelModel implements CrawlConstants
 
         return $page;
     }
-
-
     /**
      * Gets the name (aka timestamp) of the current index archive to be used to
      * handle search queries
@@ -164,8 +155,6 @@ class CrawlModel extends ParallelModel implements CrawlConstants
 
         return $row['CRAWL_TIME'];
     }
-
-
     /**
      * Sets the IndexArchive that will be used for search results
      *
@@ -179,9 +168,7 @@ class CrawlModel extends ParallelModel implements CrawlConstants
         $db->execute("DELETE FROM CURRENT_WEB_INDEX");
         $sql = "INSERT INTO CURRENT_WEB_INDEX VALUES ( ? )";
         $db->execute($sql, array($timestamp));
-
     }
-
     /**
      * Returns all the files in $dir or its subdirectories with modfied times
      * more recent than timestamp. The file which have
@@ -217,8 +204,6 @@ class CrawlModel extends ParallelModel implements CrawlConstants
         $results = array_values($results);
         return $results;
     }
-
-
     /**
      * Gets a list of all mixes of available crawls
      *
@@ -231,7 +216,6 @@ class CrawlModel extends ParallelModel implements CrawlConstants
     {
         $sql = "SELECT TIMESTAMP, NAME FROM CRAWL_MIXES WHERE OWNER_ID=?";
         $result = $this->db->execute($sql, array($user_id));
-
         $rows = array();
         while($row = $this->db->fetchArray($result)) {
             if($with_components) {
@@ -242,7 +226,6 @@ class CrawlModel extends ParallelModel implements CrawlConstants
         }
         return $rows;
     }
-
     /**
      * Retrieves the weighting component of the requested crawl mix
      *
@@ -288,7 +271,6 @@ class CrawlModel extends ParallelModel implements CrawlConstants
         }
         return $mix;
     }
-
     /**
      * Returns the timestamp associated with a mix name;
      *
@@ -307,8 +289,6 @@ class CrawlModel extends ParallelModel implements CrawlConstants
         }
         return false;
     }
-
-
     /**
      * Returns whether the supplied timestamp corresponds to a crawl mix
      *
@@ -330,7 +310,6 @@ class CrawlModel extends ParallelModel implements CrawlConstants
             }
         }
     }
-
     /**
      * Returns whether there is a mix with the given $timestamp that $user_id
      * owns
@@ -354,7 +333,6 @@ class CrawlModel extends ParallelModel implements CrawlConstants
             }
         }
     }
-
     /**
      * Stores in DB the supplied crawl mix object
      *
@@ -384,7 +362,6 @@ class CrawlModel extends ParallelModel implements CrawlConstants
             $fid++;
         }
     }
-
     /**
      * Stores in DB the supplied crawl mix object
      *
@@ -399,7 +376,6 @@ class CrawlModel extends ParallelModel implements CrawlConstants
         $sql = "DELETE FROM MIX_COMPONENTS WHERE TIMESTAMP=?";
         $this->db->execute($sql, array($timestamp));
     }
-
     /**
      * Deletes the archive iterator and savepoint files created during the
      * process of iterating through a crawl mix.
@@ -419,7 +395,6 @@ class CrawlModel extends ParallelModel implements CrawlConstants
             $this->db->unlinkRecursive($archive_dir);
         }
     }
-
     /**
      *  Returns the initial sites that a new crawl will start with along with
      *  crawl parameters such as crawl order, allowed and disallowed crawl sites
@@ -439,7 +414,6 @@ class CrawlModel extends ParallelModel implements CrawlConstants
 
         return $info;
     }
-
     /**
      * Writes a crawl.ini file with the provided data to the user's
      * WORK_DIRECTORY
@@ -561,13 +535,10 @@ EOT;
                 $n[] = "plugins[] = '$plugin';";
             }
         }
-
         $out = implode("\n", $n);
         $out .= "\n";
         file_put_contents(WORK_DIRECTORY."/crawl.ini", $out);
     }
-
-
     /**
      * Returns the crawl parameters that were used during a given crawl
      *
@@ -656,7 +627,6 @@ EOT;
         }
         return $seed_info;
     }
-
     /**
      * Changes the crawl parameters of an existing crawl (can be while crawling)
      * Not all fields are allowed to be updated
@@ -706,7 +676,6 @@ EOT;
             IndexArchiveBundle::setArchiveInfo($dir, $info);
         }
     }
-
     /**
      *  Returns an array of urls which were stored via the suggest-a-url
      *  form in suggest_view.php
@@ -723,7 +692,6 @@ EOT;
         }
         return $urls;
     }
-
     /**
      *  Add new distinct urls to those already saved in the suggest_url_file
      *  If the supplied url is not new or the file size
@@ -760,7 +728,6 @@ EOT;
         }
         return false;
     }
-
     /**
      *  Resets the suggest_url_file to be the empty file
      */
@@ -768,7 +735,6 @@ EOT;
     {
         file_put_contents($this->suggest_url_file, "", LOCK_EX);
     }
-
     /**
      * Get a description associated with a Web Crawl or Crawl Mix
      *
@@ -839,10 +805,8 @@ EOT;
                 }
             }
         }
-
         return $info;
     }
-
     /**
      * Deletes the crawl with the supplied timestamp if it exists. Also
      * deletes any crawl mixes making use of this crawl
@@ -909,7 +873,6 @@ EOT;
             $this->db->execute("DELETE FROM CURRENT_WEB_INDEX");
         }
     }
-
     /**
      * Used to send a message to the queue_servers to start a crawl
      *
@@ -946,7 +909,6 @@ EOT;
                 $scheduler_string);
         }
     }
-
     /**
      * Used to send a message to the queue_servers to stop a crawl
      * @param array $machine_urls an array of urls of yioop queue servers
@@ -966,7 +928,6 @@ EOT;
             CRAWL_DIR."/schedules/queue_server_messages.txt",
             $info_string);
     }
-
     /**
      * Gets a list of all index archives of crawls that have been conducted
      *
@@ -1002,11 +963,9 @@ EOT;
             }
             return $list;
         }
-
         $list = array();
         $dirs = glob(CRAWL_DIR.'/cache/'.self::index_data_base_name.
             '*', GLOB_ONLYDIR);
-
         foreach($dirs as $dir) {
             $crawl = array();
             $pre_timestamp = strstr($dir, self::index_data_base_name);
@@ -1028,7 +987,6 @@ EOT;
                 self::schedule_data_base_name.$crawl['CRAWL_TIME'];
             $crawl['RESUMABLE'] = false;
             if(is_dir($sched_path)) {
-
             $sched_dir = opendir($sched_path);
                 while( ($name = readdir($sched_dir)) !==  false) {
                     $sub_path = "$sched_path/$name";
@@ -1037,7 +995,6 @@ EOT;
                     $sub_dir = opendir($sub_path);
                     $i = 0;
                     while(($sub_name = readdir($sub_dir)) !==  false && $i < 5){
-
                         if($sub_name[0] == 'A' && $sub_name[1] == 't') {
                             $crawl['RESUMABLE'] = true;
                             break 2;
@@ -1086,7 +1043,6 @@ EOT;
         }
         return $list;
     }
-
     /**
      * When @see getCrawlList() is used in a multi-queue_server this method
      * used to integrate the crawl lists received by the different machines
@@ -1130,7 +1086,6 @@ EOT;
         set_error_handler("yioop_error_handler");
         return $list;
     }
-
     /**
      * Determines if the length of time since any of the fetchers has spoken
      * with any of the queue_servers has exceeded CRAWL_TIME_OUT. If so,
@@ -1167,7 +1122,6 @@ EOT;
         }
         return false;
     }
-
     /**
      * When @see crawlStalled() is used in a multi-queue_server this method
      * used to integrate the stalled information received by the different
@@ -1204,7 +1158,6 @@ EOT;
         set_error_handler("yioop_error_handler");
         return $result;
     }
-
     /**
      *  Returns data about current crawl such as DESCRIPTION, TIMESTAMP,
      *  peak memory of various processes, most recent fetcher, most recent
@@ -1263,7 +1216,6 @@ EOT;
 
         return $data;
     }
-
     /**
      * When @see crawlStatus() is used in a multi-queue_server this method
      * used to integrate the status information received by the different
@@ -1338,7 +1290,6 @@ EOT;
         set_error_handler("yioop_error_handler");
         return $status;
     }
-
     /**
      *  This method is used to reduce the number of network requests
      *  needed by the crawlStatus method of admin_controller. It returns
@@ -1370,7 +1321,6 @@ EOT;
         $combined[] = $this->getCrawlList(false, true);
         return $combined;
     }
-
     /**
      *  Add the provided urls to the schedule directory of URLs that will
      *  be crawled
@@ -1426,7 +1376,6 @@ EOT;
         }
         return false;
     }
-
     /**
      *  Computes for each word in an array of words a count of the total number
      *  of times it occurs in this crawl model's default index.
@@ -1453,9 +1402,7 @@ EOT;
             }
             return $word_counts;
         }
-
         $index_archive = IndexManager::getIndex($this->index_name);
-
         $hashes = array();
         $lookup = array();
         foreach($words as $word) {
@@ -1463,11 +1410,9 @@ EOT;
             $hashes[] = $tmp;
             $lookup[$tmp] = $word;
         }
-
         $word_key_counts =
             $index_archive->countWordKeys($hashes);
         $phrases = array();
-
         $word_counts = array();
         if(is_array($word_key_counts ) && count($word_key_counts ) > 0) {
             foreach($word_key_counts as $word_key =>$count) {

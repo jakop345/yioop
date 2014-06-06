@@ -30,23 +30,18 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 ini_set("gd.jpeg_ignore_warning", 1);
-
 /** Register File Types We Handle*/
 $INDEXED_FILE_TYPES[] = "jpg";
 $INDEXED_FILE_TYPES[] = "jpeg";
 $IMAGE_TYPES[] = "jpg";
 $IMAGE_TYPES[] = "jpeg";
 $PAGE_PROCESSORS["image/jpeg"] = "JpgProcessor";
-
 /** Used for the getDocumentFilename method in UrlParser */
 require_once BASE_DIR."/lib/url_parser.php";
 /** Load base class, if needed */
 require_once BASE_DIR."/lib/processors/image_processor.php";
-
 /**
  * Used to create crawl summary information
  * for JPEG files
@@ -57,7 +52,6 @@ require_once BASE_DIR."/lib/processors/image_processor.php";
  */
 class JpgProcessor extends ImageProcessor
 {
-
     /**
      * {@inheritdoc}
      */
@@ -80,7 +74,5 @@ class JpgProcessor extends ImageProcessor
         }
         return $summary;
     }
-
 }
-
 ?>

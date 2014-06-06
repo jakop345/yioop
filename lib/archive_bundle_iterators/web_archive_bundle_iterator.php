@@ -30,15 +30,12 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  *Loads base class for iterating
  */
 require_once BASE_DIR.
     '/lib/archive_bundle_iterators/archive_bundle_iterator.php';
-
 /**
  * Class used to model iterating documents indexed in
  * an WebArchiveBundle. This would typically be for the purpose
@@ -52,7 +49,6 @@ require_once BASE_DIR.
 class WebArchiveBundleIterator extends ArchiveBundleIterator
     implements CrawlConstants
 {
-
     /**
      * Number of web archive objects in this web archive bundle
      * @var int
@@ -94,7 +90,6 @@ class WebArchiveBundleIterator extends ArchiveBundleIterator
      * @var string
      */
     var $fetcher_prefix;
-
     /**
      * Returns the path to an archive given its timestamp.
      *
@@ -107,7 +102,6 @@ class WebArchiveBundleIterator extends ArchiveBundleIterator
         return CRAWL_DIR.'/cache/'.$this->fetcher_prefix.
             self::archive_base_name.$timestamp;
     }
-
     /**
      * Creates a web archive iterator with the given parameters.
      *
@@ -131,7 +125,6 @@ class WebArchiveBundleIterator extends ArchiveBundleIterator
             $this->reset();
         }
     }
-
     /**
      * Saves the current state so that a new instantiation can pick up just
      * after the last batch of pages extracted.
@@ -147,7 +140,6 @@ class WebArchiveBundleIterator extends ArchiveBundleIterator
         file_put_contents("$archive_name/iterate_status.txt",
             serialize($info));
     }
-
     /**
      * Restores state from a previous instantiation, after the last batch of
      * pages extracted.
@@ -167,7 +159,6 @@ class WebArchiveBundleIterator extends ArchiveBundleIterator
         $this->partition->iterator_pos = $info['iterator_pos'];
         return $info;
     }
-
     /**
      * Estimates the importance of the site according to the weighting of
      * the particular archive iterator
@@ -179,7 +170,6 @@ class WebArchiveBundleIterator extends ArchiveBundleIterator
     {
         return false;
     }
-
     /**
      * Gets the next $num many docs from the iterator
      *
@@ -204,7 +194,6 @@ class WebArchiveBundleIterator extends ArchiveBundleIterator
             foreach($pre_new_objects as $object) {
                 $objects[] = $object[1];
             }
-
             $this->overall_index += $num_to_get;
             $this->partition_index += $num_to_get;
             if($num_to_get <= 0) {
@@ -221,8 +210,6 @@ class WebArchiveBundleIterator extends ArchiveBundleIterator
         $this->saveCheckpoint();
         return $objects;
     }
-
-
     /**
      * Resets the iterator to the start of the archive bundle
      */

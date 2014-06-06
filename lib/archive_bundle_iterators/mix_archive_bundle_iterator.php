@@ -30,29 +30,23 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * Load FileCache class in case used
  */
 require_once(BASE_DIR."/lib/file_cache.php");
-
 /**
  *Loads base class for iterating
  */
 require_once BASE_DIR.
     '/lib/archive_bundle_iterators/archive_bundle_iterator.php';
-
 /** Loads common constants for web crawling*/
 require_once BASE_DIR."/lib/crawl_constants.php";
 
 /** Loads common constants for web crawling*/
 require_once BASE_DIR."/lib/locale_functions.php";
-
 /**Load base controller class, if needed. */
 require_once BASE_DIR."/controllers/search_controller.php";
-
 /**
  * Used to do an archive crawl based on the results of a crawl mix.
  * the query terms for this crawl mix will have site:any raw 1 appended to them
@@ -70,22 +64,18 @@ class MixArchiveBundleIterator extends ArchiveBundleIterator
      * @var int
      */
     var $mix_timestamp;
-
     /**
      * Used to hold timestamp of the index archive bundle of output results
      *
      * @var int
      */
     var $result_timestamp;
-
     /**
      * count of how far out into the crawl mix we've gone.
      *
      * @var int
      */
     var $limit;
-
-
     /**
      * Creates a web archive iterator with the given parameters.
      *
@@ -113,7 +103,6 @@ class MixArchiveBundleIterator extends ArchiveBundleIterator
             $this->reset();
         }
     }
-
     /**
      *  Get the filename of the file that says information about the
      *  current archive iterator (such as whether the end of the iterator
@@ -125,7 +114,6 @@ class MixArchiveBundleIterator extends ArchiveBundleIterator
     {
         return CRAWL_DIR."/schedules/".self::name_archive_iterator.$timestamp;
     }
-
     /**
      * Saves the current state so that a new instantiation can pick up just
      * after the last batch of pages extracted.
@@ -140,7 +128,6 @@ class MixArchiveBundleIterator extends ArchiveBundleIterator
         file_put_contents("$archive_name/iterate_status.txt",
             serialize($info));
     }
-
     /**
      * Restores state from a previous instantiation, after the last batch of
      * pages extracted.
@@ -159,7 +146,6 @@ class MixArchiveBundleIterator extends ArchiveBundleIterator
             $this->end_of_iterator = false;
         }
     }
-
     /**
      * Estimates the importance of the site according to the weighting of
      * the particular archive iterator
@@ -171,7 +157,6 @@ class MixArchiveBundleIterator extends ArchiveBundleIterator
     {
         return false;
     }
-
     /**
      * Gets the next $num many docs from the iterator
      *
@@ -210,11 +195,9 @@ class MixArchiveBundleIterator extends ArchiveBundleIterator
                 $this->end_of_iterator = true;
             }
         }
-
         $this->saveCheckpoint();
         return $objects;
     }
-
     /**
      * Resets the iterator to the start of the archive bundle
      */

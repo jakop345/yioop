@@ -30,16 +30,13 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * Load base class with methods for loading and saving this structure
  */
 require_once "persistent_structure.php";
-
 /**
- * Fot packInt/unpackInt
+ * For packInt/unpackInt
  */
 require_once "utility.php";
 
@@ -55,7 +52,6 @@ require_once "utility.php";
  */
 class BloomFilterFile extends PersistentStructure
 {
-
     /**
      * Number of bit positions in the Bloom filter used to say an item is
      * in the filter
@@ -73,7 +69,6 @@ class BloomFilterFile extends PersistentStructure
      * @var string
      */
     var $filter;
-
     /**
      * Initializes the fields of the BloomFilter and its base
      * PersistentStructure.
@@ -95,9 +90,7 @@ class BloomFilterFile extends PersistentStructure
             // 1/8 =.125 = num bits/bytes, want to make things floats
         $mem = memory_get_usage(true) - $mem_before;
         parent::__construct($fname, $save_frequency);
-
     }
-
     /**
      * Inserts the provided item into the Bloomfilter
      *
@@ -110,10 +103,8 @@ class BloomFilterFile extends PersistentStructure
         for($i = 0;  $i < $num_keys; $i++) {
             $this->setBit($pos_array[$i]);
         }
-
         $this->checkSave();
     }
-
     /**
      * Checks if the BloomFilter contains the provided $value
      *
@@ -131,7 +122,6 @@ class BloomFilterFile extends PersistentStructure
         }
         return true;
     }
-
     /**
      * Hashes $value to a bit position in the BloomFilter
      *
@@ -155,7 +145,6 @@ class BloomFilterFile extends PersistentStructure
         }
         return $pos_array;
     }
-
     /**
      * Sets to true the ith bit position in the filter.
      *
@@ -164,15 +153,10 @@ class BloomFilterFile extends PersistentStructure
     function setBit($i)
     {
         $byte = ($i >> 3);
-
         $bit_in_byte = $i - ($byte << 3);
-
         $tmp = $this->filter[$byte];
-
         $this->filter[$byte] = $tmp | chr(1 << $bit_in_byte);
-
     }
-
     /**
      * Looks up the value of the ith bit position in the filter
      *
@@ -183,7 +167,6 @@ class BloomFilterFile extends PersistentStructure
     {
         $byte = $i >> 3;
         $bit_in_byte = $i - ($byte << 3);
-
         return ($this->filter[$byte] & chr(1 << $bit_in_byte)) != chr(0);
     }
 }

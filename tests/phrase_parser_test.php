@@ -30,20 +30,15 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  *  Load the url parser library we'll be testing
  */
 require_once BASE_DIR."/lib/phrase_parser.php";
-
 /**
  *  For guessLocaleFromString
  */
 require_once BASE_DIR."/lib/locale_functions.php";
-
-
 /**
  *  Used to test that the PhraseParser class. Want to make sure bigram
  *  extracting works correctly
@@ -60,14 +55,12 @@ class PhraseParserTest extends UnitTest
     function setUp()
     {
     }
-
     /**
      * PhraseParser uses static methods so doesn't do anything right now
      */
     function tearDown()
     {
     }
-
     /**
      * Tests the ability of extractPhrasesInLists to extract some hard-case
      * phrases and acronyms
@@ -106,7 +99,6 @@ EOD;
 拼音 关闭 空间 百科 hao123 | 更多>>
 About Baidu
 EOD;
-
         $word_lists = PhraseParser::extractPhrasesInLists($phrase_string,
             "zh-CN");
         $words = array_keys($word_lists);
@@ -115,7 +107,6 @@ EOD;
         $this->assertTrue(in_array("about", $words), "Chinese test 3");
         $this->assertFalse(in_array("", $words), "Chinese test 4");
         $this->assertFalse(in_array("下，", $words), "Chinese test 5");
-
         $phrase_string = <<< EOD
 P.O. Box 765,  http://somewhere.edu.au
 
@@ -131,11 +122,9 @@ http://yo.lo.edu/faculty_pages/zebra/
 A&W a&TT chris@pollett.org
 Fish 'n chips
 EOD;
-
         $word_lists = PhraseParser::extractPhrasesInLists($phrase_string,
             "en-US");
         $words = array_keys($word_lists);
-
         $this->assertTrue(in_array("_po", $words), "Acronym Test 1");
         $this->assertTrue(in_array("_uk", $words), "Acronym Test 2");
         $this->assertTrue(in_array("a_and_w", $words), "Ampersand Test 1");
@@ -150,7 +139,6 @@ EOD;
             "http_c__s__s_yo_d_lo_d_edu_s_faculty_pages_s_zebra_s_",
             $words), "URL Check 2");
     }
-
     /**
      * Checks whether the same search threshold can classify porn from
      * non-porn sites. Sample were taken from a couple porn sites,
@@ -192,7 +180,6 @@ EOD;
         $len = strlen($phrase_string);
         $score = PhraseParser::computeSafeSearchScore($word_lists, $len);
         $this->assertTrue(($score > 0.012), "Easy Unsafe Test 1");
-
         $phrase_string = <<< EOD
 a a a a a adventure after all alotta amazing and and and and and
 and and and and and around as ball ball big body boobies bounce boy
@@ -211,7 +198,6 @@ EOD;
         $len = strlen($phrase_string);
         $score = PhraseParser::computeSafeSearchScore($word_lists, $len);
         $this->assertTrue(($score > 0.012), "Harder Unsafe Test 1");
-
         $phrase_string = <<< EOD
 amino hog known a a a a an and and
 and and are are as as asymmetry be biology both but can cases cells
@@ -229,7 +215,6 @@ EOD;
         $len = strlen($phrase_string);
         $score = PhraseParser::computeSafeSearchScore($word_lists, $len);
         $this->assertTrue(($score < 0.012), "Harder Safe Test 1");
-
         $phrase_string = <<< EOD
 a a active adverb an an and are as as as attribute be
 between by caught characterized daft describe describe desire desire deft

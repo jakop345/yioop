@@ -30,12 +30,9 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /** Base class definition */
 require_once BASE_DIR."/lib/classifiers/classifier_algorithm.php";
-
 /**
  * Implements the logistic regression text classification algorithm using lasso
  * regression and a cyclic coordinate descent optimization step.
@@ -64,19 +61,16 @@ class LassoRegression extends ClassifierAlgorithm
      * @var int
      */
     var $debug = 0;
-
     /**
      * Threshold used to determine convergence.
      * @var float
      */
     var $epsilon = 0.001;
-
     /**
      * Lambda parameter to CLG algorithm.
      * @var float
      */
     var $lambda = 1.0;
-
     /**
      * Beta vector of feature weights resulting from the training phase. The
      * dot product of this vector with a feature vector yields the log
@@ -85,7 +79,6 @@ class LassoRegression extends ClassifierAlgorithm
      * @var array
      */
     var $beta;
-
     /**
      * An adaptation of the Zhang-Oles 2001 CLG algorithm by Genkin et al. to
      * use the Laplace prior for parameter regularization. On completion,
@@ -106,39 +99,30 @@ class LassoRegression extends ClassifierAlgorithm
         $d = array_fill(0, $n, 1.0);
         $r = array_fill(0, $m, 0.0);
         $converged = false;
-
         $drSum = 0.0;
         $rSum = 0.0;
         $change = 0.0;
         $score = 0.0;
-
         $minDrj = $this->epsilon;
         $prevDrj = $this->epsilon;
         $schedule = new SplMaxHeap();
         $nextSchedule = new SplMaxHeap();
-
         for ($j = 0; $j < $n; $j++)
             $schedule->insert(array($this->epsilon, $j));
-
         for ($k = 0; !$converged; $k++) {
             $prevR = $r;
-
             $var = 1;
             while (!$schedule->isEmpty()) {
                 list($drj, $j) = $schedule->top();
-
-                if ($drj < $minDrj /*|| $drj / $prevDrj < 0.25*/) {
+                if ($drj < $minDrj) {
                     break;
                 } else {
                     $schedule->extract();
                     $prevDrj = $drj;
                 }
-
                 $Xj = $invX->iterateColumn($j);
-
                 list($numer, $denom) = $this->computeApproxLikelihood(
                     $Xj, $y, $r, $d[$j]);
-
                 // Compute tentative step $dvj
                 if ($beta[$j] == 0) {
                     $dvj = ($numer - $lambda) / $denom;
@@ -153,14 +137,12 @@ class LassoRegression extends ClassifierAlgorithm
                     if ($s * ($beta[$j] + $dvj) < 0)
                         $dvj = -$beta[$j];
                 }
-
                 if ($dvj == 0) {
                     $d[$j] /= 2;
                     $nextSchedule->insert(array($this->epsilon, $j, $k));
                 } else {
                     // Compute delta for beta[j], constrained to trust region.
                     $dbetaj = min(max($dvj, -$d[$j]), $d[$j]);
-
                     // Update our cached dot product by the delta.
                     $drj = 0.0;
                     foreach ($Xj as $cell) {
@@ -169,29 +151,21 @@ class LassoRegression extends ClassifierAlgorithm
                         $drj += $dr;
                         $r[$i] += $dr;
                     }
-
                     $drj = abs($drj);
                     $nextSchedule->insert(array($drj, $j, $k));
-
                     $beta[$j] += $dbetaj;
-
                     // Update the trust region.
                     $d[$j] = max(2 * abs($dbetaj), $d[$j] / 2);
                 }
-
                 if ($this->debug > 1) {
                     $score = $this->score($r, $y, $beta);
                 }
-
                 $this->log(sprintf(
                     "itr = %3d, j = %4d (#%d), score = %6.2f, change = %6.4f",
                     $k + 1, $j, $var, $score, $change));
-
                 $var++;
             }
-
             // Update $converged
-
             $drSum = 0.0;
             $rSum = 0.0;
             for ($i = 0; $i < $m; $i++) {
@@ -199,22 +173,17 @@ class LassoRegression extends ClassifierAlgorithm
                 $rSum += abs($r[$i]);
             }
             $change = $drSum / (1 + $rSum);
-
             $converged = $change <= $this->epsilon;
-
             while (!$schedule->isEmpty()) {
                 list($drj, $j) = $schedule->extract();
                 $nextSchedule->insert(array($drj * 4, $j));
             }
-
             $tmp = $schedule;
             $schedule = $nextSchedule;
             $nextSchedule = $tmp;
-
             $minDrj *= 2;
         }
     }
-
     /**
      * Returns the pseudo-probability that a new instance is a positive example
      * of the class the beta vector was trained to recognize. It only makes
@@ -233,9 +202,7 @@ class LassoRegression extends ClassifierAlgorithm
         }
         return 1.0 / (1.0 + exp(-$l));
     }
-
     /* PRIVATE INTERFACE */
-
     /**
      * Computes the approximate likelihood of y given a single feature, and
      * returns it as a pair <numerator, denominator>.
@@ -254,10 +221,8 @@ class LassoRegression extends ClassifierAlgorithm
     {
         $numer = 0.0;
         $denom = 0.0;
-
         foreach ($Xj as $cell) {
             list($j, $i, $Xij) = $cell;
-
             $yi = $y[$i];
             $ri = $yi * $r[$i];
             $a = abs($ri);
@@ -271,10 +236,8 @@ class LassoRegression extends ClassifierAlgorithm
             $numer += $Xij * $yi / (1 + exp($ri));
             $denom += $Xij * $Xij * $F;
         }
-
         return array($numer, $denom);
     }
-
     /**
      * Computes an approximate score that can be used to get an idea of how
      * much a given optimization step improved the likelihood of the data set.
@@ -294,7 +257,6 @@ class LassoRegression extends ClassifierAlgorithm
             $score += -log(1 + exp(-$ri * $y[$i]));
         return $score - array_sum($beta);
     }
-
     /**
      * Estimates the lambda parameter from the dataset.
      *
@@ -309,14 +271,12 @@ class LassoRegression extends ClassifierAlgorithm
             $Xij = $entry[2];
             $sqNorm += $Xij * $Xij;
         }
-
         $m = $invX->rows();
         $n = $invX->columns();
         $sigmaSq = $n * $m / $sqNorm;
         return sqrt(2) / sqrt($sigmaSq);
     }
 }
-
 /**
  * Stores a data matrix in an inverted index on columns with non-zero entries.
  *
@@ -336,26 +296,22 @@ class InvertedData
      * @var int
      */
     var $rows;
-
     /**
      * Number of columns in the matrix.
      * @var int
      */
     var $columns;
-
     /**
      * Array of non-zero matrix entries.
      * @var array
      */
     var $data;
-
     /**
      * Array of offsets into the $data array, where each offset gives the start
      * of the entries for a particular feature.
      * @var array
      */
     var $index;
-
     /**
      * Converts a SparseMatrix into an InvertedData instance. The data is
      * duplicated.
@@ -374,9 +330,7 @@ class InvertedData
                 $this->data[] = array($j, $i, $Xij);
             }
         }
-
         sort($this->data);
-
         $lastVar = -1;
         foreach ($this->data as $dataOffset => $x) {
             $currVar = $x[0];
@@ -387,10 +341,22 @@ class InvertedData
             }
         }
     }
-
-    function rows()    { return $this->rows; }
-    function columns() { return $this->columns; }
-
+    /**
+     * Accessor method which the number of rows in the matrix
+     * @return number of rows
+     */
+    function rows()
+    {
+        return $this->rows;
+    }
+    /**
+     * Accessor method which the number of columns in the matrix
+     * @return number of columns
+     */
+    function columns()
+    {
+        return $this->columns;
+    }
     /**
      * Returns an iterator over the values for a particular column of the
      * matrix. If no matrix entry in the column is non-zero then an empty
@@ -406,15 +372,12 @@ class InvertedData
             $count = $this->index[$j + 1] - $start;
         else
             $count = -1;
-
         if ($count != 0) {
             $arrItr = new ArrayIterator($this->data);
             return new LimitIterator($arrItr, $start, $count);
         }
-
         return new EmptyIterator();
     }
-
     /**
      * Returns an iterator over the entire matrix. Note that this iterator is
      * not in row order, but effectively in column order.

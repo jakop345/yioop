@@ -30,15 +30,11 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /** Used to load common constants among crawl components */
 require_once BASE_DIR."/lib/crawl_constants.php";
-
 /** For close dangling tags */
 require_once BASE_DIR."/lib/processors/text_processor.php";
-
 /**
  *
  * @author Chris Pollett
@@ -162,7 +158,6 @@ class WikiParser implements CrawlConstants
             array('/(\A|\n)----/', "$1<hr />"),
             array('/\r/', ""),
         );
-
         $this->matches = array();
         $this->replaces = array();
         $this->base_address = $base_address;
@@ -173,8 +168,6 @@ class WikiParser implements CrawlConstants
             list($this->matches[], $this->replaces[]) = $substitution;
         }
     }
-
-
     /**
      *
      *  @param string $document
@@ -246,11 +239,9 @@ class WikiParser implements CrawlConstants
             $document = substr($document, 0, 0.9*MAX_GROUP_PAGE_LEN);
             TextProcessor::closeDanglingTags($document);
             $document .="...";
-
         }
         return $document;
     }
-
     /**
      * Used to make a table of contents for a wiki page based on the
      * level two headings on that page.
@@ -276,7 +267,6 @@ class WikiParser implements CrawlConstants
         }
         return $toc;
     }
-
     /**
      * Used to make a reference list for a wiki page based on the
      * cite tags on that page.
@@ -410,7 +400,6 @@ class WikiParser implements CrawlConstants
         }
         return array($page, $references);
     }
-
     /**
      *  After regex processing has been done on a wiki page this function
      *  inserts into the resulting page a table of contents just before
@@ -430,7 +419,6 @@ class WikiParser implements CrawlConstants
         }
         return $page;
     }
-
     /**
      *  After regex processing has been done on a wiki page this function
      *  inserts into the resulting page a reference at
@@ -443,12 +431,9 @@ class WikiParser implements CrawlConstants
     function insertReferences($page, $references)
     {
         $page = preg_replace('/{{reflist(.+?)}}/si', $references, $page);
-
         return $page;
     }
-
 }
-
 /**
  * Callback used by a preg_replace_callback in nextPage to make a table
  * @param array $matches of table cells
@@ -517,7 +502,6 @@ function makeTableCallback($matches)
     $out .= "</$old_type></tr></table>";
     return $out;
 }
-
 /**
  * Used to convert {{cite }} to a numbered link to a citation
  *
@@ -537,7 +521,6 @@ function citeCallback($matches, $init = -1)
     $ref_count++;
     return $out;
 }
-
 /**
  * Used to changes spaces to underscores in links generated from our earlier
  * matching rules
@@ -550,7 +533,6 @@ function fixLinksCallback($matches)
     $out = $matches[2].'"'.str_replace(" ", "_", $matches[3]).'"';
     return $out;
 }
-
 /**
  *
  */

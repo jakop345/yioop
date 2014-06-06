@@ -29,7 +29,6 @@
  * @copyright 2009 - 2014s
  * @filesource
  */
-
 /*
  * The alphabet for this locale (just a stub for now)
  */

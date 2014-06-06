@@ -30,14 +30,11 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  *Loads base class for iterating
  */
 require_once BASE_DIR.'/lib/index_bundle_iterators/index_bundle_iterator.php';
-
 /**
  * Used to iterate through all the documents and links associated with a
  * an IndexArchiveBundle. It iterates through each doc or link regarless of
@@ -54,65 +51,52 @@ require_once BASE_DIR.'/lib/index_bundle_iterators/index_bundle_iterator.php';
  */
 class DocIterator extends IndexBundleIterator
 {
-
     /**
      * The timestamp of the index is associated with this iterator
      * @var string
      */
     var $index_name;
-
     /**
      * The next byte offset of a doc in the IndexShard
      * @var int
      */
     var $next_offset;
-
     /**
      * Last Offset of a doc occurence in the IndexShard
      * @var int
      */
     var $last_offset;
-
     /**
      * The current byte offset in the IndexShard
      * @var int
      */
     var $current_offset;
-
     /**
      * An array of shard docids_lens
      * @var array
      */
     var $shard_lens;
-
     /**
      * The total number of shards that have data for this word
      * @var int
      */
     var $num_generations;
-
     /**
      * Numeric number of current shard
      * @var int
      */
     var $current_generation;
-
-
     /**
      * Used to keep track of docs to filter out of results
      * @var int
      */
     var $filter;
-
     /** Host Key position + 1 (first char says doc, inlink or eternal link)*/
     const HOST_KEY_POS = 17;
-
     /** Length of a doc key*/
     const KEY_LEN = 8;
-
     /**
      * Creates a word iterator with the given parameters.
-
      * @param string $index_name time_stamp of the to use
      * @param int $limit the first element to return from the list of docs
      *      iterated over
@@ -127,20 +111,16 @@ class DocIterator extends IndexBundleIterator
         } else {
             $this->filter = NULL;
         }
-
         $this->index_name =  $index_name;
         $index = IndexManager::getIndex($index_name);
         $info = $index->getArchiveInfo($index->dir_name);
         $this->num_docs = $info['COUNT'];
         $this->num_generations = (isset($index->generation_info['ACTIVE'])) ?
             $index->generation_info['ACTIVE'] + 1 : 0;
-
         $this->results_per_block = $results_per_block;
         $this->current_block_fresh = false;
-
         $this->reset();
     }
-
     /**
      * Computes a relevancy score for a posting offset with respect to this
      * iterator and generation. This method is required from the base class,
@@ -156,15 +136,12 @@ class DocIterator extends IndexBundleIterator
     {
         return 1.0;
     }
-
     /**
      * Returns the iterators to the first document block that it could iterate
      * over
-     *
      */
     function reset()
     {
-
         $this->current_generation = 0;
         $this->count_block = 0;
         $this->seen_docs = 0;
@@ -172,9 +149,14 @@ class DocIterator extends IndexBundleIterator
         $this->next_offset = 0;
         $this->getShardInfo($this->current_generation);
     }
-
     /**
+     *  Mainly used to get the last_offset in shard $generation of the
+     *  current index bundle. In the case where this wasn't previously
+     *  cached it loads in the index bundle, sets the current generation to
+     *  $generation, stores the docids_len (the last offset) of this shard
+     *  in shard_lens and sets up last_offset as $generation's docids_len
      *
+     *  @param $generation to get last offset for
      */
     function getShardInfo($generation)
     {
@@ -189,7 +171,6 @@ class DocIterator extends IndexBundleIterator
         }
 
     }
-
     /**
      * Hook function used by currentDocsWithWord to return the current block
      * of docs if it is not cached
@@ -207,7 +188,6 @@ class DocIterator extends IndexBundleIterator
         $this->next_offset = $this->current_offset;
         $index = IndexManager::getIndex($this->index_name);
         $index->setCurrentShard($this->current_generation, true);
-
         //the next call also updates next offset
         $shard = $index->getCurrentShard();
         $this->getShardInfo($this->current_generation);
@@ -227,8 +207,6 @@ class DocIterator extends IndexBundleIterator
             $pre_results[$doc_id] = $item;
             $num_docs_so_far ++;
         } while ($num_docs_so_far <  $this->results_per_block);
-
-
         $results = array();
         $doc_key_len = IndexShard::DOC_KEY_LEN;
         $filter = ($this->filter == NULL) ? array() : $this->filter;
@@ -252,7 +230,6 @@ class DocIterator extends IndexBundleIterator
         $this->pages = $results;
         return $results;
     }
-
     /**
      * Updates the seen_docs count during an advance() call
      */
@@ -273,7 +250,6 @@ class DocIterator extends IndexBundleIterator
         $this->current_block_fresh = false;
         $this->seen_docs += $num_docs;
     }
-
     /**
      * Forwards the iterator one group of docs
      * @param array $gen_doc_offset a generation, doc_offset pair. If set,
@@ -313,8 +289,6 @@ class DocIterator extends IndexBundleIterator
                     4*IndexShard::DOC_KEY_LEN;
         }
     }
-
-
     /**
      * Switches which index shard is being used to return occurrences of
      * the word to the next shard containing the word
@@ -332,8 +306,6 @@ class DocIterator extends IndexBundleIterator
             $this->getShardInfo($generation);
         }
     }
-
-
     /**
      * Gets the doc_offset and generation for the next document that
      * would be return by this iterator

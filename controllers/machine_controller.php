@@ -30,16 +30,13 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /** Load base controller class if needed */
 require_once BASE_DIR."/controllers/controller.php";
 /** Loads common constants for web crawling*/
 require_once BASE_DIR."/lib/crawl_constants.php";
 /** Loads crawl_daemon to get status on running daemons*/
 require_once BASE_DIR."/lib/crawl_daemon.php";
-
 /**
  * This class handles requests from a computer that is managing several
  * fetchers and queue_servers. This controller might be used to start, stop
@@ -56,7 +53,6 @@ class MachineController extends Controller implements CrawlConstants
      * @var array
      */
     var $activities = array("statuses", "update", "log");
-
     /**
      * Number of characters from end of most recent log file to return
      * on a log request
@@ -71,19 +67,15 @@ class MachineController extends Controller implements CrawlConstants
     function processRequest()
     {
         $data = array();
-
         /* do a quick test to see if this is a request seems like
            from a legitimate machine
          */
         if(!$this->checkRequest()) {return; }
-
         $activity = $_REQUEST['a'];
-
         if(in_array($activity, $this->activities)) {
             $this->call($activity);
         }
     }
-
     /**
      * Checks the running/non-running status of the
      * fetchers and queue_servers of the current Yioop instance
@@ -92,7 +84,6 @@ class MachineController extends Controller implements CrawlConstants
     {
         echo json_encode(CrawlDaemon::statuses());
     }
-
     /**
      * Used to start/stop a queue_server/fetcher of the current Yioop instance
      * based on the queue_server and fetcher fields of the current $_REQUEST
@@ -110,7 +101,6 @@ class MachineController extends Controller implements CrawlConstants
                 CrawlDaemon::stop("queue_server");
             }
         }
-
         if(isset($_REQUEST['mirror'])) {
             if($_REQUEST['mirror'] == "true" &&
                 !isset($statuses["mirror"][-1])) {
@@ -120,7 +110,6 @@ class MachineController extends Controller implements CrawlConstants
                 CrawlDaemon::stop("mirror");
             }
         }
-
         if(isset($_REQUEST['fetcher']) && is_array($_REQUEST['fetcher'])) {
             foreach($_REQUEST['fetcher'] as $index => $value) {
                 if($value == "true" && !isset($statuses["fetcher"][$index]) ) {
@@ -132,7 +121,6 @@ class MachineController extends Controller implements CrawlConstants
             }
         }
     }
-
     /**
      *  Used to retrieve a fetcher/queue_server logfile for the the current
      *  Yioop instance
@@ -179,7 +167,5 @@ class MachineController extends Controller implements CrawlConstants
         }
         echo json_encode(urlencode($log_data));
     }
-
-
 }
 ?>

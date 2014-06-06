@@ -32,7 +32,6 @@
  */
 /** For getTokenizer methods */
 require_once BASE_DIR."/lib/phrase_parser.php";
-
 /**
  * Class used to reorder the last 10 links computed by PhraseModel based on
  * thesaurus semantic information. For English, thesaurus semantic information
@@ -101,7 +100,6 @@ class Thesaurus
         }
         return $result;
     }
-
     /**
      * Gets array of BM25 scores for given input array of summaries
      * and thesaurus generated queries
@@ -147,7 +145,6 @@ class Thesaurus
             return $score;
         }
     }
-
     /**
      *  Computes suggested related phrases from thesaurus based on part of
      *  speech  done on each query term.
@@ -232,7 +229,6 @@ class Thesaurus
         return IndexManager::numDocsTerm($whole_phrase, $index_name,
             $threshold);
     }
-
     /**
      * Lower cases an array of strings
      *

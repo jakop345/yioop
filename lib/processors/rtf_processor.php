@@ -30,18 +30,14 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /** Register File Types We Handle*/
 $INDEXED_FILE_TYPES[] = "rtf";
 $PAGE_PROCESSORS["text/rtf"] = "RtfProcessor";
-
 /**
  * Load base class, if needed
  */
 require_once BASE_DIR."/lib/processors/text_processor.php";
-
 /**
  * Used to create crawl summary information
  * for RTF files
@@ -52,7 +48,6 @@ require_once BASE_DIR."/lib/processors/text_processor.php";
  */
 class RtfProcessor extends TextProcessor
 {
-
     /**
      * Computes a summary based on a rtf string of a document
      *
@@ -69,17 +64,12 @@ class RtfProcessor extends TextProcessor
         if(is_string($page)) {
             $text =  self::extractText($page);
         }
-
         if($text == "") {
             $text = $url;
         }
-
         $summary = parent::process($text, $url);
-
         return $summary;
-
     }
-
     /**
      * Gets plain text out of an rtf string
      *
@@ -89,21 +79,17 @@ class RtfProcessor extends TextProcessor
      * @param string $rtf_string what to extract plain text out of
      * @return string plain texts
      */
-    static function extractText($rtf_string) {
+    static function extractText($rtf_string)
+    {
         $rtf_string = preg_replace('/\\\{/',"!ZZBL!", $rtf_string);
         $rtf_string = preg_replace('/\\\}/',"!ZZBR!", $rtf_string);
         $rtf_string = preg_replace('/\\\\\'d\d/',"'", $rtf_string);
         $rtf_string = preg_replace('/\\\\\'b\d/',"'", $rtf_string);
-
         $out = self::getText($rtf_string);
-
         $out = preg_replace("!ZZBL!",'/\\\{/', $out);
         $out = preg_replace("!ZZBR!", '/\\\}/', $out);
-
-
         return $out;
     }
-
     /**
      * Gets plain text out of an rtf string
      *
@@ -115,34 +101,28 @@ class RtfProcessor extends TextProcessor
         $len = strlen($rtf_string);
         $cur_pos = 0;
         $out = "";
-
         $i = 0;
         while($cur_pos < $len) {
-
-        list($cur_pos, $object_string) =
-            self::getNextObject($rtf_string, $cur_pos);
-        if(strpos($object_string, "{")) {
-            $out .= self::getText($object_string);
-        } else {
-            if (preg_match('/\\\/',$object_string) == 0) {
-                $out .=  $object_string;
-            } else if(preg_match('/\\\(par)/', $object_string) > 0) {
-                $text = preg_replace('/\\\(\w)+/', "", $object_string);
-                $out .= $text."\n";
-            } else if(preg_match(
-                '/(\\\(title)|\\\(author)|\\\(operator)|\\\(company))/',
-                $object_string) > 0) {
-                $text = preg_replace('/\\\(\w)+/', "", $object_string);
-                $out .= $text."\n\n";
+            list($cur_pos, $object_string) =
+                self::getNextObject($rtf_string, $cur_pos);
+            if(strpos($object_string, "{")) {
+                $out .= self::getText($object_string);
+            } else {
+                if (preg_match('/\\\/',$object_string) == 0) {
+                    $out .=  $object_string;
+                } else if(preg_match('/\\\(par)/', $object_string) > 0) {
+                    $text = preg_replace('/\\\(\w)+/', "", $object_string);
+                    $out .= $text."\n";
+                } else if(preg_match(
+                    '/(\\\(title)|\\\(author)|\\\(operator)|\\\(company))/',
+                    $object_string) > 0) {
+                    $text = preg_replace('/\\\(\w)+/', "", $object_string);
+                    $out .= $text."\n\n";
+                }
             }
         }
-
-        }
-
         return $out;
-
     }
-
     /**
      * Gets the contents of the rtf group at the current position in the string
      *
@@ -154,8 +134,5 @@ class RtfProcessor extends TextProcessor
     {
         return self::getBetweenTags($rtf_string, $cur_pos, '{', '}');
     }
-
-
 }
-
 ?>

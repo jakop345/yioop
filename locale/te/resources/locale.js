@@ -29,12 +29,10 @@
  * @copyright 2009 - 2014s
  * @filesource
  */
-
 /*
  * The alphabet for this locale
  */
 var alpha = "";
-
 /*
  * Transliteration maping for this locale
  */
@@ -50,8 +48,7 @@ var roman_array = {
     "+ai":"ై","+aa":"ా","+ru":"ృ",
     "+oo":"ో","+ee":"ే","+i":"ి","+o":"ొ","*":"్"
 };
-
-/*
+/**
  * To analyze the query and generate actual input query from the
  * transliterated query
  *

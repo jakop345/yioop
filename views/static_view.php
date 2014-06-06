@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * This View is responsible for drawing forward-facing wiki pages in
  * a more static cleaned up way
@@ -41,15 +39,12 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @package seek_quarry
  * @subpackage view
  */
-
 class StaticView extends View
 {
-
     /** This view is drawn on a web layout
      *  @var string
      */
     var $layout = "web";
-
     /**
      *  Draws wiki page in a more static fashion.
      *

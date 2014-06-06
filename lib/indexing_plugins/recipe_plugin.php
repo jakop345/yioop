@@ -32,20 +32,16 @@
  * @copyright 2011 -2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /** Un Register plugin if php version not high enough to have spi*/
 if(!defined('PHP_VERSION_ID') || PHP_VERSION_ID < 50300) {
     $INDEXING_PLUGINS = array_values(
         array_diff($INDEXING_PLUGINS, array("recipe")));
 }
-
 /**
  * Ratio of clusters/total number of recipes seen
  */
 define("CLUSTER_RATIO", 0.1);
-
 /** NO_CACHE means don't try to use memcache*/
 if(!defined("NO_CACHE")) {
     define("NO_CACHE", true);
@@ -54,7 +50,6 @@ if(!defined("NO_CACHE")) {
 if(!defined("USE_CACHE")) {
     define("USE_CACHE", false);
 }
-
 /** Loads processor used for */
 require_once BASE_DIR."/lib/processors/html_processor.php";
 /** Base indexing plugin class*/
@@ -73,7 +68,6 @@ require_once BASE_DIR."/lib/crawl_constants.php";
 require_once BASE_DIR."/lib/locale_functions.php";
 /**Load base controller class, if needed. */
 require_once BASE_DIR."/controllers/search_controller.php";
-
 /**
  * This class handles recipe processing.
  * It extracts ingredients from the recipe pages while crawling.
@@ -171,11 +165,8 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
         }
         $num_recipes = count($subdocs_description);
         crawlLog("...$num_recipes found.");
-
         return $subdocs_description;
     }
-
-
     /**
      * Implements post processing of recipes. recipes are extracted
      * ingredients are scrubbed and recipes are clustered. The clustered
@@ -186,7 +177,6 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
     function postProcessing($index_name)
     {
         global $INDEXING_PLUGINS;
-
         if(!class_exists("SplHeap")) {
             crawlLog("...Recipe Plugin Requires SPLHeap for clustering!");
             crawlLog("...Aborting plugin");
@@ -242,7 +232,6 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
                     $i++;
                 }
             }
-
             $recipes_ingredients = array();
             $count = count($recipes);
             foreach($recipes as $key => $recipe) {
@@ -280,7 +269,6 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
                'chillies','cilantro','rosemary',
                'vanillaextract','vinegar','shallots',
                'wine','cornmeal','nonstickspray');
-
             for($i = 0; $i < $count; $i++) {
                 $recipe1_main_ingredient = "";
                 $recipe1 = $recipes[$i][1];
@@ -289,7 +277,6 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
                 $distinct_ingredients[$recipe_name] = $recipes[$i][1];
                 $doc_keys[$recipe_name] = $recipes[$i][2];
                 $recipes_summary[$recipe_name] = $recipes[$i][3];
-
                 for($j = $i + 1; $j < $count; $j++) {
                     $recipe2_main_ingredient = "";
                     $recipe2 = $recipes[$j][1];
@@ -338,14 +325,12 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
                     $k++;
                 }
             }
-
             crawlLog("...Making new shard with clustered recipes as docs.");
             $clusters = kruskalClustering($weights,
                 $count, $distinct_ingredients);
             $index_shard = new IndexShard("cluster_shard");
             $word_lists = array();
             $recipe_sites = array();
-
             foreach($clusters as $cluster) {
                 $count = count($cluster);
                 for($i = 0; $i < $count - 1; $i++) {
@@ -383,15 +368,12 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
                             $summary[self::TITLE]);
                     }
                 }
-
             }
             $shard_string = $index_shard->save(true);
             $index_shard = IndexShard::load("cluster_shard",
                 $shard_string);
             unset($shard_string);
-
             crawlLog("...Adding recipe shard to index archive bundle");
-
             $dir = CRAWL_DIR."/cache/".self::index_data_base_name.$index_name;
             $index_archive = new IndexArchiveBundle($dir, false);
             if($index_shard->word_docs_packed) {
@@ -422,7 +404,6 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
             crawlLog("...Recipe plugin finished.");
         }
     }
-
     /**
      *  Extracts the main ingredient from the ingredient.
      *
@@ -454,11 +435,8 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
         $measurements = array('cup','cups','ounces','teaspoon','teaspoons',
             'tablespoon','tablespoons','pound','pounds','tbsp','tsp','lbs',
             'inch','pinch','oz','lb','tbs','can','bag','C','c','tb');
-
         $sizes = array('small','large','thin','less','thick','bunch');
-
         $prepositions = array('into', 'for', 'by','to','of');
-
         $misc = array('hot','cold','room','temperature','plus','stick','pieces',
             "confectioners",'semisweet','white','all-purpose','bittersweet',
             'cut','whole','or','and','french','wedges','package','pkg','shells',
@@ -466,12 +444,10 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
             'cedar','taste','spicy','glaze','crunchy','sharp','chips','juice',
             'optional','fine','regular','dash','overnight','soaked','classic',
             'firm','delicious','prefer','plain');
-
         $attributes = array('boneless','skinless','breast','legs','thighs',
             'washington','fresh','flat','leaf','ground','extra','virgin','dry',
             'cloves','lean','ground','roma','all purpose','light','brown',
             'idaho','kosher','frozen','garnish');
-
         $nouns = array();
         $i = 0;
         $endings = array('/\,/','/\./','/\+/','/\*/',"/'/","/\(/","/\)/");
@@ -499,7 +475,6 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
         $name = preg_replace('/[^a-zA-Z]/', "", $name);
         return $name;
     }
-
     /**
      * Which mime type page processors this plugin should do additional
      * processing for
@@ -510,7 +485,6 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
     {
         return array("HtmlProcessor");
     }
-
     /**
      * Returns an array of additional meta words which have been added by
      * this plugin
@@ -521,12 +495,10 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
      */
     static function getAdditionalMetaWords()
     {
-
         return array("recipe:" => MAX_DESCRIPTION_LEN,
             "ingredient:" => MAX_DESCRIPTION_LEN);
     }
 }
-
 /**
  * Gets the language tag (for instance, en_US for American English) of the
  * locale that is currently being used.
@@ -540,7 +512,6 @@ if(!function_exists("getLocaleTag")) {
         return "en_US";
     }
 }
-
 /**
  * class to define vertex
  * @package seek_quarry
@@ -550,20 +521,16 @@ class Vertex
 {
     private $label;
     private $visited;
-
     function __construct($label){
         $this->label = $label;
         $this->visited = false;
     }
-
     function getLabel(){
         return $this->label;
     }
-
     function visited(){
         $this->visited = true;
     }
-
     function isVisited(){
         return $this->visited;
     }
@@ -578,31 +545,26 @@ class Edge
     private $start_vertex;
     private $end_vertex;
     private $cost;
-
     function __construct($vertex1,$vertex2,$cost){
         $this->start_vertex = new Vertex($vertex1);
         $this->end_vertex = new Vertex($vertex2);
         $this->cost = $cost;
     }
-
     function getStartVertex()
     {
         return $this->start_vertex;
     }
-
     function getEndVertex()
     {
         return $this->end_vertex;
     }
-
     function getCost()
     {
         return $this->cost;
     }
 }
-
 /**
- * class to define Minimum Spanning tree. constructMST constructs
+ * Class to define Minimum Spanning tree. constructMST constructs
  * the minimum spanning tree using heap. formCluster forms clusters by
  * deleting the most expensive edge. BreadthFirstSearch is used to
  * traverse the MST.
@@ -614,14 +576,12 @@ class Tree
     private $cluster_heap;
     private $vertices;
     private $adjMatrix;
-
     function __construct(){
         $this->cluster_heap = new Cluster();
         $this->vertices = array();
     }
-
    /**
-    * constructs the adjacency matrix for the MST.
+    * Constructs the adjacency matrix for the MST.
     *
     * @param object array $edges vertices and edge weights of MST
     */
@@ -640,11 +600,9 @@ class Tree
             if(empty($this->vertices) || !in_array($vertex2,$this->vertices))
                 $this->vertices[$vertex2->getLabel()] = $vertex2;
         }
-
     }
-
    /**
-    * forms the clusters by removing maximum weighted edges.
+    * Forms the clusters by removing maximum weighted edges.
     * performs breadth-first search to cluster the recipes.
     *
     * @param int $k queue size
@@ -687,9 +645,8 @@ class Tree
         }
         return $cluster;
     }
-
    /**
-    * gets the next vertex  from the adjacency matrix for a given vertex
+    * Gets the next vertex  from the adjacency matrix for a given vertex
     *
     * @param string $vertex vertex
     * @return adjacent vertex if it has otherwise -1.
@@ -705,7 +662,6 @@ class Tree
         }
         return -1;
     }
-
    /**
     * Finds the common ingredient for each of the clusters.
     *
@@ -762,7 +718,7 @@ if(!class_exists("SplHeap")) {
 }
 
 /**
- * heap to maintain the MST
+ * Heap to maintain the MST
  * @package seek_quarry
  * @subpackage indexing_plugin
  */
@@ -778,7 +734,7 @@ class Cluster extends SplHeap
     }
 }
 /**
- * heap to maintain the tree
+ * Heap to maintain the tree
  * @package seek_quarry
  * @subpackage indexing_plugin
  */
@@ -795,7 +751,7 @@ class TreeCluster extends SplHeap
 }
 
 /**
- * queue for the BFS traversal
+ * Queue for the BFS traversal
  * @package seek_quarry
  * @subpackage indexing_plugin
  */
@@ -835,7 +791,7 @@ class Queue
 
 }
 /**
- * creates tree from the input and apply Kruskal's algorithm to find MST.
+ * Creates tree from the input and apply Kruskal's algorithm to find MST.
  *
  * @param object array $edges recipes with distances between them.
  * @return object arrat $min_edges MST
@@ -885,7 +841,6 @@ function construct_tree($edges)
     }
     return $min_edges;
 }
-
 /**
  * Clusters the recipes by applying Kruskal's algorithm
  * @param array $edges recipes and distances between them.

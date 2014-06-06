@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * Shared constants and enums used by components that are involved in the
  * crawling process
@@ -41,7 +39,6 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @package seek_quarry
  * @subpackage library
  */
-
 interface CrawlConstants
 {
     /**
@@ -56,7 +53,6 @@ interface CrawlConstants
      *  Used to say what kind of queue_server this is
      */
     const SCHEDULER = "Scheduler";
-
     const queue_base_name = "QueueBundle";
     const archive_base_name = "Archive";
     const name_archive_iterator = "NameArchiveIterator";
@@ -78,42 +74,32 @@ interface CrawlConstants
     const schedule_start_name = "StartCrawlSchedule.txt";
     const robot_table_name = "robot_table.txt";
     const mirror_table_name = "mirror_table.txt";
-
     /** Used in priority queue*/
     const MAX = 1;
     const MIN = -1;
-
     /** starts of daemon processes*/
     const STOP_STATE = -1;
     const CONTINUE_STATE = 1;
     const NO_DATA_STATE = 2;
     const WAITING_START_MESSAGE_STATE = 3;
     const REDO_STATE = 4;
-
     /** Number of seconds in a day*/
     const ONE_DAY = 86400;
-
     /** Number of seconds in a week*/
     const ONE_WEEK = 604800;
-
     /** Number of seconds in an hour */
     const ONE_HOUR = 3600;
-
     /** Number of seconds in a minute */
     const ONE_MINUTE = 60;
-
     const STATUS = 'a';
     const CRAWL_TIME = 'b';
-
     const HTTP_CODE = 'c';
     const TIMESTAMP = 'd';
     const TYPE = 'e';
     const ENCODING = 'f';
-
     const SEEN_URLS = 'g';
     const MACHINE = 'h';
     const INVERTED_INDEX = 'i';
-
     const SAVED_CRAWL_TIMES= 'j';
     const SCHEDULE_TIME = 'k';
     const URL = 'l';
@@ -131,7 +117,6 @@ interface CrawlConstants
     const ROBOT_TXT = 'x';
     const TO_CRAWL = 'y';
     const INDEX = 'z';
-
     const AVERAGE_TITLE_LENGTH = 'A';
     const AVERAGE_DESCRIPTION_LENGTH = 'B';
     const AVERAGE_TOTAL_LINK_TEXT_LENGTH = 'C';
@@ -148,7 +133,6 @@ interface CrawlConstants
     const DOC_RANK = 'N';
     const URL_WEIGHT = 'O';
     const INLINKS = 'P';
-
     const NEW_CRAWL = 'Q';
     const OFFSET = 'R';
     const PATHS = 'S';
@@ -157,14 +141,12 @@ interface CrawlConstants
     const DUMMY = 'V';
     const SITES = 'W';
     const SCORE = 'X';
-
     const CRAWL_ORDER = 'Y';
     const RESTRICT_SITES_BY_URL = 'Z';
     const ALLOWED_SITES = 'aa';
     const DISALLOWED_SITES = 'ab';
     const BREADTH_FIRST = 'ac';
     const PAGE_IMPORTANCE = 'ad';
-
     const MACHINE_URI = 'ae';
     const SITE_INFO = 'af';
     const FILETYPE = 'ag';

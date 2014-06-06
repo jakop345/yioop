@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * logging is done during crawl not through web,
  * so it will not be used in the phrase model
@@ -92,7 +90,6 @@ class PhraseModel extends ParallelModel
      * @var string
      */
     var $program_indicator;
-
     /**
      * Number of pages to cache in one go in memcache or filecache
      * Size chosen based on 1MB max object size for memcache or filecache
@@ -107,7 +104,6 @@ class PhraseModel extends ParallelModel
         $this->programming_language_map = array('java' => 'java', 'py' => 'py');
         $this->program_indicator = false;
     }
-
     /**
      * Returns whether there is a index with the provide timestamp
      *
@@ -118,7 +114,6 @@ class PhraseModel extends ParallelModel
     {
         return file_exists(CRAWL_DIR.'/cache/IndexData'.$index_time_stamp);
     }
-
     /**
      * Rewrites a mix query so that it maps directly to a query about crawls
      *
@@ -180,7 +175,6 @@ class PhraseModel extends ParallelModel
                             $pipe2 = ' | ';
                         }
                     }
-
                 }
                 $num_results = (isset($fragment['RESULT_BOUND']) &&
                     $fragment['RESULT_BOUND'] > 1) ?
@@ -190,7 +184,6 @@ class PhraseModel extends ParallelModel
         }
         return $rewrite;
     }
-
     /**
      * Given a query phrase, returns formatted document summaries of the
      * documents that match the phrase.
@@ -251,11 +244,8 @@ class PhraseModel extends ParallelModel
         $presentation_parts = preg_split('/#(\d)+#/',
             $input_phrase, -1, PREG_SPLIT_DELIM_CAPTURE);
         $count = 0;
-
         $presentation_parts = array_chunk($presentation_parts, 2);
-
         $num_parts = count($presentation_parts);
-
         $query_parts = array();
         $last_part = NULL;
         for($i = 0;  $i < $num_parts ; $i++) {
@@ -273,7 +263,6 @@ class PhraseModel extends ParallelModel
                 }
            }
         }
-
         $results_high = $low + $results_per_page;
         $num_phrases = count($query_parts);
         if($num_phrases > 0 ) {
@@ -284,7 +273,6 @@ class PhraseModel extends ParallelModel
                     $results_high;
             }
         }
-
         $qpart = 0;
         if(is_string($save_timestamp)) {
             $save_parts = explode("-",$save_timestamp);
@@ -300,17 +288,14 @@ class PhraseModel extends ParallelModel
             $network = true;
         }
         foreach($query_parts as $phrase => $pre_result_bounds) {
-
             $phrase_high = $pre_result_bounds[0][1];
             $result_bounds = array();
             $start_flag = false;
             $num_bounds = 0;
-
             foreach($pre_result_bounds as $bound) {
                 if($bound[0] > $results_high) break;
                 //rest of presentation after what we'll return so break
                 $phrase_high =  $bound[0] + $bound[1];
-
                 if($phrase_high < $low) continue;
                 // this part of presentation is before what we'll return so skip
                 $result_bounds[] = $bound;
@@ -323,7 +308,6 @@ class PhraseModel extends ParallelModel
                 $result_bounds[$num_bounds - 1][1] = $results_high -
                     $result_bounds[$num_bounds - 1][0];
             }
-
             $phrase_num = max(min($phrase_high, $results_high), $results_high) -
                 $low;
             $word_structs = array();
@@ -345,7 +329,6 @@ class PhraseModel extends ParallelModel
                     $this->query_info['QUERY'] .=
                         "$in2<b>Parse done by Cache Lookup</b><br />";
                 }
-
             }
             if($cache_results) {
                 list($word_structs, $format_words) = $cache_results;
@@ -442,7 +425,6 @@ class PhraseModel extends ParallelModel
         } else {
             $format_words = NULL;
         }
-
         $description_length = self::DEFAULT_DESCRIPTION_LENGTH;
         if(isset($this->additional_meta_words) &&
             is_array($this->additional_meta_words)) {
@@ -465,7 +447,6 @@ class PhraseModel extends ParallelModel
         } else {
             $output = $results;
         }
-
         if(QUERY_STATISTICS) {
             $this->query_info['QUERY'] .= "<b>Format Time</b>: ".
                 changeInMicrotime($format_time)."<br />";
@@ -474,9 +455,7 @@ class PhraseModel extends ParallelModel
             $this->db->query_log[] = $this->query_info;
         }
         return $output;
-
     }
-
     /**
      *  Parses from a string phrase representing a conjunctive query, a struct
      *  consisting of the words keys searched for, the allowed and disallowed
@@ -502,11 +481,9 @@ class PhraseModel extends ParallelModel
         }
         $phrase = $this->parseIfConditions($phrase);
         $phrase_string = $phrase;
-
         list($found_metas, $found_materialized_metas, $disallow_phrases,
             $phrase_string, $query_string, $index_name, $weight) =
             $this->extractMetaWordInfo($phrase);
-
         /*
             we search using the stemmed/char-grammed words, but we format
             snippets in the results by bolding either
@@ -517,7 +494,6 @@ class PhraseModel extends ParallelModel
             $this->program_indicator = false;
         }
         $locale_tag = guessLocaleFromString($query_string);
-
         $quote_state = false;
         $phrase_parts = explode('"', $phrase_string);
         $base_words = array();
@@ -569,7 +545,6 @@ class PhraseModel extends ParallelModel
         if(count($words) == 0 && count($disallow_phrases) > 0) {
             $words[] = "site:any";
         }
-
         if(QUERY_STATISTICS) {
             if(!isset($this->query_info['QUERY'])) {
                 $this->query_info['QUERY'] = "";
@@ -649,7 +624,6 @@ class PhraseModel extends ParallelModel
             }
             $disallow_keys = array();
             $num_disallow_keys = min(MAX_QUERY_TERMS, count($disallow_phrases));
-
             if($num_disallow_keys > 0 && QUERY_STATISTICS) {
                 $this->query_info['QUERY'] .= "$in3<i>Disallowed Words</i>:".
                     "<br />";
@@ -672,7 +646,6 @@ class PhraseModel extends ParallelModel
                     $disallow_keys[] = crawlHash($word);
                 }
             }
-
             if($word_keys !== NULL) {
                 $word_struct = array("KEYS" => $word_keys,
                     "QUOTE_POSITIONS" => $quote_positions,
@@ -712,7 +685,6 @@ class PhraseModel extends ParallelModel
         }
         return array($word_struct, $format_words);
     }
-
     /**
      * Given a query string extracts meta word, which of these are
      * "materialized" (i.e., should be encoded as part of word ids),
@@ -783,33 +755,24 @@ class PhraseModel extends ParallelModel
             }
             $phrase_string = preg_replace($pattern, "", $phrase_string);
         }
-
         if($materialized_match_conflict) {
             $found_metas = array();
             $found_materialized_metas = array();
             $disallow_phrases = array();
             $phrase_string = "";
         }
-
         $found_metas = array_unique($found_metas);
-
         $found_materialized_metas = array_unique($found_materialized_metas);
-
         $disallow_phrases = array_unique($disallow_phrases);
-
         $phrase_string = mb_ereg_replace("&amp;", "_and_", $phrase_string);
-
         $query_string = mb_ereg_replace(PUNCT, " ", $phrase_string);
         $query_string = preg_replace("/(\s)+/", " ", $query_string);
         $query_string = mb_ereg_replace('_and_', '&', $query_string);
         $phrase_string = mb_ereg_replace('_and_', '&', $phrase_string);
-
         return array($found_metas, $found_materialized_metas,
             $disallow_phrases, $phrase_string, $query_string, $index_name,
             $weight);
     }
-
-
     /**
      * Ideally, this function tries to guess from the query what the
      * user is looking for. For now, we are just doing simple things like
@@ -824,25 +787,19 @@ class PhraseModel extends ParallelModel
     {
         $domain_suffixes = array(".com", ".net", ".edu", ".org", ".gov",
             ".mil", ".ca", ".uk", ".fr", ".ly");
-
         $len = mb_strlen(trim($phrase));
         if($len > 4) {
             foreach($domain_suffixes as $suffix) {
                 $phrase = $this->endMatch($phrase, $suffix, "site:", "",
                     array(":","@"));
             }
-
             $phrase = $this->beginMatch($phrase, "www.", "site:www.");
-
             $phrase = $this->beginMatch($phrase, "http:", "site:http:");
-
             $phrase = $this->beginMatch($phrase, "info:", "info:http://", "/",
                 array("/"));
-
             $phrase = $this->beginMatch($phrase, "info:", "info:http://", "",
                 array("http"));
         }
-
         $tag = guessLocaleFromString($phrase);
         if(isset($this->programming_language_map[$tag])) {
             $this->program_indicator = true;
@@ -891,7 +848,6 @@ class PhraseModel extends ParallelModel
             }
             $phrase = $letter." ".$phrase."|".$phrase;
         }
-
         $tokenizer_name = ucfirst($main_tag)."Tokenizer";
         if(class_exists($tokenizer_name) &&
             isset($tokenizer_name::$semantic_rewrites)) {
@@ -901,10 +857,8 @@ class PhraseModel extends ParallelModel
                 $phrase = $rewrites[$tmp];
             }
         }
-
         return $phrase;
     }
-
     /**
      *  Matches terms (non white-char strings) in the language $lang_tag in
      *  $phrase that begin with  $start_with and don't contain  $not_contain,
@@ -949,7 +903,6 @@ class PhraseModel extends ParallelModel
         }
         return $result_phrase;
     }
-
     /**
      *  Matches terms (non white-char strings) in the language $lang_tag in
      *  $phrase that end with $end_with and don't contain  $not_contain,
@@ -999,7 +952,6 @@ class PhraseModel extends ParallelModel
         }
         return $result_phrase;
     }
-
     /**
      * Evaluates any if: conditional meta-words in the query string to
      * calculate a new query string.
@@ -1026,7 +978,6 @@ class PhraseModel extends ParallelModel
         }
         return $result_phrase;
     }
-
     /**
      * Gets doc summaries of documents containing given words and meeting the
      * additional provided criteria
@@ -1068,7 +1019,6 @@ class PhraseModel extends ParallelModel
         $limit_news = true)
     {
         global $CACHE;
-
         $indent= "&nbsp;&nbsp;";
         $in2 = $indent . $indent;
         $in3 = $in2 . $indent;
@@ -1271,7 +1221,6 @@ class PhraseModel extends ParallelModel
             }
             return $results;
         }
-
         if(QUERY_STATISTICS) {
             $this->query_info['QUERY'] .= "$in2<b>Lookup Offsets Time</b>: ".
                 changeInMicrotime($lookup_time)."<br />";
@@ -1295,7 +1244,6 @@ class PhraseModel extends ParallelModel
             }
             $summaries_time = microtime();
         }
-
         $get_pages = array_slice($pages, $limit, $num);
         $to_get_count = count($get_pages);
         $groups_with_docs = false;
@@ -1391,7 +1339,6 @@ class PhraseModel extends ParallelModel
         }
         return $results;
     }
-
     /**
      * Used to lookup summary info for the pages provided (using their)
      * self::SUMMARY_OFFSET field. If any of the lookup-ed summaries
@@ -1490,10 +1437,8 @@ class PhraseModel extends ParallelModel
             }
             $out_pages = array_values($out_pages);
         }
-
         return $out_pages;
     }
-
     /**
      * Using the supplied $word_structs, contructs an iterator for getting
      * results to a query
@@ -1693,7 +1638,6 @@ class PhraseModel extends ParallelModel
                         }
                     }
                 }
-
                 $num_disallow_keys = count($disallow_keys);
                 if($num_disallow_keys > 0) {
                 for($i = 0; $i < $num_disallow_keys; $i++) {
@@ -1705,7 +1649,6 @@ class PhraseModel extends ParallelModel
                     }
                 }
                 $num_word_keys += $num_disallow_keys;
-
                 if($num_word_keys == 1) {
                     $base_iterator = $word_iterators[0];
                 } else {
@@ -1738,9 +1681,7 @@ class PhraseModel extends ParallelModel
         } else {
             $union_iterator = new UnionIterator($iterators);
         }
-
         $raw = intval($raw);
-
         if ($raw > 0 ) {
             $group_iterator = $union_iterator;
         } else {
@@ -1761,7 +1702,5 @@ class PhraseModel extends ParallelModel
         }
         return $group_iterator;
     }
-
 }
-
 ?>

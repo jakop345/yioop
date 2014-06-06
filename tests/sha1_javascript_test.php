@@ -30,63 +30,66 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-require_once ('java_script_test.php');
-
 /**
- *  Used to test the implementation of Sha1 function of javascript.
- *  @author Chris Pollett
+ *  Used to test the Javascript implementation of the sha1 function.
+ *  @author Akash Patel
  *  @package seek_quarry
  *  @subpackage test
  */
-class Sha1Test extends JavaScriptTest
+class Sha1JavascriptTest extends JavascriptUnitTest
 {
-     /**
-     * Define numner of test cases
+    /**
+     * Number of test cases
      * @var int
      */
     const NUM_TEST_CASES = 5;
-    
+    /**
+     *  This test case generates random strings and computes their sha1 hash
+     *  in PHP-land. It then sends the strings and their hashes to Javascript
+     *  land to test if the Javascript implementation of Sha1 gets the same
+     *  answer.
+     */
     function sha1TestCase()
     {
         $time = time();
         $input_value = array();
-        $k=0;
-        for($i=0;$i<self::NUM_TEST_CASES;$i++)
+        $k = 0;
+        for($i=0; $i<self::NUM_TEST_CASES; $i++)
         {
-            $random_string = md5($time.rand(1,1000));
+            $random_string = md5($time.rand(1, 1000));
             $sha1 = sha1($random_string);
             $input_value[$k++] = $sha1;
             $input_value[$k++] = $random_string;
-        }   
+        }
         $js_array = json_encode($input_value);
         ?>
-        <html>
-        <body>
-        <table>
         <div id="sha1Test">
         </div>
-        <head>
         <script type="text/javascript" src="../scripts/sha1.js" ></script>
-        <script type="text/javascript" src="../scripts/hash_captcha.js" ></script>
+        <script type="text/javascript"
+            src="../scripts/hash_captcha.js" ></script>
         <script type="text/javascript">
         var input_array = <?php echo $js_array; ?>;
         var total_test_cases = <?php echo self::NUM_TEST_CASES?>;
-        var cell, row, table;
-        var result,color;
-        var i = 0,counter=0;
-        while(i<input_array.length) {
+        var cell;
+        var row;
+        var table;
+        var result;
+        var color;
+        var i = 0;
+        var counter = 0;
+        while(i < input_array.length) {
             if(input_array[i++] == generateSha1(input_array[i++])) {
                 counter++;
             }
         }
-        result = counter+"/"+total_test_cases+" Test Passed";
+        result = counter + "/" + total_test_cases+" Test Passed";
         if(total_test_cases == counter){
             color='lightgreen';
         } else {
             color='red';
         }
         table = document.createElement('table');
-        table.setAttribute('border','1');
         row = table.insertRow(0);
         cell = row.insertCell(0);
         cell.style.fontWeight = 'bold';
@@ -96,10 +99,7 @@ class Sha1Test extends JavaScriptTest
         cell.innerHTML = result;
         document.getElementById("sha1Test").appendChild(table);
         </script>
-        </head>
-        </body>
-        </html>
-<?php
+        <?php
         }
     }
 ?>

@@ -30,19 +30,15 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /** Register File Types We Handle*/
 $INDEXED_FILE_TYPES[] = "bmp";
 $IMAGE_TYPES[] = "bmp";
 $PAGE_PROCESSORS["image/bmp"] = "BmpProcessor";
-
 /** Used for the getDocumentFilename method in UrlParser */
 require_once BASE_DIR."/lib/url_parser.php";
 /** Load base class, if needed */
 require_once BASE_DIR."/lib/processors/image_processor.php";
-
 /**
  * Used to create crawl summary information
  * for BMP and ICO files
@@ -53,17 +49,14 @@ require_once BASE_DIR."/lib/processors/image_processor.php";
  */
 class BmpProcessor extends ImageProcessor
 {
-
     /**
      * Size in bytes of one block to read in of BMP
      */
     const BLOCK_SIZE = 4096;
-
     /**
      * Size in bytes of BMP identifier and size info
      */
     const BMP_ID = 10;
-
     /**
      * Size in bytes of BMP header
      */
@@ -72,7 +65,6 @@ class BmpProcessor extends ImageProcessor
      * Maximum pixel width or height
      */
     const MAX_DIM = 1000;
-
     /**
      * {@inheritdoc}
      */
@@ -95,7 +87,6 @@ class BmpProcessor extends ImageProcessor
         }
         return $summary;
     }
-
     /**
      * Reads in a 32 / 24bit non-palette bmp files from provided filename
      * and returns a php  image object corresponding to it. This is a crude
@@ -108,16 +99,12 @@ class BmpProcessor extends ImageProcessor
         // Read image into a string
         $file = fopen($filename, "rb");
         $read = fread($file, self::BMP_ID); //skip identifier and size
-
         while(!feof($file) && ($read != "")) {
             $read .= fread($file, self::BLOCK_SIZE);
         }
-
         $temp = unpack("H*", $read);
         $hex = $temp[1];
         $header = substr($hex, 0, self::BMP_HEADER_LEN);
-
-
         $can_understand_flag = substr($header, 0, 4) == "424d";
         // get parameters of image from header bytes
         if($can_understand_flag) {
@@ -130,11 +117,9 @@ class BmpProcessor extends ImageProcessor
                 self::MAX_DIM && $height < self::MAX_DIM );
             unset($header_parts);
         }
-
         $x = 0;
         $y = 1;
-
-        /* We're going to manually write pixel info in to the following
+       /* We're going to manually write pixel info in to the following
             image object
         */
         $image  = imagecreatetruecolor($width, $height);
@@ -143,16 +128,13 @@ class BmpProcessor extends ImageProcessor
         }
         //    Grab the body from the image
         $body = substr($hex, self::BMP_HEADER_LEN);
-
         /*
             Calculate any end-of-line padding needed
         */
         $body_size = strlen($body)/2;
         $header_size = ($width * $height);
-
         // Set-up padding flag
         $padding_flag = ($body_size > ($header_size * 3) + 4);
-
         $pixel_step = ceil($bits_per_pixel >> 3);
         // Write pixels
         for($i = 0; $i < $body_size; $i += $pixel_step)
@@ -171,16 +153,12 @@ class BmpProcessor extends ImageProcessor
             $r =hexdec($body[$i_pos + 4].$body[$i_pos + 5]);
             $g = hexdec($body[$i_pos + 2].$body[$i_pos + 3]);
             $b  = hexdec($body[$i_pos].$body[$i_pos + 1]);
-
             $color = imagecolorallocate($image, $r, $g, $b);
             imagesetpixel($image, $x, $height - $y, $color);
             $x++;
         }
-
         unset($body);
         return $image;
     }
-
 }
-
 ?>

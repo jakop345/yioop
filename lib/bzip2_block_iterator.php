@@ -30,11 +30,9 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR') && php_sapi_name() != 'cli') {
     echo "BAD REQUEST"; exit();
 }
-
 /**
  * This class is used to allow one to iterate through a Bzip2 file.
  * The main advantage of using this class over the built-in bzip is that
@@ -122,7 +120,6 @@ class BZip2BlockIterator
      * @var int
      */
     var $num_extra_bits = 0;
-
     /**
      * Creates a new iterator of a bz2 file by opening the file, doing a
      * sanity check and then setting up the initial file_offset to
@@ -143,7 +140,6 @@ class BZip2BlockIterator
         }
         $this->file_offset = 10;
     }
-
     /**
      * Called by unserialize prior to execution
      */
@@ -152,7 +148,6 @@ class BZip2BlockIterator
         $this->fd = fopen($this->path, 'rb');
         fseek($this->fd, $this->file_offset);
     }
-
     /**
      * Checks whether the current Bzip2 file has reached an end of file
      * @return bool eof or not
@@ -161,7 +156,6 @@ class BZip2BlockIterator
     {
         return feof($this->fd);
     }
-
     /**
      * Used to close the file associated with this iterator
      * @return bool whether the file close was successful
@@ -170,7 +164,6 @@ class BZip2BlockIterator
     {
         return fclose($this->fd);
     }
-
     /**
      * Extracts the next bz2 block from the bzip2 file this iterator works
      * on
@@ -183,7 +176,6 @@ class BZip2BlockIterator
             $next_chunk = fread($this->fd, self::BLOCK_SIZE);
             $this->file_offset += strlen($next_chunk);
             $this->buffer .= $next_chunk;
-
             $match = preg_match(
                 self::BLOCK_LEADER_RE,
                 $this->buffer,
@@ -195,14 +187,12 @@ class BZip2BlockIterator
                     (plus some part of the first byte for a non-zero new_shift).
                  */
                 $pos = $matches[0][1];
-
                 /*
                      The new_shift is the number of bits by which the magic
                       number for the next block has been shifted right.
                  */
                 list($new_shift, $is_start) =
                     self::$header_info[$this->buffer[$pos]];
-
                 /*
                     The new number of extra bits is what's left in a byte after
                     the new shift. For example, if we have 10|001011 as the byte
@@ -213,7 +203,6 @@ class BZip2BlockIterator
                     form a byte to be added to the next block.
                 */
                 $new_num_extra_bits = $new_shift == 0 ? 0 : 8 - $new_shift;
-
                 if($new_shift == 0) {
                     $tail_bits = $new_bits = 0;
                     $header_end = 5;
@@ -230,7 +219,6 @@ class BZip2BlockIterator
                     self::packLeft($new_block, $new_bits, $new_header,
                         $new_num_extra_bits);
                 }
-
                 // Make sure all six header bytes match.
                 if($is_start && $new_block != self::BLOCK_HEADER ||
                         !$is_start && $new_block != self::BLOCK_ENDMARK) {
@@ -240,7 +228,6 @@ class BZip2BlockIterator
                         $this->num_extra_bits);
                     continue;
                 }
-
                 /*
                     Copy and shift the last chunk of bytes from the previous
                     block before adding the block trailer.
@@ -248,7 +235,6 @@ class BZip2BlockIterator
                 $block_tail = substr($this->buffer, 0, $pos - 1);
                 $this->packLeft($this->block, $this->bits, $block_tail,
                     $this->num_extra_bits);
-
                 /*
                     We need to combine the non-header tail bits from the most
                     significant end of the last byte before the next block's
@@ -266,7 +252,6 @@ class BZip2BlockIterator
                     $this->num_extra_bits = $this->num_extra_bits +
                         $new_shift;
                 }
-
                 /*
                     The last block is marked by a different header (sqrt(pi)),
                     and a CRC for the entire "file", which is just the CRC for
@@ -279,19 +264,15 @@ class BZip2BlockIterator
                 if($this->num_extra_bits != 0) {
                     $this->block .= chr($this->bits);
                 }
-
                 $recovered_block = $this->header.$this->block;
                 $this->block = $new_block;
-
                 /*
                     Keep everything after the end of the header for the next
                     block in the buffer.
                 */
                 $this->buffer = substr($this->buffer, $pos + $header_end);
-
                 $this->bits = $new_bits;
                 $this->num_extra_bits = $new_num_extra_bits;
-
                 break;
             } else {
                 /*
@@ -305,14 +286,12 @@ class BZip2BlockIterator
                 $this->buffer = substr($this->buffer, -6);
             }
         }
-
         if(!$raw) {
             return bzdecompress($recovered_block);
         } else {
             return $recovered_block;
         }
     }
-
     /**
      * Computes a new bzip2 block portions and bits left over after adding
      * $bytes to the passed $block.
@@ -336,9 +315,7 @@ class BZip2BlockIterator
             $bits = ($byte << (8 - $num_extra_bits)) & 0xff;
         }
     }
-
 }
-
 if(!function_exists("main")) {
     /**
      * Command-line shell for testing the class
@@ -357,7 +334,6 @@ if(!function_exists("main")) {
             $i++;
         }
     }
-
     // Only run main if this script is called directly from the command line.
     if(isset($argv[0]) && realpath($argv[0]) == __FILE__) {
         main();

@@ -30,14 +30,11 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  *  Load base helper class if needed
  */
 require_once BASE_DIR."/views/helpers/helper.php";
-
 /**
  * Used to create links to go backward/forwards and search a database
  * tables. HTML table with data representing a
@@ -59,7 +56,6 @@ class PagingtableHelper extends Helper
     var $show_choices = array(
         10 => 10, 20 => 20, 50 => 50, 100 => 100, 200=> 200
     );
-
     /**
      *  Used to render the  links to go
      *  backwards and forwards through a databse table. We have two separate
@@ -154,7 +150,6 @@ class PagingtableHelper extends Helper
         </div>
         <?php
     }
-
     /**
      *  Draws the heading before the user table as well as the controls
      *  for what user to see (desktop, laptop, tablet case).
@@ -195,7 +190,6 @@ class PagingtableHelper extends Helper
                 e('<form  method="get" action="#" >');
             }
             $name = isset($data['NAME']) ? $data['NAME'] : "";
-
             $bound_url = $base_url."&amp;arg=".$data[$d['FORM_TYPE']];
             if($name != "") {
                 $bound_url .="&amp;name=".$name;

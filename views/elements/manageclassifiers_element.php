@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * This element renders the page that lists classifiers, provides a form to
  * create new ones, and provides per-classifier action links to edit, finalize,
@@ -149,7 +147,10 @@ class ManageclassifiersElement extends Element
         }
     }
     /**
+     *  Used to draw the form to create a new classifier
      *
+     *  @param array $data data for the view in this case we just make
+     *      use of the CSRF_TOKEN
      */
      function renderClassifierForm($data)
      {
@@ -173,7 +174,9 @@ class ManageclassifiersElement extends Element
         <?php
      }
     /**
+     *  Used to draw the form to search and filter through existing classifiers
      *
+     *  @param array $data data for the view
      */
      function renderSearchForm($data)
      {

@@ -29,7 +29,6 @@
  * @copyright 2009 - 2014s
  * @filesource
  */
-
 /*
  * This file Contains Javascripts used to edit Crawl Mixes
  * A crawl mix consists of a sequence of fragments. Each fragment
@@ -39,7 +38,6 @@
  * edit crawl mix page allows you to create both fragments and select
  * which individuals crawls they contain.
  */
-
 /*
  * Used to draw all of the list of fragments of crawl results for the
  * current crawl mix
@@ -59,7 +57,6 @@ function drawFragments()
         fcnt++;
     }
 }
-
 /*
  * Used to erase the current rendering of crawl grouls and then draw it again
  */
@@ -89,7 +86,6 @@ function addFragment(num_results, max_fragments, error_message)
     fragments[num_fragments]['components'] = [];
     drawFragment(num_fragments, num_results)
 }
-
 /*
  * Draws a single crawl fragment within the crawl mix
  *
@@ -106,7 +102,6 @@ function drawFragment(fragment_num, num_results)
     mts.appendChild(tbl);
     addCrawlHandler(fragment_num);
 }
-
 /*
  * Draw a blank crawl mix fragment, without the Javascript functions attached
  * to it
@@ -130,7 +125,6 @@ function makeBlankMixTable(tbl, num_fragments, num_results)
             "<th>"+tl['social_component_actions']+"</th></tr>";
     tbl.innerHTML = tdata;
 }
-
 /*
  * Removes the ith fragment from the current crawl mix and redraws the screen
  *
@@ -146,8 +140,6 @@ function removeFragment(i)
     fragments.length--;
     redrawFragments();
 }
-
-
 /*
  * Adds the javascript needed to handle adding a crawl when the crawl
  * selection done
@@ -166,7 +158,6 @@ function addCrawlHandler(i)
             addCrawl(i, ts, name, 1, "");
         }
 }
-
 /*
  * Adds a crawl to the given crawl fragment with the listed parameters
  *
@@ -183,7 +174,6 @@ function addCrawl(i, ts, name, weight, keywords)
     fragments[i]['components'][j] = [ts, name, weight, keywords];
     drawCrawl(i, j, ts, name, weight, keywords)
 }
-
 /*
  * Draws a single crawl within a crawl fragment according to the passed
  * parameters
@@ -212,7 +202,6 @@ function drawCrawl(i, j, ts, name, weight, keywords)
         "javascript:removeCrawl("+i+", "+j+");\">"+
         tl['social_component_delete']+"</a></td>";
 }
-
 /*
  * Used to update the keywords of a crawl in the fragments array whenever it is
  * changed in the form.
@@ -226,7 +215,6 @@ function updateKeywords(i, j, keywords)
     fragments[i]['components'][j][3] = keywords;
 
 }
-
 /*
  * Deletes the jth crawl from the ith fragment in the current crawl mix
  *
@@ -245,8 +233,6 @@ function removeCrawl(i, j)
 
     redrawFragments();
 }
-
-
 /*
  * Used to draw the select drop down to allow users to select a weighting of
  * a given crawl within a crawl fragment
@@ -273,7 +259,6 @@ function drawWeightSelect(i, j, selected_weight) {
     select += "</select>";
     return select;
 }
-
 /*
  * Used to draw the select drop down to allow users to select a crawl to be
  * added to a crawl fragment
@@ -292,7 +277,6 @@ function drawCrawlSelect(i) {
     select += "</select>";
     return select;
 }
-
 /*
  * Used to draw the select drop down to allow users to select the number
  * results a crawl fragment will be used for

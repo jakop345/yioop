@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * This is an abstract class that specifies an interface for selecting top
  * features from a dataset.
@@ -59,7 +57,6 @@ abstract class FeatureSelection
             $this->$parameter = $value;
         }
     }
-
     /**
      * Constructs a map from old feature indices to new ones according to a
      * max-heap of the most informative features. Always keep feature index 0,
@@ -80,7 +77,6 @@ abstract class FeatureSelection
         }
         return $keep_features;
     }
-
     /**
      * Computes the top features of a Features instance, and returns a mapping
      * from a subset of those features to new contiguous indices. The mapping
@@ -95,8 +91,6 @@ abstract class FeatureSelection
      */
     abstract function select(Features $features);
 }
-
-
 /**
  * A subclass of FeatureSelection that implements chi-squared feature
  * selection.
@@ -116,7 +110,6 @@ class ChiSquaredFeatureSelection extends FeatureSelection
      * @var int
      */
     var $max;
-
     /**
      * Uses the chi-squared feature selection algorithm to rank features by
      * informativeness, and return a map from old feature indices to new ones.
@@ -131,7 +124,6 @@ class ChiSquaredFeatureSelection extends FeatureSelection
         $selected = new SplMinHeap();
         $allowed = isset($this->max) ? min($this->max, $n) : $n;
         $labels = array(-1, 1);
-
         /*
            Start with 1, since 0 is dedicated to the constant intercept term;
            <= $n because n is the last feature.
@@ -153,7 +145,6 @@ class ChiSquaredFeatureSelection extends FeatureSelection
                     $max_chi2 = $chi2;
                 }
             }
-
             /*
                Keep track of top features in a heap, as we compute
                informativeness.
@@ -169,7 +160,6 @@ class ChiSquaredFeatureSelection extends FeatureSelection
                 }
             }
         }
-
         return $this->buildMap($selected);
     }
 }

@@ -30,14 +30,11 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * Reads in constants used as enums used for storing web sites
  */
 require_once BASE_DIR."/lib/crawl_constants.php";
-
 /**
  *
  * Code used to manage HTTP requests from one or more URLS
@@ -49,7 +46,6 @@ require_once BASE_DIR."/lib/crawl_constants.php";
  */
 class FetchUrl implements CrawlConstants
 {
-
     /**
      * Make multi_curl requests for an array of sites with urls or onion urls
      *
@@ -74,7 +70,6 @@ class FetchUrl implements CrawlConstants
      *
      * @return array an updated array with the contents of those pages
      */
-
     static function getPages($sites, $timer = false,
         $page_range_request = PAGE_RANGE_REQUEST, $temp_dir = NULL,
         $key=CrawlConstants::URL, $value = CrawlConstants::PAGE, $minimal=false,
@@ -82,18 +77,14 @@ class FetchUrl implements CrawlConstants
         $proxy_servers=array())
     {
         $agent_handler = curl_multi_init();
-
         $active = NULL;
-
         $start_time = microtime();
-
         if(!$minimal && $temp_dir == NULL) {
             $temp_dir = CRAWL_DIR."/temp";
             if(!file_exists($temp_dir)) {
                 mkdir($temp_dir);
             }
         }
-
         //Set-up requests
         $num_sites = count($sites);
         for($i = 0; $i < $num_sites; $i++) {
@@ -176,7 +167,6 @@ class FetchUrl implements CrawlConstants
         }
         $start_time = microtime();
         $start = time();
-
         //Wait for responses
         $running = NULL;
         $memory_limit = metricToInt(ini_get("memory_limit")) * 0.7;
@@ -185,14 +175,11 @@ class FetchUrl implements CrawlConstants
             $ready=curl_multi_select($agent_handler, 0.005);
         } while (memory_get_usage() < $memory_limit &&
             time() - $start < PAGE_TIMEOUT &&  $running > 0 );
-
         if(time() - $start > PAGE_TIMEOUT) {crawlLog("  TIMED OUT!!!");}
-
         if($timer) {
             crawlLog("  Page Request time ".(changeInMicrotime($start_time)));
         }
         $start_time = microtime();
-
         //Process returned pages
         for($i = 0; $i < $num_sites; $i++) {
             if(!$minimal && isset($ip_holder[$i]) ) {
@@ -244,21 +231,16 @@ class FetchUrl implements CrawlConstants
                     } else {
                         $sites[$i][self::IP_ADDRESSES] = array("0.0.0.0");
                     }
-
                     //Get Time, Mime type and Character encoding
                     $sites[$i][self::TIMESTAMP] = time();
-
                     $type_parts =
                         explode(";", curl_getinfo($sites[$i][0],
                             CURLINFO_CONTENT_TYPE));
-
                     $sites[$i][self::TYPE] = strtolower(trim($type_parts[0]));
                 }
-
                 //curl_multi_remove_handle($agent_handler, $sites[$i][0]);
                 curl_close($sites[$i][0]);
             } //end big if
-
         } //end for
         if($timer) {
             crawlLog("  Get Page Content time ".
@@ -267,7 +249,6 @@ class FetchUrl implements CrawlConstants
         curl_multi_close($agent_handler);
         return $sites;
     }
-
     /**
      * Curl requests are typically done using cache data which is stored
      * after ### at the end of urls if this is possible. To make this
@@ -340,7 +321,6 @@ class FetchUrl implements CrawlConstants
             } else {
                 $url_with_ip_if_possible = $url;
             }
-
         } else {
             $url_with_ip_if_possible = $url;
         }
@@ -352,7 +332,6 @@ class FetchUrl implements CrawlConstants
         $results = array($url, $url_with_ip_if_possible, $headers);
         return $results;
     }
-
     /**
      * Computes a hash of a string containing page data for use in
      * deduplication of pages with similar content
@@ -380,10 +359,8 @@ class FetchUrl implements CrawlConstants
         }
         $dedup_string = preg_replace(
             '/\W+/', '', $dedup_string);
-
         return crawlHash($dedup_string, true);
     }
-
     /**
      *  Splits an http response document into the http headers sent
      *  and the web page returned. Parses out useful information from
@@ -548,7 +525,6 @@ class FetchUrl implements CrawlConstants
         }
         return $site;
     }
-
     /**
      * Computes the IP address from http get-responser header
      *
@@ -575,8 +551,6 @@ class FetchUrl implements CrawlConstants
             return false;
         }
     }
-
-
     /**
      *  Make a curl request for the provide url
      *
@@ -637,7 +611,6 @@ class FetchUrl implements CrawlConstants
         }
         return $response;
     }
-
     /**
      *  Given the results of a getPage call, check whether or not the response
      *  had the words NOTICE, WARNING, FATAL which might indicate an error on

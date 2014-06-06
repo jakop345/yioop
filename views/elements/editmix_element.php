@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * Element responsible for displaying info about a given crawl mix
  *
@@ -40,10 +38,8 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @package seek_quarry
  * @subpackage element
  */
-
 class EditmixElement extends Element
 {
-
     /**
      * Draw form to start a new crawl, has div place holder and ajax code to
      * get info about current crawl
@@ -89,8 +85,6 @@ class EditmixElement extends Element
             type="submit"><?php
                 e(tl('mixcrawls_element_save_button')); ?></button></div>
         </form>
-
-
         </div>
     <?php
     }

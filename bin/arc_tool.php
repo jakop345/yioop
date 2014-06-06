@@ -90,13 +90,11 @@ require_once BASE_DIR."/lib/fetch_url.php";
 
 /** Loads common constants for web crawling*/
 require_once BASE_DIR."/lib/crawl_constants.php";
-
 /*
  *  We'll set up multi-byte string handling to use UTF-8
  */
 mb_internal_encoding("UTF-8");
 mb_regex_encoding("UTF-8");
-
 /**
  * Command line program that allows one to examine the content of
  * the WebArchiveBundles and IndexArchiveBundles of Yioop crawls.
@@ -135,7 +133,6 @@ class ArcTool implements CrawlConstants
     function start()
     {
         global $argv;
-
         if(!isset($argv[1]) || (!isset($argv[2]) && $argv[1] != "list") ||
             (!isset($argv[3]) &&
             ($argv[1] == "dict" || $argv[1] == "posting"))) {
@@ -316,7 +313,6 @@ class ArcTool implements CrawlConstants
             $i++;
         }
     }
-
     /**
      * Prints information about the number of words and frequencies of words
      * within the $generation'th index shard in the bundle
@@ -473,11 +469,8 @@ class ArcTool implements CrawlConstants
                 echo $page[self::DESCRIPTION]."\n";
                 }
             $j++;
-
         }
-
     }
-
     /**
      * Given a complete path to an archive returns its filename
      *
@@ -495,7 +488,6 @@ class ArcTool implements CrawlConstants
         }
         return $name;
     }
-
     /**
      * Used to recompute the dictionary of an index archive -- either from
      * scratch using the index shard data or just using the current dictionary
@@ -753,7 +745,6 @@ class ArcTool implements CrawlConstants
             $db->unlinkRecursive($this->tmp_results);
         }
     }
-
     /**
      * Used to recompute both the index shards and the dictionary
      * of an index archive. The first step involves re-extracting the
@@ -948,7 +939,6 @@ class ArcTool implements CrawlConstants
         }
         return false;
     }
-
     /**
      * Outputs the "hey, this isn't a known bundle message" and then exit()'s.
      * @param string $archive_name name or path to what was supposed to be

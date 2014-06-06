@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  *  Load base helper class if needed
  */
@@ -121,11 +119,9 @@ class PaginationHelper extends Helper
                     tl('pagination_helper_next')."</a>&raquo;</span></li>";
             }
             ?>
-
                 </ul>
             </div>
         <?php
     }
-
 }
 ?>

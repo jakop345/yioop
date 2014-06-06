@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /** Register File Types We Handle*/
 $add_extensions = array("xml");
 if(!isset($INDEXED_FILE_TYPES)) {
@@ -46,18 +44,14 @@ if(!isset($PAGE_PROCESSORS)) {
     $PAGE_PROCESSORS = array();
 }
 $PAGE_PROCESSORS =  array_merge($PAGE_PROCESSORS, $add_types);
-
 /**
  * Load the base class
  */
 require_once BASE_DIR."/lib/processors/page_processor.php";
-
 /**
  * So can extract parts of the URL if need to guess lang
  */
 require_once BASE_DIR."/lib/url_parser.php";
-
-
 /**
  * Parent class common to all processors used to create crawl summary
  * information  that involves basically text data
@@ -68,7 +62,5 @@ require_once BASE_DIR."/lib/url_parser.php";
  */
 class GitXmlProcessor extends TextProcessor
 {
-
 }
-
 ?>

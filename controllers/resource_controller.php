@@ -30,16 +30,13 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /** Load base controller class if needed */
 require_once BASE_DIR."/controllers/controller.php";
 /** Loads common constants for web crawling*/
 require_once BASE_DIR."/lib/crawl_constants.php";
 /** Loads url_parser to clean resource name*/
 require_once BASE_DIR."/lib/url_parser.php";
-
 /**
  *  Used to serve resources, css, or scripts such as images from APP_DIR
  *
@@ -54,7 +51,6 @@ class ResourceController extends Controller implements CrawlConstants
      * @var array
      */
     var $activities = array("get", "syncList", "syncNotify", "suggest");
-
     /**
      * Checks that the request seems to be coming from a legitimate fetcher
      * or mirror server then determines which activity  is being requested
@@ -72,7 +68,6 @@ class ResourceController extends Controller implements CrawlConstants
             $this->call($activity);
         }
     }
-
     /**
      * Gets the resource $_REQUEST['n'] from APP_DIR/$_REQUEST['f'] or
      * CRAWL_DIR/$_REQUEST['f']  after cleaning
@@ -108,7 +103,6 @@ class ResourceController extends Controller implements CrawlConstants
             $offset = $this->clean($_REQUEST['o'], "int");
             $limit = $this->clean($_REQUEST['l'], "int");
         }
-
         $path = "$base_dir/$name";
         if(class_exists("finfo")) {
             $finfo = new finfo(FILEINFO_MIME);
@@ -125,7 +119,6 @@ class ResourceController extends Controller implements CrawlConstants
             }
         }
     }
-
     /**
      * Used to get a keyword suggest trie. This sends additional
      * header so will be decompressed on the fly
@@ -144,7 +137,6 @@ class ResourceController extends Controller implements CrawlConstants
             readfile($path);
         }
     }
-
     /**
      *  Used to notify a machine that another machine acting as a mirror
      *  is still alive. Data is stored in a txt file self::mirror_table_name
@@ -175,7 +167,6 @@ class ResourceController extends Controller implements CrawlConstants
             }
         }
     }
-
     /**
      * Returns a list of syncable files and the modification times
      */
@@ -193,7 +184,6 @@ class ResourceController extends Controller implements CrawlConstants
             "thumb");
         $sync_files = $this->model("crawl")->getDeltaFileInfo(
             CRAWL_DIR."/cache", $last_sync, $excludes);
-
         if (count($sync_files) > 0 ) {
             $info[self::STATUS] = self::CONTINUE_STATE;
             $info[self::DATA] = $sync_files;

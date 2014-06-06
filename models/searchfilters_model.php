@@ -30,20 +30,14 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
-
 /**  For crawlHash */
 require_once BASE_DIR."/lib/utility.php";
-
 /**
  * Loads common constants for web crawling, used for index_data_base_name and
  * schedule_data_base_name
  */
 require_once BASE_DIR."/lib/crawl_constants.php";
-
-
 /**
  * This class manages the persistence to disk of a set of urls to be
  * filtered from all search results returned by Yioop!
@@ -60,7 +54,6 @@ class SearchfiltersModel extends Model implements CrawlConstants
      * @var string
      */
     var $dir_name;
-
     /**
      *  {@inheritdoc}
      */
@@ -74,7 +67,6 @@ class SearchfiltersModel extends Model implements CrawlConstants
                 $this->dir_name, true);
         }
     }
-
     /**
      *  Gets a list of hostnames to be filtered from search results.
      *  This method is suitable for displaying what is to be filtered,
@@ -92,7 +84,6 @@ class SearchfiltersModel extends Model implements CrawlConstants
         }
         return $filtered_urls;
     }
-
     /**
      *  Gets a list of hashes of hostnames to be filtered from search results.
      *  This method is suitable for quickly finding a host name in word
@@ -109,7 +100,6 @@ class SearchfiltersModel extends Model implements CrawlConstants
         }
         return $filter;
     }
-
     /**
      *  Sets a list of hostnames to be filtered from search results
      *  Also, in the 'time' filed records when the set happened.
@@ -127,9 +117,7 @@ class SearchfiltersModel extends Model implements CrawlConstants
         $hash_urls['time'] = time();
         file_put_contents($this->dir_name."/hash_urls.txt",
             serialize($hash_urls));
-
     }
-
     /**
      * Save/updates/deletes an override of a search engine result summary
      * page. The information stored will be used instead of what was actually
@@ -158,7 +146,6 @@ class SearchfiltersModel extends Model implements CrawlConstants
         }
         file_put_contents($file_name, serialize($result_pages));
     }
-
     /**
      * Reads in and returns data on result pages whose summaries should
      * be altered to something other than whats in the current index.

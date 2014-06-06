@@ -30,15 +30,11 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
-
 /**
  *Loads base class for iterating
  */
 require_once BASE_DIR.'/lib/index_bundle_iterators/index_bundle_iterator.php';
-
 /**
  * Used to iterate over the documents which occur in all of a set of
  * iterator results
@@ -60,20 +56,17 @@ class IntersectIterator extends IndexBundleIterator
      * @var int
      */
     var $num_iterators;
-
     /**
      * The number of iterated docs before the restriction test
      * @var int
      */
     var $seen_docs_unfiltered;
-
     /**
      * Index of the iterator amongst those we are intersecting to advance
      * next
      * @var int
      */
     var $to_advance_index;
-
     /**
      * An array holding iterator numbers corresponding to the word key
      * For instance, if the word "the" appears twice in the query
@@ -82,39 +75,33 @@ class IntersectIterator extends IndexBundleIterator
      * @var array
      */
     var $word_iterator_map;
-
     /**
      * Number of elements in $this->word_iterator_map
      * @var int
      */
     var $num_words;
-
     /**
      * This iterator returns only documents containing quoted terms in
      * the correct order and adjacency
      * @var array
      */
     var $quote_positions;
-
     /**
      * A weighting factor to multiply with each doc SCORE returned from this
      * iterator
      * @var float
      */
     var $weight;
-
     /**
      *  Whether to run a timer that shuts down the intersect iterator if
      *  syncGenDocOffsetsAmongstIterators takes longer than the time out period
      */
     var $sync_timer_on;
-
     /**
      *  Number of seconds before timeout and stop
      *  syncGenDocOffsetsAmongstIterators if slow
      */
     const SYNC_TIMEOUT = 4;
-
     /**
      * Creates an intersect iterator with the given parameters.
      *
@@ -133,7 +120,6 @@ class IntersectIterator extends IndexBundleIterator
         $this->weight = $weight;
         $this->results_per_block = 1;
         $this->sync_timer_on = false;
-
         /*
              We take an initial guess of the num_docs we return as the sum
              of the num_docs of the underlying iterators. We are also setting
@@ -154,7 +140,6 @@ class IntersectIterator extends IndexBundleIterator
             }
         }
     }
-
     /**
      * Returns the iterators to the first document block that it could iterate
      * over
@@ -168,9 +153,7 @@ class IntersectIterator extends IndexBundleIterator
 
         $this->seen_docs = 0;
         $this->seen_docs_unfiltered = 0;
-
     }
-
     /**
      * Computes a relevancy score for a posting offset with respect to this
      * iterator and generation
@@ -188,7 +171,6 @@ class IntersectIterator extends IndexBundleIterator
         }
         return $relevance;
     }
-
     /**
      * Hook function used by currentDocsWithWord to return the current block
      * of docs if it is not cached
@@ -228,7 +210,6 @@ class IntersectIterator extends IndexBundleIterator
                         $position_lists[] = $i_docs[$key][self::POSITION_LIST];
                         $len_lists[] = $ct;
                     }
-
                     if(isset($i_docs[$key])) {
                         $docs[$key][self::RELEVANCE] +=
                             $i_docs[$key][self::RELEVANCE];
@@ -262,7 +243,6 @@ class IntersectIterator extends IndexBundleIterator
         $this->pages = $docs;
         return $docs;
     }
-
     /**
      * Used to check if quoted terms in search query appear exactly in
      * the position lists of the current document
@@ -279,7 +259,6 @@ class IntersectIterator extends IndexBundleIterator
         }
         return true;
     }
-
     /**
      * Auxiliary function for @see checkQuotes used to check if quoted terms
      * in search query appear exactly in the position lists of the current
@@ -328,7 +307,6 @@ class IntersectIterator extends IndexBundleIterator
             }
         }
     }
-
     /**
      * Given the position_lists of a collection of terms computes
      * a score for how close those words were in the given document
@@ -344,7 +322,6 @@ class IntersectIterator extends IndexBundleIterator
     {
         $num_iterators = $this->num_iterators;
         if($num_iterators < 1) return 1;
-
         $covers = array();
         $position_list = $word_position_lists;
         $interval = array();
@@ -361,7 +338,6 @@ class IntersectIterator extends IndexBundleIterator
                 }
             }
         }
-
         if(count($interval) != $num_words){
             return 0;
         }
@@ -397,7 +373,6 @@ class IntersectIterator extends IndexBundleIterator
                 $stop = true;
             }
         }
-
         array_push($covers, array($l[0],$r[0]));
         $score = 0;
         if($is_doc) {
@@ -419,7 +394,6 @@ class IntersectIterator extends IndexBundleIterator
         }
         return $score;
     }
-
     /**
      * Finds the next generation and doc offset amongst all the iterators
      * that contains the word. It assumes that the (generation, doc offset)
@@ -496,7 +470,6 @@ class IntersectIterator extends IndexBundleIterator
         }
         return 1;
     }
-
     /**
      * Forwards the iterator one group of docs
      * @param array $gen_doc_offset a generation, doc_offset pair. If set,
@@ -524,9 +497,7 @@ class IntersectIterator extends IndexBundleIterator
                 $this->seen_docs_unfiltered);
         }
         $this->index_bundle_iterators[0]->advance($gen_doc_offset);
-
     }
-
     /**
      * Gets the doc_offset and generation for the next document that
      * would be return by this iterator
@@ -538,7 +509,6 @@ class IntersectIterator extends IndexBundleIterator
         $this->syncGenDocOffsetsAmongstIterators();
         return $this->index_bundle_iterators[0]->currentGenDocOffsetWithWord();
     }
-
     /**
      * This method is supposed to set
      * the value of the result_per_block field. This field controls

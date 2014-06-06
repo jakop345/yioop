@@ -30,19 +30,14 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /** Register File Types We Handle*/
 $INDEXED_FILE_TYPES[] = "pdf";
 $PAGE_PROCESSORS["application/pdf"] = "PdfProcessor";
-
 /**
  * Load in the base class if necessary
  */
-
 require_once BASE_DIR."/lib/processors/text_processor.php";
-
 /**
  * Used to create crawl summary information
  * for PDF files
@@ -53,7 +48,6 @@ require_once BASE_DIR."/lib/processors/text_processor.php";
  */
 class PdfProcessor extends TextProcessor
 {
-
     /**
      *  Used to extract the title, description and links from
      *  a string consisting of PDF data.
@@ -71,24 +65,20 @@ class PdfProcessor extends TextProcessor
         if(is_string($page)) {
             $text =  self::getText($page);
         }
-
         if($text == "") {
             $text = $url;
         }
-
         $summary = parent::process($text, $url);
-
         return $summary;
-
     }
-
     /**
      * Gets the text out of a PDF document
      *
      * @param string $pdf_string a string representing the PDF document
      * @return string text extracted from the document
      */
-    static function getText($pdf_string) {
+    static function getText($pdf_string)
+    {
         $len = strlen($pdf_string);
         $cur_pos = 0;
         $out = "";
@@ -119,21 +109,16 @@ class PdfProcessor extends TextProcessor
                         break;
                     }
                     $out .= $text;
-
                 }
-
             }
         }
-
         $font_pos = strpos($out, "PS-AdobeFont");
         if(!$font_pos) {
             $font_pos = strlen($out);
         }
         $out = substr($out, 0, $font_pos);
-
         return $out;
     }
-
     /**
      * Gets between an obj and endobj tag at the current position in a PDF
      * document
@@ -146,7 +131,6 @@ class PdfProcessor extends TextProcessor
     {
         return self::getBetweenTags($pdf_string, $cur_pos, "obj", "endobj");
     }
-
     /**
      * Checks if the PDF object's object dictionary is in a list of types
      *
@@ -161,10 +145,8 @@ class PdfProcessor extends TextProcessor
                 return true;
             }
         }
-
         return false;
     }
-
     /**
      * Gets the object dictionary portion of the current PDF object
      * @param string $object_string represents the contents of a PDF object
@@ -176,7 +158,6 @@ class PdfProcessor extends TextProcessor
             self::getBetweenTags($object_string, 0, '<<', '>>');
         return $object_dictionary;
     }
-
     /**
      * Gets the object stream portion of the current PDF object
      *
@@ -188,9 +169,7 @@ class PdfProcessor extends TextProcessor
         list( , $stream_data) =
             self::getBetweenTags($object_string, 0, 'stream', 'endstream');
         return $stream_data;
-
     }
-
     /**
      * Extracts ASCII text from PDF data, getting rid of non printable data,
      * square brackets and parenthesis and converting char codes to their
@@ -202,7 +181,6 @@ class PdfProcessor extends TextProcessor
     static function parseText($data)
     {
         $cur_pos = 0;
-
         //replace ASCII codes in decimal with their value
         $data = preg_replace_callback('/\\\(\d{3})/',
             create_function( '$matches', 'return chr(intval($matches[1]));'),
@@ -216,25 +194,20 @@ class PdfProcessor extends TextProcessor
         $escape_flag =false;
         while($cur_pos < $len) {
             $cur_char = $data[$cur_pos];
-
             if($cur_char == '[' && !$escape_flag) {
                 list($cur_pos, $text) = self::parseBrackets($data, $cur_pos);
                 $cur_pos--;
                 $out .= " ".$text;
             }
-
             if($cur_char == '\\') {
                 $escape_flag = true;
             } else {
                 $escape_flag = false;
             }
-
             $cur_pos++;
         }
-
         return $out;
     }
-
     /**
      * Extracts ASCII text till the next close brackets
      *
@@ -247,11 +220,9 @@ class PdfProcessor extends TextProcessor
     {
         $cur_pos++;
         $len = strlen($data);
-
         $out = "";
         $escape_flag =false;
         $cur_char="";
-
         while($cur_pos < $len && ($cur_char != "]")) {
             $cur_char = $data[$cur_pos];
             if($cur_char == '(') {
@@ -261,7 +232,6 @@ class PdfProcessor extends TextProcessor
             }
             $cur_pos++;
         }
-
         if(isset($data[$cur_pos]) && isset($data[$cur_pos + 1]) &&
             ord($data[$cur_pos]) == ord('T') &&
                 ord($data[$cur_pos + 1]) == ord('J') ) {
@@ -272,11 +242,8 @@ class PdfProcessor extends TextProcessor
                 $out .= "\n";
             }
         }
-
         return array($cur_pos, $out);
-
     }
-
     /**
      * Extracts ASCII text till the next close parenthesis
      *
@@ -289,11 +256,9 @@ class PdfProcessor extends TextProcessor
     {
         $cur_pos++;
         $len = strlen($data);
-
         $out = "";
         $escape_flag =false;
         $cur_char = "";
-
         while($cur_pos < $len && ($cur_char != ")" || $escape_flag)) {
             $cur_char = $data[$cur_pos];
             if($cur_char == '\\' && !$escape_flag) {
@@ -307,21 +272,14 @@ class PdfProcessor extends TextProcessor
                     }
                 }
                 $escape_flag = false;
-
             }
-
             $cur_pos++;
         }
-
         $check_positioning = substr($data, $cur_pos, 4);
         if(preg_match("/\-\d{3}/", $check_positioning) > 0 ) {
             $out .= " ";
         }
-
         return array($cur_pos, $out);
-
     }
-
 }
-
 ?>

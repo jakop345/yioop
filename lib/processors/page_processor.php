@@ -30,16 +30,13 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * Used by subclasses, so have succinct access (i.e., can use self:: rather
  * than CrawlConstants::) to constants like:
  * CrawlConstants::TITLE, CrawlConstants::DESCRIPTION, etc.
  */
 require_once BASE_DIR."/lib/crawl_constants.php";
-
 /**
  * Base class common to all processors of web page data
  *
@@ -61,11 +58,11 @@ abstract class PageProcessor implements CrawlConstants
      * @var array
      */
     var $plugin_instances;
-
     /**
      * Stores the name of the summarizer used for crawling.
      * Possible values are self::BASIC and self::CENTROID_SUMMARIZER
      * @var string
+     */
      var $summarizer_option;
     /**
      * Max number of chars to extract for description from a page to index.
@@ -73,7 +70,6 @@ abstract class PageProcessor implements CrawlConstants
      * @var int
      */
     static $max_description_len;
-
     /**
      *  Set-ups the any indexing plugins associated with this page
      *  processor
@@ -92,7 +88,6 @@ abstract class PageProcessor implements CrawlConstants
             self::$max_description_len = MAX_DESCRIPTION_LEN;
         }
     }
-
     /**
      *  Method used to handle processing data for a web page. It makes
      *  a summary for the page (via the process() function which should
@@ -135,7 +130,6 @@ abstract class PageProcessor implements CrawlConstants
         }
         return $summary;
     }
-
     /**
      * Should be implemented to compute a summary based on a
      * text string of a document. This method is called from

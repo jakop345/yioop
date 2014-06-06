@@ -51,7 +51,6 @@
  * "wikibtn-table"
  * }
  */
- 
 /**
  * Used to contain formatting info about all buttons on the wiki editor
  * @var Array
@@ -405,7 +404,6 @@ function wikify(wiki_prefix, wiki_suffix, task_name, id)
         setCaretPosition(text_area, tmp.length);
     }
 }
-
 /*
  * This is a special function for processing user input
  * when the user clicks on hyperlink, and inserts a hyper link.
@@ -429,7 +427,6 @@ function addWikiHyperlink(id)
     }
     insertTextAtCursor("[[" + out + "]]" + '\n', id);
 }
-
 /**
  * This function takes in number of rows, columns and
  * header_text(if desired) and constructs a table in wiki markup.
@@ -474,7 +471,6 @@ function createWikiTable(rows, cols, example_text, header_text)
     table = table + "|}";
     return table;
 }
-
 /**
  * Inserts wiki search widget in textarea indentified by id
  *
@@ -513,7 +509,6 @@ function useInputForSearch(id)
 
     insertTextAtCursor( "{" + objToString(widget_obj) + "}\n", id);
 }
-
 /**
  * Util function to Stringify an JS Object
  *
@@ -531,7 +526,6 @@ function objToString(js_object)
     json_string.push();
     return '{' + json_string.join(',') + '}';
 }
-
 /**
  * This is invoked by the editor to insert a wiki table.
  * This functions takes care okf the user input for rows/columns/etc

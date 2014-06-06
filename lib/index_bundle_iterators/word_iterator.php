@@ -30,14 +30,11 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  *Loads base class for iterating
  */
 require_once BASE_DIR.'/lib/index_bundle_iterators/index_bundle_iterator.php';
-
 /**
  * Used to iterate through the documents associated with a word in
  * an IndexArchiveBundle. It also makes it easy to get the summaries
@@ -63,20 +60,17 @@ class WordIterator extends IndexBundleIterator
      * @var string
      */
     var $index_name;
-
     /**
      * The next byte offset in the IndexShard
      * @var int
      */
     var $next_offset;
-
     /**
      * An array of shard generation and posting list offsets, lengths, and
      * numbers of documents
      * @var array
      */
     var $dictionary_info;
-
     /**
      * File name (including path) of the feed shard for news items
      * @var string
@@ -88,69 +82,57 @@ class WordIterator extends IndexBundleIterator
      * @var array
      */
     var $feed_info;
-
     /**
      * The total number of shards that have data for this word
      * @var int
      */
     var $num_generations;
-
     /**
      * Index into dictionary_info corresponding to the current shard
      * @var int
      */
     var $generation_pointer;
-
     /**
      * Numeric number of current shard
      * @var int
      */
     var $current_generation;
-
     /**
      * The current byte offset in the IndexShard
      * @var int
      */
     var $current_offset;
-
     /**
      * Starting Offset of word occurence in the IndexShard
      * @var int
      */
     var $start_offset;
-
     /**
      * Last Offset of word occurence in the IndexShard
      * @var int
      */
     var $last_offset;
-
     /**
      * Keeps track of whether the word_iterator list is empty because the
      * word does not appear in the index shard
      * @var int
      */
     var $empty;
-
     /**
      * Keeps track of whether the word_iterator list is empty because the
      * word does not appear in the index shard
      * @var int
      */
     var $filter;
-
     /**
      * The current value of the doc_offset of current posting if known
      * @var int
      */
     var $current_doc_offset;
-
     /** Host Key position + 1 (first char says doc, inlink or eternal link)*/
     const HOST_KEY_POS = 17;
-
     /** Length of a doc key*/
     const KEY_LEN = 8;
-
     /** If the $limit_news constructor input is true then limit the number
      *  of items coming from the feed shard to this count.
      */
@@ -227,7 +209,6 @@ class WordIterator extends IndexBundleIterator
                 IndexShard::POSTING_LEN * (self::LIMIT_NEWS_COUNT - 1);
         }
         $this->num_docs = $this->feed_count;
-
         ksort($this->dictionary_info);
         $this->dictionary_info = array_values($this->dictionary_info);
         if ($this->dictionary_info === false) {
@@ -252,7 +233,6 @@ class WordIterator extends IndexBundleIterator
             $this->reset();
         }
     }
-
     /**
      * Computes a relevancy score for a posting offset with respect to this
      * iterator and generation
@@ -289,11 +269,9 @@ class WordIterator extends IndexBundleIterator
         }
         return $item[self::RELEVANCE];
     }
-
     /**
-     * Returns the iterators to the first document block that it could iterate
+     * Resets the iterator to the first document block that it could iterate
      * over
-     *
      */
     function reset()
     {
@@ -323,8 +301,6 @@ class WordIterator extends IndexBundleIterator
         $this->seen_docs = 0;
         $this->current_doc_offset = NULL;
     }
-
-
     /**
      * Hook function used by currentDocsWithWord to return the current block
      * of docs if it is not cached
@@ -371,11 +347,9 @@ class WordIterator extends IndexBundleIterator
                 $this->next_offset, $this->last_offset,
                 $this->results_per_block);
         }
-
         $results = array();
         $doc_key_len = IndexShard::DOC_KEY_LEN;
         $filter = ($this->filter == NULL) ? array() : $this->filter;
-
         foreach($pre_results as $keys => $data) {
             $host_key = substr($keys, self::HOST_KEY_POS, self::KEY_LEN);
             if(in_array($host_key, $filter) ) {
@@ -405,7 +379,6 @@ class WordIterator extends IndexBundleIterator
         $this->pages = $results;
         return $results;
     }
-
     /**
      * Updates the seen_docs count during an advance() call
      */
@@ -432,7 +405,6 @@ class WordIterator extends IndexBundleIterator
         $this->current_block_fresh = false;
         $this->seen_docs += $num_docs;
     }
-
     /**
      * Forwards the iterator one group of docs
      * @param array $gen_doc_offset a generation, doc_offset pair. If set,
@@ -505,7 +477,6 @@ class WordIterator extends IndexBundleIterator
             }
         }
     }
-
     /**
      * Switches which index shard is being used to return occurrences of
      * the word to the next shard containing the word
@@ -534,8 +505,6 @@ class WordIterator extends IndexBundleIterator
        } while($this->current_generation < $generation &&
             $this->generation_pointer < $this->num_generations);
     }
-
-
     /**
      * Gets the doc_offset and generation for the next document that
      * would be return by this iterator
@@ -565,6 +534,5 @@ class WordIterator extends IndexBundleIterator
             )->docOffsetFromPostingOffset($this->current_offset);
         return array($this->current_generation, $this->current_doc_offset);
     }
-
 }
 ?>

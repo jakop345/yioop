@@ -30,21 +30,15 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  *  Load the library for crawlHash
  */
 require_once BASE_DIR."/lib/utility.php";
-
 /**
  *  Load the library for crawlHash
  */
 require_once BASE_DIR."/lib/crawl_constants.php";
-
-
-
 /**
  *  Used to test the various methods in utility, in particular, those
  *  related to posting lists.
@@ -61,14 +55,12 @@ class UtilityTest extends UnitTest
     function setUp()
     {
     }
-
     /**
      * No tear down being done for the time being
      */
     function tearDown()
     {
     }
-
     /**
      * Used to check if posting lists can be properly encoded/decoded
      */
@@ -104,7 +96,6 @@ class UtilityTest extends UnitTest
             "Bigger Doc index from unpack of long packed posting equal");
         $this->assertEqual($out_doc_list[1], $posting_list,
             "Bigger Delta unpack of posting equal");
-
     }
 }
 ?>

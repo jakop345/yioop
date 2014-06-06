@@ -31,13 +31,11 @@
  * @filesource
  */
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  *  Load in the BloomFilterFile class we are testing
  *
  */
 require_once BASE_DIR."/lib/bloom_filter_file.php";
-
 /**
  * Used to test that the BloomFilterFile class provides the basic functionality
  * of a persistent set. I.e., we can insert things into it, and we can do
@@ -58,7 +56,6 @@ class BloomFilterFileTest extends UnitTest
         $this->test_objects['FILE1'] = new BloomFilterFile(WORK_DIRECTORY.
             "/test.ftr", 10, 100);
     }
-
     /**
      * Since a BloomFilterFile is a PersistentStructure it periodically saves
      * itself to a file. To clean up we delete the files that might be created
@@ -67,7 +64,6 @@ class BloomFilterFileTest extends UnitTest
     {
         @unlink(WORK_DIRECTORY."/test.ftr");
     }
-
     /**
      * Tests that if nothing is in the bloom filter yet, that if we do a lookup
      * we don't find anything
@@ -77,7 +73,6 @@ class BloomFilterFileTest extends UnitTest
         $this->assertFalse(
             $this->test_objects['FILE1']->contains(66), "File 1 contains 66");
     }
-
     /**
      * Tests if we insert something into the bloom filter, that when we look it
      * up, we find it. On the other hand, if we look something else up that we
@@ -92,7 +87,6 @@ class BloomFilterFileTest extends UnitTest
         $this->assertFalse(
             $this->test_objects['FILE1']->contains(66), "File 1 contains 66");
     }
-
     /**
      * Check that if we force save the bloom filter file and then we reload it
      * back in that it has the same Contents

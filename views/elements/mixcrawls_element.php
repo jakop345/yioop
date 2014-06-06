@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * Element responsible for displaying info to allow a user to create
  * a crawl mix or edit an existing one
@@ -41,10 +39,8 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @package seek_quarry
  * @subpackage element
  */
-
 class MixcrawlsElement extends Element
 {
-
     /**
      * Draw form to start a new crawl, has div place holder and ajax code to
      * get info about current crawl
@@ -140,7 +136,6 @@ class MixcrawlsElement extends Element
             <td><a href="<?php e($base_url); ?>deletemix&timestamp=<?php
                 e($mix['TIMESTAMP']); ?>"><?php
                 e(tl('mixcrawls_view_delete'));?></a></td>
-
             </tr>
         <?php
         }
@@ -187,9 +182,10 @@ class MixcrawlsElement extends Element
         </script>
     <?php
     }
-
     /**
-     *  @param array $data
+     *  Draws the create mix form
+     *
+     *  @param array $data used for CSRF_TOKEN
      */
     function renderMixForm($data)
     {
@@ -201,8 +197,6 @@ class MixcrawlsElement extends Element
             e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" name="a" value="mixCrawls" />
         <input type="hidden" name="arg" value="createmix" />
-        <?php if(isset($data['available_mixes'])) { ?>
-        <?php } ?>
         <div class="top-margin"><label for="mix-name"><?php
             e(tl('mixcrawls_element_mix_name')); ?></label>:
             <input type="text" id="mix-name" name="NAME"
@@ -213,7 +207,12 @@ class MixcrawlsElement extends Element
         </form>
         <?php
     }
-
+    /**
+     *  Draws the search for mixes forms
+     *
+     *  @param array $data consists of values of mix fields set
+     *      so far as well as values of the drops downs on the form
+     */
     function renderSearchForm($data)
     {
         $controller = "admin";

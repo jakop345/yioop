@@ -30,16 +30,13 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /** Loads base model class if necessary*/
 require_once BASE_DIR."/models/model.php";
 /** For crawlHash function */
 require_once BASE_DIR."/lib/utility.php";
 /** Used to fetches web pages to get statuses of individual machines*/
 require_once BASE_DIR."/lib/fetch_url.php";
-
 /**
  * This is class is used to handle
  * db results related to Machine Administration
@@ -50,9 +47,7 @@ require_once BASE_DIR."/lib/fetch_url.php";
  */
 class MachineModel extends Model
 {
-
     var $search_table_column_map = array("name" => "NAME");
-
     /**
      * @param mixed $args
      */
@@ -60,7 +55,6 @@ class MachineModel extends Model
     {
         return $this->getMachineStatuses($rows);
     }
-
     /**
      *  Returns urls for all the queue_servers stored in the DB
      *
@@ -86,10 +80,8 @@ class MachineModel extends Model
         }
         $sql = "SELECT URL FROM MACHINE WHERE HAS_QUEUE_SERVER > 0 ".
             "ORDER BY NAME DESC";
-
         $result = $db->execute($sql);
         $i = 0;
-
         $machines[$crawl_time] =array();
         while($row = $db->fetchArray($result)) {
             $machines[$crawl_time][$i] = $row["URL"];
@@ -98,8 +90,6 @@ class MachineModel extends Model
         unset($machines[$crawl_time][$i]); //last one will be null
         return $machines[$crawl_time];
     }
-
-
     /**
      *   Check if there is a machine with $column equal to value
      *
@@ -144,7 +134,6 @@ class MachineModel extends Model
         $this->db->execute($sql, array($name, $url, $has_string, $num_fetchers,
             $parent));
     }
-
     /**
      *  Delete a machine by its name
      *
@@ -156,7 +145,6 @@ class MachineModel extends Model
         $this->db->execute($sql, array($machine_name));
 
     }
-
     /**
      * Returns the statuses of machines in the machine table of their
      * fetchers and queue_server as well as the name and url's of these machines
@@ -207,7 +195,6 @@ class MachineModel extends Model
         }
         return $machines;
     }
-
     /**
      *  Get either a fetcher or queue_server log for a machine
      *
@@ -250,7 +237,6 @@ class MachineModel extends Model
         }
         return $log_data;
     }
-
     /**
      * Used to start or stop a queue_server, fetcher, mirror instance on
      * a machine managed by the current one
@@ -291,7 +277,6 @@ class MachineModel extends Model
         }
         $db->execute("COMMIT");
     }
-
     /**
      * Used to restart any fetchers which the user turned on, but which
      * happened to have crashed. (Crashes are usually caused by CURL or

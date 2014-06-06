@@ -30,14 +30,11 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /** Loads common constants for web crawling*/
 require_once BASE_DIR."/lib/crawl_constants.php";
 /** Used to manage for file i/o functions */
 require_once BASE_DIR."/models/datasources/".DBMS."_manager.php";
-
 /**
  * Library of functions used to implement a simple file cache
  *
@@ -53,17 +50,14 @@ class FileCache
      * @var string
      */
     var $dir_name;
-
     /**
      * Total number of bins to cycle between
      */
     const NUMBER_OF_BINS = 24;
-
     /**
      * Maximum number of files in a bin
      */
     const MAX_FILES_IN_A_BIN = 1000;
-
     /**
      * Creates the directory for the file cache, sets how frequently
      * all items in the cache expire
@@ -81,7 +75,6 @@ class FileCache
             $db->setWorldPermissionsRecursive($this->dir_name, true);
         }
     }
-
     /**
      * Retrieve data associated with a key that has been put in the cache
      *
@@ -98,7 +91,6 @@ class FileCache
         }
         return false;
     }
-
     /**
      * Stores in the cache a key-value pair
      *
@@ -140,7 +132,6 @@ class FileCache
         $cache_file = "$checksum_dir/".webencode($key);
         file_put_contents($cache_file, serialize($value));
     }
-
     /**
      * Makes a 0 - self::NUMBER_OF_BINS value out of the provided key
      *

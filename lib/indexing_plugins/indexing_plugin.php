@@ -31,18 +31,14 @@
  * @copyright 2011 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * Flag to say that post_processing is occurring (used to control logging in
  * models)
  */
 define("POST_PROCESSING", true);
-
 /** Some models might interface with a DBMS so load the DBMS manager*/
 require_once BASE_DIR."/models/datasources/".DBMS."_manager.php";
-
 /**
  * Base indexing plugin Class. An indexing plugin allows a developer
  * to do additional processing on web pages during a crawl, then after
@@ -117,7 +113,6 @@ require_once BASE_DIR."/models/datasources/".DBMS."_manager.php";
  */
 abstract class IndexingPlugin
 {
-
     /**
      * Array of the PageProcessor classes used by this IndexingPlugin
      * (contructor loads these)
@@ -130,14 +125,12 @@ abstract class IndexingPlugin
      * @var object
      */
     var $index_archive;
-
     /**
      * Reference to a database object that might be used by models on this
      * plugin
      * @var object
      */
     var $db;
-
     /**
      * Builds an IndexingPlugin object. Loads in the appropriate
      * models for the given plugin object
@@ -147,7 +140,6 @@ abstract class IndexingPlugin
         $db_class = ucfirst(DBMS)."Manager";
         $this->db = new $db_class();
     }
-
     /**
      * This method is called by a PageProcessor in its handle() method
      * just after it has processed a web page. This method allows
@@ -164,7 +156,6 @@ abstract class IndexingPlugin
      *      a self::DESCRIPTION
      */
     function pageProcessing($page, $url) {return NULL;}
-
     /**
      * Optionally modifies the page summary array produced by the PageProcessor
      * handle method in place. This hook provides a way to easily modify the
@@ -179,7 +170,6 @@ abstract class IndexingPlugin
      *      processor's handle method; modified in-place.
      */
     function pageSummaryProcessing(&$summary) {return NULL;}
-
     /**
      * This method is called by the queue_server with the name of
      * a completed index. This allows the indexing plugin to
@@ -191,13 +181,11 @@ abstract class IndexingPlugin
      *      to do post processing for
      */
     function postProcessing($index_name) {return NULL;}
-
     /**
      * @return array string names of page processors that this plugin
      *      associates with
      */
     static function getProcessors() {return NULL;}
-
     /**
      *  Returns an associative array of meta words => description length
      *  for each meta word injected by this plugin into an index. The

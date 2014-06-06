@@ -30,19 +30,15 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * Read in base class, if necessary
  */
 require_once "persistent_structure.php";
-
 /**
  * Load charCopy
  */
 require_once "utility.php";
-
 /**
  * Memory efficient implementation of persistent arrays
  *
@@ -57,7 +53,6 @@ require_once "utility.php";
  */
 class StringArray extends PersistentStructure
 {
-
     /**
      * Number of items to be stored in the StringArray
      * @var int
@@ -78,8 +73,6 @@ class StringArray extends PersistentStructure
      * @var string
      */
     var $string_array;
-
-
     /**
      * Initiliazes the fields of the StringArray and its parent class
      * PersistentStructure. Creates a null filled string array of size
@@ -96,15 +89,10 @@ class StringArray extends PersistentStructure
     {
         $this->num_values = $num_values;
         $this->data_size = $data_size;
-
         $this->string_array_size = $num_values*($data_size);
-
         $this->string_array = pack("x". $this->string_array_size);
-
         parent::__construct($fname, $save_frequency);
-
     }
-
     /**
      *  Load a StringArray from a file
      *
@@ -122,7 +110,6 @@ class StringArray extends PersistentStructure
         fclose($fh);
         return $object;
     }
-
     /**
      *  Save the StringArray to its filename
      */
@@ -137,7 +124,6 @@ class StringArray extends PersistentStructure
         $this->string_array = & $tmp;
         fclose($fh);
     }
-
     /**
      *  Looks up the ith item in the StringArray
      *
@@ -147,10 +133,8 @@ class StringArray extends PersistentStructure
     function get($i)
     {
         $data_size = $this->data_size;
-
         return substr($this->string_array, $i*$data_size, $data_size);
     }
-
     /**
      * Puts data into the ith item of the StringArray
      *
@@ -161,12 +145,8 @@ class StringArray extends PersistentStructure
     function put($i, $data)
     {
         $data_size = $this->data_size;
-
         $start = $i * $data_size;
-
         charCopy($data, $this->string_array, $start, $data_size);
-
     }
-
 }
 ?>

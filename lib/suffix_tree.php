@@ -30,7 +30,6 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 /**
  * Data structure used to maintain a suffix tree for a passage of words.
  * The suffix tree is constructed using the linear time algorithm of
@@ -49,21 +48,18 @@ class SuffixTree
      * @var array
      */
     var $root;
-
     /**
      * Index of last node added to the suffix tree in the array used to
      * hold the suffix tree data structures
      * @var int
      */
     var $last_added;
-
     /**
      * Position in the $this->text up to which we have created a suffix tree
      * so far
      * @var int
      */
     var $pos;
-
     /**
      * If in a given step in constructing the suffix tree we split the
      * active edge and insert a new node and then have to do this
@@ -81,20 +77,17 @@ class SuffixTree
      * @var int
      */
     var $remainder;
-
     /**
      * Node which represents the left hand the start of the active edge
      * This is the edge that contains the last suffix inserted
      * @var int
      */
     var $active_index;
-
     /**
      * Index into $this->text of starting word of active edge
      * @var int
      */
     var $active_edge_index;
-
     /**
      * How many words from the start of the active edge label to get the
      * last suffix. If active edge label was: "a black cat a black" and
@@ -102,7 +95,6 @@ class SuffixTree
      * @var int
      */
     var $active_len;
-
     /**
      * Number of elements in $this->text. i.e., count($this->text)
      * @var int
@@ -115,19 +107,16 @@ class SuffixTree
      * @var array
      */
     var $text;
-
     /**
      * Used to hold the suffix tree data structure (represented as a sequence
      * of nodes)
      * @var array
      */
     var $tree;
-
     /**
      *  Upper bound on the length of any path in the tree
      */
     const INFTY = 2000000000;
-
     /**
      * Initializes a suffix tree based on the supplied array of terms.
      *
@@ -139,7 +128,6 @@ class SuffixTree
         $this->size = count($text);
         $this->buildTree();
     }
-
     /**
      *  Builds the complete suffix tree for the text currently stored in
      *  $this->text. If you change this text and call this method again,
@@ -161,7 +149,6 @@ class SuffixTree
             $this->suffixTreeExtend();
         }
     }
-
     /**
      * Makes a new node for the suffix tree structure. This node
      * is inserted at the end of the tree so far. A node is associative
@@ -183,7 +170,6 @@ class SuffixTree
         $this->tree[++$this->last_added] = $node;
         return $this->last_added;
     }
-
     /**
      * The number of elements out of $this->text that this node is currently
      * responsible for
@@ -194,7 +180,6 @@ class SuffixTree
     {
         return min($node["end"], $this->pos + 1) - $node["start"];
     }
-
     /**
      * If in a given step in constructing the suffix tree we split the
      * active edge and insert a new node and then have to do this
@@ -215,7 +200,6 @@ class SuffixTree
         }
         $this->need_sym_link = $index;
     }
-
     /**
      * Used to set the active point to the node given by $index
      *
@@ -234,7 +218,6 @@ class SuffixTree
         }
         return false;
     }
-
     /**
      * Given a suffix tree of the array of terms in $this->text up to
      * $this->pos, adds one to pos and build the suffix tree up to this
@@ -295,7 +278,6 @@ class SuffixTree
             }
         }
     }
-
     /**
      * Recursive function used to compute the maximal phrases in a document
      * as well as their conditional maximal subphrases.

@@ -28,9 +28,7 @@
  *  @copyright 2009 - 2014
  *  @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * Polish specific tokenization code. Typically, tokenizer.php
  * either contains a stemmer for the language in question or
@@ -40,6 +38,5 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @package seek_quarry
  * @subpackage locale
  */
-
 $CHARGRAMS['pl'] = 5;
 ?>

@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /** Load base controller class if needed */
 require_once BASE_DIR."/controllers/controller.php";
 /** Loads common constants for web crawling */
@@ -46,7 +44,6 @@ require_once BASE_DIR."/lib/classifiers/classifier.php";
 /** Loads mix archive iterator to iterate through mixes for classification */
 require_once BASE_DIR."/lib/archive_bundle_iterators/".
     "mix_archive_bundle_iterator.php";
-
 /**
  * This class handles XmlHttpRequests to label documents during classifier
  * construction.
@@ -70,8 +67,6 @@ class ClassifierController extends Controller implements CrawlConstants
      * @var array
      */
     var $activities = array("classify");
-
-
     /**
      * Checks that the request seems to be coming from a legitimate, logged-in
      * user, then dispatches to the appropriate activity.
@@ -84,7 +79,6 @@ class ClassifierController extends Controller implements CrawlConstants
             $this->call($activity);
         }
     }
-
     /**
      * Finds the next document for which to request a label, sometimes first
      * recording the label that the user selected for the last document. This
@@ -106,7 +100,6 @@ class ClassifierController extends Controller implements CrawlConstants
             $source_type = $this->clean($_REQUEST['type'], 'string');
             $keywords = $this->clean($_REQUEST['keywords'], 'string');
         }
-
         /*
            The call to prepareToLabel is important; it loads all of the data
            required to manage the training set from disk, and also determines
@@ -114,9 +107,7 @@ class ClassifierController extends Controller implements CrawlConstants
          */
         $classifier = Classifier::getClassifier($label);
         $classifier->prepareToLabel();
-
         $data = array();
-
         switch ($arg)
         {
             case 'getdocs':
@@ -156,8 +147,7 @@ class ClassifierController extends Controller implements CrawlConstants
                     }
                     $data['add_count'] = $add_count;
                 }
-                break;
-
+            break;
             case 'addlabel':
                 /*
                    First label the last candidate document presented to the
@@ -189,8 +179,7 @@ class ClassifierController extends Controller implements CrawlConstants
                         $index, $keywords);
                 }
                 Classifier::setClassifier($classifier);
-                break;
-
+            break;
             case 'updateaccuracy':
                 /*
                    Don't do anything other than re-compute the accuracy for the
@@ -198,7 +187,7 @@ class ClassifierController extends Controller implements CrawlConstants
                  */
                 $classifier->updateAccuracy();
                 Classifier::setClassifier($classifier);
-                break;
+            break;
         }
 
         /*
@@ -223,9 +212,7 @@ class ClassifierController extends Controller implements CrawlConstants
         header("Content-Length: ".strlen($response));
         echo $response;
     }
-
     /* PRIVATE METHODS */
-
     /**
      * Creates a new crawl mix for an existing index, with an optional query,
      * and returns an iterator for the mix. The crawl mix name is derived from
@@ -269,7 +256,6 @@ class ClassifierController extends Controller implements CrawlConstants
 
         return new MixArchiveBundleIterator($mix_time, $mix_time);
     }
-
     /**
      * Retrieves an iterator for an existing crawl mix. The crawl mix remembers
      * its previous offset, so that the new iterator picks up where the
@@ -286,7 +272,6 @@ class ClassifierController extends Controller implements CrawlConstants
         $mix_time = $this->model("crawl")->getCrawlMixTimestamp($mix_name);
         return new MixArchiveBundleIterator($mix_time, $mix_time);
     }
-
     /**
      * Creates a fresh array from an existing page summary array, and augments
      * it with extra data relevant to the labeling interface on the client.

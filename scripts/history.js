@@ -29,7 +29,6 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(typeof(elt) == "undefined") {
     /*
      *  Shorthand for document.getElementById
@@ -41,14 +40,10 @@ if(typeof(elt) == "undefined") {
         return document.getElementById(id);
     }
 }
-
-
-
 /*
  * Handles History toggle in cached pages
  */
 var history_link = elt('#history');
-
 history_link.onclick = function() {
     var history_link = elt('#history');
     var m_id = elt('#month');
@@ -85,12 +80,10 @@ history_link.onclick = function() {
         cur_div.style.display = 'none'
     }
 }
-
 /*
  * Handles Year selection in History UI
  */
 var year = elt('#year');
-
 year.onchange = function() {
     var yearops = elt('#year');
     var monops = elt('#month');
@@ -130,12 +123,10 @@ year.onchange = function() {
         ldiv.style.display = 'block';
     }
 }
-
 /*
  * Handles Month selection in History UI
  */
 var month = elt('#month');
-
 month.onchange = function() {
     var m_id = elt('#month');
     var y_id = elt('#year');

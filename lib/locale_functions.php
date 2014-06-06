@@ -32,12 +32,10 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 /**
  * Used to contain information about the current language and regional settings
  */
 require_once BASE_DIR."/models/locale_model.php";
-
 /**
  *  Attempts to guess the user's locale based on the request, session,
  *  and user-agent data
@@ -72,9 +70,7 @@ function guessLocale()
         if(isset($guess_map[$guess_l])) {
             $guess_l = $guess_map[$guess_l];
         }
-
     }
-
     if(isset($_SESSION['l']) || isset($_REQUEST['l']) || isset($guess_l)) {
         $l = (isset($_REQUEST['l'])) ? $_REQUEST['l'] :
             ((isset($_SESSION['l'])) ? $_SESSION['l'] : $guess_l);
@@ -85,15 +81,11 @@ function guessLocale()
             }
         }
     }
-
     if(!isset($locale_tag)) {
         $locale_tag = DEFAULT_LOCALE;
     }
-
     return $locale_tag;
 }
-
-
 /**
  * Attempts to guess the user's locale based on a string sample
  *
@@ -157,7 +149,6 @@ function guessLocaleFromString($phrase_string, $locale_tag = NULL)
     }
     return $locale_tag;
 }
-
 /**
  * Tries to find wether query belongs to a programming language
  *
@@ -183,7 +174,6 @@ function checkQuery($query)
     }
     return $lang;
 }
-
 /**
  * Tries to guess at a language tag based on the name of a character
  * encoding
@@ -211,7 +201,6 @@ function guessLangEncoding($encoding)
     if(in_array($encoding, $lang)) {
         return "ru";
     }
-
     return 'en';
 }
 /**
@@ -271,7 +260,6 @@ function guessEncodingHtml($html, $return_loc_info = false)
     }
     return mb_detect_encoding($html, 'auto');
 }
-
 /**
  * Translate the supplied arguments into the current locale.
  * This function takes a variable number of arguments. The first
@@ -285,7 +273,6 @@ function guessEncodingHtml($html, $return_loc_info = false)
 function tl()
 {
     global $locale;
-
     if(!is_object($locale)) {
         return false;
     }
@@ -296,7 +283,6 @@ function tl()
     }
     return $translation;
 }
-
 /**
  * Sets the language to be used for locale settings
  *
@@ -310,25 +296,24 @@ function setLocaleObject($locale_tag)
     $locale->initialize($locale_tag);
 }
 
-/**
- * Gets the language tag (for instance, en_US for American English) of the
- * locale that is currently being used.
- *
- * @return string  the tag of the language currently being used for locale
- *      settings
- */
 if(!function_exists("getLocaleTag")) {
-function getLocaleTag()
-{
-    global $locale, $locale_tag;
-    if(!$locale) {
-        $locale_tag = guessLocale();
-        return $locale_tag;
+    /**
+     * Gets the language tag (for instance, en_US for American English) of the
+     * locale that is currently being used.
+     *
+     * @return string  the tag of the language currently being used for locale
+     *      settings
+     */
+    function getLocaleTag()
+    {
+        global $locale, $locale_tag;
+        if(!$locale) {
+            $locale_tag = guessLocale();
+            return $locale_tag;
+        }
+        return $locale->getLocaleTag();
     }
-    return $locale->getLocaleTag();
 }
-}
-
 /**
  * Returns the current language directions.
  *
@@ -340,7 +325,6 @@ function getLocaleDirection()
     global $locale;
     return $locale->getLocaleDirection();
 }
-
 /**
  * Returns the query statistics info for the current llocalt.
  *
@@ -354,8 +338,6 @@ function getLocaleQueryStatistics()
     $query_info['TOTAL_ELAPSED_TIME'] = $locale->db->total_time;
     return $query_info;
 }
-
-
 /**
  * Returns the current locales method of writing blocks (things like divs or
  * paragraphs).A language like English puts blocks one after another from the
@@ -370,7 +352,6 @@ function getBlockProgression()
     return $locale->getBlockProgression();
 
 }
-
 /**
  * Returns the writing mode of the current locale. This is a combination of the
  * locale direction and the block progression. For instance, for English the
@@ -384,7 +365,6 @@ function getWritingMode()
     return $locale->getWritingMode();
 
 }
-
 /**
  * Convert the string $str encoded in Windows-1256 into UTF-8
  *
@@ -424,7 +404,6 @@ function w1256ToUTF8($str)
         0x064E, 0x00F4, 0x064F, 0x0650, 0x00F7, 0x0651, 0x00F9, 0x0652, 0x00FB,
         0x00FC, 0x200E, 0x200F, 0x06D2
     );
-
     $len = strlen($str);
     $out = "";
     for($i = 0; $i < $len; $i++) {
@@ -432,7 +411,6 @@ function w1256ToUTF8($str)
     }
     return $out;
 }
-
 /**
  * Given a unicode codepoint convert it to UTF-8
  *
@@ -453,7 +431,6 @@ function utf8chr($code)
             (($code >> 6) & 63) + 128, ($code & 63) + 128);
     return '';
 }
-
 /**
  * Function for formatting a date string based on the locale.
  * @param $timestamp is the crawl time

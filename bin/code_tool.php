@@ -60,24 +60,19 @@ require_once BASE_DIR.'/lib/utility.php';
  */
 mb_internal_encoding("UTF-8");
 mb_regex_encoding("UTF-8");
-
 $no_instructions = false;
 $model = new Model();
 $db = $model->db;
-
 $commands = array("copyright", "clean", "longlines", "search", "replace");
 $change_extensions = array("php", "js", "ini", "css", "thtml", "xml");
 $exclude_paths_containing = array("/.", "/extensions/");
 $num_spaces_tab = 4;
-
 if(isset($argv[1]) && in_array($argv[1], $commands)) {
     $command = $argv[1];
     array_shift($argv);
     array_shift($argv);
     $no_instructions = $command($argv);
 }
-
-
 if(!$no_instructions) {
     echo <<< EOD
 code_tool.php has the following command formats:
@@ -141,7 +136,6 @@ function clean($args)
     }
     return $no_instructions;
 }
-
 /**
  * Updates the copyright info (assuming in Yioop docs format) on files
  * in supplied sub-folder/file. That is, it changes strings matching
@@ -166,9 +160,6 @@ function copyright($args)
     }
     return $no_instructions;
 }
-
-
-
 /**
  * Search and echos line numbers and lines for lines of length greater than 80
  * characters in files in supplied sub-folder/file,
@@ -182,7 +173,6 @@ function longlines($args)
     global $change_extensions;
     $no_instructions = false;
     $change_extensions = array_diff($change_extensions, array("ini", "xml"));
-
     if(isset($args[0])) {
         $path = realpath($args[0]);
         searchFile("", "/([^\n]){81}/");// initialize callback
@@ -191,7 +181,6 @@ function longlines($args)
     }
     return $no_instructions;
 }
-
 /**
  * Performs a search and replace for given pattern in files in supplied
  * sub-folder/file
@@ -210,22 +199,16 @@ function longlines($args)
 function replace($args)
 {
     $no_instructions = false;
-
     if(isset($args[0]) && isset($args[1]) && isset($args[2])) {
         $path = realpath($args[0]);
         $no_instructions = true;
         $pattern = $args[1];
         $replace = $args[2];
         $mode = (isset($args[3])) ? $args[3] : "effect";
-        if(strlen(stristr($pattern, "@")) > 0) {
-            echo "Search pattern should not contain @, bailing !!!";
-            return false;
-        }
         $len = strlen($pattern);
         if($len >= 2) {
-            if($pattern[0] != $pattern[$len - 1]) {
-                $pattern = "@$pattern@";
-            }
+            $pattern = preg_quote($pattern,"@");
+            $pattern = "@$pattern@";
             replaceFile("", $pattern, $replace, $mode); // initialize callback
 
             mapPath($path, "replaceFile");
@@ -233,7 +216,6 @@ function replace($args)
     }
     return $no_instructions;
 }
-
 /**
  * Performs a search for given pattern in files in supplied sub-folder/file
  *
@@ -245,27 +227,20 @@ function replace($args)
 function search($args)
 {
     $no_instructions = false;
-
     if(isset($args[0]) && isset($args[1])) {
         $path = realpath($args[0]);
         $no_instructions = true;
         $pattern = $args[1];
         $len = strlen($pattern);
-        if(strlen(stristr($pattern, "@")) > 0) {
-            echo "Search pattern should not contain @, bailing !!!";
-            return false;
-        }
         if($len >= 2) {
-            if($pattern[0] != $pattern[$len - 1]) {
-                $pattern = "@$pattern@";
-            }
+            $pattern = preg_quote($pattern,"@");
+            $pattern = "@$pattern@";
             searchFile("", $pattern); // initialize callback
             mapPath($path, "searchFile");
         }
     }
     return $no_instructions;
 }
-
 /**
  * Callback function applied to each file in the directory being traversed
  * by @see copyright(). It checks if the files is of the extension of a code file
@@ -277,12 +252,10 @@ function search($args)
 function changeCopyrightFile($filename, $set_year = false)
 {
     global $change_extensions;
-    static $year = 2012;
-
+    static $year = 2014;
     if($set_year) {
         $year = $set_year;
     }
-
     $path_parts = pathinfo($filename);
     $extension = $path_parts['extension'];
     if(!excludedPath($filename) && in_array($extension, $change_extensions)) {
@@ -305,7 +278,6 @@ function changeCopyrightFile($filename, $set_year = false)
         }
     }
 }
-
 /**
  * Callback function applied to each file in the directory being traversed
  * by @see clean().
@@ -339,7 +311,6 @@ function cleanLinesFile($filename)
         }
     }
 }
-
 /**
  * Callback function applied to each file in the directory being traversed
  * by @see search(). Searches $filename matching $pattern and outputs line
@@ -354,9 +325,8 @@ function searchFile($filename, $set_pattern = false)
 {
     global $change_extensions;
     static $pattern = "/";
-
     if($set_pattern) {
-        $pattern = preg_quote($set_pattern);
+        $pattern = $set_pattern;
     }
     $path_parts = pathinfo($filename);
     if(!isset($path_parts['extension'])) {
@@ -379,7 +349,6 @@ function searchFile($filename, $set_pattern = false)
         }
     }
 }
-
 /**
  * Callback function applied to each file in the directory being traversed
  * by @see replace(). Searches $filename matching $pattern. Depending
@@ -455,7 +424,6 @@ function replaceFile($filename, $set_pattern = false,
         }
     }
 }
-
 /**
  * Applies the function $callback to each file in $path
  *
@@ -473,7 +441,6 @@ function mapPath($path, $callback)
         $callback($path);
     }
 }
-
 /**
  * Checks if $path is amongst a list of paths which should be ignored
  *

@@ -35,6 +35,5 @@
  */
 $_REQUEST['c'] = "static";
 $_REQUEST['p'] = "bot";
-
 require_once("index.php");
 ?>

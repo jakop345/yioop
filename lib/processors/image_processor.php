@@ -30,15 +30,11 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * Load the base class
  */
 require_once BASE_DIR."/lib/processors/page_processor.php";
-
-
 /**
  * Base abstract class common to all processors used to create crawl summary
  * information from images
@@ -49,8 +45,6 @@ require_once BASE_DIR."/lib/processors/page_processor.php";
  */
 class ImageProcessor extends PageProcessor
 {
-
-
     /**
      * Extract summary data from the image provided in $page together the url
      *      in $url where it was downloaded from
@@ -64,7 +58,6 @@ class ImageProcessor extends PageProcessor
      *      description (where the description is just the url)
      */
     function process($page, $url) { return NULL;}
-
     /**
      * Used to create a thumbnail from an image object
      *
@@ -85,10 +78,7 @@ class ImageProcessor extends PageProcessor
         imagejpeg( $thumb, CRAWL_DIR."/cache/thumb.jpg", 100 );
         imagedestroy($thumb);
         $thumb_string = file_get_contents(CRAWL_DIR."/cache/thumb.jpg");
-
         return $thumb_string;
     }
-
 }
-
 ?>

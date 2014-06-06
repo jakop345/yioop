@@ -30,10 +30,11 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
+ * View used to draw and allow editing of group feeds when not in the admin view
+ * (so activities panel on side is not present.) This is also used to draw
+ * group feeds for public feeds when not logged.
  *
  * @author Chris Pollett
  * @package seek_quarry
@@ -45,9 +46,11 @@ class GroupView extends View implements CrawlConstants
      *  @var string
      */
     var $layout = "web";
-
     /**
-     * @param array $data
+     * Draws a minimal container with a GroupElement in it on which a group
+     * feed can be drawn
+     *
+     * @param array $data with fields used for drawing the container and feed
      */
     function renderView($data) {
         $logo = "resources/yioop.png";
@@ -127,7 +130,6 @@ class GroupView extends View implements CrawlConstants
         {
             document.location='?c=search&a=signout';
         }
-
         //schedule logout warnings
         var sec = 1000;
         var minute = 60*sec;

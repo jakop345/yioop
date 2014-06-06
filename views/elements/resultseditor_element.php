@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * Element used to control how urls are filtered out of search results
  * (if desired) after a crawl has already been performed.
@@ -42,10 +40,8 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @package seek_quarry
  * @subpackage element
  */
-
 class ResultsEditorElement extends Element
 {
-
     /**
      * Draws the Screen for the Search Filter activity. This activity is
      * used to filter urls out of the search results
@@ -121,13 +117,11 @@ class ResultsEditorElement extends Element
         <textarea class="tall-text-area" id="disallowed-sites"
             name="disallowed_sites" ><?php e($data['disallowed_sites']);
         ?></textarea>
-
         <div class="center slight-pad"><button class="button-box"
             type="submit"><?php e(tl('resultseditor_element_save_filter'));
             ?></button></div>
         </form>
         </div>
-
     <?php
     }
 }

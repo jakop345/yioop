@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * Library of functions used to manipulate and to extract components from urls
  *
@@ -42,10 +40,8 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @package seek_quarry
  * @subpackage library
  */
-
 class UrlParser
 {
-
     /**
      * Checks if the url scheme is either http or https.
      *
@@ -63,7 +59,6 @@ class UrlParser
         }
         return true;
     }
-
     /**
      * Converts a url with a scheme into one without. Also removes trailing
      * slashes from url. Shortens url to desired length by inserting ellipsis
@@ -94,7 +89,6 @@ class UrlParser
         $url = mb_ereg_replace(" ", "%20", $url);
         return $url;
     }
-
     /**
      * Checks if the url has a host part.
      *
@@ -104,11 +98,8 @@ class UrlParser
     static function hasHostUrl($url)
     {
        $url_parts = @parse_url($url);
-
        return isset($url_parts['host']);
     }
-
-
     /**
      * Get the port number of a url if present; if not return 80
      * @return int a port number
@@ -121,7 +112,6 @@ class UrlParser
         }
         return 80;
     }
-
     /**
      * Get the scheme of a url if present; if not return http
      * @return int a port number
@@ -134,7 +124,6 @@ class UrlParser
         }
         return "http";
     }
-
     /**
      *  Attempts to guess the language tag based on url
      *
@@ -220,10 +209,8 @@ class UrlParser
             "vi" => 'vi-VN',
             "cn" => 'zh-CN',
         );
-
         $host = self::getHost($url, false);
         if(!$host) return false;
-
         $host_parts = explode(".", $host);
         $count = count($host_parts);
         if($count > 0) {
@@ -236,10 +223,8 @@ class UrlParser
                 return $LANG[$tld];
             }
         }
-
         return NULL;
     }
-
     /**
      * Get the host name portion of a url if present; if not return false
      *
@@ -266,23 +251,17 @@ class UrlParser
                 return false;
             }
         }
-
         if($with_login_and_port &&
             isset($url_parts['user']) && isset($url_parts['pass'])) {
             $host_url .= $url_parts['user'].":".$url_parts['pass']."@";
         }
-
         if(strlen($url_parts['host']) <= 0) { return false; }
-
         $host_url .= $url_parts['host'];
-
         if($with_login_and_port && isset($url_parts['port'])) {
             $host_url .= ":".$url_parts['port'];
         }
-
         return $host_url;
     }
-
     /**
      *  Get the path portion of a url if present; if not return NULL
      *
@@ -294,13 +273,11 @@ class UrlParser
     static function getPath($url, $with_query_string = false)
     {
         $url_parts = @parse_url($url);
-
         if(!isset($url_parts['path'])) {
             return NULL;
         }
         // windows hack
         $url_parts['path'] = str_replace("\/", "/", $url_parts['path']);
-
         $path = $url_parts['path'];
         $len = strlen($url);
         if($len < 1) {
@@ -313,7 +290,6 @@ class UrlParser
         }
         return $path;
     }
-
     /**
      * Returns as a two element array the host and path of a url
      *
@@ -329,10 +305,8 @@ class UrlParser
     {
         $url_parts = @parse_url($url);
         $path = (isset($url_parts['path'])) ? $url_parts['path'] : false;
-
         if(!isset($url_parts['scheme']) ) {return array(false, false);}
         $host_url = $url_parts['scheme'].'://';
-
         //handles common typo http:/yahoo.com rather than http://yahoo.com
         if(!isset($url_parts['host'])) {
             if($path) {
@@ -362,7 +336,6 @@ class UrlParser
         }
         // windows hack
         $path = str_replace("\/", "/", $path);
-
         $len = strlen($url);
         if($len < 1) {
             return array($host_url, false);
@@ -374,7 +347,6 @@ class UrlParser
         }
         return array($host_url, $path);
     }
-
     /**
      * Gets an array of prefix urls from a given url. Each prefix contains at
      * least the the hostname of the the start url
@@ -388,14 +360,10 @@ class UrlParser
     static function getHostPaths($url)
     {
         $host_paths = array($url);
-
         list($host, $path) = self::getHostAndPath($url);
         if(!$host) {return $host_paths;}
-
         $host_paths[] = $host;
-
         $path_parts = explode("/", $path);
-
         $url = $host;
         foreach($path_parts as $part) {
          if($part != "") {
@@ -404,13 +372,9 @@ class UrlParser
             }
             $host_paths[] = $url."/";
         }
-
         $host_paths = array_unique($host_paths);
-
         return $host_paths;
-
     }
-
     /**
      * Gets the subdomains of the host portion of a url. So
      *
@@ -437,10 +401,8 @@ class UrlParser
             $domain = ".$domain";
             $subdomains[] = $domain;
         }
-
         return $subdomains;
     }
-
     /**
      * Checks if $path matches against any of the Robots.txt style regex
      * paths in $paths
@@ -452,7 +414,6 @@ class UrlParser
     static function isPathMemberRegexPaths($path, $robot_paths)
     {
         $is_member = false;
-
         $len = strlen($path);
         foreach($robot_paths as $robot_path) {
             $rlen = strlen($robot_path);
@@ -488,8 +449,6 @@ class UrlParser
         }
         return $is_member;
     }
-
-
     /**
      * Given a url, extracts the words in the host part of the url
      * provided the url does not have a path part more than / .
@@ -526,7 +485,6 @@ class UrlParser
         $word_string = " ".implode(" ", $words). " ";
         return $word_string;
     }
-
     /**
      * Given a url, extracts the words in the last path part of the url
      * For example,
@@ -565,7 +523,6 @@ class UrlParser
         $word_string = " ".implode(" ", $words). " ";
         return $word_string;
     }
-
     /**
      * Given a url, makes a guess at the file type of the file it points to
      *
@@ -585,16 +542,12 @@ class UrlParser
             return "html";
         } else {
             $path_parts = pathinfo($url_parts['path']);
-
             if(!isset($path_parts["extension"]) ) {
              return "html"; //we default to html
             }
-
             return $path_parts["extension"];
         }
-
     }
-
     /**
      * Gets the filename portion of a url if present;
      * otherwise returns "Some File"
@@ -604,23 +557,17 @@ class UrlParser
      */
     static function getDocumentFilename($url)
     {
-
         $url_parts = @parse_url($url);
-
         if(!isset($url_parts['path'])) {
             return "html"; //we default to html
         } else {
             $path_parts = pathinfo($url_parts['path']);
-
             if(!isset($path_parts["filename"]) ) {
                 return "Some File";
             }
-
             return $path_parts["filename"];
         }
-
     }
-
     /**
      * Get the query string component of a url
      *
@@ -635,10 +582,8 @@ class UrlParser
         } else {
             $out = NULL;
         }
-
         return $out;
     }
-
     /**
      * Get the url fragment string component of a url
      *
@@ -653,10 +598,8 @@ class UrlParser
         } else {
             $out = NULL;
         }
-
         return $out;
     }
-
     /**
      * Given a $link that was obtained from a website $site, returns
      * a complete URL for that link.
@@ -678,13 +621,11 @@ class UrlParser
     static function canonicalLink($link, $site, $no_fragment = true)
     {
         if(!self::isSchemeHttpOrHttps($link)) {return NULL;}
-
         if(isset($link[0]) &&
             $link[0] == "/" && isset($link[1]) && $link[1] == "/") {
             $http = ($site[4] == 's') ? "https:" : "http:";
             $link = $http . $link;
         }
-
         if(self::hasHostUrl($link)) {
             list($host, $path) = self::getHostAndPath($link);
             $query = self::getQuery($link);
@@ -696,7 +637,6 @@ class UrlParser
             } else {
                 $site_path = self::getPath($site);
                 $site_path_parts = pathinfo($site_path);
-
                 if(isset($site_path_parts['dirname'])) {
                     $pre_path = $site_path_parts['dirname'];
                 } else {
@@ -722,30 +662,22 @@ class UrlParser
                 $fragment = self::getFragment($so_far_link);
             }
         }
-
-
         // take a stab at paths containing ..
         $path = preg_replace('/(\/\w+\/\.\.\/)+/', "/", $path);
-
-
         // if still has .. give up
         if(stristr($path, "../"))
         {
             return NULL;
         }
-
         // handle paths with dot in it
         $path = preg_replace('/(\.\/)+/', "", $path);
         $path = str_replace(" ", "%20", $path);
-
         $link_path_parts = pathinfo($path);
-
         $path2 = $path;
         do {
             $path = $path2;
             $path2 = str_replace("//","/", $path);
         } while($path != $path2);
-
         $path = str_replace("/./","/", $path);
         if($path == "." || substr($path, -2) == "/.") {
             $path = "/";
@@ -753,19 +685,15 @@ class UrlParser
         if($path == "" && !(isset($fragment) && $fragment !== "")) {
             $path = "/";
         }
-
         $url = $host.$path;
-
         if(isset($query) && $query !== "") {
             $url .= "?".$query;
         }
-
         if(isset($fragment) && $fragment !== "" && !$no_fragment) {
             $url .= "#".$fragment;
         }
         return $url;
     }
-
     /**
      * Checks if a url has a repeated set of subdirectories, and if the number
      * of repeats occurs more than some threshold number of times
@@ -786,7 +714,6 @@ class UrlParser
     static function checkRecursiveUrl($url, $repeat_threshold = 3)
     {
         $url_parts = mb_split("/", $url);
-
         $count= count($url_parts);
         $flag = 0;
         for($i = 0; $i < $count; $i++) {
@@ -796,15 +723,11 @@ class UrlParser
                 }
             }
         }
-
         if($flag > $repeat_threshold) {
             return true;
         }
-
         return false;
-
     }
-
     /**
      * Checks if a $url is on localhost
      *
@@ -814,7 +737,6 @@ class UrlParser
     static function isLocalhostUrl($url)
     {
         $host = UrlParser::getHost($url, false);
-
         $localhosts = array("localhost", "127.0.0.1", "::1");
         if(isset($_SERVER["SERVER_NAME"])) {
             $localhosts[] = $_SERVER["SERVER_NAME"];
@@ -830,7 +752,6 @@ class UrlParser
         }
         return false;
     }
-
     /**
      * Checks if the url belongs to one of the sites listed in site_array
      * Sites can be either given in the form domain:host or
@@ -850,7 +771,6 @@ class UrlParser
     {
         static $cache = array();
         if(!is_array($site_array)) {return false;}
-
         if(!isset($cache[$name])) {
             if(count($cache) > 100) {
                 $cache = array();
@@ -876,7 +796,6 @@ class UrlParser
                 $cache[$name]["domains"]));
         }
         $flag = false;
-
         $domains = & $cache[$name]["domains"];
         $hosts = & $cache[$name]["hosts"];
         $paths = & $cache[$name]["paths"];
@@ -904,7 +823,6 @@ class UrlParser
         }
         return $flag;
     }
-
     /**
      * Checks if a URL corresponds to a known playback page of a video
      * sharing site
@@ -923,7 +841,6 @@ class UrlParser
             $quoted = preg_quote($prefix, "/");
             $patterns[] = "/$quoted/";
         }
-
         foreach($patterns as $pattern) {
             if(preg_match($pattern, $url) > 0) {
                 return true;
@@ -931,7 +848,6 @@ class UrlParser
         }
         return false;
     }
-
     /**
      *  Used to delete links from array of links $links based on whether
      *  they are the same as the site they came from (or otherwise judged
@@ -952,7 +868,6 @@ class UrlParser
         }
         return $out_links;
     }
-
     /**
      *  Prunes a list of url => text pairs down to max_link many pairs
      *  by choosing those whose text has the most information. Information
@@ -985,7 +900,6 @@ class UrlParser
         }
         return $out_links;
     }
-
     /**
      *  Guess mime type based on extension of the file in Git object
      *
@@ -1044,5 +958,4 @@ class UrlParser
         return $mime_type;
     }
 }
-
 ?>

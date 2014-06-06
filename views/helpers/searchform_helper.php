@@ -30,14 +30,11 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  *  Load base helper class if needed
  */
 require_once BASE_DIR."/views/helpers/helper.php";
-
 /**
  * Used to draw the form to do advanced search for items in a user, group, 
  * locale, etc folder
@@ -48,7 +45,6 @@ require_once BASE_DIR."/views/helpers/helper.php";
  */
 class SearchformHelper extends Helper
 {
-
     /**
      *  Draw the form for advanced search for any HTML table drawn based on
      *  using a model's getRow function
@@ -70,7 +66,6 @@ class SearchformHelper extends Helper
     function render($data, $controller, $activity, $view, $title,
         $return_form_name, $fields, $dropdowns = array(), $postfix = "")
     {
-
         $base_url = "?c=$controller&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
             "&amp;a=$activity";
         $old_base_url = $base_url;

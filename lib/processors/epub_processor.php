@@ -30,35 +30,28 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /** Register File Types We Handle*/
 $INDEXED_FILE_TYPES[] = "epub";
 $PAGE_PROCESSORS["application/epub+zip"] = "EpubProcessor";
-
 /**
  * Load base class, if needed.
  */
 require_once BASE_DIR."/lib/processors/text_processor.php";
-
 /**
  * If XML turns out to be XHTML ...
  */
 require_once BASE_DIR."/lib/processors/html_processor.php";
-
 /**
  * Load so can parse urls
  */
 require_once BASE_DIR."/lib/url_parser.php";
-
 /**
  * The constant represents the number of
  * child levels at which the data is present in
  * the content.opf file.
  */
 define('MAX_DOM_LEVEL', 15);
-
  /**
  * Used to create crawl summary information
  * for XML files (those served as application/epub+zip)
@@ -75,14 +68,12 @@ class EpubProcessor extends TextProcessor
      *  @var string name
      */
     var $name;
-
     /**
      *  The attribute of the tag element in an xml document
      *
      *  @var string attributes
      */
     var $attributes;
-
     /**
      *  The content of the tag element or attribute, used to extract
      *  the fields like title, creator, language of the document
@@ -90,14 +81,12 @@ class EpubProcessor extends TextProcessor
      *  @var string content
      */
     var $content;
-
     /**
      *  The child tag element of a tag element.
      *
      *  @var string children
      */
     var $children;
-
     /**
      *  Used to extract the title, description and links from
      *  a string consisting of ebook publication data.
@@ -126,7 +115,6 @@ class EpubProcessor extends TextProcessor
         $epub_subject = '';
         $desc = '';
         $htmlcontent = '';
-
         file_put_contents($temp_filename, $page);
         chmod($temp_filename, 0777);
         $zip = new ZipArchive();
@@ -177,7 +165,6 @@ class EpubProcessor extends TextProcessor
                 }
             }
         }
-
         if($epub_title != '')
         {
             $desc= " $epub_title .";
@@ -212,20 +199,17 @@ class EpubProcessor extends TextProcessor
         if(strlen($desc) > self::$max_description_len) {
             $desc = substr($desc, 0, self::$max_description_len);
         }
-
         $summary[self::TITLE] = $epub_title;
         $summary[self::DESCRIPTION] = $desc;
         $summary[self::LANG] = $epub_language;
         $summary[self::LINKS] = $epub_url;
         $summary[self::PAGE] = $page;
-
         if($zip) {
             $zip->close();
         }
         @unlink($temp_filename);
         return $summary;
     }
-
     /**
      *  Used to extract the DOM tree containing the information
      *  about the epub file such as title, author, language, unique
@@ -244,7 +228,6 @@ class EpubProcessor extends TextProcessor
         xml_parser_set_option($parser, XML_OPTION_SKIP_WHITE, 1);
         xml_parse_into_struct($parser, $xml, $tags);
         xml_parser_free($parser);
-
         $elements = array();  // the currently filling [child] XmlElement array
         $stack = array();
         foreach ($tags as $tag) {

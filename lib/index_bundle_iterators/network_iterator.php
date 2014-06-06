@@ -30,14 +30,11 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  *Loads base class for iterating
  */
 require_once BASE_DIR.'/lib/index_bundle_iterators/index_bundle_iterator.php';
-
 /**
  * Needed to be able to get pages from remote queue_servers
  */
@@ -46,8 +43,6 @@ require_once BASE_DIR.'/lib/fetch_url.php';
  * To record network timing statistics
  */
 require_once BASE_DIR.'/lib/analytics_manager.php';
-
-
 /**
  * This iterator is used to handle querying a network of queue_servers
  * with regard to a query
@@ -58,7 +53,6 @@ require_once BASE_DIR.'/lib/analytics_manager.php';
  */
 class NetworkIterator extends IndexBundleIterator
 {
-
     /**
      * Part of query without limit and num to be processed by all queue_server
      * machines
@@ -66,21 +60,18 @@ class NetworkIterator extends IndexBundleIterator
      * @var string
      */
     var $base_query;
-
     /**
      * Current limit number to be added to base query
      *
      * @var string
      */
     var $limit;
-
     /**
      * An array of servers to ask a query to
      *
      * @var string
      */
     var $queue_servers;
-
     /**
      * Flags for each server saying if there are more results for that server
      * or not
@@ -88,37 +79,30 @@ class NetworkIterator extends IndexBundleIterator
      * @var array
      */
     var $more_results;
-
     /**
      * Keeps track of whether the word_iterator list is empty because the
      * word does not appear in the index shard
      * @var int
      */
     var $filter;
-
     /**
      * used to adaptively change the number of pages requested from each
      * machine based on the number of machines that still have results
      * @var int
      */
     var $next_results_per_block;
-
     /**
      * @var int
      */
     var $hard_query;
-
     /**
      * the minimum number of pages to group from a block;
      */
     const MIN_FIND_RESULTS_PER_BLOCK = 200;
-
     /** Host Key position + 1 (first char says doc, inlink or eternal link)*/
     const HOST_KEY_POS = 17;
-
     /** Length of a doc key*/
     const KEY_LEN = 8;
-
     /**
      * Creates a network iterator with the given parameters.
      *
@@ -159,14 +143,12 @@ class NetworkIterator extends IndexBundleIterator
         for($i = 0; $i < $count; $i++) {
             $this->more_flags[$i] = true;
         }
-
         if($filter != NULL) {
             $this->filter = & $filter;
         } else {
             $this->filter = NULL;
         }
     }
-
     /**
      * Computes a relevancy score for a posting offset with respect to this
      * iterator and generation As this is not easily determined
@@ -179,10 +161,9 @@ class NetworkIterator extends IndexBundleIterator
      * @return float a relevancy score based on BM25F -- always 1.0.
      */
     function computeRelevance($generation, $posting_offset)
-     {
+    {
         return 1.0;
-     }
-
+    }
     /**
      * Returns the iterators to the first document block that it could iterate
      * over
@@ -197,7 +178,6 @@ class NetworkIterator extends IndexBundleIterator
             $this->more_flags[$i] = true;
         }
      }
-
     /**
      * Forwards the iterator one group of docs
      * @param array $gen_doc_offset a generation, doc_offset pair. If set,
@@ -211,7 +191,6 @@ class NetworkIterator extends IndexBundleIterator
         $this->limit += $this->results_per_block;
         $this->results_per_block = $this->next_results_per_block;
      }
-
     /**
      * Gets the doc_offset and generation for the next document that
      * would be return by this iterator. As this is not easily determined
@@ -225,7 +204,6 @@ class NetworkIterator extends IndexBundleIterator
     {
         return -1;
     }
-
     /**
      * Hook function used by currentDocsWithWord to return the current block
      * of docs if it is not cached
@@ -236,7 +214,6 @@ class NetworkIterator extends IndexBundleIterator
      {
         $query = $this->base_query .
             "&num={$this->results_per_block}&limit={$this->limit}";
-
         $sites = array();
         $lookup = array();
         $i = 0;
@@ -264,7 +241,6 @@ class NetworkIterator extends IndexBundleIterator
         $count = count($downloads);
         $this->num_docs = 0;
         $in4 = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
-
         $machine_times = AnalyticsManager::get("MACHINE_TIMES");
         $indent = ($machine_times) ? "<br />$in4" : $in4;
         $machine_times = ($machine_times) ? $machine_times: "";
@@ -330,7 +306,6 @@ class NetworkIterator extends IndexBundleIterator
         $this->pages = $results;
         return $results;
      }
-
     /**
      * Called to make a link for AnalyticsManager about a network query
      * performed by this iterator.
@@ -355,13 +330,11 @@ class NetworkIterator extends IndexBundleIterator
                 $tmp = 'Site null';
             }
             $url = 'javascript:alert("'.$tmp.'")';
-
         }
         $link = "<a target='_blank' class='gray-link' href='$url'".
              " title='$title' >ID_$index</a>:";
         return $link;
     }
-
     /**
      * Gets the summaries associated with the keys provided the keys
      * can be found in the current block of docs returned by this iterator
@@ -379,9 +352,7 @@ class NetworkIterator extends IndexBundleIterator
         } else {
             $pages = & $this->pages;
         }
-
         return $pages;
     }
-
 }
  ?>

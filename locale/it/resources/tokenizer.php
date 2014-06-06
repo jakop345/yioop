@@ -28,9 +28,7 @@
  *  @copyright 2009 - 2014
  *  @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * Italian specific tokenization code. Typically, tokenizer.php
  * either contains a stemmer for the language in question or
@@ -40,32 +38,27 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @package seek_quarry
  * @subpackage locale
  */
-
 class ItTokenizer
 {   /**
      * Storage used in computing the stem
      * @var string
      */
     static $buffer;
-
     /**
      * Storage used in computing the starting index of region R1
      * @var int
      */
     static $r1_start;
-
     /**
      * Storage used in computing the starting index of region R2
      * @var int
      */
     static $r2_start;
-
     /**
      * Storage used in computing the starting index of region RV
      * @var int
      */
     static $rv_start;
-
     /**
      * Storage used in computing region R1
      * @var string
@@ -77,25 +70,21 @@ class ItTokenizer
      * @var string
      */
     static $r2_string;
-
     /**
      * Storage used in computing Region RV
      * @var string
      */
     static $rv_string;
-
     /**
      * Storage for computing the starting position for the longest suffix
      * @var int
      */
     static $max_suffix_pos;
-
     /**
      * Storage used in determinig if step1 removed any endings from the word
      * @var bool
      */
     static $step1_changes;
-
     /**
      *
      */
@@ -103,7 +92,6 @@ class ItTokenizer
     {
         return $pre_segment;
     }
-
     /**
      * Computes the stem of an Italian word
      * Example guardando,guardandogli,guardandola,guardano all stem to guard
@@ -116,7 +104,6 @@ class ItTokenizer
         self::$buffer = $word;
         self::$step1_changes = false;
         self::$max_suffix_pos = -1;
-
         self::prelude();
         self::step0();
         self::step1();
@@ -124,10 +111,8 @@ class ItTokenizer
         self::step3a();
         self::step3b();
         self::postlude();
-
         return self::$buffer;
     }
-
     /**
      * Checks if a string is a suffix for another string
      *
@@ -145,7 +130,6 @@ class ItTokenizer
         else
             return false;
     }
-
     /**
      * Checks if a string occurs in another string
      *
@@ -161,7 +145,6 @@ class ItTokenizer
         else
             return false;
     }
-
     /**
      * Computes the starting index for region R1
      *
@@ -188,10 +171,8 @@ class ItTokenizer
                     $r1_start += 1;
             }
         }
-
         return $r1_start;
     }
-
     /**
      * Computes the starting index for region R2
      *
@@ -225,7 +206,6 @@ class ItTokenizer
 
         return $r2_start;
     }
-
     /**
      * Computes the starting index for region RV
      *
@@ -237,9 +217,7 @@ class ItTokenizer
         $i = 0;
         $j = 1;
         $rv_start = -1;
-
         $length = strlen($string);
-
         if($length <= 2)
             $rv_start = -1;
         else{
@@ -273,10 +251,8 @@ class ItTokenizer
                     $rv_start += 1;
             }
         }
-
         return $rv_start;
     }
-
     /**
      * Computes regions R1, R2 and RV in the form
      * strings. $r1_string, $r2_string, $r3_string for R1,R2 and R3
@@ -297,7 +273,6 @@ class ItTokenizer
         else
             self::$rv_string = NULL;
     }
-
     /**
      * Checks if a character is a vowel or not
      *
@@ -315,7 +290,6 @@ class ItTokenizer
                 return true;
         }
     }
-
     /**
      * Computes the longest suffix for a given string from a given set of
      * suffixes
@@ -328,7 +302,6 @@ class ItTokenizer
     {
         $max_length = 0;
         $max_suffix = NULL;
-
         foreach($suffixes as $suffix){
             $pos = strrpos($string,$suffix);
             if($pos !== false){
@@ -343,10 +316,8 @@ class ItTokenizer
                 }
             }
         }
-
         return $max_suffix;
     }
-
     /**
      * Replaces all acute accents in a string by grave accents and also handles
      * accented characters
@@ -364,7 +335,6 @@ class ItTokenizer
         $string = preg_replace($pattern2,$replacement,$string);
         return($string);
     }
-
     /**
      * Performs the following functions:
      * Replaces acute accents with grave accents
@@ -375,10 +345,8 @@ class ItTokenizer
     {
         $pattern_array = array("/Qu/","/qu/");
         $replacement_array = array("QU","qU");
-
         //Replace acute accents by grave accents
         self::$buffer = self::acuteByGrave(self::$buffer);
-
         /**
          * Convert u preceded by q and u,i preceded and followed by vowels
          * to upper case to mark them as non vowels
@@ -395,7 +363,6 @@ class ItTokenizer
             }
         }
     }
-
     /**
      * Handles attached pronoun
      */
@@ -410,16 +377,12 @@ class ItTokenizer
             "tene","cela","cele","celi","celo",
             "cene","vela","vele","veli","velo","vene");
         $phrases = array("ando","endo","ar","er","ir");
-
         //Get R1, R2, RV
         self::getRegions();
-
         //Find the maximum length suffix in the string
         $max_suffix = self::maxSuffix(self::$rv_string,$suffixes);
-
         if($max_suffix != NULL){
             $sub_string = substr(self::$rv_string,0,-strlen($max_suffix));
-
             foreach($phrases as $phrase){
                 if(self::checkForSuffix($sub_string,$phrase) !== false){
                     switch($phrase)
@@ -439,7 +402,6 @@ class ItTokenizer
             }
         }
     }
-
     /**
      * Handles standard suffixes
      */
@@ -455,17 +417,13 @@ class ItTokenizer
             "uzioni","usione","usioni","enza","enze",
             "amento","amenti","imento","imenti","amente",
             "ita`","ivo","ivi","iva","ive");
-
         //Get R1,R2 and RV
         self::getRegions();
-
         //Find the longest suffix
         $max_suffix = self::maxSuffix(self::$buffer,$suffixes);
-
         //Handle suffix according
         switch($max_suffix)
         {
-
             case "anza": case "anze": case "ico": case "ici": case "ica":
             case "ice": case "iche": case "ichi": case "ismo": case "ismi":
             case "abile": case "abili": case "ibile": case "ibili":
@@ -473,75 +431,63 @@ class ItTokenizer
             case "isti`": case "oso": case"osi": case "osa": case "ose":
             case "mente": case "atrice": case "atrici": case "ante":
             case "anti":
-
                 //Delete if in R2
                 if(self::in(self::$r2_string,$max_suffix)){
                     self::$buffer = substr_replace(self::$buffer,"",
-                                    self::$max_suffix_pos,strlen($max_suffix));
+                        self::$max_suffix_pos,strlen($max_suffix));
                     self::$step1_changes = true;
                 }
-                break;
-
+            break;
             case "azione": case "azioni": case "atore": case "atori":
-
                 //Delete if in R2
                 if(self::in(self::$r2_string,$max_suffix)){
                     self::$buffer = substr_replace(self::$buffer,"",
-                                    self::$max_suffix_pos,strlen($max_suffix));
+                        self::$max_suffix_pos,strlen($max_suffix));
                     self::$step1_changes = true;
                 }
                 self::getRegions();
                 //If preceded by ic, delete if in R2
-                if(self::checkForSuffix(self::$buffer,"ic")){
+                if(self::checkForSuffix(self::$buffer,"ic")) {
                     if(self::in(self::$r2_string,"ic")){
                         self::$buffer = str_replace("ic","",self::$buffer);
                         self::$step1_changes = true;
                     }
                 }
-                break;
-
-            case "logia": case "logie":
-
+            break;
+            case "logia":
+            case "logie":
                 //Replace with log if in R2
-                if(self::in(self::$r2_string,$max_suffix)){
+                if(self::in(self::$r2_string,$max_suffix)) {
                     self::$buffer = substr_replace(self::$buffer,"log",
-                                    self::$max_suffix_pos,strlen($max_suffix));
+                        self::$max_suffix_pos,strlen($max_suffix));
                     self::$step1_changes = true;
                 }
-                break;
-
+            break;
             case "uzione": case "uzioni": case "usione": case "usioni":
-
                 //Replace with u if in R2
-                if(self::in(self::$r2_string,$max_suffix)){
+                if(self::in(self::$r2_string,$max_suffix)) {
                     self::$buffer = substr_replace(self::$buffer,"u",
-                                    self::$max_suffix_pos,strlen($max_suffix));
+                        self::$max_suffix_pos,strlen($max_suffix));
                     self::$step1_changes = true;
                 }
-                break;
-
+            break;
             case "enza": case "enze":
-
                 //Replace with ente if in R2
-                if(self::in(self::$r2_string,$max_suffix)){
+                if(self::in(self::$r2_string,$max_suffix)) {
                     self::$buffer = substr_replace(self::$buffer,"ente",
-                                    self::$max_suffix_pos,strlen($max_suffix));
+                        self::$max_suffix_pos,strlen($max_suffix));
                     self::$step1_changes = true;
                 }
-                break;
-
+            break;
             case "amento": case "amenti": case "imento": case "imenti":
-
                 //Delete if in RV
                 if(self::in(self::$rv_string,$max_suffix)){
                     self::$buffer = substr_replace(self::$buffer,"",
-                                    self::$max_suffix_pos,strlen($max_suffix));
+                        self::$max_suffix_pos,strlen($max_suffix));
                     self::$step1_changes = true;
                 }
-                break;
-
+            break;
             case "amente":
-
                 //Delete if in R1
                 if(self::in(self::$r1_string,$max_suffix)){
                     self::$buffer = substr_replace(self::$buffer,"",
@@ -557,7 +503,7 @@ class ItTokenizer
                         if(self::checkForSuffix(self::$buffer,"at")){
                             if(self::in(self::$r2_string,"at")){
                                 self::$buffer = str_replace("at","",
-                                                self::$buffer);
+                                    self::$buffer);
                                 self::$step1_changes = true;
                             }
                         }
@@ -575,20 +521,18 @@ class ItTokenizer
                         if($pos !== false){
                             if(self::in(self::$r2_string,$suffix)){
                                 self::$buffer = substr_replace(self::$buffer,
-                                                "",$pos);
+                                    "",$pos);
                                 self::$step1_changes = true;
                             }
                         }
                     }
                 }
                 break;
-
             case "ita`":
-
                 //Delete if in R2
                 if(self::in(self::$r2_string,$max_suffix)){
                     self::$buffer = substr_replace(self::$buffer,"",
-                                    self::$max_suffix_pos,strlen($max_suffix));
+                        self::$max_suffix_pos,strlen($max_suffix));
                     self::$step1_changes = true;
                 }
                 //If further preceded by abil,ic or iv, delete if in R2
@@ -598,17 +542,16 @@ class ItTokenizer
                     if(self::checkForSuffix(self::$buffer,$suffix)){
                         if(self::in(self::$r2_string,$suffix)){
                             self::$buffer = str_replace($suffix,"",
-                                            self::$buffer);
+                                self::$buffer);
                             self::$step1_changes = true;
                         }
                     }
                 }
-
             case "ivo": case "ivi": case "iva": case "ive":
                 //Delete if in R2
                 if(self::in(self::$r2_string,$max_suffix)){
                     self::$buffer = substr_replace(self::$buffer,"",
-                                    self::$max_suffix_pos,strlen($max_suffix));
+                        self::$max_suffix_pos,strlen($max_suffix));
                     self::$step1_changes = true;
                 }
                 //If preceded by at, delete if in R2
@@ -624,7 +567,7 @@ class ItTokenizer
                         if($pos !== false){
                             if(self::in(self::$r2_string,"ic")){
                                 self::$buffer = substr_replace(self::$buffer,"",
-                                                $pos,2);
+                                    $pos,2);
                                 self::$step1_changes = true;
                             }
                         }
@@ -632,7 +575,6 @@ class ItTokenizer
                 }
         }
     }
-
     /**
      * Handles verb suffixes
      */
@@ -653,7 +595,6 @@ class ItTokenizer
             "ita","ite","iti","ito","iva","ivamo","ivano",
             "ivate","ivi","ivo","ono","uta","ute","uti",
             "uto","ar","ir");
-
         /**
          * If no ending was removed in step1, find the longest suffix from the
          * above suffixes and delete if in RV
@@ -669,7 +610,6 @@ class ItTokenizer
                     strlen($max_suffix));
         }
     }
-
     /**
      * Deletes a final a,e,i,o,a`,e`,i`,o` and a preceding i if in RV
      */
@@ -699,7 +639,6 @@ class ItTokenizer
                 self::$buffer = substr_replace(self::$buffer,"",$pos,1);
         }
     }
-
     /**
      * Replaces a final ch/gh by c/g if in RV
      */
@@ -707,7 +646,6 @@ class ItTokenizer
     {
         //Get R1,R2 and RV
         self::getRegions();
-
         //Replace final ch/gh with c/g if in RV
         $patterns = array("ch","gh");
         foreach($patterns as $pattern){
@@ -718,22 +656,20 @@ class ItTokenizer
                     if($pos !== false){
                         if(self::in(self::$rv_string,$pattern))
                             self::$buffer = substr_replace(self::$buffer,
-                                            "c",$pos);
+                                "c",$pos);
                     }
-                    break;
-
+                break;
                 case "gh":
                     $pos = self::checkForSuffix(self::$buffer,$pattern);
                     if($pos !== false){
                         if(self::in(self::$rv_string,$pattern))
                             self::$buffer = substr_replace(self::$buffer,
-                                            "g",$pos);
+                                "g",$pos);
                     }
-                    break;
+                break;
             }
         }
     }
-
     /**
      * Converts U and/or I back to lowercase
      */
@@ -744,9 +680,9 @@ class ItTokenizer
         $pattern_array_2 = array("/a`/","/e`/","/i`/","/o`/","/u`/");
         $replacement_array_2 = array("à","è","ì","ò","ù");
         self::$buffer = preg_replace($pattern_array_1,$replacement_array_1,
-                        self::$buffer);
+            self::$buffer);
         self::$buffer = preg_replace($pattern_array_2,$replacement_array_2,
-                        self::$buffer);
+            self::$buffer);
     }
 }
 ?>

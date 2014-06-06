@@ -30,12 +30,9 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /** Loads common constants for web crawling*/
 require_once BASE_DIR."/lib/crawl_constants.php";
-
 /**
  * Used to set and get SQL query and search query timing statistic
  * between models and index_bundle_iterators
@@ -49,7 +46,6 @@ class AnalyticsManager
 {
     //where get and set field values are stored
     private static $data = array();
-
     /**
      * Used to get the timing statistic associated with $attribute
      * @param string $attribute to get statistic for
@@ -59,7 +55,6 @@ class AnalyticsManager
     {
         return isset(self::$data[$attribute]) ? self::$data[$attribute] : NULL;
     }
-
     /**
      * Used to set the timing statistic $value associated with $attribute
      * @param string $attribute to get statistic for
@@ -70,6 +65,5 @@ class AnalyticsManager
     {
         self::$data[$attribute] = $value;
     }
-
 }
 ?>

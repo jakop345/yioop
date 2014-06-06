@@ -30,10 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
-
 /**
  * Loads common constants for web crawling, used for index_data_base_name and
  * schedule_data_base_name
@@ -60,7 +57,6 @@ require_once BASE_DIR.'/lib/url_parser.php';
  * Needed to be able to send data via http to remote queue_servers
  */
 require_once BASE_DIR.'/lib/fetch_url.php';
-
 /**
  * Base class of models that need access to data from multiple queue servers
  * Subclasses include @see CrawlModel and @see PhraseModel.
@@ -96,7 +92,6 @@ class ParallelModel extends Model implements CrawlConstants
         parent::__construct($db_name, $connect);
         $this->current_machine = 0;//if known, controller will set later
     }
-
     /**
      * Get a summary of a document by the generation it is in
      * and its offset into the corresponding WebArchive.
@@ -119,7 +114,6 @@ class ParallelModel extends Model implements CrawlConstants
         }
         return $results;
     }
-
     /**
      * Gets summaries for a set of document by their url, or by group of
      * 5-tuples of the form (machine, key, index, generation, offset).
@@ -137,7 +131,6 @@ class ParallelModel extends Model implements CrawlConstants
         }
         return $summaries;
     }
-
     /**
      * In a multiple queue server setting, gets summaries for a set of document
      * by their url, or by group of 5-tuples of the form
@@ -230,7 +223,6 @@ class ParallelModel extends Model implements CrawlConstants
         }
         return $summaries;
     }
-
     function getMachinesTimestamp($timestamp, $machine_urls)
     {
         static $machines = array();
@@ -378,7 +370,6 @@ class ParallelModel extends Model implements CrawlConstants
         }
         return $summaries;
     }
-
     /**
      * Determines the offset into the summaries WebArchiveBundle and generation
      * of the provided url (or hash_url) so that the info:url
@@ -437,7 +428,6 @@ class ParallelModel extends Model implements CrawlConstants
         }
         return array($summary_offset, $generation);
     }
-
     /**
      *  A save point is used to store to disk a sequence generation-doc-offset
      *  pairs of a particular mix query when doing an archive crawl of a crawl
@@ -472,7 +462,6 @@ class ParallelModel extends Model implements CrawlConstants
             @unlink($save_file);
         }
     }
-
     /**
      *  This method is invoked by other ParallelModel (@see CrawlModel
      *  for examples) methods when they want to have their method performed

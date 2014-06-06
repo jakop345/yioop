@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * An abstract class shared by classification algorithms that implement a
  * common interface.
@@ -49,7 +47,6 @@ abstract class ClassifierAlgorithm
     // TODO: Add in automatic parameter setting, and better logging facilities,
     // similar to those used by classifier_tool.
     var $debug = 0;
-
     function log($message)
     {
         if ($this->debug > 0) {

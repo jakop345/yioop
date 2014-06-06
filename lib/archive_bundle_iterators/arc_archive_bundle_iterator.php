@@ -30,15 +30,12 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  *Loads base class for iterating
  */
 require_once BASE_DIR.
     '/lib/archive_bundle_iterators/text_archive_bundle_iterator.php';
-
 /**
  * Used to iterate through the records of a collection of arc files stored in
  * a WebArchiveBundle folder. Arc is the file format of the Internet Archive
@@ -73,7 +70,6 @@ class ArcArchiveBundleIterator extends TextArchiveBundleIterator
         parent::__construct($iterate_timestamp, $iterate_dir,
             $result_timestamp, $result_dir, $ini);
     }
-
     /**
      * Gets the next doc from the iterator
      * @param bool $no_process do not do any processing on page data

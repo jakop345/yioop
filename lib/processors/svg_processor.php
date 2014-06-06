@@ -30,24 +30,19 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /** Register File Types We Handle*/
 $INDEXED_FILE_TYPES[] = "svg";
 $IMAGE_TYPES[] = "svg";
 $PAGE_PROCESSORS["image/svg+xml"] = "SvgProcessor";
-
 /**
  * Load base class, if needed.
  */
 require_once BASE_DIR."/lib/processors/text_processor.php";
-
 /**
  * Load so can parse urls
  */
 require_once BASE_DIR."/lib/url_parser.php";
-
 /**
  * Used for convertPixels
  */
@@ -69,8 +64,6 @@ require_once BASE_DIR."/lib/utility.php";
 class SvgProcessor extends TextProcessor
 {
     const MAX_THUMB_LEN = 5000;
-
-
     /**
      *  Used to extract the title, description and links from
      *  a string consisting of svg image. If the image is small
@@ -85,11 +78,9 @@ class SvgProcessor extends TextProcessor
      */
     function process($page, $url)
     {
-
         if(is_string($page)) {
             self::closeDanglingTags($page);
             $dom = self::dom($page);
-
             if($dom !== false && isset($dom->documentElement)) {
                 $summary[self::TITLE] = "";
                 $summary[self::DESCRIPTION] = self::description($dom);
@@ -109,7 +100,6 @@ class SvgProcessor extends TextProcessor
         }
         return $summary;
     }
-
     /**
      * Used to create an svg thumbnail from a dom object
      *
@@ -136,30 +126,22 @@ class SvgProcessor extends TextProcessor
         if(!$svg->hasAttribute("viewBox")) {
             $svg->setAttributeNS("", "viewBox", "0 0 $width $height");
         }
-
         return $dom->saveXML();
-
     }
-
-
     /**
      * Return a document object based on a string containing the contents of
      * an SVG page
      *
-     *  @param string $page   a web page
+     *  @param string $page a web page
      *
      *  @return object  document object
      */
     static function dom($page)
     {
         $dom = new DOMDocument();
-
         @$dom->loadXML($page);
-
         return $dom;
     }
-
-
     /**
      *  Returns html head title of a webpage based on its document object
      *
@@ -170,33 +152,26 @@ class SvgProcessor extends TextProcessor
     static function title($dom)
     {
         $sites = array();
-
         $xpath = new DOMXPath($dom);
         $titles = $xpath->evaluate("/svg//desc");
-
         $title = "";
-
         foreach($titles as $pre_title) {
             $title .= $pre_title->textContent;
         }
-
         return $title;
     }
-
     /**
      * Returns descriptive text concerning a svg page based on its document
      * object
      *
-     * @param object $dom   a document object to extract a description from.
+     * @param object $dom a document object to extract a description from.
      * @return string a description of the page
      */
-    static function description($dom) {
+    static function description($dom)
+    {
         $sites = array();
-
         $xpath = new DOMXPath($dom);
-
         $description = "";
-
         /*
           concatenate the contents of then additional dom elements up to
           the limit of description length
@@ -211,10 +186,7 @@ class SvgProcessor extends TextProcessor
             }
         }
         $description = mb_ereg_replace("(\s)+", " ",  $description);
-
         return $description;
     }
-
 }
-
 ?>

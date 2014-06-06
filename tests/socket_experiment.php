@@ -43,31 +43,23 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(isset($_SERVER['DOCUMENT_ROOT']) && strlen($_SERVER['DOCUMENT_ROOT']) > 0) {
     echo "BAD REQUEST";
     exit();
 }
-
 ini_set("memory_limit","100M");
-
 $begin_mem = memory_get_usage();
 for($i = 0; $i < 10000; $i++)
 {
     $socket[$i] =socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
     $address = "127.0.0.1";
     $port = 80;
-
-
     $val = socket_connect($socket[$i], $address, $port);
     if($val) {
         echo "connection established\n";
-
         echo "Memory used $i:".( memory_get_usage() - $begin_mem)."\n";
-
     }
 }
-
 for($j = 0; $j <= $i; $j++) {
     socket_close($socket[$j]);
 }
