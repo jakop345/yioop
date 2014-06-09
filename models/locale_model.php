@@ -108,18 +108,27 @@ class LocaleModel extends Model
     var $search_table_column_map = array("name"=>"LOCALE_NAME",
         "tag"=>"LOCALE_TAG", "mode" => "WRITING_MODE");
     /**
+     *  These fields if present in $search_array (used by @see getRows() ),
+     *  but with value "0", will be skipped as part of the where clause
+     *  but will be used for order by clause
      * @var array
      */
     var $any_fields = array("mode");
-    /**
-     * @param mixed $args
-     */
+    /** {@inheritdoc} */
     function selectCallback($args = NULL)
     {
         return "LOCALE_ID, LOCALE_TAG, LOCALE_NAME, WRITING_MODE";
     }
     /**
-     * @param mixed $args
+     *  This is called after each row is retrieved by getRows. This method
+     *  Then reads in the corresponding statistics.txt file (or rebuilds
+     *  it from the configure.ini file if it is out of date) to add to the
+     *  row percent translated info.
+     *
+     *  @param string $locale one getRows row corresponding to a given locale
+     *  @param mixed $args additional arguments that might be used for this
+     *      method (none used for this sub-class)
+     *  @return $locale row with PERCENT_WITH_STRINGS field added
      */
     function rowCallback($locale, $args)
     {

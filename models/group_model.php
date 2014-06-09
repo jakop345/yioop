@@ -66,7 +66,10 @@ class GroupModel extends Model
         "register"=>"G.REGISTER_TYPE", "status"=>"UG.STATUS",
         "user_id"=>"P.USER_ID");
     /**
-     * @var array
+     *  These fields if present in $search_array (used by @see getRows() ),
+     *  but with value "0", will be skipped as part of the where clause
+     *  but will be used for order by clause
+     *  @var array
      */
     var $any_fields = array("access", "register");
     /**
@@ -95,15 +98,24 @@ class GroupModel extends Model
             G.MEMBER_ACCESS $join_date";
         return $select;
     }
-    /**
-     *  @param mixed $args
-     */
+    /** {@inheritdoc} */
     function fromCallback($args)
     {
         return "GROUPS G, USER_GROUP UG, USERS O";
     }
     /**
-     *  @param mixed $args
+     *  Used to restrict getRows in which rows it returns. Rows in this
+     *  case corresponding to Yioop groups. The restrictions added are to
+     *  restrict to those group available to a given user_id and whether or
+     *  not the user wants groups subscribed to, or groups that could be
+     *  subscribed to
+     *
+     *  @param array $args first two elements are the $user_id of the user
+     *      and the $browse flag which says whether or not user is browing
+     *      through all groups to which he could subscribe and read or
+     *      just those groups to which he is alrady subscribed.
+     *  @return string a SQL WHERE clause suitable to perform the above
+     *      restrictions
      */
     function whereCallback($args)
     {
@@ -709,10 +721,31 @@ class GroupModel extends Model
         return $row['NUM'];
     }
     /**
+     *  Used to add a wiki page revision by a given user to a wiki page
+     *  of a given name in a given group viewing the group under a given
+     *  language. If the page does not exist yet it, and its corresponding
+     *  discussion thread is created. Two pages are used for storage
+     *  GROUP_PAGE which contains a parsed to html version of the most recent
+     *  revision of a wiki page and GROUP_PAGE_HISTORY which contains non-parsed
+     *  versions of all revisions
      *
+     *  @param int $user_id identifier of who is adding this revision
+     *  @param int $group_id which group the wiki page revision if being done in
+     *  @param string $page_name title of page being revised
+     *  @param string $page wiki page with potential wiki mark up containing the
+     *      revision
+     *  @param string $locale_tag locale we are adding the revision to
+     *  @param string $edit_comment user's reason for making the revision
+     *  @param string $thread_title if this is the first revision, then this
+     *      should contain the title for the discussion thread about the
+     *      revision
+     *  @param string $thread_description if this is the first revision, then
+     *      this should be the body of the first post in discussion thread
+     *  @param string $base_address default url to be used in links
+     *      on wiki page that use short syntax
      */
     function setPageName($user_id, $group_id, $page_name, $page, $locale_tag,
-        $edit_comment, $thread_title, $tread_description, $base_address = "")
+        $edit_comment, $thread_title, $thread_description, $base_address = "")
     {
         $db = $this->db;
         $pubdate = time();
@@ -723,7 +756,7 @@ class GroupModel extends Model
             $result = $db->execute($sql, array($parsed_page, $page_id));
         } else {
             $discuss_thread = $this->addGroupItem(0, $group_id, $user_id, 
-                $thread_title, $tread_description." ".date("r", $pubdate),
+                $thread_title, $thread_description." ".date("r", $pubdate),
                 WIKI_GROUP_ITEM);
             $sql = "INSERT INTO GROUP_PAGE (DISCUSS_THREAD, GROUP_ID,
                 TITLE, PAGE, LOCALE_TAG) VALUES (?, ?, ?, ?, ?)";
@@ -738,9 +771,14 @@ class GroupModel extends Model
             $page_name, $page, $locale_tag, $pubdate, $edit_comment));
     }
     /**
-     *  @param int $group_id
-     *  @param string $name
-     *  @param string $locale_tag
+     *  Looks up the page_id of a wiki page based on the group it belongs to,
+     *  its title, and the language it is in (these three things together
+     *  should uniquely fix a page).
+     *
+     *  @param int $group_id group identifier of group wiki page belongs to
+     *  @param string $name title of wiki page to look up
+     *  @param string $locale_tag IANA language tag of page to lookup
+     *  @return mixed $page_id of page if exists, false otherwise
      */
     function getPageId($group_id, $page_name, $locale_tag)
     {
@@ -756,11 +794,18 @@ class GroupModel extends Model
         return false;
     }
     /**
+     *  Return the page id, page string, and discussion thread id of the
+     *  most recent revision of a wiki page
      *
-     *  @param int $group_id
-     *  @param string $name
-     *  @param string $locale_tag
-     *  @param string mode
+     *  @param int $group_id group identifier of group wiki page belongs to
+     *  @param string $name title of wiki page to look up
+     *  @param string $locale_tag IANA language tag of page to lookup
+     *  @param string mode if "edit" we assume we are looking up the page
+     *      so that it can be edited and so we return the most recent non-parsed
+     *      revision of the page. Otherwise, we assume the page is meant to be
+     *      read and so we return the variant of the page where wiki markup
+     *      has already been replaced with HTML
+     *  @return array (page_id, page, discussion_id) of desired wiki page
      */
     function getPageInfoByName($group_id, $name, $locale_tag, $mode)
     {
@@ -784,8 +829,11 @@ class GroupModel extends Model
         return $row;
     }
     /**
-     *
-     *  @param int $page_thread_id
+     *  Returns the group_id, language, and page name of a wiki page
+     *      corresponding to a page discussion thread with id $page_thread_id
+     *  @param int $page_thread_id the id of a wiki page discussion thread
+     *      to look up page info for
+     *  @return array(group_id, language, and page name) of that wiki page
      */
     function getPageInfoByThread($page_thread_id)
     {
@@ -801,8 +849,10 @@ class GroupModel extends Model
         return $row;
     }
     /**
-     *
-     *  @param int $page_thread_id
+     *  Returns the group_id, language, and page name of a wiki page
+     *      corresponding to $page_id
+     *  @param int $page_id to look up page info for
+     *  @return array(group_id, language, and page name) of that wiki page
      */
     function getPageInfoByPageId($page_id)
     {
@@ -818,9 +868,12 @@ class GroupModel extends Model
         return $row;
     }
     /**
+     *  Returns an historical revision of a wiki page
      *
-     *  @param int $page_id
-     *  @param int $pubdate
+     *  @param int $page_id identifier of wiki page want revision for
+     *  @param int $pubdate timestamp of revision desired
+     *  @return array (id, non-parsed wiki page, page_name,
+     *      discussion thread id) of page revision
      */
     function getHistoryPage($page_id, $pubdate)
     {
@@ -838,10 +891,15 @@ class GroupModel extends Model
         return $row;
     }
     /**
+     *  Returns a list of revision history info for a wiki page.
      *
-     *  @param int $page_id
-     *  @param string $limit
-     *  @param string $num
+     *  @param int $page_id indentifier for page want revision history of
+     *  @param string $limit first row we want from the result set
+     *  @param string $num number of rows we want starting from the first row
+     *      in the result set
+     *  @return array elements of which are array with the revision date
+     *      (PUBDATE), user name, page length, edit reason for the wiki pages
+     *      revision
      */
     function getPageHistoryList($page_id, $limit, $num)
     {
@@ -877,12 +935,18 @@ class GroupModel extends Model
         return array($total, $page_name, $pages);
     }
     /**
+     *  Returns a list of applicable wiki pages of a group
      *
-     *  @param int $group_id
-     *  @param string $locale_tag
-     *  @param string $filter
-     *  @param string $limit
-     *  @param string $num
+     *  @param int $group_id of group want list of wiki pages for
+     *  @param string $locale_tag language want wiki page list for
+     *  @param string $filter string we want to filter wiki page title by
+     *  @param string $limit first row we want from the result set
+     *  @param string $num number of rows we want starting from the first row
+     *      in the result set
+     *  @return array a pair ($total, $pages) where $total is the total number
+     *      of rows that could be returned if $limit and $num not present
+     *      $pages is an array each of whose elements is an array corresponding
+     *      to one TITLE and the first 100 chars out of a wiki page.
      */
     function getPageList($group_id, $locale_tag, $filter, $limit, $num)
     {

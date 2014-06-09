@@ -50,7 +50,15 @@ class SourceModel extends Model
     /** Mamimum number of feeds to download in one try */
     const MAX_FEEDS_ONE_GO = 100;
     /**
-     *  @param mixed $args
+     *  Controls which tables and the names of tables
+     *  underlie the given model and should be used in a getRows call
+     *  As SourceModel is used for both media sources and subsearches.
+     *  The underlying table might be MEDIA_SOURCE or it might be SUBSEARCH.
+     *  The $args variable is a string which is assumed to say which.
+     *
+     *  @param string $args if is "SUBSEARCH" then the SUBSEARCH table will
+     *      be used by getRows rather than MEDIA_SOURCE.
+     *  @return string which table to use
      */
     function fromCallback($args = NULL)
     {

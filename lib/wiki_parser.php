@@ -36,6 +36,8 @@ require_once BASE_DIR."/lib/crawl_constants.php";
 /** For close dangling tags */
 require_once BASE_DIR."/lib/processors/text_processor.php";
 /**
+ * Class with methods to parse mediawiki documents, both within Yioop, and
+ * when Yioop indexes mediawiki dumps as from Wikipedia.
  *
  * @author Chris Pollett
  *
@@ -169,10 +171,19 @@ class WikiParser implements CrawlConstants
         }
     }
     /**
+     *  Parses a mediawiki document to produce an HTML equivalent
      *
-     *  @param string $document
-     *  @param bool $parse_head_vars
-     *  @param bool $handle_big_files
+     *  @param string $document a document which might have mediawiki markup
+     *  @param bool $parse_head_vars header variables are an extension of
+     *      mediawiki syntax used to add meta variable and titles to
+     *      the head tag of an html document. This flag controls whether to
+     *      supprot this extension or not
+     *  @param bool $handle_big_files for indexing purposes Yioop by default
+     *      truncates long documents before indexing them. If true, this
+     *      method does not do this default truncation. The true value
+     *      is more useful when using Yioop's built-in wiki.
+     *  @return string HTML document obtained by parsing mediawiki
+     *      markup in $document
      */
     function parse($document, $parse_head_vars = true,
         $handle_big_files = false)
@@ -205,7 +216,7 @@ class WikiParser implements CrawlConstants
                 }
             }
         } else {
-            if(strlen($document) > 0.9*MAX_GROUP_PAGE_LEN) {
+            if(strlen($document) > 0.9 * MAX_GROUP_PAGE_LEN) {
                 $document = substr($document, 0, 0.9*MAX_GROUP_PAGE_LEN);
             }
             $document = 
@@ -534,7 +545,11 @@ function fixLinksCallback($matches)
     return $out;
 }
 /**
+ * Callback used to base64 encode the contents of nowiki tags so they
+ * won't be manipulated by wiki replacements.
  *
+ * @param array $matches[1] should contain the contents of a nowiki tag
+ * @return string base 64 encoded contents surrounded by an escaped nowiki tag.
  */
 function base64EncodeCallback($matches)
 {
@@ -542,7 +557,12 @@ function base64EncodeCallback($matches)
 }
 
 /**
+ * Callback used to base64 decode the contents of previously base64 encoded
+ * (@see base64EncodeCallback) nowiki tags after all mediawiki substitutions
+ * have been done
  *
+ * @param array $matches[1] should contain the contents of a nowiki tag
+ * @return string base 64 decoded contents surrounded by a pre-formatted tag.
  */
 function base64DecodeCallback($matches)
 {

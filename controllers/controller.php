@@ -251,7 +251,38 @@ abstract class Controller
         $this->view($view)->render($data);
     }
     /**
+     *  When an activity involves displaying tabular data (such as rows of
+     *  users, groups, etc), this method might be called to set up $data
+     *  fields for next, prev, and page links, it also makes the call to the
+     *  model to get the row data sorted and restricted as desired. For some
+     *  data sources, rather than directly make a call to the model to get the
+     *  data it might be passed directly to this method.
      *
+     *  @param array &$data used to send data to the view will be updated by
+     *      this method with row and paging data
+     *  @param mixed $field_or_model if an object, this is assumed to be a model
+     *      and so the getRows method of this model is called to get row data,
+     *      sorted and restricted according to $search_array; if a string
+     *      then the row data is assumed to be in $data[$field_or_model] and
+     *      pagingLogic itself does the sorting and restricting.
+     *  @param string $output_field output rows for the view will be stored in
+     *      $data[$output_field]
+     *  @param int $default_show if not specified by $_REQUEST, then this will
+     *      be used to determine the maximum number of rows that will be
+     *      written to $data[$output_field]
+     *  @param array $search_array used to sort and restrict in
+     *      the getRows call or the data from $data[$field_or_model].
+     *      Each element of this is a quadruple name of a field, what comparison
+     *      to perform, a value to check, and an order (ascending/descending)
+     *      to sort by
+     *  @param string $var_prefix if there are multiple uses of pagingLogic
+     *      presented on the same view then $var_prefix can be prepended to
+     *      to the $data field variables like num_show, start_row, end_row
+     *      to distinguish between them
+     *  @param array $args additional arguments that are passed to getRows and
+     *      in turn to selectCallback, fromCallback, and whereCallback that
+     *      might provide user_id, etc to further control which rows are
+     *      returned
      */
      function pagingLogic(&$data, $field_or_model, $output_field,
         $default_show, $search_array = array(), $var_prefix = "", $args = NULL)

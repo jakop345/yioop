@@ -79,10 +79,15 @@ class Model implements CrawlConstants
      */
     var $edited_page_summaries = NULL;
     /**
-     * @var array
+     *  These fields if present in $search_array (used by @see getRows() ),
+     *  but with value "0", will be skipped as part of the where clause
+     *  but will be used for order by clause
+     *  @var array
      */
     var $any_fields = array();
     /**
+     *  Associations of the form
+     *      name of field for web forms => database column names/abbreviations
      * @var array
      */
     var $search_table_column_map = array();
@@ -489,11 +494,13 @@ class Model implements CrawlConstants
      *  Gets a range of rows which match the procided search criteria from
      *  $th provided table
      *
-     * @param string $tables
-     * @param int $limit
-     * @param int $num
-     * @param int &$total_rows
-     * @param array $search_array
+     * @param int $limit starting row from the potential results to return
+     * @param int $num number of rows after start row to return
+     * @param int &$total_rows gets set with the total number of rows that
+     *      can be returned by the given database query
+     * @param array $search_array each element of this is a
+     *      quadruple name of a field, what comparison to perform, a value to
+     *      check, and an order (ascending/descending) to sort by
      * @param array $args
      * @return array
      */
@@ -534,14 +541,32 @@ class Model implements CrawlConstants
         return $rows;
     }
     /**
-     *  @param mixed $args
+     *  Controls which columns and the names of those columns from the tables
+     *  underlying the given model should be return from a getRows call.
+     *  This defaults to *, but in general will be overriden in subclasses of
+     *  Model
+     *
+     *  @param mixed $args any additional arguments which should be used to
+     *      determine the columns
+     *  @return string a comma separated list of columns suitable for a SQL
+     *      query
      */
     function selectCallback($args)
     {
         return "*";
     }
     /**
-     *  @param mixed $args
+     *  Controls which tables and the names of tables
+     *  underlie the given model and should be used in a getRows call
+     *  This defaults to the single table whose name is whatever is before
+     *  Model in the name of the model. For example, by default on FooModel
+     *  this method would return "FOO". If a different behavior, this can be
+     *  overriden in subclasses of Model
+     *
+     *  @param mixed $args any additional arguments which should be used to
+     *      determine these tables
+     *  @return string a comma separated list of tables suitable for a SQL
+     *      query
      */
     function fromCallback($args)
     {
@@ -550,21 +575,46 @@ class Model implements CrawlConstants
         return $name;
     }
     /**
-     *  @param mixed $args
+     *  Controls the WHERE clause of the SQL query that
+     *  underlies the given model and should be used in a getRows call.
+     *  This defaults to an empty WHERE clause.
+     *
+     *  @param mixed $args additional arguments that might be used to construct
+     *      the WHERE clause.
+     *  @return string a SQL WHERE clause
      */
     function whereCallback($args)
     {
         return "";
     }
     /**
-     *  @param mixed $args
+     *  Called after as row is retrieved by getRows from the database to
+     *  perform some manipulation that would be useful for this model.
+     *  For example, in CrawlModel, after a row representing a crawl mix
+     *  has been gotten, this is used to perform an additional query to marshal
+     *  its components. By default this method just returns this row unchanged.
+     *
+     *  @param mixed $args additional arguments that might be used by this 
+     *      callback
+     *  @return array $row after callback manipulation
      */
     function rowCallback($row, $args)
     {
         return $row;
     }
     /**
-     *  @param mixed $args
+     *  Called after getRows has retrieved all the rows that it would retrieve
+     *  but before they are returned to give one last place where they could
+     *  be further manipulated. For example, in MachineModel this callback
+     *  is used to make parallel network calls to get the status of each machine
+     *  returned by getRows. The default for this method is to leave the
+     *  rows that would be returned unchanged
+     *
+     *  @param array $rows that have been calculated so far by getRows
+     *  @param mixed $args additional arguments that might be used by this 
+     *      callback
+     *  @return array $rows after this final manipulation
+     *
      */
     function postQueryCallback($rows)
     {

@@ -109,7 +109,17 @@ class GroupController extends Controller implements CrawlConstants
         $this->displayView($view, $data);
     }
     /**
-     *
+     * Used to perform the actual activity call to be done by the 
+     * group_controller.
+     * processSession is called from @see processRequest, which does some
+     * cleaning of fields if the CSRFToken is not valid. It is more likely
+     * that that group_controller may be involved in such requests as it can
+     * be invoked either when a user is logged in or not and for users with and
+     * without accounts. processSession makes sure the $_REQUEST'd activity is
+     * valid (or falls back to groupFeeds) then calls it. If someone uses
+     * the Settings link to change the language or default number of feed
+     * elements to view, this method sets up the $data variable so that
+     * the back/cancel button on that page works correctly.
      */
     function processSession()
     {
@@ -128,7 +138,16 @@ class GroupController extends Controller implements CrawlConstants
         return $data;
     }
     /**
+     * Responsible for setting the view for a feed if something other
+     * than HTML (for example, RSS or JSON) is desired. It also
+     * sets up any particular $data fields needed for displaying that 
+     * view correctly.
      *
+     *  @param string $format can be one of rss, json, or serialize,
+     *       if different, default HTML GroupView used.
+     *  @param string &$view variable used to set the view in calling
+     *      method
+     *  @param array &$data used to send data to the view for drawing
      */
     function setupViewFormatOutput($format, &$view, &$data)
     {

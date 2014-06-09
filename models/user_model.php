@@ -56,26 +56,24 @@ class UserModel extends Model
         "last" => "LAST_NAME", "user" => "USER_NAME", "email"=>"EMAIL",
         "status"=>"STATUS");
     /**
+     *  These fields if present in $search_array (used by @see getRows() ),
+     *  but with value "0", will be skipped as part of the where clause
+     *  but will be used for order by clause
      * @var array
      */
     var $any_fields = array("status");
-    /**
-     * @param mixed $args
-     */
+    /** {@inheritdoc} */
     function selectCallback($args = NULL)
     {
         return "USER_ID, USER_NAME, FIRST_NAME, LAST_NAME, EMAIL, STATUS";
     }
-    /**
-     * @param mixed $args
+    /** {@inheritdoc} */
      */
     function fromCallback($args = NULL)
     {
         return "USERS";
     }
-    /**
-     * @param mixed $args
-     */
+    /** {@inheritdoc} */
     function whereCallback($args = NULL)
     {
         return "USER_ID != '".PUBLIC_USER_ID."'";
