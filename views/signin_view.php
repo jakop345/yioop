@@ -71,6 +71,12 @@ class SigninView extends View
                     id="fiat-shamir-modulus"
                     value="<?php e($data['FIAT_SHAMIR_MODULUS']) ?>"/>
                 <input type="hidden" id="salt-value" name="salt_value" />
+                <input type="hidden" id="auth-message"
+                    name="auth_message" value="<?php 
+                    e(tl('sigin_view_signing_in')); ?>" />
+                <input type="hidden" id="auth-fail-message"
+                    name="auth_fail_message" value="<?php 
+                    e(tl('sigin_view_login_failed')); ?>" />
         <?php } else {?>
                 <form method="post" action="#">
         <?php } ?>

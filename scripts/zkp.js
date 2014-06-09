@@ -162,7 +162,14 @@ function generateKeys(zkp_form_id, username_id, password_id,
     var token_name = token_object.name;
     var sha1 = generateSha1(password);
     var n = new getN(modulus_id);
-    for(var i = 0; i < auth_count - 1; i++) {
+    var auth_message = elt('auth-message').value;
+    $i = 0;
+    for(var i = 0; i < 2 * auth_count; i++) {
+        if(i% 5 == 0) {
+            auth_message += ".";
+            elt('message').innerHTML = "<h1 class=\"red\" >" + auth_message +
+                "</h1>";
+        }
         var r = getR(n);
         var x = multMod(r, r, n);
         var y = getY(sha1, e, r, n);
@@ -171,6 +178,13 @@ function generateKeys(zkp_form_id, username_id, password_id,
         sendFiatShamirParameters(x_string, y_string, u, token, token_name, i);
         var e_temp = elt("salt-value").value;
         e_temp = e_temp + '';
+        if(e_temp == 'done1') {
+            e = 1;
+            break;
+        } else if(e_temp == 'done0') {
+            e = 0;
+            break;
+        }
         e = parseInt(e_temp);
         if(e == -1) {
             e = 1;
@@ -178,12 +192,17 @@ function generateKeys(zkp_form_id, username_id, password_id,
         }
     }
     elt(password_id).value = null;
+    if(i == 2 * auth_count) {
+        doMessage("<h1 class=\"red\" >"+elt('auth-fail-message').value+"</h1>");
+        return;
+    }
     dynamicForm(zkp_form_id, sha1, e, u, modulus_id);
 }
 /*
  *  Sends Fiat-Shamir via AJAX parameters and receives parameter e from server
  *
- *  @param BigInt x Fiat-Shamir parameter x
+ *  @param BigInt x Fiat-Shamir parameter x 
+ *      (@see SigninModel::checkValidSigninForZKP for details)
  *  @param BigInt y Fiat-Shamir parameter y
  *  @param String u username provided by user
  *  @param String token CSRF token sent by the server

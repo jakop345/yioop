@@ -103,18 +103,22 @@ class AdminController extends Controller implements CrawlConstants
                 $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
                     tl('admin_controller_need_cookies')."</h1>');";
                 unset($_SESSION['USER_ID']);
-            } else if ($this->checkSignin()){
+            } else if ($this->checkSignin()) {
                 if (!isset($_SESSION['AUTH_COUNT']) ||
                     isset($_REQUEST['round_num']) &&
-                    $_REQUEST['round_num'] == 0) {
+                    $_REQUEST['round_num'] < $_SESSION['AUTH_COUNT']) {
                     $_SESSION['AUTH_COUNT'] = 0;
                 }
                 if(AUTHENTICATION_MODE == ZKP_AUTHENTICATION) {
                     $_SESSION['AUTH_COUNT']++;
-                    if ($_SESSION['AUTH_COUNT'] != FIAT_SHAMIR_ITERATIONS) {
-                       $_SESSION['SALT_VALUE'] = rand(0, 1);
-                       e($_SESSION['SALT_VALUE']);
-                       exit();
+                    if($_SESSION['AUTH_COUNT'] != FIAT_SHAMIR_ITERATIONS) {
+                        $_SESSION['SALT_VALUE'] = rand(0, 1);
+                        $salt_value = $_SESSION['SALT_VALUE'];
+                        if($_SESSION['AUTH_COUNT'] == FIAT_SHAMIR_ITERATIONS-1){
+                            $salt_value = "done".$salt_value;
+                        }
+                        e($salt_value);
+                        exit();
                     }
                 } else {
                     /*
@@ -148,16 +152,25 @@ class AdminController extends Controller implements CrawlConstants
                     $view = "admin";
                 }
             } else {
+                $alt_message = false;
                 if(AUTHENTICATION_MODE == ZKP_AUTHENTICATION
                     && !isset($_SESSION['AUTH_FAILED'])) {
-                    $_SESSION['SALT_VALUE'] = 1;
-                    $_SESSION['AUTH_FAILED'] = -1;
-                    e($_SESSION['AUTH_FAILED']);
-                    exit();
+                    if(isset($_REQUEST['round_num'])) {
+                        $_SESSION['SALT_VALUE'] = 1;
+                        $_SESSION['AUTH_FAILED'] = -1;
+                        e($_SESSION['AUTH_FAILED']);
+                        exit();
+                    } else {
+                        $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
+                            tl('admin_controller_no_back_button')."</h1>');";
+                        $alt_message = true;
+                    }
                 }
                 $_SESSION['AUTH_COUNT'] = 0;
-                $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
-                    tl('admin_controller_login_failed')."</h1>');";
+                if(!$alt_message) {
+                    $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
+                        tl('admin_controller_login_failed')."</h1>');";
+                }
                 unset($_SESSION['USER_ID']);
                 unset($_SESSION['AUTH_FAILED']);
             }
@@ -218,12 +231,18 @@ class AdminController extends Controller implements CrawlConstants
                 $this->clean($_REQUEST['u'], "string"),
                 $this->clean($_REQUEST['p'], "string") );
         } else {
-            $result = $this->model("signin")->checkValidSigninForZKP(
-                $this->clean($_REQUEST['u'], "string"),
-                $this->clean($_REQUEST['x'], "string"),
-                $this->clean($_REQUEST['y'], "string"),
-                $_SESSION['SALT_VALUE'], FIAT_SHAMIR_MODULUS);
-            if(!$result){
+            if(!isset($_REQUEST['u']) || !isset($_REQUEST['x']) ||
+                !isset($_REQUEST['y']) || !isset($_SESSION['SALT_VALUE']) ||
+                isset($_SESSION['AUTH_FAILED'])) {
+                $result = false;
+            } else {
+                $result = $this->model("signin")->checkValidSigninForZKP(
+                    $this->clean($_REQUEST['u'], "string"),
+                    $this->clean($_REQUEST['x'], "string"),
+                    $this->clean($_REQUEST['y'], "string"),
+                    $_SESSION['SALT_VALUE'], FIAT_SHAMIR_MODULUS);
+            }
+            if(!$result) {
                 $_SESSION['AUTH_COUNT'] = 0;
             }
         }

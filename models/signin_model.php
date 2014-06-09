@@ -87,13 +87,21 @@ class SigninModel extends Model
         return $result;
     }
     /**
-     * To verify  username and password in case of ZKP authentication
-     * via the Fiat Shamir protocol
+     * Checks one round of username and password in case of ZKP authentication
+     * via the Fiat Shamir protocol. Let S be the user's password (not stored
+     * on server, secret, and co-prime to some public $n = pq). 
+     * V = S^2 mod $n is stored on the server and is assumed to be publicly
+     * known.
+     * Idea is that previously
+     * (1) client sent server an x = r^2 mod $n
+     * (2) the server sent a random e in {0, 1} to client
+     * Now the server has just received y = r S^e mod $n.
+     * and verifies y^2 = r^2(S^2)^e = xV^e mod $n.
      *
      * @param string $username which login to verify
-     * @param string $x
-     * @param string $y
-     * @param string $e exponent to use
+     * @param string $x as described above in the comment
+     * @param string $y as described above in the comment
+     * @param string $e random exponent to use
      * @param string $n modulus to use for Fiat Shamir
      * @return bool
      */
