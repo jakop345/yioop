@@ -85,7 +85,7 @@ class ParallelModel extends Model implements CrawlConstants
      */
     const MIN_DESCRIPTION_LENGTH = 100;
     /**
-     *  {@inheritdoc}
+     *  {@inheritDoc}
      */
     function __construct($db_name = DB_NAME, $connect = true)
     {

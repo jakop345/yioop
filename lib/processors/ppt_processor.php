@@ -113,7 +113,7 @@ class PptProcessor extends TextProcessor
                         } else {
                             $state = self::PPT_IGNORING;
                         }
-                    break
+                    break;
                     case self::READ_LEN_TEXT_SEG:
                         if($text_len_pos < 4) {
                             $text_len += ($ascii << ($text_len_pos * 8));

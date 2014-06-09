@@ -47,7 +47,7 @@ $PAGE_PROCESSORS =  array_merge($PAGE_PROCESSORS, $add_types);
 /**
  * Load the base class
  */
-require_once BASE_DIR."/lib/processors/page_processor.php";
+require_once BASE_DIR."/lib/processors/text_processor.php";
 /**
  * So can extract parts of the URL if need to guess lang
  */

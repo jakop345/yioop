@@ -43,10 +43,6 @@ require_once BASE_DIR."/lib/page_rule_parser.php";
 require_once BASE_DIR."/lib/classifiers/classifier.php";
 /** Loads crawl_daemon to manage news_updater */
 require_once BASE_DIR."/lib/crawl_daemon.php";
-/** get processors for different file types */
-foreach(glob(BASE_DIR."/lib/processors/*_processor.php") as $filename) {
-    require_once $filename;
-}
 /**
  * Controller used to handle admin functionalities such as
  * modify login and password, CREATE, UPDATE,DELETE operations

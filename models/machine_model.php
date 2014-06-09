@@ -48,7 +48,7 @@ require_once BASE_DIR."/lib/fetch_url.php";
 class MachineModel extends Model
 {
     var $search_table_column_map = array("name" => "NAME");
-    /** {@inheritdoc} */
+    /** {@inheritDoc} */
     function postQueryCallback($rows)
     {
         return $this->getMachineStatuses($rows);

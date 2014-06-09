@@ -158,7 +158,7 @@ abstract class Controller
     }
     /**
      * Dynamic loader for Plugin objects which might live on the current
-     * View
+     * Controller
      *
      * @param string $plugin name of Plugin to return
      */

@@ -76,7 +76,7 @@ class ProfileModel extends Model
         'USER_SESSION', 'VISITOR', 'VERSION'
         );
     /**
-     *  {@inheritdoc}
+     *  {@inheritDoc}
      */
     function __construct($db_name = DB_NAME, $connect = true)
     {

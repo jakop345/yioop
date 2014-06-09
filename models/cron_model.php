@@ -58,7 +58,7 @@ class CronModel extends Model
      */
     var $cron_table;
     /**
-     *  {@inheritdoc}
+     *  {@inheritDoc}
      */
     function __construct($db_name = DB_NAME, $connect = true)
     {

@@ -1086,18 +1086,18 @@ class CrawlComponent extends Component implements CrawlConstants
                 tl('crawl_component_page_options_updated')."</h1>')";
         }
         $test_processors = array(
-            "text/html" => "HtmlProcessor",
-            "text/asp" => "HtmlProcessor",
-            "text/xml" => "XmlProcessor",
-            "text/robot" => "RobotProcessor",
-            "application/xml" => "XmlProcessor",
-            "application/xhtml+xml" => "HtmlProcessor",
-            "application/rss+xml" => "RssProcessor",
-            "application/atom+xml" => "RssProcessor",
-            "text/rtf" => "RtfProcessor",
-            "text/plain" => "TextProcessor",
-            "text/csv" => "TextProcessor",
-            "text/tab-separated-values" => "TextProcessor",
+            "text/html" => "html",
+            "text/asp" => "html",
+            "text/xml" => "xml",
+            "text/robot" => "robot",
+            "application/xml" => "xml",
+            "application/xhtml+xml" => "html",
+            "application/rss+xml" => "rss",
+            "application/atom+xml" => "rss",
+            "text/rtf" => "rtf",
+            "text/plain" => "text",
+            "text/csv" => "text",
+            "text/tab-separated-values" => "text",
         );
         $data['MIME_TYPES'] = array_keys($test_processors);
         $data['page_type'] = "text/html";
@@ -1132,7 +1132,11 @@ class CrawlComponent extends Component implements CrawlConstants
                 $site[self::ENCODING] =
                     guessEncodingHtml($_REQUEST['TESTPAGE']);
             }
-            $processor_name = $test_processors[$site[self::TYPE]];
+            $prefix_name = $test_processors[$site[self::TYPE]];
+            $processor_name = ucfirst($prefix_name).
+                "Processor";
+            require_once(BASE_DIR .
+                "/lib/processors/{$prefix_name}_processor.php");
             $plugin_processors = array();
             if (isset($seed_info['indexing_plugins']['plugins'])) {
                 foreach($seed_info['indexing_plugins']['plugins'] as $plugin) {
@@ -1159,7 +1163,7 @@ class CrawlComponent extends Component implements CrawlConstants
                 $site[self::URL]);
             set_error_handler("yioop_error_handler");
 
-            if($page_processor != "RobotProcessor" &&
+            if($processor_name != "RobotProcessor" &&
                 !isset($doc_info[self::JUST_METAS])) {
                 $doc_info[self::LINKS] = UrlParser::pruneLinks(
                     $doc_info[self::LINKS]);

@@ -98,7 +98,7 @@ class GroupModel extends Model
             G.MEMBER_ACCESS $join_date";
         return $select;
     }
-    /** {@inheritdoc} */
+    /** {@inheritDoc} */
     function fromCallback($args)
     {
         return "GROUPS G, USER_GROUP UG, USERS O";

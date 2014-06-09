@@ -50,7 +50,7 @@ class RoleModel extends Model
      * @var array
      */
     var $search_table_column_map = array("name"=>"NAME");
-    /** {@inheritdoc} */
+    /** {@inheritDoc} */
     function selectCallback($args = NULL)
     {
         return "NAME";

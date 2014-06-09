@@ -65,19 +65,19 @@ class CrawlModel extends ParallelModel implements CrawlConstants
      */
     var $suggest_url_file;
     /**
-     *  {@inheritdoc}
+     *  {@inheritDoc}
      */
     function __construct($db_name = DB_NAME, $connect = true)
     {
         $this->suggest_url_file = WORK_DIRECTORY."/data/suggest_url.txt";
         parent::__construct($db_name, $connect);
     }
-    /** {@inheritdoc} */
+    /** {@inheritDoc} */
     function fromCallback($args)
     {
         return "CRAWL_MIXES";
     }
-    /** {@inheritdoc} */
+    /** {@inheritDoc} */
     function rowCallback($row, $with_components)
     {
         if($with_components) {

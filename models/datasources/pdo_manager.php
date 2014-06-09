@@ -67,7 +67,7 @@ class PdoManager extends DatasourceManager
      * @var mixed
      */
     var $to_upper_dbms;
-    /** {@inheritdoc} */
+    /** {@inheritDoc} */
     function connect($db_host = DB_HOST, $db_user = DB_USER,
         $db_password = DB_PASSWORD, $db_name = DB_NAME)
     {
@@ -86,13 +86,13 @@ class PdoManager extends DatasourceManager
         }
         return $this->pdo;
     }
-    /** {@inheritdoc} */
+    /** {@inheritDoc} */
     function disconnect()
     {
         unset($this->pdo);
         $this->pdo = NULL;
     }
-    /** {@inheritdoc} */
+    /** {@inheritDoc} */
     function exec($sql, $params = array())
     {
         static $last_sql = NULL;
@@ -126,12 +126,12 @@ class PdoManager extends DatasourceManager
         $last_sql = $sql;
         return $result;
     }
-    /** {@inheritdoc} */
+    /** {@inheritDoc} */
     function affectedRows()
     {
         return $this->num_affected;
     }
-    /** {@inheritdoc} */
+    /** {@inheritDoc} */
     function insertID($table = "")
     {
         if($table && $this->to_upper_dbms == "PGSQL") {
@@ -140,7 +140,7 @@ class PdoManager extends DatasourceManager
         }
         return $this->pdo->lastInsertId();
     }
-    /** {@inheritdoc} */
+    /** {@inheritDoc} */
     function fetchArray($result)
     {
         if(!$result) {
@@ -156,7 +156,7 @@ class PdoManager extends DatasourceManager
         }
         return $out_row;
     }
-    /** {@inheritdoc} */
+    /** {@inheritDoc} */
     function escapeString($str)
     {
         return substr($this->pdo->quote($str), 1, -1);

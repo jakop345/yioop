@@ -50,7 +50,7 @@ require_once BASE_DIR."/models/datasources/pdo_manager.php";
  */
 class Sqlite3Manager extends PdoManager
 {
-    /** {@inheritdoc} */
+    /** {@inheritDoc} */
     function __construct()
     {
         parent::__construct();

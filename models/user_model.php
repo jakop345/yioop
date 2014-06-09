@@ -62,18 +62,17 @@ class UserModel extends Model
      * @var array
      */
     var $any_fields = array("status");
-    /** {@inheritdoc} */
+    /** {@inheritDoc} */
     function selectCallback($args = NULL)
     {
         return "USER_ID, USER_NAME, FIRST_NAME, LAST_NAME, EMAIL, STATUS";
     }
-    /** {@inheritdoc} */
-     */
+    /** {@inheritDoc} */
     function fromCallback($args = NULL)
     {
         return "USERS";
     }
-    /** {@inheritdoc} */
+    /** {@inheritDoc} */
     function whereCallback($args = NULL)
     {
         return "USER_ID != '".PUBLIC_USER_ID."'";

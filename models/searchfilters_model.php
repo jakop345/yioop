@@ -55,7 +55,7 @@ class SearchfiltersModel extends Model implements CrawlConstants
      */
     var $dir_name;
     /**
-     *  {@inheritdoc}
+     *  {@inheritDoc}
      */
     function __construct($db_name = DB_NAME, $connect = true)
     {

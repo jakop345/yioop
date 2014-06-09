@@ -96,7 +96,7 @@ class PhraseModel extends ParallelModel
      */
      const NUM_CACHE_PAGES = 10;
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     function __construct($db_name = DB_NAME, $connect = true)
     {

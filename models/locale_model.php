@@ -114,7 +114,7 @@ class LocaleModel extends Model
      * @var array
      */
     var $any_fields = array("mode");
-    /** {@inheritdoc} */
+    /** {@inheritDoc} */
     function selectCallback($args = NULL)
     {
         return "LOCALE_ID, LOCALE_TAG, LOCALE_NAME, WRITING_MODE";

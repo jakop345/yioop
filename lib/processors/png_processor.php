@@ -50,7 +50,7 @@ require_once BASE_DIR."/lib/processors/image_processor.php";
 class PngProcessor extends ImageProcessor
 {
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     function process($page, $url)
     {

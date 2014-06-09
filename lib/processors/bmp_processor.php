@@ -66,7 +66,7 @@ class BmpProcessor extends ImageProcessor
      */
     const MAX_DIM = 1000;
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     function process($page, $url)
     {
