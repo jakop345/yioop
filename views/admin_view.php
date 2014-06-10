@@ -53,7 +53,8 @@ class AdminView extends View
      * @param array $data  what is contained in this array depend on the current
      * admin activity. The $data['ELEMENT'] says which activity to render
      */
-    function renderView($data) {
+    function renderView($data)
+    {
         $logo = "resources/yioop.png";
         if(MOBILE) {
             $logo = "resources/m-yioop.png";

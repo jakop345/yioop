@@ -77,7 +77,7 @@ class GroupfeedElement extends Element implements CrawlConstants
         if(!$is_status) { 
             if($is_admin || $logged_in) { ?>
                 <div class="float-same admin-collapse">[<a
-                href="<?php e($other_paging_query) ?>" ><?php 
+                href="<?php e($other_paging_query) ?>" ><?php
                 e($arrows); ?></a>]</div>
             <?php
             }
@@ -123,7 +123,7 @@ class GroupfeedElement extends Element implements CrawlConstants
                     $manage_groups = "?c={$data['CONTROLLER']}&amp;".
                         CSRF_TOKEN."=".$data[CSRF_TOKEN]."&amp;a=manageGroups";
                     e("<a href='$manage_groups'>".
-                        $data['PAGES'][0][self::SOURCE_NAME]."</a>");
+                        $data['SUBTITLE']."</a>");
                     e(" [".tl('groupfeed_element_feed')."|".
                         "<a href='?c={$data['CONTROLLER']}&".CSRF_TOKEN."=".
                         $data[CSRF_TOKEN]."&amp;a=wiki&group_id=".
