@@ -55,6 +55,7 @@ class ManageaccountElement extends Element
         $feed_url = "?c=admin&amp;a=groupFeeds&amp;$token";
         $group_url = "?c=admin&amp;a=manageGroups&amp;$token";
         $mix_url = "?c=admin&amp;a=mixCrawls&amp;$token";
+        $crawls_url = "?c=admin&amp;a=manageCrawls&amp;$token";
         $base_url = "?c=admin&amp;a=manageAccount&amp;$token";
         $edit_or_no_url = $base_url .(
             (isset($data['EDIT_USER'])) ? "&amp;edit=false":"&amp;edit=true");
@@ -153,6 +154,20 @@ class ManageaccountElement extends Element
             </form>
             <p>[<a href="<?php e($settings_url); ?>"><?php
                 e(tl('manageaccount_element_search_lang_settings')); ?></a>]</p>
+            <?php
+            if(isset($data['CRAWL_MANAGER'])) {
+                ?>
+                <h2><?php
+                e(tl('manageaccount_element_crawl_and_index')); ?></h2>
+                <p><?php e(tl('manageaccount_element_crawl_info')); ?></p>
+                <p><?php e(tl('manageaccount_element_num_crawls',
+                    $data["CRAWLS_RUNNING"], $data["NUM_CLOSED_CRAWLS"]));?></p>
+                <p>[<a href="<?php e($crawls_url); ?>"><?php
+                    e(tl('manageaccount_element_manage_crawls'));
+                    ?></a>]</p>
+                <?php
+            }
+            ?>
             <h2><?php
                 e(tl('manageaccount_element_groups_and_feeds'))?></h2>
             <p><?php e(tl('manageaccount_element_group_info')); ?></p>

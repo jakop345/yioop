@@ -81,6 +81,20 @@ class AccountaccessComponent extends Component
         $user_id = $_SESSION['USER_ID'];
         $username = $signin_model->getUserName($user_id);
         $data["USER"] = $user_model->getUser($username);
+        $data["CRAWL_MANAGER"] = false;
+        if($user_model->isAllowedUserActivity($user_id, "manageCrawls")) {
+            $data["CRAWL_MANAGER"] = true;
+            $machine_urls = $parent->model("machine")->getQueueServerUrls();
+            list($stalled, $status, $recent_crawls) =
+                $crawl_model->combinedCrawlInfo($machine_urls);
+            $data = array_merge($data, $status);
+            $data["CRAWLS_RUNNING"] = 0;
+            $data["NUM_CLOSED_CRAWLS"] = count($recent_crawls);
+            if(isset($data['CRAWL_TIME']) && $data["CRAWL_TIME"] != 0) {
+                $data["CRAWLS_RUNNING"] = 1;
+                $data["NUM_CLOSED_CRAWLS"]--;
+            }
+        }
         if(isset($_REQUEST['edit']) && $_REQUEST['edit'] == "true") {
             $data['EDIT_USER'] = true;
         }
