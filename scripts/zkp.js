@@ -218,8 +218,6 @@ function sendFiatShamirParameters(x, y, u, token, token_name, round_num)
         "&"+token_name+"=" + token + "&round_num=" + round_num;
     http.open("post", url, false);
     http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    http.setRequestHeader("Content-length", params.length);
-    http.setRequestHeader("Connection", "close");
     http.onreadystatechange = function () {
         if (http.readyState == 4 && http.status == 200) {
             elt("salt-value").value = http.responseText;

@@ -645,6 +645,8 @@ EOD;
         $captcha_model = $parent->model("captcha");
         $possible_arguments = array("updatequestions", "updatetypes");
         $data = array();
+        $data['CAN_LOCALIZE'] = $parent->model("user")->isAllowedUserActivity(
+            $_SESSION['USER_ID'], "manageLocales");
         $profile_model = $parent->model("profile");
         $profile = $profile_model->getProfile(WORK_DIRECTORY);
         $data['SCRIPT'] = "";
@@ -685,15 +687,13 @@ EOD;
                         $profile_model->updateProfile(WORK_DIRECTORY,
                             array(), $profile);
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('security_element_settings_updated').
+                            tl('system_component_settings_updated').
                             "</h1>');";
                     } else {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('security_element_no_update_settings').
+                            tl('system_component_no_update_settings').
                             "</h1>');";
                     }
-                break;
-                case "updatequestions":
                 break;
             }
         }

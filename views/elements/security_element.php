@@ -50,6 +50,9 @@ class SecurityElement extends Element
      */
     function render($data)
     {
+        $localize_url = "?".CSRF_TOKEN."=".$data[CSRF_TOKEN].
+            "&amp;c=admin&amp;a=manageLocales".
+            "&amp;arg=editstrings&amp;selectlocale=".$data['LOCALE_TAG'];
         ?>
         <div class = "current-activity">
         <h2><?php e(tl('security_element_auth_captcha'));?></h2>
@@ -95,126 +98,26 @@ class SecurityElement extends Element
         <h2><?php
             e(tl('security_element_captcha_recovery_questions'));
         ?></h2>
-                <div id="text-captcha-container"
-                    class="text-captcha-container" >
-                    <form id="text-captcha-container-add"
-                        class="text-captcha-container-add"
-                        method="post" action="">
-                        <ul><li><label for="captcha-type"><?php
-                            e(tl('security_element_captcha_type'));
-                            ?></label>
-                            <?php $this->view->helper("options")->render(
-                                "captcha-type", "CAPTCHA_TYPE",
-                                $data['CAPTCHA_TYPE'],
-                                $data['CAPTCHA_TYPE']);?>
-                            </li>
-                            <li><label for="captcha-possibilities">
-                            <?php
-                             e(tl('security_element_captcha_possible'));
-                            ?>
-                            </label>
-                            <?php $this->view->helper("options")->render(
-                                "captcha-possibilities",
-                                "CAPTCHA_POSSIBILITIES",
-                                $data['CAPTCHA_POSSIBILITIES'],
-                                $data['CAPTCHA_POSSIBILITIES']);?>
-                            </li>
-                            <li><label for="captcha-question-input-label">
-                            <?php
-                             e(tl('security_element_captcha_question'));
-                            ?>
-                            </label>
-                                <input type="text"
-                                    id="captcha-question-input"
-                                    name="CAPTCHA_QUESTION_INPUT">
-                            </li>
-                            <li><label for="captcha-choices-input-label">
-                            <?php
-                              e(tl('security_element_captcha_choices'));
-                            ?>
-                            </label>
-                                <input type="text"
-                                    id="captcha-choices-input"
-                                    name="CAPTCHA_CHOICES_INPUT"></li>
-                            <li><input type="hidden" name="arg"
-                                    value="addtextcaptcha" />
-                                 <input type="submit"
-                                   id="text-captcha-add-to-database"
-                                   name="text_captcha_add_to_database"
-                                   value="<?php
-                                  e(tl('security_element_captcha_add'));
-                                  ?>"/>
-                             </li>
-                        </ul>
-                        <input type="hidden" name="CAPTCHA_MODE"
-                                    value="text_captcha"/></form>
-                        <form name="updateTextCaptchaForm" method="post"
-                                action ="">
-                             <h2>
-                             <?php
-                            e(tl('security_element_current_question'));
-                            ?></h2>
-                            <select multiple="multiple"
-                                class="text-captcha-input"
-                                name="text_captcha_delete_questions[]">
-                                  <?php
-                                  if(isset($data['QUESTIONS'])) {
-                                    foreach($data['QUESTIONS'] as
-                                        $question) {
-                                        e('<option value
-                                            = "'.$question[ 'TRANSLATION_ID'].
-                                            '">'. $question['QUESTION_TEXT'].
-                                        '</option>');
-                                    }
-                                }
-                                ?>
-                            </select>
-                            <input type="hidden" name="arg"
-                                value="updatetextcaptcha" />
-                             <input type="submit" value="<?php
-                               e(tl('security_element_captcha_delete'));
-                               ?>"
-                                name="actiondelete"/>
-                            <input type="submit" value="<?php
-                                e(tl('security_element_captcha_edit'));
-                                ?>"
-                               name="actionedit"/>
-                       </form>
-                       <?php
-                       if(isset($data['EDIT_CAPTCHA_MAPS'])) {
-                        $question_choice_rowid_map =
-                            $data['EDIT_CAPTCHA_MAPS']
-                            ['question_choice_rowid_map'];
-                        $rowid_translation_map = $data['EDIT_CAPTCHA_MAPS']
-                            ['rowid_translation_map'];
-                        e('<form method="post">');
-                        foreach($question_choice_rowid_map as
-                            $question_rowid => $choices_rowid) {
-                            e('<div>');
-                            e('<div>');
-                            e('Question <input name="updateField['.
-                                $question_rowid.']" value="'.
-                                $rowid_translation_map[$question_rowid].'"
-                                class="question-update-input">');
-                            e('</div>');
-                            e('<div>');
-                            e('Choices <input name="updateField['.
-                                $choices_rowid.']" value="'.
-                                $rowid_translation_map[$choices_rowid].'"
-                                class="choices-update-input">');
-                            e('</div>');
-                            e('</div>');
-                        }
-                        e('<input type="hidden" name="arg"
-                            value="savetextcaptcha" />');
-                        e('<input type="submit" value ="Save" />');
-                        e('</form>');
-                    }
-                    ?>
-                </div>
-        </div><!-- End of div: captcha-settings-container-->
-        </div><!-- End of div: current-activity -->
-    <?php
+        <?php
+        if($data['CAN_LOCALIZE']) { ?>
+            <div class="top-margin">[<a href="<?php 
+                e($localize_url.'&amp;filter=register_view_recovery');
+                    ?>" ><?php e(tl('security_element_edit_recovery')); ?></a>]
+            </div>
+            <div class="top-margin">[<a href="<?php 
+                e($localize_url.'&amp;filter=register_view_question');
+                    ?>" ><?php e(tl('security_element_edit_captcha')); ?></a>]
+            </div>
+            <?php
+        } else { ?>
+            <div class="top-margin">[<b class="gray"><?php
+                e(tl('security_element_edit_recovery')); ?></b>]
+            </div>
+            <div class="top-margin">[<b class="gray"><?php
+                e(tl('security_element_edit_captcha')); ?></b>]
+            </div>
+            <?php
+        }
     }
 }
 

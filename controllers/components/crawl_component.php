@@ -1561,6 +1561,8 @@ class CrawlComponent extends Component implements CrawlConstants
                 break;
             }
         }
+        $data['CAN_LOCALIZE'] = $parent->model("user")->isAllowedUserActivity(
+            $_SESSION['USER_ID'], "manageLocales");
         $parent->pagingLogic($data, $source_model, "MEDIA_SOURCES",
             DEFAULT_ADMIN_PAGING_NUM/5);
         $parent->pagingLogic($data, $source_model,

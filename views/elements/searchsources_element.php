@@ -258,10 +258,20 @@ class SearchsourcesElement extends Element
                 "#subsearch-section"); ?>"><?php
                 e(tl('searchsources_element_editsource'));
             ?></a></td>
-            <td><a href='<?php e($localize_url."#".$search['LOCALE_STRING']);
+            <td><?php 
+            if($data['CAN_LOCALIZE']) { ?>
+                <a href='<?php e($localize_url."&amp;filter=".
+                    $search['LOCALE_STRING']);
                 ?>' ><?php
                 e(tl('searchsources_element_localize'));
-                ?></a></td>
+                ?></a><?php
+            } else { ?>
+                <span class="gray"><?php 
+                e(tl('searchsources_element_localize')); ?></span>
+                <?php
+            }
+            ?>
+            </td>
             <td><a href="<?php e($base_url.'&amp;arg=deletesubsearch&amp;fn='.
                 $search['FOLDER_NAME'].$paging1.$paging2); ?>"><?php
                 e(tl('searchsources_element_deletesubsearch'));
