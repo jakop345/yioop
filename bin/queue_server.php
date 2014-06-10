@@ -1731,7 +1731,6 @@ class QueueServer implements CrawlConstants, Join
     function processDataArchive($file)
     {
         $sites = & $this->getDataArchiveFileData($file);
-
         crawlLog("...Updating Delayed Hosts Array Queue ...");
         $start_time = microtime();
         if(isset($sites[self::SCHEDULE_TIME])) {

@@ -774,7 +774,11 @@ class CrawlComponent extends Component implements CrawlConstants
     function pageOptions()
     {
         global $INDEXED_FILE_TYPES;
-
+        /* get processors for different file types (populating 
+           $INDEXED_FILE_TYPES) */
+        foreach(glob(BASE_DIR."/lib/processors/*_processor.php") as $filename) {
+            require_once $filename;
+        }
         $parent = $this->parent;
         $crawl_model = $parent->model("crawl");
         $profile_model = $parent->model("profile");
@@ -1135,8 +1139,6 @@ class CrawlComponent extends Component implements CrawlConstants
             $prefix_name = $test_processors[$site[self::TYPE]];
             $processor_name = ucfirst($prefix_name).
                 "Processor";
-            require_once(BASE_DIR .
-                "/lib/processors/{$prefix_name}_processor.php");
             $plugin_processors = array();
             if (isset($seed_info['indexing_plugins']['plugins'])) {
                 foreach($seed_info['indexing_plugins']['plugins'] as $plugin) {
