@@ -155,7 +155,7 @@ class ManageaccountElement extends Element
             <p>[<a href="<?php e($settings_url); ?>"><?php
                 e(tl('manageaccount_element_search_lang_settings')); ?></a>]</p>
             <?php
-            if(isset($data['CRAWL_MANAGER'])) {
+            if(isset($data['CRAWL_MANAGER']) && $data['CRAWL_MANAGER']) {
                 ?>
                 <h2><?php
                 e(tl('manageaccount_element_crawl_and_index')); ?></h2>

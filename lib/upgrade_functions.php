@@ -601,7 +601,8 @@ function upgradeDatabaseVersion20(&$db)
             $profile_model = new ProfileModel(DB_NAME, false);
             $profile_model->db = $db;
             $save_tables = array("ACTIVE_FETCHER", "CURRENT_WEB_INDEX",
-                "FEED_ITEM", "MACHINE", "MEDIA_SOURCE", "SUBSEARCH");
+                "FEED_ITEM", "MACHINE", "MEDIA_SOURCE", "SUBSEARCH",
+                "VERSION");
             $dbinfo = array("DBMS" => DBMS, "DB_HOST" => DB_HOST,
                 "DB_USER" => DB_USER, "DB_PASSWORD" => DB_PASSWORD,
                 "DB_NAME" => DB_NAME);
@@ -687,6 +688,8 @@ function upgradeDatabaseVersion20(&$db)
                 $user['PASSWORD'] = $v20check;
                 $user["ZKP_PASSWORD"] = $zkp_password;
                 $user_model->updateUser($user);
+                $db->execute("DELETE FROM VERSION WHERE ID < 19");
+                $db->execute("UPDATE VERSION SET ID=20 WHERE ID=19");
                 return;
             }
             $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".

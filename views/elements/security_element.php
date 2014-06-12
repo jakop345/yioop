@@ -118,6 +118,9 @@ class SecurityElement extends Element
             </div>
             <?php
         }
+        ?>
+        </div>
+        <?php
     }
 }
 

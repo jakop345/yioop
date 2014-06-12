@@ -460,8 +460,8 @@ EOT;
                 $dbinfo[$field] = constant($field);
             }
         }
-        $host = str_ireplace("dbname=".$dbinfo['DB_NAME'],"",
-            $dbinfo['DB_HOST']); // to get rid of database from dsn postgres
+        $host = $dbinfo['DB_HOST']; 
+            // for postgress database needs to already exists
         $host = str_ireplace("database=".$dbinfo['DB_NAME'],"",
             $host); // informix, ibm (use connection string DSN)
         $host = str_replace(";;",";", $host);
