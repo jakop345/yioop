@@ -143,13 +143,14 @@ class AdminController extends Controller implements CrawlConstants
                     $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
                         tl('admin_controller_login_successful')."</h1>')";
                     $data = array_merge($data, $this->processSession());
+                    $view = "admin";
                     if(isset($data['INACTIVE'])) {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        $data['CURRENT_ACTIVITY'] = "signin";
+                        $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
                             tl('admin_controller_account_not_active')."</h1>');";
                         $view = "signin";
                         unset($_SESSION['USER_ID']);
                     }
-                    $view = "admin";
                 }
             } else {
                 $alt_message = false;

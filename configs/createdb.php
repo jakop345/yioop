@@ -66,7 +66,9 @@ if(!in_array(DBMS, array('sqlite', 'sqlite3'))) {
     /*  postgres doesn't let you drop a database while connected to it so drop
         tables instead first
      */
-    foreach($profile_model->database_tables as $table) {
+    $profile_model->initializeSql($db, $dbinfo);
+    $database_tables = array_keys($profile_model->create_statements);
+    foreach($database_tables as $table) {
         $db->execute("DROP TABLE ".$table);
     }
     $db->execute("DROP DATABASE IF EXISTS ".DB_NAME);
@@ -83,7 +85,7 @@ if(!$profile_model->createDatabaseTables($db, $dbinfo)) {
     echo "\n\nCouldn't create database tables!!!\n\n";
     exit();
 }
-$db->execute("INSERT INTO VERSION VALUES (19)");
+$db->execute("INSERT INTO VERSION VALUES (".YIOOP_VERSION.")");
 $creation_time = microTimestamp();
 //numerical value of the blank password
 $profile = $profile_model->getProfile(WORK_DIRECTORY);

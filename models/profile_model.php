@@ -65,22 +65,156 @@ class ProfileModel extends Model
         'USER_AGENT_SHORT', 'WEB_URI', 'WEB_ACCESS', 'WORD_SUGGEST'
         );
     /**
-     * These are the database tables used by Yioop
-     * @var array
+     *  Associative array (table_name => SQL statement to create that table)
+     *  List is alphabetical and contains all Yioop tables. List is only
+     *  initialized after an @see initializeSql call.
+     *  @var array
      */
-    var $database_tables = array( 'ACTIVE_FETCHER', 'ACTIVITY', 'CRAWL_MIXES',
-        'CURRENT_WEB_INDEX', 'FEED_ITEM', 'GROUP_ITEM', 'GROUP_ITEM_VOTE',
-        'GROUP_PAGE', 'GROUP_PAGE_HISTORY', 'GROUPS', 'LOCALE', 'MACHINE',
-        'MEDIA_SOURCE', 'MIX_COMPONENTS', 'ROLE', 'ROLE_ACTIVITY', 'SUBSEARCH',
-        'TRANSLATION', 'TRANSLATION_LOCALE', 'USERS', 'USER_GROUP', 'USER_ROLE',
-        'USER_SESSION', 'VISITOR', 'VERSION'
-        );
+    var $create_statements;
     /**
      *  {@inheritDoc}
      */
     function __construct($db_name = DB_NAME, $connect = true)
     {
         parent::__construct($db_name, $connect);
+        $this->create_statements = array();
+    }
+    /**
+     *  Used to construct $this->create_statements, the list of all SQL
+     *  CREATE statements needed to build a Yioop database
+     *
+     *  @param object $dbm a datasource_manager object used to get strings
+     *      for autoincrement and serial types for a given db
+     *  @param array $dbinfo connect info for the database, also used in
+     *      getting autoincrement and serial types
+     */
+    function initializeSql($dbm, $dbinfo)
+    {
+        $auto_increment = $dbm->autoIncrement($dbinfo);
+        $serial = $dbm->serialType($dbinfo);
+        $this->create_statements = array("ACTIVE_FETCHER" =>
+            "CREATE TABLE ACTIVE_FETCHER (NAME VARCHAR(16),FETCHER_ID INTEGER)",
+            "AF_FETCHER_ID_INDEX" => "CREATE INDEX AF_FETCHER_ID_INDEX ON
+                 ACTIVE_FETCHER (FETCHER_ID)",
+            "ACTIVITY" => "CREATE TABLE ACTIVITY (ACTIVITY_ID $serial
+                PRIMARY KEY $auto_increment, TRANSLATION_ID INTEGER,
+                METHOD_NAME VARCHAR(256))",
+            "ACTIVITY_TRANSLATION_ID_INDEX" => "CREATE INDEX 
+                ACTIVITY_TRANSLATION_ID_INDEX ON ACTIVITY (TRANSLATION_ID)",
+            "CRAWL_MIXES" => "CREATE TABLE CRAWL_MIXES (TIMESTAMP NUMERIC(11)
+                PRIMARY KEY, NAME VARCHAR(16), OWNER_ID INTEGER,
+                PARENT NUMERIC(11))",
+            "CM_OWNER_ID_INDEX" => "CREATE INDEX CM_OWNER_ID_INDEX ON
+                CRAWL_MIXES (OWNER_ID)",
+            "CM_PARENT_INDEX" => "CREATE INDEX CM_PARENT_INDEX ON
+                CRAWL_MIXES (PARENT)",
+            "CURRENT_WEB_INDEX" => "CREATE TABLE CURRENT_WEB_INDEX
+                (CRAWL_TIME NUMERIC(11) PRIMARY KEY)",
+            "FEED_ITEM" => "CREATE TABLE FEED_ITEM (GUID CHAR(11) PRIMARY KEY,
+                TITLE VARCHAR(512), LINK VARCHAR(256),
+                DESCRIPTION VARCHAR(4096),
+                PUBDATE INT, SOURCE_NAME VARCHAR(16))",
+            "GROUP_ITEM" => "CREATE TABLE GROUP_ITEM (ID $serial PRIMARY KEY
+                $auto_increment, PARENT_ID INTEGER, GROUP_ID INTEGER,
+                USER_ID INTEGER, TITLE VARCHAR(512), DESCRIPTION VARCHAR(".
+                MAX_GROUP_POST_LEN."), PUBDATE NUMERIC(11),
+                UPS INTEGER DEFAULT 0, DOWNS INTEGER DEFAULT 0,
+                TYPE INTEGER DEFAULT ". STANDARD_GROUP_ITEM.")",
+            "GI_GROUP_ID_INDEX" => "CREATE INDEX GI_GROUP_ID_INDEX ON
+                GROUP_ITEM (GROUP_ID)",
+            "GI_USER_ID_INDEX" => "CREATE INDEX GI_USER_ID_INDEX ON
+                GROUP_ITEM (USER_ID)",
+            "GI_PARENT_ID_INDEX" => "CREATE INDEX GI_PARENT_ID_INDEX ON
+                GROUP_ITEM (PARENT_ID)",
+            "GROUP_ITEM_VOTE" => "CREATE TABLE GROUP_ITEM_VOTE(
+                USER_ID INTEGER, ITEM_ID INTEGER)",
+            "GROUP_PAGE" => "CREATE TABLE GROUP_PAGE (
+                ID $serial PRIMARY KEY $auto_increment, GROUP_ID INTEGER,
+                DISCUSS_THREAD INTEGER, TITLE VARCHAR(512),
+                PAGE VARCHAR(".MAX_GROUP_PAGE_LEN."), LOCALE_TAG VARCHAR(16),
+                CONSTRAINT GID_TITLE_LOC UNIQUE(GROUP_ID, TITLE, LOCALE_TAG))",
+            "GP_ID_INDEX" => "CREATE INDEX GP_ID_INDEX ON GROUP_PAGE
+                 (GROUP_ID, TITLE, LOCALE_TAG)",
+            "GROUP_PAGE_HISTORY" => "CREATE TABLE GROUP_PAGE_HISTORY(
+                PAGE_ID INTEGER, GROUP_ID INTEGER, EDITOR_ID INTEGER,
+                TITLE VARCHAR(512), PAGE VARCHAR(".MAX_GROUP_PAGE_LEN."),
+                EDIT_COMMENT VARCHAR(80), LOCALE_TAG VARCHAR(16),
+                PUBDATE NUMERIC(11), PRIMARY KEY(PAGE_ID, PUBDATE))",
+            "GROUPS" => "CREATE TABLE GROUPS (
+                GROUP_ID $serial PRIMARY KEY $auto_increment,
+                GROUP_NAME VARCHAR(128), CREATED_TIME VARCHAR(20),
+                OWNER_ID INTEGER, REGISTER_TYPE INTEGER,
+                MEMBER_ACCESS INTEGER, VOTE_ACCESS INTEGER DEFAULT ".
+                NON_VOTING_GROUP.")",
+            /* NOTE: We are not using singular name GROUP for GROUPS as
+               GROUP is a reserved SQL keyword
+             */
+            "GRP_OWNER_ID_INDEX" => "CREATE INDEX GRP_OWNER_ID_INDEX ON
+                GROUPS (OWNER_ID)",
+            "GRP_MEMBER_ACCESS_INDEX" => "CREATE INDEX GRP_MEMBER_ACCESS_INDEX
+                ON GROUPS(MEMBER_ACCESS)",
+            "LOCALE" => "CREATE TABLE LOCALE(LOCALE_ID $serial PRIMARY KEY
+                $auto_increment, LOCALE_TAG VARCHAR(16),
+                LOCALE_NAME VARCHAR(256), WRITING_MODE CHAR(5))",
+            "LCL_LOCALE_TAG_INDEX" => "CREATE INDEX LCL_LOCALE_TAG_INDEX ON
+                LOCALE(LOCALE_TAG)",
+            "MACHINE" => "CREATE TABLE MACHINE (NAME VARCHAR(16) PRIMARY KEY,
+                URL VARCHAR(256) UNIQUE, HAS_QUEUE_SERVER INT,
+                NUM_FETCHERS INTEGER, PARENT VARCHAR(16) )",
+            "MEDIA_SOURCE" => "CREATE TABLE MEDIA_SOURCE (
+                TIMESTAMP NUMERIC(11) PRIMARY KEY,
+                NAME VARCHAR(64) UNIQUE, TYPE VARCHAR(16),
+                SOURCE_URL VARCHAR(256), THUMB_URL VARCHAR(256),
+                LANGUAGE VARCHAR(7))",
+            "MS_TYPE_INDEX" => "CREATE INDEX MS_TYPE_INDEX ON
+                MEDIA_SOURCE(TYPE)",
+            "MIX_COMPONENTS" => "CREATE TABLE MIX_COMPONENTS (
+                TIMESTAMP NUMERIC(11), FRAGMENT_ID INTEGER,
+                CRAWL_TIMESTAMP NUMERIC(11), WEIGHT REAL, KEYWORDS VARCHAR(256),
+                PRIMARY KEY(TIMESTAMP, FRAGMENT_ID, CRAWL_TIMESTAMP) )",
+            "MIX_FRAGMENTS" => "CREATE TABLE MIX_FRAGMENTS (
+                TIMESTAMP NUMERIC(11),FRAGMENT_ID INTEGER, RESULT_BOUND INTEGER,
+                PRIMARY KEY(TIMESTAMP, FRAGMENT_ID))",
+            "ROLE" => "CREATE TABLE ROLE (
+                ROLE_ID $serial PRIMARY KEY $auto_increment,NAME VARCHAR(512))",
+            "ROLE_ACTIVITY" => "CREATE TABLE ROLE_ACTIVITY (ROLE_ID INTEGER,
+                ACTIVITY_ID INTEGER, PRIMARY KEY(ROLE_ID, ACTIVITY_ID))",
+            "SUBSEARCH" => "CREATE TABLE SUBSEARCH (
+                LOCALE_STRING VARCHAR(32) PRIMARY KEY,
+                FOLDER_NAME VARCHAR(16), INDEX_IDENTIFIER CHAR(13),
+                PER_PAGE INT)",
+            "TRANSLATION" => "CREATE TABLE TRANSLATION (
+                TRANSLATION_ID $serial PRIMARY KEY
+                $auto_increment, IDENTIFIER_STRING VARCHAR(512) UNIQUE)",
+            "TRANS_IDENTIFIER_STRING_INDEX" => "CREATE INDEX
+                TRANS_IDENTIFIER_STRING_INDEX ON
+                TRANSLATION(IDENTIFIER_STRING)",
+            "TRANSLATION_LOCALE" => "CREATE TABLE TRANSLATION_LOCALE
+                (TRANSLATION_ID INTEGER, LOCALE_ID INTEGER,
+                TRANSLATION VARCHAR(4096),
+                PRIMARY KEY(TRANSLATION_ID, LOCALE_ID))",
+            "USERS" => "CREATE TABLE USERS(USER_ID $serial PRIMARY KEY
+                $auto_increment, FIRST_NAME VARCHAR(16), LAST_NAME VARCHAR(16),
+                USER_NAME VARCHAR(16) UNIQUE, EMAIL VARCHAR(60),
+                PASSWORD CHAR(60), STATUS INTEGER, HASH CHAR(60),
+                CREATION_TIME VARCHAR(20), UPS INTEGER DEFAULT 0,
+                DOWNS INTEGER DEFAULT 0, ZKP_PASSWORD CHAR(200))",
+            "USRS_USER_NAME_INDEX" => "CREATE INDEX USRS_USER_NAME_INDEX ON
+                USERS(USER_NAME)",
+            "USER_GROUP" => "CREATE TABLE USER_GROUP (USER_ID INTEGER,
+                GROUP_ID INTEGER, STATUS INTEGER, JOIN_DATE NUMERIC(11),
+                PRIMARY KEY (GROUP_ID, USER_ID) )",
+            "USER_ROLE" => "CREATE TABLE USER_ROLE (USER_ID INTEGER,
+                ROLE_ID INTEGER, PRIMARY KEY (ROLE_ID, USER_ID))",
+            "USER_SESSION" => "CREATE TABLE USER_SESSION(
+                USER_ID INTEGER PRIMARY KEY, SESSION VARCHAR(4096))",
+            "VISITOR" => "CREATE TABLE VISITOR(ADDRESS VARCHAR(39),
+                PAGE_NAME VARCHAR(16),
+                END_TIME INTEGER, DELAY INTEGER, FORGET_AGE INTEGER,
+                ACCESS_COUNT INTEGER,
+                PRIMARY KEY(ADDRESS, PAGE_NAME))",
+            "VERSION" => "CREATE TABLE VERSION(ID INTEGER PRIMARY KEY)",
+            );
     }
     /**
      * Creates a folder to be used to maintain local information about this
@@ -241,159 +375,53 @@ EOT;
      *
      * @param array $dbinfo has fields for DBMS, DB_USER, DB_PASSWORD, DB_HOST
      *      and DB_NAME
+     * @param array $skip_list an array of table or index names not to bother
+     *      creating or copying
      * @return bool returns true if can connect to/create a valid database;
      *      returns false otherwise
      */
-    function migrateDatabaseIfNecessary($dbinfo)
+    function migrateDatabaseIfNecessary($dbinfo, $skip_list = array())
     {
         $test_dbm = $this->testDatabaseManager($dbinfo);
 
         if($test_dbm === false || $test_dbm === true) {return $test_dbm; }
 
-        /*
-            Don't copy MACHINE table as will be local to installation
-         */
-        $copy_tables = array("ACCESS", "ACTIVITY",
-            "CRAWL_MIXES", "CURRENT_WEB_INDEX", "FEED_ITEM", "GROUPS",
-            "LOCALE", "MEDIA_SOURCE", "MIX_COMPONENTS",
-            "MIX_GROUPS", "ROLE", "ROLE_ACTIVITY", "SUBSEARCH", "TRANSLATION",
-            "TRANSLATION_LOCALE", "USERS", "USER_GROUP", "USER_ROLE",
-            "USER_SESSION", "VERSION", "VISITOR");
-
+        $this->initializeSql($test_dbm, $dbinfo);
+        $copy_tables = array_diff(array_keys($this->create_statements),
+            $skip_list);
         if(!($create_ok = $this->createDatabaseTables($test_dbm, $dbinfo))) {
             return false;
         }
         require_once(BASE_DIR."/models/datasources/sqlite3_manager.php");
-
         $default_dbm = new Sqlite3Manager();
-
         $default_dbm->connect("", "", "", BASE_DIR."/data/default.db");
         if(!$default_dbm) {return false;}
-        foreach($copy_tables as $table) {
-            if(!$this->copyTable($table, $default_dbm, $test_dbm))
+        foreach($copy_tables as $table_or_index) {
+            if($table_or_index != "CURRENT_WEB_INDEX" &&
+                stristr($table_or_index, "_INDEX")) {
+                continue;
+            }
+            if(!$this->copyTable($table_or_index, $default_dbm, $test_dbm))
                 {return false;}
         }
         return true;
     }
     /**
      * On a blank database this method create all the tables necessary for
-     * Yioop
+     * Yioop less those on a skip list
      *
      * @param object $dbm a DatabaseManager open to some DBMS and with a
      *      blank database selected
-     * @return bool whether all of the creates were sucessful or not
+     * @param array $skip_list an array of table or index names not to bother
+     *      creating
+     * @return bool whether all of the creates were successful or not
      */
-    function createDatabaseTables($dbm, $dbinfo)
+    function createDatabaseTables($dbm, $dbinfo, $skip_list = array())
     {
-        $auto_increment = $dbm->autoIncrement($dbinfo);
-        $serial = $dbm->serialType($dbinfo);
-
-        //create table statements (should be kept alphabetical)
-        $create_statements = array(
-            "CREATE TABLE ACTIVE_FETCHER (NAME VARCHAR(16),FETCHER_ID INTEGER)",
-            "CREATE INDEX AF_FETCHER_ID_INDEX ON
-                 ACTIVE_FETCHER (FETCHER_ID)",
-            "CREATE TABLE ACTIVITY (ACTIVITY_ID $serial PRIMARY KEY
-                $auto_increment, TRANSLATION_ID INTEGER,
-                METHOD_NAME VARCHAR(256))",
-            "CREATE INDEX ACTIVITY_TRANSLATION_ID_INDEX ON
-                 ACTIVITY (TRANSLATION_ID)",
-            "CREATE TABLE CRAWL_MIXES (TIMESTAMP NUMERIC(11) PRIMARY KEY,
-                NAME VARCHAR(16), OWNER_ID INTEGER, PARENT NUMERIC(11))",
-            "CREATE INDEX CM_OWNER_ID_INDEX ON CRAWL_MIXES (OWNER_ID)",
-            "CREATE INDEX CM_PARENT_INDEX ON CRAWL_MIXES (PARENT)",
-            "CREATE TABLE CURRENT_WEB_INDEX
-                (CRAWL_TIME NUMERIC(11) PRIMARY KEY)",
-            "CREATE TABLE FEED_ITEM (GUID CHAR(11) PRIMARY KEY,
-                TITLE VARCHAR(512), LINK VARCHAR(256),
-                DESCRIPTION VARCHAR(4096),
-                PUBDATE INT, SOURCE_NAME VARCHAR(16))",
-            "CREATE TABLE GROUP_ITEM (ID $serial PRIMARY KEY $auto_increment,
-                PARENT_ID INTEGER, GROUP_ID INTEGER, USER_ID INTEGER,
-                TITLE VARCHAR(512), DESCRIPTION VARCHAR(".MAX_GROUP_POST_LEN."),
-                PUBDATE NUMERIC(11), UPS INTEGER DEFAULT 0,
-                DOWNS INTEGER DEFAULT 0, TYPE INTEGER DEFAULT ".
-                STANDARD_GROUP_ITEM.")",
-            "CREATE INDEX GI_GROUP_ID_INDEX ON GROUP_ITEM (GROUP_ID)",
-            "CREATE INDEX GI_USER_ID_INDEX ON GROUP_ITEM (USER_ID)",
-            "CREATE INDEX GI_PARENT_ID_INDEX ON GROUP_ITEM (PARENT_ID)",
-            "CREATE TABLE GROUP_ITEM_VOTE(USER_ID INTEGER, ITEM_ID INTEGER)",
-            "CREATE TABLE GROUP_PAGE (ID $serial PRIMARY KEY $auto_increment,
-                GROUP_ID INTEGER, DISCUSS_THREAD INTEGER, TITLE VARCHAR(512),
-                PAGE VARCHAR(".MAX_GROUP_PAGE_LEN."), LOCALE_TAG VARCHAR(16),
-                CONSTRAINT GID_TITLE_LOC UNIQUE(GROUP_ID, TITLE, LOCALE_TAG))",
-            "CREATE INDEX GP_ID_INDEX ON GROUP_PAGE
-                 (GROUP_ID, TITLE, LOCALE_TAG)",
-            "CREATE TABLE GROUP_PAGE_HISTORY (PAGE_ID INTEGER,
-                GROUP_ID INTEGER, EDITOR_ID INTEGER, TITLE VARCHAR(512),
-                PAGE VARCHAR(".MAX_GROUP_PAGE_LEN."), EDIT_COMMENT VARCHAR(80),
-                LOCALE_TAG VARCHAR(16), PUBDATE NUMERIC(11),
-                PRIMARY KEY(PAGE_ID, PUBDATE))",
-            "CREATE TABLE GROUPS (GROUP_ID $serial PRIMARY KEY $auto_increment,
-                GROUP_NAME VARCHAR(128), CREATED_TIME VARCHAR(20),
-                OWNER_ID INTEGER, REGISTER_TYPE INTEGER,
-                MEMBER_ACCESS INTEGER, VOTE_ACCESS INTEGER DEFAULT ".
-                NON_VOTING_GROUP.")",
-            /* NOTE: We are not using singular name GROUP for GROUPS as
-               GROUP is a reserved SQL keyword
-             */
-            "CREATE INDEX GRP_OWNER_ID_INDEX ON GROUPS (OWNER_ID)",
-            "CREATE INDEX GRP_MEMBER_ACCESS_INDEX ON GROUPS(MEMBER_ACCESS)",
-            "CREATE TABLE LOCALE(LOCALE_ID $serial PRIMARY KEY
-                $auto_increment, LOCALE_TAG VARCHAR(16),
-                LOCALE_NAME VARCHAR(256), WRITING_MODE CHAR(5))",
-            "CREATE INDEX LCL_LOCALE_TAG_INDEX ON LOCALE(LOCALE_TAG)",
-            "CREATE TABLE MACHINE (NAME VARCHAR(16) PRIMARY KEY,
-                URL VARCHAR(256) UNIQUE, HAS_QUEUE_SERVER INT,
-                NUM_FETCHERS INTEGER, PARENT VARCHAR(16) )",
-            "CREATE TABLE MEDIA_SOURCE (TIMESTAMP NUMERIC(11) PRIMARY KEY,
-                NAME VARCHAR(64) UNIQUE, TYPE VARCHAR(16),
-                SOURCE_URL VARCHAR(256), THUMB_URL VARCHAR(256),
-                LANGUAGE VARCHAR(7))",
-            "CREATE INDEX MS_TYPE_INDEX ON MEDIA_SOURCE(TYPE)",
-            "CREATE TABLE MIX_COMPONENTS (TIMESTAMP NUMERIC(11),
-                FRAGMENT_ID INTEGER, CRAWL_TIMESTAMP NUMERIC(11), WEIGHT REAL,
-                KEYWORDS VARCHAR(256),
-                PRIMARY KEY(TIMESTAMP, FRAGMENT_ID, CRAWL_TIMESTAMP) )",
-            "CREATE TABLE MIX_FRAGMENTS (TIMESTAMP NUMERIC(11),
-                FRAGMENT_ID INTEGER, RESULT_BOUND INTEGER,
-                PRIMARY KEY(TIMESTAMP, FRAGMENT_ID))",
-            "CREATE TABLE ROLE (ROLE_ID $serial PRIMARY KEY $auto_increment,
-                NAME VARCHAR(512))",
-            "CREATE TABLE ROLE_ACTIVITY (ROLE_ID INTEGER, ACTIVITY_ID INTEGER,
-                PRIMARY KEY(ROLE_ID, ACTIVITY_ID))",
-            "CREATE TABLE SUBSEARCH (LOCALE_STRING VARCHAR(32) PRIMARY KEY,
-                FOLDER_NAME VARCHAR(16), INDEX_IDENTIFIER CHAR(13),
-                PER_PAGE INT)",
-            "CREATE TABLE TRANSLATION (TRANSLATION_ID $serial PRIMARY KEY
-                $auto_increment, IDENTIFIER_STRING VARCHAR(512) UNIQUE)",
-            "CREATE INDEX TRANS_IDENTIFIER_STRING_INDEX ON 
-                TRANSLATION(IDENTIFIER_STRING)",
-            "CREATE TABLE TRANSLATION_LOCALE (TRANSLATION_ID INTEGER,
-                LOCALE_ID INTEGER, TRANSLATION VARCHAR(4096),
-                PRIMARY KEY(TRANSLATION_ID, LOCALE_ID))",
-            "CREATE TABLE USERS(USER_ID $serial PRIMARY KEY $auto_increment,
-                FIRST_NAME VARCHAR(16), LAST_NAME VARCHAR(16),
-                USER_NAME VARCHAR(16) UNIQUE, EMAIL VARCHAR(60),
-                PASSWORD CHAR(60), STATUS INTEGER, HASH CHAR(60),
-                CREATION_TIME VARCHAR(20), UPS INTEGER DEFAULT 0,
-                DOWNS INTEGER DEFAULT 0, ZKP_PASSWORD CHAR(200))",
-            "CREATE INDEX USRS_USER_NAME_INDEX ON USERS(USER_NAME)",
-            "CREATE TABLE USER_GROUP (USER_ID INTEGER , GROUP_ID INTEGER,
-                   STATUS INTEGER, JOIN_DATE NUMERIC(11),
-                   PRIMARY KEY (GROUP_ID, USER_ID) )",
-            "CREATE TABLE USER_ROLE (USER_ID INTEGER, ROLE_ID INTEGER,
-                PRIMARY KEY (ROLE_ID, USER_ID))",
-            "CREATE TABLE USER_SESSION(USER_ID INTEGER PRIMARY KEY,
-                SESSION VARCHAR(4096))",
-            "CREATE TABLE VISITOR(ADDRESS VARCHAR(39),
-                PAGE_NAME VARCHAR(16),
-                END_TIME INTEGER, DELAY INTEGER, FORGET_AGE INTEGER,
-                ACCESS_COUNT INTEGER,
-                PRIMARY KEY(ADDRESS, PAGE_NAME))",
-            "CREATE TABLE VERSION(ID INTEGER PRIMARY KEY)",
-            );
-        foreach($create_statements as $statement) {
+        $this->initializeSQL($dbm, $dbinfo);
+        $create_statements = $this->create_statements;
+        foreach($create_statements as $table_or_index => $statement) {
+            if(in_array($table_or_index, $skip_list)) { continue; }
             if(!$result = $dbm->execute($statement)) {
                 echo $statement." ERROR!";
                 return false;

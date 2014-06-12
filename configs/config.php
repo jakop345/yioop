@@ -34,6 +34,10 @@
  */
 if(!defined('BASE_DIR') ||
     defined('PROFILE_FILE_NAME')) {echo "BAD REQUEST"; exit();}
+/** Version number for upgrade function
+ *  @var int
+ */
+define('YIOOP_VERSION', 20);
 /*
     pcre is an external library to php which can cause Yioop
     to seg fault if given instances of reg expressions with
@@ -161,8 +165,6 @@ if(file_exists(WORK_DIRECTORY.PROFILE_FILE_NAME)) {
     /** @ignore */
     define('PROFILE', false);
     define('DBMS', 'sqlite3');
-    define('CAPTCHA_TYPE', CAPTCHA);
-    define('CAPTCHA_POSSIBILITIES', MOST);
     define('AUTHENTICATION_MODE', NORMAL_AUTHENTICATION);
     define('DEBUG_LEVEL', NO_DEBUG_INFO);
     define('USE_FILECACHE', false);

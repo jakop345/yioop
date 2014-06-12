@@ -113,6 +113,7 @@ function upgradeDatabaseWorkDirectory()
     } else {
         exit(); // maybe someone else has locked DB, so bail
     }
+    $result = NULL; //don't lock db if sqlite
     $key = array_search($current_version, $versions);
     $versions = array_slice($versions, $current_version);
     foreach($versions as $version) {
@@ -489,9 +490,9 @@ function upgradeDatabaseVersion16(&$db)
 
     $old_archives_path = WORK_DIRECTORY."/cache/archives";
     $new_archives_path = WORK_DIRECTORY."/archives";
-    if (file_exists($old_archives_path)) {
+    if(file_exists($old_archives_path)) {
         rename($old_archives_path, $new_archives_path);
-    } else {
+    } else if(!file_exists($new_archives_path)) {
         mkdir($new_archives_path);
     }
     $db->setWorldPermissionsRecursive($new_archives_path);
@@ -526,7 +527,6 @@ function upgradeDatabaseVersion17(&$db)
         'Manage Groups');
     updateTranslationForStringId($db, 'db_activity_manage_groups', 'fr-FR',
         'Modifier les groupes');
-
     upgradeLocales();
 }
 /**
@@ -545,60 +545,232 @@ function upgradeDatabaseVersion18(&$db)
                 TYPE VARCHAR(16))");
     $db->execute("CREATE TABLE BLOG_DESCRIPTION (TIMESTAMP INT(11) UNIQUE,
                 DESCRIPTION VARCHAR(4096))");
-
     addActivityAtId($db, 'db_activity_blogs_pages', "blogPages", 6);
     updateTranslationForStringId($db, 'db_activity_blogs_pages', 'en-US',
         'Blogs and Pages');
     updateTranslationForStringId($db, 'db_activity_blogs_pages', 'fr-FR',
         'les blogs et les pages');
-
     upgradeLocales();
 }
 /**
  * Upgrades a Version 18 version of the Yioop! database to a Version 19 version
- * This is a major upgrade in that crawlCrypt was changed, so old passwords
- * won't work. All accounts are copied over to the new system but are defaulted
- * to inactive. The root account is copied over but its password is reset to
- * blank
+ * This update has been superseded by the Version20 update and so its contents
+ * have been eliminated except for the change to the version table.
  * @param object $db datasource to use to upgrade
  */
 function upgradeDatabaseVersion19(&$db)
 {
     $db->execute("DELETE FROM VERSION WHERE ID < 18");
     $db->execute("UPDATE VERSION SET ID=19 WHERE ID=18");
-    $db->execute("CREATE TABLE VISITOR(ADDRESS VARCHAR(39),
-        PAGE_NAME VARCHAR(16), END_TIME INTEGER, DELAY INTEGER,
-        FORGET_AGE INTEGER)");
-    $dbinfo = array("DBMS" => DBMS, "DB_HOST" => DB_HOST, "DB_NAME" => DB_NAME,
-        "DB_PASSWORD" => DB_PASSWORD);
-    $sql = "ALTER TABLE USERS RENAME TO USER_OLD";
-    $db->execute($sql);
-    $auto_increment = $db->autoIncrement($dbinfo);
-    $db->execute("CREATE TABLE USERS(USER_ID INTEGER PRIMARY KEY $auto_increment,
-        FIRST_NAME VARCHAR(16), LAST_NAME VARCHAR(16),
-        USER_NAME VARCHAR(16) UNIQUE, EMAIL VARCHAR(60),
-        PASSWORD CHAR(60), STATUS INTEGER, HASH CHAR(60))");
-    $sql = "SELECT USER_ID, USER_NAME FROM USER_OLD";
-    $result = $db->execute($sql);
-    while($row = $db->fetchArray($result)) {
-        $status = ($row['USER_NAME'] == 'root') ? ACTIVE_STATUS :
-            INACTIVE_STATUS;
-        $creation_time = microTimestamp();
-        $sql = "INSERT INTO USER (USER_ID, USER_NAME, FIRST_NAME, LAST_NAME,
-            EMAIL, PASSWORD, STATUS, HASH)
-            VALUES ('{$row['USER_ID']}', '{$row['USER_NAME']}',
-            '{$row['FIRST_NAME']}', '{$row['LAST_NAME']}', '{$row['EMAIL']}',
-            '".crawlCrypt('')."', '".$status."', '".
-            crawlCrypt($row['USER_NAME'].AUTH_KEY.$creation_time)."', '".
-            $creation_time."')";
-        $db->execute($sql);
-    }
-    $db->disconnect();
-    $db->connect();
-    $db->dbname = NULL;
-    $sql = "DROP TABLE USER_OLD";
-    $db->execute($sql);
 }
+/**
+ * Upgrades a Version 19 version of the Yioop! database to a Version 20 version
+ * This is a major upgrade as the user table have changed. This also acts
+ * as a cumulative since version 0.98. It involves a web form that has only
+ * been localized to English
+ * @param object $db datasource to use to upgrade
+ */
+function upgradeDatabaseVersion20(&$db)
+{
+    if(!isset($_REQUEST['v20step'])) {
+        $_REQUEST['v20step'] = 1;
+    }
+    $upgrade_check_file = WORK_DIRECTORY."/v20check.txt";
+    if(!file_exists($upgrade_check_file)) {
+        $upgrade_password = substr(sha1(microtime().AUTH_KEY), 0, 8);
+        file_put_contents($upgrade_check_file, $upgrade_password);
+    } else {
+        $v20check = trim(file_get_contents($upgrade_check_file));
+        if(isset($_REQUEST['v20step']) && $_REQUEST['v20step'] == 2 &&
+            (!isset($_REQUEST['upgrade_code'])||
+            $v20check != trim($_REQUEST['upgrade_code']))) {
+            $_REQUEST['v20step'] = 1;
+            $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
+                "v20check.txt not typed in correctly!</h1>')";
+        }
+    }
+    switch($_REQUEST['v20step'])
+    {
+        case "2":
+            /** Get base class for profile_model.php*/
+            require_once BASE_DIR."/models/model.php";
+            /** For ProfileModel::createDatabaseTables method */
+            require_once BASE_DIR."/models/profile_model.php";
+            /** For UserModel::addUser method */
+            require_once BASE_DIR."/models/user_model.php";
+            $profile_model = new ProfileModel(DB_NAME, false);
+            $profile_model->db = $db;
+            $save_tables = array("ACTIVE_FETCHER", "CURRENT_WEB_INDEX",
+                "FEED_ITEM", "MACHINE", "MEDIA_SOURCE", "SUBSEARCH");
+            $dbinfo = array("DBMS" => DBMS, "DB_HOST" => DB_HOST,
+                "DB_USER" => DB_USER, "DB_PASSWORD" => DB_PASSWORD,
+                "DB_NAME" => DB_NAME);
+            $creation_time = microTimestamp();
+            $profile = $profile_model->getProfile(WORK_DIRECTORY);
+            $new_profile = $profile;
+            $new_profile['AUTHENTICATION_MODE'] = NORMAL_AUTHENTICATION;
+            $new_profile['FIAT_SHAMIR_MODULUS'] = generateFiatShamirModulus();
+            $new_profile['MAIL_SERVER']= "";
+            $new_profile['MAIL_PORT']= "";
+            $new_profile['MAIL_USERNAME']= "";
+            $new_profile['MAIL_PASSWORD']= "";
+            $new_profile['MAIL_SECURITY']= "";
+            $new_profile['REGISTRATION_TYPE'] = 'disable_registration';
+            $new_profile['USE_MAIL_PHP'] = true;
+            $new_profile['WORD_SUGGEST'] = true;
+            $profile_model->updateProfile(WORK_DIRECTORY, $new_profile,
+                $profile);
+            //get current users (assume can fit in memory and doesn't take long)
+            $users = array();
+            $sha1_of_upgrade_code = bchexdec(sha1($v20check));
+            $temp = bcpow($sha1_of_upgrade_code . '', '2');
+            $zkp_password = bcmod($temp, $new_profile['FIAT_SHAMIR_MODULUS']);
+            $user_tables_sql = array("SELECT USER_NAME FROM USER", 
+                "SELECT USER_NAME, FIRST_NAME, LAST_NAME, EMAIL FROM USERS");
+            $i = 0;
+            foreach($user_tables_sql as $sql) {
+                $result = $db->execute($sql);
+                if($result) {
+                    while($users[$i] = $db->fetchArray($result)) {
+                        $setup_user_fields = array();
+                        if($users[$i]["USER_NAME"] == "root" ||
+                            $users[$i]["USER_NAME"] == "public") { continue; }
+                        $users[$i]["FIRST_NAME"] = 
+                            (isset($users[$i]["FIRST_NAME"])) ?
+                            $users[$i]["FIRST_NAME"] : "FIRST_$i";
+                        $users[$i]["LAST_NAME"] = 
+                            (isset($users[$i]["LAST_NAME"])) ?
+                            $users[$i]["LAST_NAME"] : "LAST_$i";
+                        $users[$i]["EMAIL"] =
+                            (isset($users[$i]["EMAIL"])) ?
+                            $users[$i]["EMAIL"] : "user$i@dev.null";
+                        /* although not by default using zkp set up so
+                           accounts would work on switch
+                        */
+                        $users[$i]["PASSWORD"] = $v20check;
+                        $users[$i]["STATUS"] = INACTIVE_STATUS;
+                        $users[$i]["CREATION_TIME"] = $creation_time;
+                        $users[$i]["UPS"] = 0;
+                        $users[$i]["DOWNS"] = 0;
+                        $users[$i]["ZKP_PASSWORD"] = $zkp_password;
+                        $i++;
+                    }
+                    unset($users[$i]);
+                    $result = NULL;
+                }
+            }
+            $dbinfo = array("DBMS" => DBMS, "DB_HOST" => DB_HOST,
+                "DB_USER" => DB_USER, "DB_PASSWORD" => DB_PASSWORD,
+                "DB_NAME" => DB_NAME);
+            $profile_model->initializeSql($db, $dbinfo);
+            $database_tables = array_diff(
+                array_keys($profile_model->create_statements),
+                $save_tables);
+            $database_tables = array_merge($database_tables, 
+                array("BLOG_DESCRIPTION", "USER_OLD", "ACCESS"));
+            foreach($database_tables as $table) {
+                if(!in_array($table, $save_tables)){
+                    $db->execute("DROP TABLE ".$table);
+                }
+            }
+            if($profile_model->migrateDatabaseIfNecessary(
+                $dbinfo, $save_tables)) {
+                $user_model = new UserModel(DB_NAME, false);
+                $user_model->db = $db;
+                foreach($users as $user) {
+                    $user_model->addUser($user["USER_NAME"], $user["PASSWORD"],
+                        $user["FIRST_NAME"], $user["LAST_NAME"],
+                        $user["EMAIL"], $user["STATUS"], $user["ZKP_PASSWORD"]);
+                }
+                $user = array();
+                $user['USER_ID'] = ROOT_ID;
+                $user['PASSWORD'] = $v20check;
+                $user["ZKP_PASSWORD"] = $zkp_password;
+                $user_model->updateUser($user);
+                return;
+            }
+            $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
+                "Couldn't migrate database tables from defaults!</h1>')";
+        case "1":
+        default:
+            ?>
+            <!DOCTYPE html>
+            <html lang='en-US'>
+            <head>
+            <title>Yioop Upgrade Detected</title>
+            <meta name="ROBOTS" content="NOINDEX,NOFOLLOW" />
+            <meta name="Author" content="Christopher Pollett" />
+            <meta charset="utf-8" />
+            <?php if(MOBILE) {?>
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <?php } ?>
+            <link rel="stylesheet" type="text/css"
+                 href="<?php e(BASE_URL); ?>/css/search.css" />
+            </head>
+            <body class="html-ltr <?php if(MOBILE) {e('mobile'); } ?>" >
+            <div id="message" ></div>
+            <div class='small-margin-current-activity'>
+            <h1 class='center green'>Yioop Upgrade Detected!</h1>
+            <p>Upgrading to Version 1 of Yioop from an earlier version
+            is a major upgrade. The way passwords are stored and the
+            organization of the Yioop database has changed. Here is
+            what is preserved by this upgrade:</p>
+            <ol>
+            <li>Existing crawls and archive data.</li>
+            <li>Machines known if this instance is a name server.</li>
+            <li>Media sources and subsearches.</li>
+            <li>Feed items.</li>
+            </ol>
+            <p>Here is what happens during the upgrade which might
+            result in data loss:</p>
+            <ol>
+            <li>Root and user account passwords are changed to the contents of
+            v20check.txt.</li>
+            <li>User accounts other than root are marked as inactived,
+            so will have tobe activated under Manage Users before that person
+            can sign in.</li>
+            <li>All roles except Admin and User are deleted. Root
+            will be given Admin role, all other users will receive
+            User role.</li>
+            <li>All existing groups are deleted.</li>
+            <li>Existing crawl mixes will be deleted.</li>
+            <li>Any customized translations that begin with the prefix db_.
+            Other still in use translations will be preserved.</li>
+            </ol>
+            <p>If given the above you don't want to upgrade, merely replace
+            this folder with the contents of your old Yioop instance and
+            you should be able to continue to use Yioop as before.</p>
+            <p>If you decide to proceed with the upgrade, please back up
+            both your existing database and work directory.</p>
+            <form method="post" action="?">
+            <p><label for="upgrade-code">
+            <b>In the field below enter the string found in the file:<br />
+            <span class="green"><?php e(WORK_DIRECTORY."/v20check.txt")?></span>
+            </b></label></p>
+            <input id='upgrade-code' class="extra-wide-field"
+                name="upgrade_code" type="text" />
+            <input type="hidden" name="v20step" value="2" />
+            <button class="button-box" type="submit">Upgrade</button>
+            </form>
+            <?php
+        break;
+    }
+    ?>
+    </div>
+    <script type="text/javascript" src="<?php e(BASE_URL);
+        ?>/scripts/basic.js" ></script>
+    <script type="text/javascript" >
+    <?php
+    if(isset($data['SCRIPT'])) {
+        e($data['SCRIPT']);
+    }
+    ?></script>
+    </body>
+    </html>
+   <?php
+   exit();
+}
+
 /**
  * Used to insert a new activity into the database at a given acitivity_id
  *
