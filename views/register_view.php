@@ -320,6 +320,19 @@ class RegisterView extends View
                     ?>
                     <tr>
                         <td></td>
+                        <td class="table-input border-top narrow-field" ><?php
+                        e(tl('register_view_i_agree'))?>
+                        <a href="<?php e(BASE_URL);
+                            ?>terms.php"><?php e(tl('register_view_terms'));
+                            ?></a>
+                        <?php e(tl('register_view_and')); ?>
+                        <a href="<?php e(BASE_URL);
+                            ?>privacy.php"><?php e(tl('register_view_privacy'));
+                            ?></a><?php e(tl('register_view_period')); ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
                         <td class="table-input border-top">
                         <input type="hidden"
                             name="<?php e(CSRF_TOKEN);?>"
