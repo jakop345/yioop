@@ -282,12 +282,39 @@ The HTML entity
 can be used to create a non-breaking space. The tag
 <nowiki><br></nowiki>
 can be used to produce a line break.
-==Preformatted Text==
+
+==Preformatted Text and Unformatted Text==
 You can force text to be formatted as you typed it rather
 than using the layout mechanism of the browser using the
 <nowiki><pre>preformatted text tag.</pre></nowiki>
 Alternatively, a sequence of lines all beginning with a
 space character will also be treated as preformatted.
+
+Wiki markup within pre tags is still parsed by Yioop.
+If you would like to add text that is not parsed, enclosed
+it in `<`nowiki> `<`/nowiki> tags.
+
+==Styling Text Paragraphs==
+Yioop wiki syntax offers a number of templates for
+control the styles, and alignment of text for
+a paragraph or group of paragraphs:<br />
+`{{`left| some text`}}`,<br /> `{{`right| some text`}}`,<br />
+and<br />
+`{{`center| some text`}}`<br /> can be used to left-justify,
+right-justify, and center a block of text. For example,
+the last command, would produce:
+{{center|
+some text
+}}
+If you know cascading style sheets (CSS), you can set
+a class or id selector for a block of text using:<br />
+`{{`class="my-class-selector" some text`}}`<br />and<br />
+`{{`id="my-id-selector" some text`}}`.<br />
+You can also apply inline styles to a block of text
+using the syntax:<br />
+`{{`style="inline styles" some text`}}`.<br />
+For example, `{{`style="color:red" some text`}}` looks
+like {{style="color:red" some text}}. 
 
 ==Lists==
 The Yioop Wiki Syntax supported of ways of listing items:
@@ -353,7 +380,7 @@ would be drawn as:
 
 ==Tables==
 A table begins with {`|`  and ends with `|`}. Cells are separated with | and
-rows are separatec with |- as can be seen in the following
+rows are separated with |- as can be seen in the following
 example:
 <nowiki>
 {|

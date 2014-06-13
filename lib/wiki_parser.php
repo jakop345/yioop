@@ -102,39 +102,39 @@ class WikiParser implements CrawlConstants
                 "&#039;&#039;&#039;&#039;&#039;/s", "<b><i>$1</i></b>"),
             array("/&#039;&#039;&#039;(.+?)&#039;&#039;&#039;/s", "<b>$1</b>"),
             array("/&#039;&#039;(.+?)&#039;&#039;/s", "<i>$1</i>"),
-            array('/\n*?{{center\|(.+?)}}/s',
-                "$esc<div class='center'>\n\n$1\n\n$esc</div>"),
             array('/\n*?{{\s*class\s*\=\s*'.
                 '&quot;([a-zA-Z\_\-\s]+)&quot;\s+(.+)}}/',
                 "$esc<span class=\"$1\">$2$esc</span>"),
             array('/\n*?{{\s*class\s*\=\s*'.
                 '&quot;([a-zA-Z\_\-\s]+)&quot;\s+(.+)}}/s',
-                "$esc<div class=\"$1\">\n\n$2\n\n$esc</div>"),
+                "\n\n$esc<div class=\"$1\">\n\n$2\n\n$esc</div>"),
             array('/\n*?{{\s*class\s*\=\s*'.
                 '&#039;([a-zA-Z\_\-\s]+)&#039;\s+(.+)}}/s',
-                "$esc<div class='$1'>\n\n$2\n\n$esc</div>"),
+                "\n\n$esc<div class='$1'>\n\n$2\n\n$esc</div>"),
             array('/\n*?{{\s*id\s*\=\s*&quot;([a-zA-Z\_\-]+)&quot;\s+(.+)}}/',
                 "$esc<span id=\"$1\">$2$esc</span>"),
             array('/\n*?{{\s*id\s*\=\s*&quot;([a-zA-Z\_\-]+)&quot;\s+(.+)}}/s',
-                "$esc<div id=\"$1\">\n\n$2\n\n$esc</div>"),
+                "\n\n$esc<div id=\"$1\">\n\n$2\n\n$esc</div>"),
             array('/\n*?{{\s*id\s*\=\s*&#039;([a-zA-Z\_\-]+)&#039;\s+(.+)}}/s',
-                "$esc<div id='$1'>\n\n$2\n\n$esc</div>"),
+                "\n\n$esc<div id='$1'>\n\n$2\n\n$esc</div>"),
             array('/\n*?{{\s*style\s*\=\s*'.
                 '&quot;([0-9a-zA-Z\/\#\_\-\.\;\:\s\n]+)&quot;\s+(.+)}}/',
                 "$esc<span style=\"$1\">$2$esc</span>"),
             array('/\n*?{{\s*style\s*\=\s*'.
                 '&quot;([0-9a-zA-Z\/\#\_\-\.\;\:\s\n]+)&quot;\s+(.+)}}/s',
-                "$esc<div style=\"$1\">\n\n$2\n\n$esc</div>"),
+                "\n\n$esc<div style=\"$1\">\n\n$2\n\n$esc</div>"),
             array('/\n*?{{\s*style\s*\=\s*'.
                 '&#039;([0-9a-zA-Z\_\-\.\;\:\s\n]+)&#039;\s+(.+)}}/',
                 "$esc<span style='$1'>$2$esc</span>"),
             array('/\n*?{{\s*style\s*\=\s*'.
                 '&#039;([0-9a-zA-Z\_\-\.\;\:\s\n]+)&#039;\s+(.+)}}/s',
-                "$esc<div style='$1'>\n\n$2\n\n$esc</div>"),
-            array('/\n*?{{left\s*\|(.+?)}}/s',
-                "$esc<div class='align-left'>\n\n$1\n\n$esc</div>"),
-            array('/\n*?{{right\s*\|(.+?)}}/s',
-                "$esc<div class='align-right'>\n\n$1\n\n$esc</div>"),
+                "\n\n$esc<div style='$1'>\n\n$2\n\n$esc</div>"),
+            array('/\n*{{center\s*\|\s*(.+?)}}/s',
+                "\n\n$esc<div class='center'>\n\n$1\n\n$esc</div>"),
+            array('/\n*?{{left\s*\|\s*(.+?)}}/s',
+                "\n\n$esc<div class='align-left'>\n\n$1\n\n$esc</div>"),
+            array('/\n*?{{right\s*\|\s*(.+?)}}/s',
+                "\n\n$esc<div class='align-right'>\n\n$1\n\n$esc</div>"),
             array('/{{smallcaps\|(.+?)}}/s', "<small>$1</small>"),
             array('/{{Hatnote\|(.+?)}}/si', "($1)"),
             array("/{{fraction\|(.+?)\|(.+?)}}/si", "<small>$1/$2</small>"),
@@ -518,8 +518,9 @@ function makeTableCallback($matches)
             $old_line = true;
             continue;
         }
+        $end = substr($out, -4);
         if($item == "" || $item[0] == "-") {
-            if($out[strlen($out) - 2] != "r") {
+            if($end != "<tr>") {
                 $out .= "</$old_type>";
             }
             $out .= "</tr>\n<tr>";
@@ -528,13 +529,15 @@ function makeTableCallback($matches)
 
         if($item[0] == "+") {
             $type= "caption";
-            $old_type = $type;
             $item = substr($item, 1);
-        }
-        if($item[0] == "#") {
+            if($end == "<tr>") {
+                $out = substr($out, 0, -4);
+            }
+        } else if($item[0] == "#") {
             $type= "th";
-            $old_type = $type;
             $item = substr($item, 1);
+        } else {
+            $type = "td";
         }
         $trim_item = trim($item);
         $attribute_trim = str_replace("\n", " ", $trim_item);
@@ -546,13 +549,15 @@ function makeTableCallback($matches)
             continue;
         }
         $skip = false;
-        if($out[strlen($out) - 2] != "r") {
+        if($end != "<tr>") {
             $out .= "</$old_type>";
+            if($old_type == "caption") {
+                $out .= "<tr>";
+            }
         }
         $out .= "<$type $state>\n$trim_item";
         $state = "";
         $old_type = $type;
-        $type = "td";
     }
     $out .= "</$old_type></tr></table>";
     return $out;

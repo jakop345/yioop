@@ -977,6 +977,19 @@ class SocialComponent extends Component implements CrawlConstants
             {
                 case "edit":
                     if(!$data["CAN_EDIT"]) { continue; }
+                    if(isset($_REQUEST['caret']) &&
+                       isset($_REQUEST['scroll_top'])) {
+                        $caret = $parent->clean($_REQUEST['caret'],
+                            'int');
+                        $scroll_top= $parent->clean($_REQUEST['scroll_top'],
+                            'int');
+                        $data['SCRIPT'] .= "wiki = elt('wiki-page');".
+                            "if (wiki.setSelectionRange) { " .
+                            "   wiki.focus();" .
+                            "   wiki.setSelectionRange($caret, $caret);".
+                            "} ".
+                            "wiki.scrollTop = $scroll_top;";
+                    }
                     $data["MODE"] = "edit";
                     if($missing_fields) {
                         $data['SCRIPT'] .=
@@ -994,19 +1007,6 @@ class SocialComponent extends Component implements CrawlConstants
                             "doMessage('<h1 class=\"red\" >".
                             tl("group_controller_page_saved").
                             "</h1>');";
-                        if(isset($_REQUEST['caret']) &&
-                           isset($_REQUEST['scroll_top'])) {
-                            $caret = $parent->clean($_REQUEST['caret'],
-                                'int');
-                            $scroll_top= $parent->clean($_REQUEST['scroll_top'],
-                                'int');
-                            $data['SCRIPT'] .= "wiki = elt('wiki-page');".
-                                "if (wiki.setSelectionRange) { " .
-                                "   wiki.focus();" .
-                                "   wiki.setSelectionRange($caret, $caret);".
-                                "} ".
-                                "wiki.scrollTop = $scroll_top;";
-                        }
                     }
                 break;
                 case "history":

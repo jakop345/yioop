@@ -68,8 +68,17 @@ class WikiElement extends Element implements CrawlConstants
             $data["GROUP"]["GROUP_ID"]."&amp;arg=".$data['MODE']."&amp;".
             "page_name=".$data['PAGE_NAME'];
         if($is_admin || $logged_in) { ?>
-            <div class="float-same admin-collapse">[<a
-            href="<?php e($other_base_query) ?>" ><?php
+            <div class="float-same admin-collapse">[<a id='arrows-link'
+            href="<?php e($other_base_query) ?>" onclick="
+            arrows=elt('arrows-link');
+            arrows_url = arrows.href;
+            caret = (elt('wiki-page').selectionStart) ?
+                elt('wiki-page').selectionStart : 0;
+            edit_scroll = elt('scroll-top').value= (elt('wiki-page').scrollTop)?
+                elt('wiki-page').scrollTop : 0;
+            arrows_url += '&amp;caret=' + caret + '&amp;scroll_top=' +
+                edit_scroll;
+            arrows.href = arrows_url;" ><?php
             e($arrows); ?></a>]</div>
         <?php
         }
@@ -172,9 +181,11 @@ class WikiElement extends Element implements CrawlConstants
                 e(tl('wiki_element_submit')); ?></button>
             </form>
             <?php
-            e("<p><a href='?c=group&amp;group_id=".PUBLIC_GROUP_ID.
-                "&amp;arg=read&amp;a=wiki&amp;page_name=Syntax'>".
-                tl("wiki_view_syntax_summary")."</a>.</p>");
+            e("<p><a href='?c={$data['CONTROLLER']}&amp;".CSRF_TOKEN.
+                "={$data[CSRF_TOKEN]}&amp;group_id=".
+                PUBLIC_GROUP_ID. "&amp;arg=read&amp;a=wiki&amp;".
+                "page_name=Syntax'>". tl("wiki_view_syntax_summary").
+                "</a>.</p>");
         } else if(!$logged_in) {
             e("<h2>".tl("wiki_view_page_no_exist", $data["PAGE_NAME"]).
                 "</h2>");
@@ -208,7 +219,8 @@ class WikiElement extends Element implements CrawlConstants
             onsubmit="elt('caret-pos').value =
             (elt('wiki-page').selectionStart) ?
             elt('wiki-page').selectionStart : 0;
-            elt('scroll-top').value=elt('wiki-page').scrollTop;" >
+            elt('scroll-top').value= (elt('wiki-page').scrollTop) ?
+            elt('wiki-page').scrollTop : 0;" >
             <input type="hidden" name="c" value="<?php e($data['CONTROLLER']); 
             ?>" />
             <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
