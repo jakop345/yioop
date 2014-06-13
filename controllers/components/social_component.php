@@ -993,7 +993,20 @@ class SocialComponent extends Component implements CrawlConstants
                         $data['SCRIPT'] .=
                             "doMessage('<h1 class=\"red\" >".
                             tl("group_controller_page_saved").
-                            "</h1>')";
+                            "</h1>');";
+                        if(isset($_REQUEST['caret']) &&
+                           isset($_REQUEST['scroll_top'])) {
+                            $caret = $parent->clean($_REQUEST['caret'],
+                                'int');
+                            $scroll_top= $parent->clean($_REQUEST['scroll_top'],
+                                'int');
+                            $data['SCRIPT'] .= "wiki = elt('wiki-page');".
+                                "if (wiki.setSelectionRange) { " .
+                                "   wiki.focus();" .
+                                "   wiki.setSelectionRange($caret, $caret);".
+                                "} ".
+                                "wiki.scrollTop = $scroll_top;";
+                        }
                     }
                 break;
                 case "history":

@@ -48,6 +48,12 @@ require_once BASE_DIR."/lib/processors/text_processor.php";
 class WikiParser implements CrawlConstants
 {
     /**
+     * Escape string to prevent inccoreect nesting of div for some of the
+     * substitutions;
+     * @var string
+     */
+    var $esc=",[}";
+    /**
      * Used to initialize the arrays of match/replacements used to format
      * wikimedia syntax into HTML (not perfectly since we are only doing
      * regexes)
@@ -56,6 +62,7 @@ class WikiParser implements CrawlConstants
      */
     function __construct($base_address = "", $add_substitutions = array())
     {
+        $esc = $this->esc;
         //assume substitutions are applied after htmlentities called on string
         $substitutions = array(
             array('/(\A|\n)=\s*([^=]+)\s*=/',
@@ -70,18 +77,18 @@ class WikiParser implements CrawlConstants
                 "\n<h5 id='$2'>$2</h5>"),
             array('/(\A|\n)======\s*([^=]+)\s*======/',
                 "\n<h6 id='$2'>$2</h6>"),
-            array("/{{Main\s*\|(.+?)(\|.+)?}}/i",
-                "<div class='indent'>(<a href=\"".
-                $base_address."$1\">$1</a>)</div>"),
-            array("/{{See also\s*\|(.+?)(\|.+)?}}/i",
-                "<div class='indent'>(<a href=\"".
-                $base_address."$1\">$1</a>)</div>"),
-            array("/{{See\s*\|(.+?)(\|.+)?}}/i",
-                "<div class='indent'>(<a href=\"".
-                $base_address."$1\">$1</a>)</div>"),
-            array("/{{\s*Related articles\s*\|(.+?)\|(.+?)}}/si",
-                "<div class='indent'>(<a href=\"".
-                $base_address . "$1\">$1?</a>)</div>"),
+            array("/\n*?{{Main\s*\|(.+?)(\|.+)?}}/i",
+                "$esc<div class='indent'>\n\n(<a href=\"".
+                $base_address."$1\">$1</a>)\n\n$esc</div>"),
+            array("/\n*?{{See also\s*\|(.+?)(\|.+)?}}/i",
+                "$esc<div class='indent'>\n\n(<a href=\"".
+                $base_address."$1\">$1</a>)\n\n$esc</div>"),
+            array("/\n*?{{See\s*\|(.+?)(\|.+)?}}/i",
+                "$esc<div class='indent'>\n\n(<a href=\"".
+                $base_address."$1\">$1</a>)\n\n$esc</div>"),
+            array("/\n*?{{\s*Related articles\s*\|(.+?)\|(.+?)}}/si",
+                "$esc<div class='indent'>\n\n(<a href=\"".
+                $base_address . "$1\">$1?</a>)\n\n$esc</div>"),
             array('/\[\[(http[^\s\|\]]+)\|([^\[\]]+?)\]\]/s',
                 "<a href=\"$1\">$2</a>"),
             array('/\[\[([^\[\]]+?)\|([^\[\]]+?)\]\]/s',
@@ -95,9 +102,39 @@ class WikiParser implements CrawlConstants
                 "&#039;&#039;&#039;&#039;&#039;/s", "<b><i>$1</i></b>"),
             array("/&#039;&#039;&#039;(.+?)&#039;&#039;&#039;/s", "<b>$1</b>"),
             array("/&#039;&#039;(.+?)&#039;&#039;/s", "<i>$1</i>"),
-            array('/{{center\|(.+?)}}/s', "<div class='center'>$1</div>"),
-            array('/{{left\|(.+?)}}/s', "<div class='align-left'>$1</div>"),
-            array('/{{right\|(.+?)}}/s', "<div class='align-right'>$1</div>"),
+            array('/\n*?{{center\|(.+?)}}/s',
+                "$esc<div class='center'>\n\n$1\n\n$esc</div>"),
+            array('/\n*?{{\s*class\s*\=\s*'.
+                '&quot;([a-zA-Z\_\-\s]+)&quot;\s+(.+)}}/',
+                "$esc<span class=\"$1\">$2$esc</span>"),
+            array('/\n*?{{\s*class\s*\=\s*'.
+                '&quot;([a-zA-Z\_\-\s]+)&quot;\s+(.+)}}/s',
+                "$esc<div class=\"$1\">\n\n$2\n\n$esc</div>"),
+            array('/\n*?{{\s*class\s*\=\s*'.
+                '&#039;([a-zA-Z\_\-\s]+)&#039;\s+(.+)}}/s',
+                "$esc<div class='$1'>\n\n$2\n\n$esc</div>"),
+            array('/\n*?{{\s*id\s*\=\s*&quot;([a-zA-Z\_\-]+)&quot;\s+(.+)}}/',
+                "$esc<span id=\"$1\">$2$esc</span>"),
+            array('/\n*?{{\s*id\s*\=\s*&quot;([a-zA-Z\_\-]+)&quot;\s+(.+)}}/s',
+                "$esc<div id=\"$1\">\n\n$2\n\n$esc</div>"),
+            array('/\n*?{{\s*id\s*\=\s*&#039;([a-zA-Z\_\-]+)&#039;\s+(.+)}}/s',
+                "$esc<div id='$1'>\n\n$2\n\n$esc</div>"),
+            array('/\n*?{{\s*style\s*\=\s*'.
+                '&quot;([0-9a-zA-Z\/\#\_\-\.\;\:\s\n]+)&quot;\s+(.+)}}/',
+                "$esc<span style=\"$1\">$2$esc</span>"),
+            array('/\n*?{{\s*style\s*\=\s*'.
+                '&quot;([0-9a-zA-Z\/\#\_\-\.\;\:\s\n]+)&quot;\s+(.+)}}/s',
+                "$esc<div style=\"$1\">\n\n$2\n\n$esc</div>"),
+            array('/\n*?{{\s*style\s*\=\s*'.
+                '&#039;([0-9a-zA-Z\_\-\.\;\:\s\n]+)&#039;\s+(.+)}}/',
+                "$esc<span style='$1'>$2$esc</span>"),
+            array('/\n*?{{\s*style\s*\=\s*'.
+                '&#039;([0-9a-zA-Z\_\-\.\;\:\s\n]+)&#039;\s+(.+)}}/s',
+                "$esc<div style='$1'>\n\n$2\n\n$esc</div>"),
+            array('/\n*?{{left\s*\|(.+?)}}/s',
+                "$esc<div class='align-left'>\n\n$1\n\n$esc</div>"),
+            array('/\n*?{{right\s*\|(.+?)}}/s',
+                "$esc<div class='align-right'>\n\n$1\n\n$esc</div>"),
             array('/{{smallcaps\|(.+?)}}/s', "<small>$1</small>"),
             array('/{{Hatnote\|(.+?)}}/si', "($1)"),
             array("/{{fraction\|(.+?)\|(.+?)}}/si", "<small>$1/$2</small>"),
@@ -106,8 +143,9 @@ class WikiParser implements CrawlConstants
             array("/{{IPA-(.+?)\|(.+?)}}/si", "(IPA $2)"),
             array("/{{dablink\|(.+?)}}/si", "($1)"),
             array("/&lt;blockquote&gt;(.+?)&lt;\/blockquote&gt;/s",
-                "<blockquote>$1</blockquote>"),
-            array("/&lt;pre&gt;(.+?)&lt;\/pre&gt;/s", "<pre>$1</pre>"),
+                "$esc<blockquote>\n\n$1\n\n$esc</blockquote>"),
+            array("/&lt;pre&gt;(.+?)&lt;\/pre&gt;/s",
+                "$esc<pre>\n\n$1\n\n$esc</pre>"),
             array("/&lt;tt&gt;(.+?)&lt;\/tt&gt;/s", "<tt>$1</tt>"),
             array("/&lt;u&gt;(.+?)&lt;\/u&gt;/s", "<u>$1</u>"),
             array("/&lt;strike&gt;(.+?)&lt;\/strike&gt;/s",
@@ -188,6 +226,7 @@ class WikiParser implements CrawlConstants
     function parse($document, $parse_head_vars = true,
         $handle_big_files = false)
     {
+        $esc = $this->esc;
         $head = "";
         if($parse_head_vars) {
         $document_parts = explode("END_HEAD_VARS", $document);
@@ -231,13 +270,18 @@ class WikiParser implements CrawlConstants
             if(trim($part) == "") {
                 continue;
             }
-            $start = substr($part, 0, 2);
+            $start = substr($part, 0, 3);
             if(in_array($start[0], $space_like)) {
                 $document .= "\n<pre>\n".ltrim($part)."\n</pre>\n";
             } else {
-                $document .= "\n<div>\n".$part. "\n</div>\n";
+                if($start != $esc) {
+                    $document .= "\n<div>\n".$part. "\n</div>\n";
+                } else {
+                    $document .= $part;
+                }
             }
         }
+        $document = str_replace(",[}", "", $document);
         $document = $this->insertReferences($document, $references);
         $document = $this->insertTableOfContents($document, $toc);
         $document = preg_replace_callback(

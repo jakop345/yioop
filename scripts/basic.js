@@ -92,18 +92,43 @@ function getPage(tag, url)
             }
         }
         request.open("GET", url, true);
-
         request.send();
     }
 }
 /*
- *  Shorthand for document.createElement()
+ *  Returns the position of the caret within anode
  *
  *  @param String input type element
  */
-function ce(input)
+function caret(node)
 {
-    return document.createElement(input);
+    if (node.selectionStart) {
+        return node.selectionStart;
+    } else if (!document.selection) {
+        return false;
+    }
+    // old ie hack
+    var insert_char = "\001",
+    sel = document.selection.createRange(),
+    dul = sel.duplicate(),
+    len = 0;
+
+    dul.moveToElementText(node);
+    sel.text = insert_char;
+    len = dul.text.indexOf(insert_char);
+    sel.moveStart('character',-1);
+    sel.text = "";
+    return len;
+}
+/*
+ *  Shorthand for document.createElement()
+ *
+ *  @param String name tag name of element desired
+ *  @return Element the create element
+ */
+function ce(name)
+{
+    return document.createElement(name);
 }
 /*
  *  Shorthand for document.getElementById()

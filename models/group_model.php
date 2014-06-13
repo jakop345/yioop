@@ -970,7 +970,7 @@ class GroupModel extends Model
         }
         $pages = array();
         if($total > 0) {
-            $sql = "SELECT TITLE, SUBSTR(PAGE,0, 100) AS DESCRIPTION
+            $sql = "SELECT TITLE, PAGE AS DESCRIPTION
                 FROM GROUP_PAGE WHERE GROUP_ID = ? AND
                 LOCALE_TAG= ? AND LENGTH(PAGE) > 0 
                 $like ORDER BY UPPER(TITLE) ASC ".
@@ -979,6 +979,8 @@ class GroupModel extends Model
             $i = 0;
             if($result) {
                 while($pages[$i] = $db->fetchArray($result)) {
+                    $pages[$i]['DESCRIPTION'] = substr(
+                        $pages[$i]['DESCRIPTION'], 0, 100);
                     $i++;
                 }
                 unset($pages[$i]); //last one will be null

@@ -278,7 +278,7 @@ Yioop also supports several html tags such as:
 
 ===Spacing within Paragraphs===
 The HTML entity
-<nowiki> </nowiki>
+<nowiki>&nbsp;</nowiki>
 can be used to create a non-breaking space. The tag
 <nowiki><br></nowiki>
 can be used to produce a line break.
@@ -443,6 +443,8 @@ EOD;
 $group_model = new GroupModel(DB_NAME, false);
 $group_model->db = $db;
 foreach($public_pages as $page_name => $page_content) {
+    $page_content = str_replace("&amp;", "&", $page_content);
+    $page_content = @htmlentities($page_content, ENT_QUOTES, "UTF-8");
     $group_model->setPageName(ROOT_ID, PUBLIC_USER_ID, $page_name,
         $page_content, "en-US", "Creating Default Pages",
         "$page_name Wiki Page Created!", "Discuss the page in this thread!");

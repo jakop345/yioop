@@ -66,7 +66,7 @@ class WikiElement extends Element implements CrawlConstants
         $other_base_query = "?c=$other_controller&amp;".CSRF_TOKEN."=".
             $data[CSRF_TOKEN]."&amp;a=wiki&amp;group_id=".
             $data["GROUP"]["GROUP_ID"]."&amp;arg=".$data['MODE']."&amp;".
-            "page_name=".$data['GROUP']['GROUP_NAME'];
+            "page_name=".$data['PAGE_NAME'];
         if($is_admin || $logged_in) { ?>
             <div class="float-same admin-collapse">[<a
             href="<?php e($other_base_query) ?>" ><?php
@@ -204,7 +204,11 @@ class WikiElement extends Element implements CrawlConstants
             '&amp;just_thread='.$data['DISCUSS_THREAD']);?>" ><?php
             e(tl('wiki_element_discuss'))?></a>]
         </div>
-        <form id="editpageForm" method="post" action='#'>
+        <form id="editpageForm" method="post" action='#' 
+            onsubmit="elt('caret-pos').value =
+            (elt('wiki-page').selectionStart) ?
+            elt('wiki-page').selectionStart : 0;
+            elt('scroll-top').value=elt('wiki-page').scrollTop;" >
             <input type="hidden" name="c" value="<?php e($data['CONTROLLER']); 
             ?>" />
             <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
@@ -215,6 +219,8 @@ class WikiElement extends Element implements CrawlConstants
                 e($data['GROUP']['GROUP_ID']); ?>" />
             <input type="hidden" name="page_name" value="<?php
                 e($data['PAGE_NAME']); ?>" />
+            <input type="hidden" name="caret" id="caret-pos"/>
+            <input type="hidden" name="scroll_top" id="scroll-top"/>
             <div class="top-margin">
                 <b><?php
                 e(tl('wiki_element_locale_name',
