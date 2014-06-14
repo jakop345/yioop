@@ -88,9 +88,8 @@ class IndexManager implements CrawlConstants
                 }
             } else {
                 $index_archive_name = self::index_data_base_name . $index_name;
-                $tmp =
-                    new IndexArchiveBundle(
-                        CRAWL_DIR.'/cache/'.$index_archive_name);
+                $tmp = new IndexArchiveBundle(
+                    CRAWL_DIR.'/cache/'.$index_archive_name);
                 if(!$tmp) {
                     return false;
                 }
@@ -181,7 +180,7 @@ class IndexManager implements CrawlConstants
                            $add_flag = true;
                            if($mask != "") {
                                for($k = 0; $k < $len; $k++) {
-                                   $loc = 9 + $k;
+                                   $loc = 8 + $k;
                                    if(ord($mask[$k]) > 0 && isset($id[$loc]) &&
                                        $id[$loc] != $hash[$loc]) {
                                        $add_flag = false;

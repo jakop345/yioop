@@ -686,7 +686,7 @@ class PhraseModel extends ParallelModel
         return array($word_struct, $format_words);
     }
     /**
-     * Given a query string extracts meta word, which of these are
+     * Given a query string, this method extracts meta words, which of these are
      * "materialized" (i.e., should be encoded as part of word ids),
      * disallowed phrases, the query string after meta words removed
      * and ampersand substitution applied, the query string with meta words
@@ -1293,7 +1293,9 @@ class PhraseModel extends ParallelModel
         $results['TIME'] = time();
         $lang = guessLocaleFromString($original_query);
         $tokenizer = PhraseParser::getTokenizer($lang);
-        if($tokenizer && method_exists($tokenizer, "scoredThesaurusMatches")
+        //only use tokenizer if no meta word or disjuncts in query
+        if(!preg_match('/(\||\:)/u', $original_query) &&
+            $tokenizer && method_exists($tokenizer, "scoredThesaurusMatches")
             && method_exists($tokenizer, "tagPartsOfSpeechPhrase")
             && isset($tokenizer->use_thesaurus)) {
             $results = $this->sortByThesaurusScore($results, $original_query,

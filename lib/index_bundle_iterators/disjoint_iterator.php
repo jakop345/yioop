@@ -231,6 +231,7 @@ class DisjointIterator extends IndexBundleIterator
             $this->seen_docs += 1;
             $this->seen_docs_unfiltered = 0;
             $least= $this->least_offset_index;
+            if(!isset($this->index_bundle_iterators[$least])) { return; }
             $this->seen_docs_unfiltered +=
                 $this->index_bundle_iterators[$least]->seen_docs;
             $total_num_docs += $this->index_bundle_iterators[$least]->num_docs;

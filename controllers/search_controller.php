@@ -515,7 +515,13 @@ class SearchController extends Controller implements CrawlConstants
         if($view == "search" && $data["RAW"] == 0 && isset($data['PAGES'])) {
             $data['PAGES'] = $this->makeMediaGroups($data['PAGES']);
         }
-        $data['INCLUDE_SCRIPTS'] = array("suggest");
+        /*  Only set up spell correction if single conjunctive query without
+            without meta words
+         */
+        if(isset($data['QUERY']) && 
+            !preg_match('/(\%7C|\%3A)/u', $data['QUERY'])) {
+            $data['INCLUDE_SCRIPTS'] = array("suggest");
+        }
         if(!isset($data['SCRIPT'])) {
             $data['SCRIPT'] = "";
         }

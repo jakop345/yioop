@@ -737,7 +737,7 @@ class IndexDictionary implements CrawlConstants
             $k = 0;
             $old_k = 0;
             while(($k = strpos($mask, "\xFF", $old_k)) !== false) {
-                $loc = $k + 9;
+                $loc = $k + 8;
                 if(isset($id[$loc]) && $id[$loc] != $word_id[$loc]) {
                     $add_flag = false;
                     break;

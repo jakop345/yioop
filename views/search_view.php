@@ -173,7 +173,7 @@ class SearchView extends View implements CrawlConstants
      */
     function renderSearchResults($data)
     { ?>
-        <div <?php if(WORD_SUGGEST) { e('id="spell-check"'); } ?> 
+        <div <?php if(WORD_SUGGEST) { e('id="spell-check"'); } ?>
             class="spell"><span class="hidden"
         >&nbsp;</span></div>
         <h2 class="serp-stats"><?php
