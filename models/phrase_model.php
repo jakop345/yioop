@@ -1380,16 +1380,16 @@ class PhraseModel extends ParallelModel
         $lookups = array();
         foreach($summaries as $hash_url => $summary) {
             $lookup_url = false;
-            if(isset($summaries[$hash_url][self::LOCATION])) {
+            if(isset($summaries[$hash_url][self::LOCATION]) &&
+                $summaries[$hash_url][self::LOCATION] != array()) {
                 $tmp_url = explode(" => ",
                     $summaries[$hash_url][self::DESCRIPTION]);
                 if(isset($tmp_url[1])) {
                     $lookup_url = trim($tmp_url[1]);
                 }
-            } else if (isset($summaries[$hash_url][self::HASH])){
+            } else if(isset($summaries[$hash_url][self::HASH])){
                 $hash_parts = explode('|', $summaries[$hash_url][self::HASH]);
-                if(isset($hash_parts[3]) && strncmp($hash_parts[3],
-                    "location%3A", 11) == 0) {
+                if(isset($hash_parts[3]) ) {
                     $lookup_url = $hash_parts[1];
                 }
             }

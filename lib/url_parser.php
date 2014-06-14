@@ -620,6 +620,7 @@ class UrlParser
      */
     static function canonicalLink($link, $site, $no_fragment = true)
     {
+        $link = trim($link);
         if(!self::isSchemeHttpOrHttps($link)) {return NULL;}
         if(isset($link[0]) &&
             $link[0] == "/" && isset($link[1]) && $link[1] == "/") {
