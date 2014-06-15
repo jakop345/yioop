@@ -135,32 +135,41 @@ class WordfilterPlugin extends IndexingPlugin implements CrawlConstants
 ; surfboard#2,bikini#0.02,wave:NOINDEX, NOFOLLOW
 ; As one can see PRECONDITIONS and ACTIONS are comma separated lists where
 ; whitespace is ignored. A PRECONDITIONS list is said to hold if all of
-; its constitutent conditions hold. In which case, Yioop's page processor
+; its constituent conditions hold. In which case, Yioop's page processor
 ; will perform each of the actions in the ACTIONS list.
 ; The condition surfboard#2 requires that the term surfboard occurred
 ; at least twice in the document. If the value after the # is
 ; between 0 and 1, such as in bikini#0.02, then the condition holds
 ; if occurences of that term (no stemming) make up 0.02 percent of
 ; the documents total length. Finally, if the condition doesn't
-; have a colon in it, then it is satisfied if that term appears at all.
+; have a # in it, then it is satisfied if that term appears at all.
+; The first character of a precondition can be a sign + or -. The
+; condition +surfboard#2 is the same as surfboard#2; however,
+; -surfboard#2 means the negation of the condition surfboard#2. That is,
+; that surfboard appear in the document less than two times.
+; If you want to check for the occurrence of a term like -5degrees in
+; a document you can use the precondition +-5degrees.
 ;
 ; If all the conditions in a precondition hold then the  WordfilterPlugin
 ; applies the list of ACTIONS. Possible actions are
 ; NOINDEX, NOFOLLOW, NOCACHE, NOARCHIVE, NOODP, NOYDIR, NONE,
-; NOTCONTAIN, JUSTFOLLOW, and NOPROCESS. These say how the summary
+; JUSTFOLLOW, and NOPROCESS. These say how the summary
 ; of whole page should be processed and  most of them correspond to robot
-; meta tag directives. We indicate here the non standard directive. If one of
-; the actions was NOTCONTAIN, then only if checkFilter returned false are the
-; meta words added. The crawl makes use of the meta word info when performing
-; indexing. In the case where the actions contain NOPROCESS the summary returned
-; from pageSummaryProcessing will be false this will prevent any indexing of
-; this document from occuring at all. In the case where the actions contain
-; JUSTFOLLOW, the document won't be stored in the index but links from it will
-; be followed.
+; meta tag directives. We indicate here the non standard directives. The crawl
+; makes use of the meta word info when performing indexing. In the case 
+; where the actions contain NOPROCESS the summary returned from 
+; pageSummaryProcessing will be false, and this will prevent
+; any indexing of this document from occuring at all. This is different from
+; NOINDEX which says the document should not show up in the index as search
+; time. With NOPROCESS a info about page can show up in the index, if there was
+; a link to the page which was processed. NOINDEX on the other hand checks at
+; search time to eliminate such links. In the case where the
+; actions contain JUSTFOLLOW, the document won't be stored in the index but
+: links from it will be followed.
 ;
-term0:NOTCONTAIN,JUSTFOLLOW
+-term0:JUSTFOLLOW
 term1:NOPROCESS
-term2:NOFOLLOW,NOSNIPPET
++term2:NOFOLLOW,NOSNIPPET
 EOD;
     /**
      * A string containing a parsable set of filter_rules to be used by
@@ -186,11 +195,6 @@ EOD;
             $actions = $rule["ACTIONS"];
             $filter_flag = $this->checkFilter($preconditions,
                 $summary[self::TITLE], $summary[self::DESCRIPTION]);
-            if(in_array("NOTCONTAIN", $actions)) {
-                $filter_flag = ($filter_flag) ? false : true;
-                $actions = array_values(array_diff($actions,
-                    array("NOTCONTAIN")));
-            }
             if($filter_flag) {
                 if(in_array("NOPROCESS", $actions)) {
                     crawlLog("  Word filter plugin removed page.");
@@ -221,12 +225,16 @@ EOD;
     {
         $title_description = $title." ".$description;
         $len = strlen($title_description) - str_word_count($title_description);
-        foreach($preconditions as $term => $find_frequency) {
+        foreach($preconditions as $pre_term => $find_frequency) {
+            $sign = $pre_term[0];
+            $term = ($sign == '-' || $sign == '+') ?
+                substr($pre_term, 1): $pre_term;
+            $sign = ($sign == '-') ? -1 : 1;
             $found_frequency = substr_count($title_description, $term);
             if($find_frequency < 1) {
                 $found_frequency = ($found_frequency/$len);
             }
-            if($found_frequency < $find_frequency) {
+            if(0 < $sign * ($find_frequency - $found_frequency)) {
                 return false;
             }
         }
