@@ -73,6 +73,11 @@ class SecurityElement extends Element
                         "authentication-mode", "AUTHENTICATION_MODE",
                          $data['AUTHENTICATION_MODES'],
                          $data['AUTHENTICATION_MODE']);
+                    if(isset($data['ZKP_UNAVAILABLE']) && 
+                        $data['ZKP_UNAVAILABLE']) {
+                        e('<div class="red">'.
+                            tl('security_element_zero_unavailable')."</div>");
+                    }
                 ?>
             </fieldset>
             </div>

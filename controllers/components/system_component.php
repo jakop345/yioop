@@ -660,12 +660,20 @@ EOD;
            IMAGE_CAPTCHA =>
                tl('captchasettings_element_image_captcha'),
             );
-        $data['AUTHENTICATION_MODES'] = array (
-                NORMAL_AUTHENTICATION =>
-                   tl('serversettings_element_normal_authentication'),
-                ZKP_AUTHENTICATION =>
-                   tl('serversettings_element_zkp_authentication'),
-            );
+        if(FIAT_SHAMIR_MODULUS != "") {
+            $data['AUTHENTICATION_MODES'] = array (
+                    NORMAL_AUTHENTICATION =>
+                       tl('serversettings_element_normal_authentication'),
+                    ZKP_AUTHENTICATION =>
+                       tl('serversettings_element_zkp_authentication'),
+                );
+        } else {
+            $data['AUTHENTICATION_MODES'] = array (
+                    NORMAL_AUTHENTICATION =>
+                       tl('serversettings_element_normal_authentication'),
+                );
+            $data['ZKP_UNAVAILABLE'] = true;
+        }
         if(isset($_REQUEST['arg']) &&
             in_array($_REQUEST['arg'], $possible_arguments)) {
             switch($_REQUEST['arg'])

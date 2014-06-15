@@ -1991,12 +1991,14 @@ function extractLCSFromTable($lcs_moves, $lines, $i, $j, $offset, &$lcs)
         $res = openssl_pkey_new($config);
         $pub_key = openssl_pkey_get_details($res);
         $tmp = bchexdec(bin2hex($pub_key["rsa"]["n"]));
-    } else {
+    } else if(function_exists("bcmod")) {
         $num_bits = 256;
         $num_digits = ceil($num_bits * log10(2));
         $p = randProbablyPrime($num_digits);
         $q = randProbablyPrime($num_digits);
         $tmp = bcmul($p, $q);
+    } else {
+        $tmp = "";
     }
     return $tmp;
 }
