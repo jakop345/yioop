@@ -63,18 +63,17 @@ class SigninElement extends Element
                 ?>"><?php
             e(tl('signin_element_settings')); ?></a></li><?php
         }
-        if(SIGNIN_LINK) {
-            if(!isset($data["ADMIN"]) || !$data["ADMIN"]) {
-                ?><li><a href="./?c=admin"><?php
-                    e(tl('signin_element_signin')); ?></a></li><?php
-            } else {
-                ?><li><a href="./?c=admin&amp;<?php
-                e(CSRF_TOKEN."=".$data[CSRF_TOKEN])?>"><?php
-                        e(tl('signin_element_admin')); ?></a></li><?php
-                ?><li><a href="./?c=search&amp;a=signout"><?php
-                    e(tl('signin_element_signout')); ?></a></li>
-            <?php
-            }
+        if(SIGNIN_LINK && (!isset($data["ADMIN"]) ||
+            (isset($data["ADMIN"]) && !$data["ADMIN"]))) {
+            ?><li><a href="./?c=admin"><?php
+                e(tl('signin_element_signin')); ?></a></li><?php
+        }
+        if(isset($data["ADMIN"]) && $data["ADMIN"]) {
+            ?><li><a href="./?c=admin&amp;<?php
+            e(CSRF_TOKEN."=".$data[CSRF_TOKEN])?>"><?php
+                    e(tl('signin_element_admin')); ?></a></li><?php
+            ?><li><a href="./?c=search&amp;a=signout"><?php
+                e(tl('signin_element_signout')); ?></a></li><?php
         }
         ?>
         </ul>
