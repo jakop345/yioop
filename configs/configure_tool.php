@@ -462,8 +462,7 @@ class ConfigureTool
                         break;
                     }
                 }
-                if(in_array($COMPONENT_ACTIVITIES["accountaccess"]) )
-                $data = $this->admin->$component->$admin_method();
+                $data = $this->admin->component($component)->$admin_method();
                 $_SERVER = array();
                 $_SESSION = array();
                 $_REQUEST = array();
