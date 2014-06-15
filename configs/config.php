@@ -158,7 +158,8 @@ if(file_exists(WORK_DIRECTORY.PROFILE_FILE_NAME)) {
     }
 } else {
     if((!isset( $_SERVER['SERVER_NAME'])||$_SERVER['SERVER_NAME']!=='localhost')
-        && !defined("NO_LOCAL_CHECK") && php_sapi_name() != 'cli' ) {
+        && !defined("NO_LOCAL_CHECK") && !defined("WORK_DIRECTORY")
+        && php_sapi_name() != 'cli' ) {
         echo "SERVICE AVAILABLE ONLY VIA LOCALHOST UNTIL CONFIGURED";
         exit();
     }

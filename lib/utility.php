@@ -1982,7 +1982,7 @@ function extractLCSFromTable($lcs_moves, $lines, $i, $j, $offset, &$lcs)
  */
  function generateFiatShamirModulus()
  {
-    if(function_exists("openssl_pkey_new")) {
+    if(function_exists("openssl_pkey_new") && function_exists("bcmod")) {
         $config = array(
             "digest_alg" => "sha256",
             "public_key_bits" => 1024,
