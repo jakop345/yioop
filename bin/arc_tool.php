@@ -317,9 +317,9 @@ class ArcTool implements CrawlConstants
      * Prints information about the number of words and frequencies of words
      * within the $generation'th index shard in the bundle
      *
-     *  @param string $archive_path the path of a directory that holds
+     * @param string $archive_path the path of a directory that holds
      *      an IndexArchiveBundle
-     *  @param int $generation which index shard to use
+     * @param int $generation which index shard to use
      */
     function outputShardInfo($archive_path, $generation)
     {
@@ -372,11 +372,11 @@ class ArcTool implements CrawlConstants
      * Prints information about $num many postings beginning at the
      * provided $generation and $offset
      *
-     *  @param string $archive_path the path of a directory that holds
+     * @param string $archive_path the path of a directory that holds
      *      an IndexArchiveBundle
-     *  @param int $generation which index shard to use
-     *  @param int $offset offset into posting lists for that shard
-     *  @param int $num how many postings to print info for
+     * @param int $generation which index shard to use
+     * @param int $offset offset into posting lists for that shard
+     * @param int $num how many postings to print info for
      */
     function outputPostingInfo($archive_path, $generation, $offset, $num = 1)
     {
@@ -751,7 +751,7 @@ class ArcTool implements CrawlConstants
      * word into an inverted index from the summaries' web_archives.
      * Then a reindex is done.
      *
-     * @param string $archivepath file path to a IndexArchiveBundle
+     * @param string $archive_path file path to a IndexArchiveBundle
      */
     function rebuildIndexArchive($archive_path)
     {
@@ -941,8 +941,11 @@ class ArcTool implements CrawlConstants
     }
     /**
      * Outputs the "hey, this isn't a known bundle message" and then exit()'s.
+     *
      * @param string $archive_name name or path to what was supposed to be
      *      an archive
+     * @param string $allowed_archives a string list of archives types
+     *      that $archive_name could belong to
      */
     function badFormatMessageAndExit($archive_name,
         $allowed_archives = "web or index")

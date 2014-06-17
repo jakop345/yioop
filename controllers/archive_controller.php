@@ -83,12 +83,17 @@ class ArchiveController extends Controller implements CrawlConstants
         if(isset($_REQUEST['instance_num'])) {
             $prefix = $this->clean($_REQUEST['instance_num'], "int")."-";
         }
-        $web_archive = new WebArchiveBundle(
-            CRAWL_DIR.'/cache/'.$prefix.self::archive_base_name.
-                $crawl_time);
-        $page = $web_archive->getPage($offset,
-            $partition);
-        echo base64_encode(serialize($page));
+        if(file_exists(CRAWL_DIR.'/cache/'.$prefix.self::archive_base_name.
+                $crawl_time)) {
+            $web_archive = new WebArchiveBundle(
+                CRAWL_DIR.'/cache/'.$prefix.self::archive_base_name.
+                    $crawl_time);
+            $page = $web_archive->getPage($offset,
+                $partition);
+            echo base64_encode(serialize($page));
+        } else {
+            echo base64_encode(serialize(false));
+        }
     }
 }
 ?>
