@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2013 - 2014 Chris Pollett chris@pollett.org
+ * Copyright (C) 2013 - 2014 Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -45,9 +45,9 @@ require_once BASE_DIR."/lib/crawl_constants.php";
 /** Used for guessLocaleFromString */
 require_once BASE_DIR."/lib/locale_functions.php";
 /**
- *  Used to extract emails, phone numbers, and addresses from a web page.
- *  These are extracted into the EMAILS, PHONE_NUMBERS, and
- *  ADDRESSES fields of the page's summary.
+ * Used to extract emails, phone numbers, and addresses from a web page.
+ * These are extracted into the EMAILS, PHONE_NUMBERS, and
+ * ADDRESSES fields of the page's summary.
  *
  * @author Chris Pollett
  * @package seek_quarry
@@ -56,9 +56,9 @@ require_once BASE_DIR."/lib/locale_functions.php";
 class AddressesPlugin extends IndexingPlugin implements CrawlConstants
 {
     /**
-     *  Associative array of world countries and country code. Some
-     *  entries are duplicated into country's local script
-     *  @var array
+     * Associative array of world countries and country code. Some
+     * entries are duplicated into country's local script
+     * @var array
      */
     var $countries = array("ANDORRA" => "AD","UNITED ARAB EMIRATES" => "AE",
         "AFGHANISTAN" => "AF","ANTIGUA AND BARBUDA" => "AG",
@@ -158,10 +158,10 @@ class AddressesPlugin extends IndexingPlugin implements CrawlConstants
         "SAMOA" => "WS","YEMEN" => "YE", "MAYOTTE" => "YT",
         "SOUTH AFRICA" => "ZA","ZAMBIA" => "ZM", "ZIMBABWE" => "ZW");
     /**
-     *  List of common regions, abbreviations, and local spellings of
-     *  regions of the US, Canada, Australia, UK, as well as major cities
-     *  elsewhere
-     *  @var array
+     * List of common regions, abbreviations, and local spellings of
+     * regions of the US, Canada, Australia, UK, as well as major cities
+     * elsewhere
+     * @var array
      */
     var $regions = array("ALABAMA", "AL",
         "ALASKA", "AK", "ARIZONA", "AZ", "ARKANSAS", "AR",
@@ -288,12 +288,12 @@ class AddressesPlugin extends IndexingPlugin implements CrawlConstants
      * such as adding sub-documents, before the page summary is
      * handed back to the fetcher.
      *
-     *  @param string $page web-page contents
-     *  @param string $url the url where the page contents came from,
-     *     used to canonicalize relative links
+     * @param string $page web-page contents
+     * @param string $url the url where the page contents came from,
+     *    used to canonicalize relative links
      *
-     *  @return array consisting of a sequence of subdoc arrays found
-     *      on the given page.
+     * @return array consisting of a sequence of subdoc arrays found
+     *     on the given page.
      */
     function pageProcessing($page, $url)
     {
@@ -322,13 +322,13 @@ class AddressesPlugin extends IndexingPlugin implements CrawlConstants
         return $subdocs;
     }
     /**
-     *  Adjusts the document summary of a page after the page processor's
-     *  process method has been called so that the subdoc's fields
-     *  associated with the addresses plugin get copied as fields of
-     *  the whole page summary. Then it deletes the subdoc fields.
+     * Adjusts the document summary of a page after the page processor's
+     * process method has been called so that the subdoc's fields
+     * associated with the addresses plugin get copied as fields of
+     * the whole page summary. Then it deletes the subdoc fields.
      *
-     *  @param array $summary of current document. It will be adjusted
-     *      by the code below
+     * @param array $summary of current document. It will be adjusted
+     *     by the code below
      */
     function pageSummaryProcessing(&$summary)
     {
@@ -357,12 +357,12 @@ class AddressesPlugin extends IndexingPlugin implements CrawlConstants
         }
     }
     /**
-     *  Parses EMAILS, PHONE_NUMBERS and ADDRESSES from $text and returns
-     *  an array with these three fields containing sub-arrays of the given
-     *  items
+     * Parses EMAILS, PHONE_NUMBERS and ADDRESSES from $text and returns
+     * an array with these three fields containing sub-arrays of the given
+     * items
      *
-     *  @param string $text to use for extraction
-     *  @return array with found emails, phone numbers, and addresses
+     * @param string $text to use for extraction
+     * @return array with found emails, phone numbers, and addresses
      */
     function parseSubdoc($text)
     {
@@ -435,13 +435,13 @@ class AddressesPlugin extends IndexingPlugin implements CrawlConstants
         return $subdocs;
     }
     /**
-     *  Checks if the passed sequence of lines has enough features of a
-     *  postal address to call it an address. If so, return the address as
-     *  a single string
+     * Checks if the passed sequence of lines has enough features of a
+     * postal address to call it an address. If so, return the address as
+     * a single string
      *
-     *  @param array $pre_address an array of potential address lines
-     *  @return mixed false if not address, the lines imploded together using
-     *      space if an address
+     * @param array $pre_address an array of potential address lines
+     * @return mixed false if not address, the lines imploded together using
+     *     space if an address
      */
     function checkCandidate($pre_address)
     {
@@ -467,11 +467,11 @@ class AddressesPlugin extends IndexingPlugin implements CrawlConstants
         return $address;
     }
     /**
-     *  Used to check if a line countains a word associated with a province,
-     *  state or major city.
+     * Used to check if a line countains a word associated with a province,
+     * state or major city.
      *
-     *  @param string $line from address to check
-     *  @return bool whether it contains  acountry term
+     * @param string $line from address to check
+     * @return bool whether it contains  acountry term
      */
     function checkRegion($line)
     {
@@ -494,11 +494,11 @@ class AddressesPlugin extends IndexingPlugin implements CrawlConstants
         return false;
     }
     /**
-     *  Used to check if a line countains either an email address or a phone
-     *  number
+     * Used to check if a line countains either an email address or a phone
+     * number
      *
-     *  @param string $line from address to check
-     *  @return bool whether it contains  acountry term
+     * @param string $line from address to check
+     * @return bool whether it contains  acountry term
      */
     function checkPhoneOrEmail($line)
     {
@@ -513,11 +513,11 @@ class AddressesPlugin extends IndexingPlugin implements CrawlConstants
         return false;
     }
     /**
-     *  Extracts substrings from the provided $line that are in the format
-     *  of an email address. Returns first email from line
+     * Extracts substrings from the provided $line that are in the format
+     * of an email address. Returns first email from line
      *
-     *  @param string $line string to extract email from
-     *  @return string first email found on line
+     * @param string $line string to extract email from
+     * @return string first email found on line
      */
     function parseEmails($line)
     {
@@ -528,11 +528,11 @@ class AddressesPlugin extends IndexingPlugin implements CrawlConstants
         return $emails[0];
     }
     /**
-     *  Checks for a phone number related keyword in the line and if
-     *  found extracts digits which are presumed to be a phone number
+     * Checks for a phone number related keyword in the line and if
+     * found extracts digits which are presumed to be a phone number
      *
-     *  @param string $line to check for phone numbers
-     *  @return array all phone numbers detected by this method from the $line
+     * @param string $line to check for phone numbers
+     * @return array all phone numbers detected by this method from the $line
      */
     function parsePhones($line)
     {
@@ -556,11 +556,11 @@ class AddressesPlugin extends IndexingPlugin implements CrawlConstants
         return $phones;
     }
     /**
-     *  Used to check if a line contains a word associated with a World
-     *  country or country code.
+     * Used to check if a line contains a word associated with a World
+     * country or country code.
      *
-     *  @param string $line from address to check
-     *  @return bool whether it contains a country term
+     * @param string $line from address to check
+     * @return bool whether it contains a country term
      */
     function checkCountry($line)
     {
@@ -582,11 +582,11 @@ class AddressesPlugin extends IndexingPlugin implements CrawlConstants
         return false;
     }
     /**
-     *  Used to check if a line contains a word associated with a ZIP
-     *  or Postal code
+     * Used to check if a line contains a word associated with a ZIP
+     * or Postal code
      *
-     *  @param string $line from address to check
-     *  @return bool whether it contains such a code
+     * @param string $line from address to check
+     * @return bool whether it contains such a code
      */
     function checkZipPostalCodeWords($line)
     {
@@ -597,12 +597,12 @@ class AddressesPlugin extends IndexingPlugin implements CrawlConstants
         return false;
     }
     /**
-     *  Used to check if a given line in an address candidate has features
-     *  associated with being a street address.
+     * Used to check if a given line in an address candidate has features
+     * associated with being a street address.
      *
-     *  @param string $line address line to check
-     *  @return bool whether or not it contains a word identified with
-     *      being a street address such as WAY, AVENUE, STREET, etc.
+     * @param string $line address line to check
+     * @return bool whether or not it contains a word identified with
+     *     being a street address such as WAY, AVENUE, STREET, etc.
      */
     function checkStreet($line)
     {
@@ -620,7 +620,7 @@ class AddressesPlugin extends IndexingPlugin implements CrawlConstants
      * this plugin
      *
      * @return array meta words and maximum description length of results
-     *      allowed for that meta word
+     *     allowed for that meta word
      */
     static function getAdditionalMetaWords()
     {

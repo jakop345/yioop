@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -60,57 +60,57 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
     var $iterate_dir;
     /**
      * The number of arc files in this arc archive bundle
-     *  @var int
+     * @var int
      */
     var $num_partitions;
     /**
-     *  Counting in glob order for this arc archive bundle directory, the
-     *  current active file number of the arc file being process.
+     * Counting in glob order for this arc archive bundle directory, the
+     * current active file number of the arc file being process.
      *
-     *  @var int
+     * @var int
      */
     var $current_partition_num;
     /**
-     *  current number of pages into the current arc file
-     *  @var int
+     * current number of pages into the current arc file
+     * @var int
      */
     var $current_page_num;
     /**
-     *  current byte offset into the current arc file
-     *  @var int
+     * current byte offset into the current arc file
+     * @var int
      */
     var $current_offset;
     /**
-     *  Array of filenames of arc files in this directory (glob order)
-     *  @var array
+     * Array of filenames of arc files in this directory (glob order)
+     * @var array
      */
     var $partitions;
     /**
-     *  File handle for current archive file
-     *  @var resource
+     * File handle for current archive file
+     * @var resource
      */
     var $fh;
     /**
-     *  Used to buffer data from the currently opened file
-     *  @var string
+     * Used to buffer data from the currently opened file
+     * @var string
      */
     var $buffer;
 
     /**
-     *  Starting delimiters for records
-     *  @var string
+     * Starting delimiters for records
+     * @var string
      */
     var $start_delimiter;
 
     /**
-     *  Ending delimiters for records
-     *  @var string
+     * Ending delimiters for records
+     * @var string
      */
     var $end_delimiter;
 
     /**
-     *  File name to write this archive iterator status messages to
-     *  @var string
+     * File name to write this archive iterator status messages to
+     * @var string
      */
     var $status_filename;
 
@@ -158,11 +158,11 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
      */
     const BUFFER_SIZE = 16384000;
     /**
-     *  Estimate of the maximum size of a record stored in a text archive
-     *  Data in archives is split into chunk of buffer size plus two record
-     *  sizes. This is used to provide a two record overlap between successive
-     *  chunks. This si further used to ensure that records that go over
-     *  the basic chunk boundary of BUFFER_SIZE will be processed.
+     * Estimate of the maximum size of a record stored in a text archive
+     * Data in archives is split into chunk of buffer size plus two record
+     * sizes. This is used to provide a two record overlap between successive
+     * chunks. This si further used to ensure that records that go over
+     * the basic chunk boundary of BUFFER_SIZE will be processed.
      */
     const MAX_RECORD_SIZE = 49152;
 
@@ -170,15 +170,15 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
      * Creates an text archive iterator with the given parameters.
      *
      * @param string $iterate_timestamp timestamp of the arc archive bundle to
-     *      iterate  over the pages of
+     *     iterate  over the pages of
      * @param string $iterate_dir folder of files to iterate over. If this
-     *      iterator is used in a fetcher and the data is on a name server
-     *      set this to false
+     *     iterator is used in a fetcher and the data is on a name server
+     *     set this to false
      * @param string $result_timestamp timestamp of the arc archive bundle
-     *      results are being stored in
+     *     results are being stored in
      * @param string $result_dir where to write last position checkpoints to
      * @param array $ini describes start_ and end_delimiter, file_extension,
-     *      encoding, and compression method used for pages in this archive
+     *     encoding, and compression method used for pages in this archive
      */
     function __construct($iterate_timestamp, $iterate_dir,
         $result_timestamp, $result_dir, $ini = array())
@@ -221,11 +221,11 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
         }
     }
     /**
-     *  Mutator Method for controller how this text archive iterator behaves
-     *  Normally, data, on compression, start, stop delimiter read from an ini
-     *  file. This reads it from the supplied array.
+     * Mutator Method for controller how this text archive iterator behaves
+     * Normally, data, on compression, start, stop delimiter read from an ini
+     * file. This reads it from the supplied array.
      *
-     *  @param array $ini configuration settings for this archive iterator
+     * @param array $ini configuration settings for this archive iterator
      */
     function setIniInfo($ini)
     {
@@ -261,7 +261,7 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
      * the particular archive iterator
      * @param $site an associative array containing info about a web page
      * @return bool false we assume arc files were crawled according to
-     *      OPIC and so we use the default doc_depth to estimate page importance
+     *     OPIC and so we use the default doc_depth to estimate page importance
      */
     function weight(&$site)
     {
@@ -290,13 +290,13 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
         }
     }
     /**
-     *  Called to get the next chunk of BUFFER_SIZE + 2 MAX_RECORD_SIZE bytes
-     *  of data from the text archive. This data is returned unprocessed in
-     *  self::ARC_DATA together with ini and header information about the
-     *  archive. This method is typically called in the name server setting
-     *  from FetchController.
+     * Called to get the next chunk of BUFFER_SIZE + 2 MAX_RECORD_SIZE bytes
+     * of data from the text archive. This data is returned unprocessed in
+     * self::ARC_DATA together with ini and header information about the
+     * archive. This method is typically called in the name server setting
+     * from FetchController.
      *
-     *  @return array with contents as described above
+     * @return array with contents as described above
      */
     function nextChunk()
     {
@@ -318,11 +318,11 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
         return $info;
     }
     /**
-     *  Helper function for nextChunk to advance the parition if we are
-     *  at the end of the current archive file
+     * Helper function for nextChunk to advance the parition if we are
+     * at the end of the current archive file
      *
-     *  @param &$info a struct with data about current chunk. will up start
-     *      partition flag
+     * @param array& $info a struct with data about current chunk. will up start
+     *     partition flag
      */
     function updatePartition(&$info)
     {
@@ -346,7 +346,7 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
      *
      * @param int $num number of docs to get
      * @param bool $no_process if true then just an array of page strings found
-     *      not any additional meta data.
+     *     not any additional meta data.
      * @return array associative arrays for $num pages
      */
     function nextPages($num, $no_process = false)
@@ -391,7 +391,7 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
     /**
      * Gets the next doc from the iterator
      * @param bool $no_process if true then just return page string found
-     *      not any additional meta data.
+     *     not any additional meta data.
      * @return mixed associative array for doc or just string of doc
      */
     function nextPage($no_process = false)
@@ -446,7 +446,7 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
     /**
      * Reads and return the block of data from the current partition
      * @return mixed a uncompressed string from the current partitin
-     *      or NULL if iterator not set up, or false if EOF reached.
+     *     or NULL if iterator not set up, or false if EOF reached.
      */
     function getFileBlock()
     {
@@ -486,11 +486,11 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
         return $read_string;
     }
     /**
-     *  If reading from a gzbuffer file goes off the end of the current
-     *  buffer, reads in the next block from archive file.
-     *  @param string $buffer
-     *  @param bool $return_string
-     *  @return bool whether successfully read in next block or not
+     * If reading from a gzbuffer file goes off the end of the current
+     * buffer, reads in the next block from archive file.
+     * @param string $buffer
+     * @param bool $return_string
+     * @return bool whether successfully read in next block or not
      */
     function updateBuffer($buffer= "", $return_string = false)
     {
@@ -501,12 +501,12 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
         return $this->makeBuffer($buffer, $return_string);
     }
     /**
-     *  Reads in block $this->buffer_block_num of size self::BUFFER_SIZE from
-     *  the archive file
+     * Reads in block $this->buffer_block_num of size self::BUFFER_SIZE from
+     * the archive file
      *
-     *  @param string $buffer
-     *  @param bool $return_string
-     *  @return mixed whether successfully read in block or not
+     * @param string $buffer
+     * @param bool $return_string
+     * @return mixed whether successfully read in block or not
      */
     function makeBuffer($buffer= "", $return_string = false)
     {
@@ -563,9 +563,9 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
     }
 
     /**
-     *  Checks if have a valid handle to object's archive's current partition
+     * Checks if have a valid handle to object's archive's current partition
      *
-     *  @return bool whether it has or not (true -it has)
+     * @return bool whether it has or not (true -it has)
      */
     function checkFileHandle()
     {
@@ -578,9 +578,9 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
         }
     }
     /**
-     *  Checks if this object's archive's current partition is at an end of file
+     * Checks if this object's archive's current partition is at an end of file
      *
-     *  @return bool whether end of file has been reached (true -it has)
+     * @return bool whether end of file has been reached (true -it has)
      */
     function checkEof()
     {
@@ -604,10 +604,10 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
         return $eof;
     }
     /**
-     *  Wrapper around particular compression scheme fopen function
+     * Wrapper around particular compression scheme fopen function
      *
-     *  @param string filename to open
-     *  @param bool $make_buffer_if_needed
+     * @param string $filename name of file to open
+     * @param bool $make_buffer_if_needed
      */
     function fileOpen($filename, $make_buffer_if_needed = true)
     {
@@ -638,7 +638,7 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
         $this->current_offset = 0;
     }
     /**
-     *  Wrapper around particular compression scheme fclose function
+     * Wrapper around particular compression scheme fclose function
      */
     function fileClose()
     {
@@ -661,10 +661,10 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
         fclose($this->buffer_fh);
     }
     /**
-     *  Returns the current position in the current iterator partition file
-     *  for the given compression scheme.
-     *  @return int a position into the currently being processed file of the
-     *      iterator
+     * Returns the current position in the current iterator partition file
+     * for the given compression scheme.
+     * @return int a position into the currently being processed file of the
+     *     iterator
      */
     function fileTell()
     {
@@ -749,8 +749,8 @@ class TextArchiveBundleIterator extends ArchiveBundleIterator
      * @param array $tags array of tagnames to look for
      *
      * @return array of two elements: the first element is a string consisting
-     *      of start tag contents close tag of first tag found, the second
-     *      has the name of the tag amongst $tags found
+     *     of start tag contents close tag of first tag found, the second
+     *     has the name of the tag amongst $tags found
      */
     function getNextTagsData($tags)
     {

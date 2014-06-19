@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -144,7 +144,7 @@ class IndexDictionary implements CrawlConstants
      * Makes an index dictionary with the given name
      *
      * @param string $dir_name the directory name to store the index dictionary
-     *      in
+     *     in
      */
     function __construct($dir_name)
     {
@@ -171,7 +171,7 @@ class IndexDictionary implements CrawlConstants
      * Makes dictionary sub-directories for each of the 256 possible first
      * hash characters that crawHash in raw mode code output.
      * @param string $dir_name base directory in which these sub-directories
-     *      should be made
+     *     should be made
      */
     static function makePrefixLetters($dir_name)
     {
@@ -186,9 +186,9 @@ class IndexDictionary implements CrawlConstants
      * Merges tiers as needed.
      *
      * @param object $index_shard the shard to add the word to the dictionary
-     *      with
+     *     with
      * @param object $callback object with join function to be
-     *      called if process is taking too  long
+     *     called if process is taking too  long
      */
     function addShardDictionary($index_shard, $callback = NULL)
     {
@@ -273,8 +273,8 @@ class IndexDictionary implements CrawlConstants
      * of dictinary words. The output is stored in $out_slot.
      *
      * @param int $tier tier level to perform the merge of files at
-     * @param string either "A" or "B", the suffix but not extension of the
-     *      file one tier up to create with the merged results.
+     * @param string $out_slot either "A" or "B", the suffix but not extension
+     *      of the file one tier up to create with the merged results.
      */
     function mergeTier($tier, $out_slot)
     {
@@ -290,8 +290,8 @@ class IndexDictionary implements CrawlConstants
      *
      * @param int $prefix which prefix directory to perform the merge of files
      * @param int $tier tier level to perform the merge of files at
-     * @param string either "A" or "B", the suffix but not extension of the
-     *      file one tier up to create with the merged results.
+     * @param string $out_slot either "A" or "B", the suffix but not extension
+     *      of the file one tier up to create with the merged results.
      */
     function mergeTierFiles($prefix, $tier, $out_slot)
     {
@@ -434,12 +434,12 @@ class IndexDictionary implements CrawlConstants
      * stored in file ending with A or B one tier up. B is used if an A file is
      * already present.
      * @param object $callback object with join function to be
-     *      called if process is taking too long
+     *     called if process is taking too long
      * @param int $max_tier the maximum tier to merge to merge till --
-     *      if not set then $this->max_tier used. Otherwise, one would
-     *      typically set to a value bigger than $this->max_tier
+     *     if not set then $this->max_tier used. Otherwise, one would
+     *     typically set to a value bigger than $this->max_tier
      * @param bool $fast_merge_all if true then merge away B slots but don't
-     *      merge everything to a top tier
+     *     merge everything to a top tier
      */
     function mergeAllTiers($callback = NULL, $max_tier = -1,
         $fast_merge_all = false)
@@ -491,15 +491,15 @@ class IndexDictionary implements CrawlConstants
      * @param string $word_id id of the word or phrase one wants to look up
      * @param bool $raw whether the id is our version of base64 encoded or not
      * @param int $shift how many low order bits to drop from $word_id's
-     *     when checking for a match
+     *    when checking for a match
      * @param string $mask bit mask to be applied to bytes after the 8th
-     *      byte through 20th byte of word_id. In single word case these
-     *      bytes contain safe:, media:, and class: meta word info
+     *     byte through 20th byte of word_id. In single word case these
+     *     bytes contain safe:, media:, and class: meta word info
      * @param int $threshold if greater than zero how many posting list
-     *     results in dictionary info returned before stopping looking for
-     *     more matches
+     *    results in dictionary info returned before stopping looking for
+     *    more matches
      * @return mixed an array of entries of the form
-     *      generation, first offset, last offset, count
+     *     generation, first offset, last offset, count
      */
      function getWordInfo($word_id, $raw = false, $shift = 0, $mask = "",
         $threshold = -1)
@@ -515,33 +515,33 @@ class IndexDictionary implements CrawlConstants
         return $info;
      }
     /**
-     *  This method facilitates query processing of an ongoing crawl.
-     *  During an ongoing crawl, the dictionary is arranged into tiers
-     *  as per the logarithmic merge algortihm rather than just one tier
-     *  as in a crawl that has been stopped.  Word info for more
-     *  recently crawled pages will tend to be in lower tiers than data
-     *  that was crawled earlier. getWordInfoTier gets word info data for
-     *  a specific tier in the index dictionary. Each tier will
-     *  have word info for a specific, disjoint set of shards, so the format of
-     *  how to look up posting lists in a shard can be the same
-     *  regardless of the tier: an array entry is of the form
-     *  generation, first offset, last offset, and number of documents the
-     *  word occurred in for this shard.
+     * This method facilitates query processing of an ongoing crawl.
+     * During an ongoing crawl, the dictionary is arranged into tiers
+     * as per the logarithmic merge algortihm rather than just one tier
+     * as in a crawl that has been stopped.  Word info for more
+     * recently crawled pages will tend to be in lower tiers than data
+     * that was crawled earlier. getWordInfoTier gets word info data for
+     * a specific tier in the index dictionary. Each tier will
+     * have word info for a specific, disjoint set of shards, so the format of
+     * how to look up posting lists in a shard can be the same
+     * regardless of the tier: an array entry is of the form
+     * generation, first offset, last offset, and number of documents the
+     * word occurred in for this shard.
      *
-     *  @param string $word_id id of the word one wants to look up
-     *  @param bool $raw whether the id is our version of base64 encoded or
-     *  not
-     *  @param int $tier which tier to get word info from
-     *  @param int $shift how many low order bits to drop from $word_id's
-     *     when checking for a match
-     *  @param string $mask bit mask to be applied to bytes after the 8th
-     *      byte through 20th byte of word_id. In single word case these
-     *      bytes contain safe:, media:, and class: meta word info
-     *  @param int $threshold if greater than zero how many posting list
-     *     results in dictionary info returned before stopping looking for
-     *     more matches
-     *  @return mixed an array of entries of the form
-     *      generation, first offset, last offset, count
+     * @param string $word_id id of the word one wants to look up
+     * @param bool $raw whether the id is our version of base64 encoded or
+     * not
+     * @param int $tier which tier to get word info from
+     * @param int $shift how many low order bits to drop from $word_id's
+     *    when checking for a match
+     * @param string $mask bit mask to be applied to bytes after the 8th
+     *     byte through 20th byte of word_id. In single word case these
+     *     bytes contain safe:, media:, and class: meta word info
+     * @param int $threshold if greater than zero how many posting list
+     *    results in dictionary info returned before stopping looking for
+     *    more matches
+     * @return mixed an array of entries of the form
+     *     generation, first offset, last offset, count
      */
      function getWordInfoTier($word_id, $raw, $tier, $shift = 0,
         $mask = "", $threshold = -1)
@@ -716,16 +716,16 @@ class IndexDictionary implements CrawlConstants
      *
      * @param string $id of a row to compare $word_id against
      * @param string $word_id the word id of a term or phrase we are computing
-     *      the quadruple array for
+     *     the quadruple array for
      * @param string $mask up to 9 byte wask used to say which materialized
-     *      meta words should be checked for when doing a match
+     *     meta words should be checked for when doing a match
      * @param int $mask_len this should be strlen($mask)
      * @param array $record current record from dictionary that we may or may
-     *      not add to info
-     * @param array &$info quadruple array we are adding to
-     * @param int &$total_count count of items in $info
-     * @param int &$previous_generation last generation added to $info
-     * @param int &$previous_id last exact if added to $infos
+     *     not add to info
+     * @param array& $info quadruple array we are adding to
+     * @param int& $total_count count of items in $info
+     * @param int& $previous_generation last generation added to $info
+     * @param int& $previous_id last exact if added to $infos
      */
     function checkMaskAndAdd($id, $word_id, $mask, $mask_len, $record,
         &$info, &$total_count, &$previous_generation, &$previous_id)
@@ -756,11 +756,11 @@ class IndexDictionary implements CrawlConstants
         }
     }
     /**
-     *  Gets from disk $len many bytes beginning at $offset from the
-     *  $file_num prefix file in the index dictionary
+     * Gets from disk $len many bytes beginning at $offset from the
+     * $file_num prefix file in the index dictionary
      *
      * @param int $file_num which prefix file to read from (always reads
-     *      a file at the max_tier level)
+     *     a file at the max_tier level)
      * @param int $offset byte offset to start reading from
      * @param int $len number of bytes to read
      * @return string data from that location  in the shard
@@ -794,7 +794,7 @@ class IndexDictionary implements CrawlConstants
      * at byte offset $bytes
      *
      * @param int $file_num which dictionary file (given by first letter prefix)
-     *      to read from
+     *     to read from
      * @param int $bytes byte offset to start reading from
      * @return &string data fromIndexShard file
      */

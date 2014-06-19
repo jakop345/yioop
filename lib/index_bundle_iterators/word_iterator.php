@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -134,7 +134,7 @@ class WordIterator extends IndexBundleIterator
     /** Length of a doc key*/
     const KEY_LEN = 8;
     /** If the $limit_news constructor input is true then limit the number
-     *  of items coming from the feed shard to this count.
+     * of items coming from the feed shard to this count.
      */
     const LIMIT_NEWS_COUNT = 25;
     /**
@@ -144,9 +144,15 @@ class WordIterator extends IndexBundleIterator
      * @param string $index_name time_stamp of the to use
      * @param bool $raw whether the $word_key is our variant of base64 encoded
      * @param array $filter an array of hashes of domains to filter from
-     *      results
+     *     results
+     * @param int $results_per_block the maximum number of results that can 
+     *      be returned by a findDocsWithWord call
+     * @param bool $limit_news news results appear before all others when
+     *      gotten out of this iterator (may be reordered later). This flag
+     *      controls whether an upper bound of self::LIMIT_NEWS_COUNT is imposed
+     *      on the number of feed results returned
      * @param string $mask byte mask to apply against word id, default is for
-     *      exact match
+     *     exact match
      */
     function __construct($word_key, $index_name, $raw = false, &$filter = NULL,
         $results_per_block = IndexBundleIterator::RESULTS_PER_BLOCK,
@@ -238,7 +244,7 @@ class WordIterator extends IndexBundleIterator
      * iterator and generation
      * @param int $generation the generation the posting offset is for
      * @param int $posting_offset an offset into word_docs to compute the
-     *      relevance of
+     *     relevance of
      * @return float a relevancy score based on BM25F.
      */
     function computeRelevance($generation, $posting_offset)
@@ -408,9 +414,9 @@ class WordIterator extends IndexBundleIterator
     /**
      * Forwards the iterator one group of docs
      * @param array $gen_doc_offset a generation, doc_offset pair. If set,
-     *      the must be of greater than or equal generation, and if equal the
-     *      next block must all have $doc_offsets larger than or equal to
-     *      this value
+     *     the must be of greater than or equal generation, and if equal the
+     *     next block must all have $doc_offsets larger than or equal to
+     *     this value
      */
     function advance($gen_doc_offset = NULL)
     {
@@ -510,7 +516,7 @@ class WordIterator extends IndexBundleIterator
      * would be return by this iterator
      *
      * @return mixed an array with the desired document offset
-     *  and generation; -1 on fail
+     * and generation; -1 on fail
      */
     function currentGenDocOffsetWithWord() {
         if($this->current_doc_offset !== NULL) {

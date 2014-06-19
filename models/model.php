@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -65,11 +65,11 @@ class Model implements CrawlConstants
      */
     const DEFAULT_DESCRIPTION_LENGTH = 150;
     /** Reference to a DatasourceManager
-     *  @var object
+     * @var object
      */
     var $db;
     /** Name of the search engine database
-     *  @var string
+     * @var string
      */
     var $db_name;
     /**
@@ -79,15 +79,15 @@ class Model implements CrawlConstants
      */
     var $edited_page_summaries = NULL;
     /**
-     *  These fields if present in $search_array (used by @see getRows() ),
-     *  but with value "0", will be skipped as part of the where clause
-     *  but will be used for order by clause
-     *  @var array
+     * These fields if present in $search_array (used by @see getRows() ),
+     * but with value "0", will be skipped as part of the where clause
+     * but will be used for order by clause
+     * @var array
      */
     var $any_fields = array();
     /**
-     *  Associations of the form
-     *      name of field for web forms => database column names/abbreviations
+     * Associations of the form
+     *     name of field for web forms => database column names/abbreviations
      * @var array
      */
     var $search_table_column_map = array();
@@ -95,9 +95,9 @@ class Model implements CrawlConstants
      * Sets up the database manager that will be used and name of the search
      * engine database
      *
-     * @param string $db_name  the name of the database for the search engine
+     * @param string $db_name the name of the database for the search engine
      * @param bool $connect whether to connect to the database by default
-     *      after making the datasource class
+     *     after making the datasource class
      */
     function __construct($db_name = DB_NAME, $connect = true)
     {
@@ -114,7 +114,7 @@ class Model implements CrawlConstants
      * search terms, and then creates a new summary array.
      *
      * @param array $results web pages summaries (these in turn are
-     *      arrays!)
+     *     arrays!)
      * @param array $words keywords (typically what was searched on)
      * @param int $description_length length of the description
      * @return array summaries which have been snippified and bold faced
@@ -210,10 +210,10 @@ class Model implements CrawlConstants
      * There is also a rule that a snippet should avoid ending in the middle of
      * a word
      *
-     *  @param string $text haystack to extract snippet from
-     *  @param array $words keywords used to make look in haystack
-     *  @param string $description_length length of the description desired
-     *  @return string a concatenation of the extracted snippets of each word
+     * @param string $text haystack to extract snippet from
+     * @param array $words keywords used to make look in haystack
+     * @param string $description_length length of the description desired
+     * @return string a concatenation of the extracted snippets of each word
      */
     function getSnippets($text, $words, $description_length)
     {
@@ -298,12 +298,12 @@ class Model implements CrawlConstants
         return $snippet_string;
     }
     /**
-     *  Given a string, wraps in bold html tags a set of key words it contains.
+     * Given a string, wraps in bold html tags a set of key words it contains.
      *
-     *  @param string $text haystack string to look for the key words
-     *  @param array $words an array of words to bold face
+     * @param string $text haystack string to look for the key words
+     * @param array $words an array of words to bold face
      *
-     *  @return string  the resulting string after boldfacing has been applied
+     * @return string  the resulting string after boldfacing has been applied
      */
     function boldKeywords($text, $words)
     {
@@ -320,7 +320,7 @@ class Model implements CrawlConstants
     /**
      * Gets a list of all DBMS that work with the search engine
      *
-     *  @return array Names of availabledatasources
+     * @return array Names of availabledatasources
      */
     function getDbmsList()
     {
@@ -354,11 +354,11 @@ class Model implements CrawlConstants
      * the current local machine or not
      *
      * @param array $machine_urls urls of yioop instances to which the action
-     *      applies
+     *     applies
      * @param string $index_timestamp if timestamp exists checks if the index
-     *      has declared itself to be a no network index.
+     *     has declared itself to be a no network index.
      * @return bool whether it involves a single local yioop instance (true)
-     *      or not (false)
+     *     or not (false)
      */
     function isSingleLocalhost($machine_urls, $index_timestamp = -1)
     {
@@ -373,12 +373,12 @@ class Model implements CrawlConstants
                     UrlParser::isLocalhostUrl($machine_urls[0]);
     }
     /**
-     *  Used to get the translation of a string_id stored in the database to
-     *  the given locale.
+     * Used to get the translation of a string_id stored in the database to
+     * the given locale.
      *
-     *  @param string $string_id id to translate
-     *  @param string $locale_tag to translate to
-     *  @return mixed translation if found, $string_id, otherwise
+     * @param string $string_id id to translate
+     * @param string $locale_tag to translate to
+     * @return mixed translation if found, $string_id, otherwise
      */
     function translateDb($string_id, $locale_tag)
     {
@@ -403,12 +403,12 @@ class Model implements CrawlConstants
         return $string_id;
     }
     /**
-     *  Get the user_id associated with a given username
-     *  (In base class as used as an internal method in both signin and
-     *   user models)
+     * Get the user_id associated with a given username
+     * (In base class as used as an internal method in both signin and
+     *  user models)
      *
-     *  @param string $username the username to look up
-     *  @return string the corresponding userid
+     * @param string $username the username to look up
+     * @return string the corresponding userid
      */
     function getUserId($username)
     {
@@ -424,17 +424,17 @@ class Model implements CrawlConstants
         return $user_id;
     }
     /**
-     *  Creates the WHERE and ORDER BY clauses for a query of a Yioop
-     *  table such as USERS, ROLE, GROUP, which have associated search web
-     *  forms. Searches are case insensitive
+     * Creates the WHERE and ORDER BY clauses for a query of a Yioop
+     * table such as USERS, ROLE, GROUP, which have associated search web
+     * forms. Searches are case insensitive
      *
-     *  @param array $search_array each element of this is a quadruple
-     *      name of a field, what comparison to perform, a value to check,
-     *      and an order (ascending/descending) to sort by
-     *  @param array $any_fields these fields if present in search array
-     *      but with value "0" will be skipped as part of the where clause
-     *      but will be used for order by clause
-     *  @return array string for where clause, string for order by clause
+     * @param array $search_array each element of this is a quadruple
+     *     name of a field, what comparison to perform, a value to check,
+     *     and an order (ascending/descending) to sort by
+     * @param array $any_fields these fields if present in search array
+     *     but with value "0" will be skipped as part of the where clause
+     *     but will be used for order by clause
+     * @return array string for where clause, string for order by clause
      */
     function searchArrayToWhereOrderClauses($search_array,
         $any_fields = array('status'))
@@ -491,17 +491,19 @@ class Model implements CrawlConstants
         return array($where, $order_by);
     }
     /**
-     *  Gets a range of rows which match the procided search criteria from
-     *  $th provided table
+     * Gets a range of rows which match the procided search criteria from
+     * $th provided table
      *
      * @param int $limit starting row from the potential results to return
      * @param int $num number of rows after start row to return
-     * @param int &$total_rows gets set with the total number of rows that
-     *      can be returned by the given database query
+     * @param int& $total gets set with the total number of rows that
+     *     can be returned by the given database query
      * @param array $search_array each element of this is a
-     *      quadruple name of a field, what comparison to perform, a value to
-     *      check, and an order (ascending/descending) to sort by
-     * @param array $args
+     *     quadruple name of a field, what comparison to perform, a value to
+     *     check, and an order (ascending/descending) to sort by
+     * @param array $args additional values which may be used to get rows
+     *      (what these are will typically depend on the subclass
+     *      implementation)
      * @return array
      */
     function getRows($limit = 0, $num = 100, &$total,
@@ -541,32 +543,32 @@ class Model implements CrawlConstants
         return $rows;
     }
     /**
-     *  Controls which columns and the names of those columns from the tables
-     *  underlying the given model should be return from a getRows call.
-     *  This defaults to *, but in general will be overriden in subclasses of
-     *  Model
+     * Controls which columns and the names of those columns from the tables
+     * underlying the given model should be return from a getRows call.
+     * This defaults to *, but in general will be overriden in subclasses of
+     * Model
      *
-     *  @param mixed $args any additional arguments which should be used to
-     *      determine the columns
-     *  @return string a comma separated list of columns suitable for a SQL
-     *      query
+     * @param mixed $args any additional arguments which should be used to
+     *     determine the columns
+     * @return string a comma separated list of columns suitable for a SQL
+     *     query
      */
     function selectCallback($args)
     {
         return "*";
     }
     /**
-     *  Controls which tables and the names of tables
-     *  underlie the given model and should be used in a getRows call
-     *  This defaults to the single table whose name is whatever is before
-     *  Model in the name of the model. For example, by default on FooModel
-     *  this method would return "FOO". If a different behavior, this can be
-     *  overriden in subclasses of Model
+     * Controls which tables and the names of tables
+     * underlie the given model and should be used in a getRows call
+     * This defaults to the single table whose name is whatever is before
+     * Model in the name of the model. For example, by default on FooModel
+     * this method would return "FOO". If a different behavior, this can be
+     * overriden in subclasses of Model
      *
-     *  @param mixed $args any additional arguments which should be used to
-     *      determine these tables
-     *  @return string a comma separated list of tables suitable for a SQL
-     *      query
+     * @param mixed $args any additional arguments which should be used to
+     *     determine these tables
+     * @return string a comma separated list of tables suitable for a SQL
+     *     query
      */
     function fromCallback($args)
     {
@@ -575,45 +577,44 @@ class Model implements CrawlConstants
         return $name;
     }
     /**
-     *  Controls the WHERE clause of the SQL query that
-     *  underlies the given model and should be used in a getRows call.
-     *  This defaults to an empty WHERE clause.
+     * Controls the WHERE clause of the SQL query that
+     * underlies the given model and should be used in a getRows call.
+     * This defaults to an empty WHERE clause.
      *
-     *  @param mixed $args additional arguments that might be used to construct
-     *      the WHERE clause.
-     *  @return string a SQL WHERE clause
+     * @param mixed $args additional arguments that might be used to construct
+     *     the WHERE clause.
+     * @return string a SQL WHERE clause
      */
     function whereCallback($args)
     {
         return "";
     }
     /**
-     *  Called after as row is retrieved by getRows from the database to
-     *  perform some manipulation that would be useful for this model.
-     *  For example, in CrawlModel, after a row representing a crawl mix
-     *  has been gotten, this is used to perform an additional query to marshal
-     *  its components. By default this method just returns this row unchanged.
+     * Called after as row is retrieved by getRows from the database to
+     * perform some manipulation that would be useful for this model.
+     * For example, in CrawlModel, after a row representing a crawl mix
+     * has been gotten, this is used to perform an additional query to marshal
+     * its components. By default this method just returns this row unchanged.
      *
-     *  @param mixed $args additional arguments that might be used by this 
-     *      callback
-     *  @return array $row after callback manipulation
+     * @param array $row row as retrieved from database query
+     * @param mixed $args additional arguments that might be used by this 
+     *     callback
+     * @return array $row after callback manipulation
      */
     function rowCallback($row, $args)
     {
         return $row;
     }
     /**
-     *  Called after getRows has retrieved all the rows that it would retrieve
-     *  but before they are returned to give one last place where they could
-     *  be further manipulated. For example, in MachineModel this callback
-     *  is used to make parallel network calls to get the status of each machine
-     *  returned by getRows. The default for this method is to leave the
-     *  rows that would be returned unchanged
+     * Called after getRows has retrieved all the rows that it would retrieve
+     * but before they are returned to give one last place where they could
+     * be further manipulated. For example, in MachineModel this callback
+     * is used to make parallel network calls to get the status of each machine
+     * returned by getRows. The default for this method is to leave the
+     * rows that would be returned unchanged
      *
-     *  @param array $rows that have been calculated so far by getRows
-     *  @param mixed $args additional arguments that might be used by this 
-     *      callback
-     *  @return array $rows after this final manipulation
+     * @param array $rows that have been calculated so far by getRows
+     * @return array $rows after this final manipulation
      *
      */
     function postQueryCallback($rows)

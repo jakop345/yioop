@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -78,7 +78,7 @@ ini_set("memory_limit", "500M");
  * second command-line argument. The following command would be used to run
  * this script directly from the command-line:
  *
- *     $ php bin/classifier_trainer.php terminal LABEL
+ *    $ php bin/classifier_trainer.php terminal LABEL
  *
  * @author Shawn Tice
  * @package seek_quarry
@@ -86,11 +86,11 @@ ini_set("memory_limit", "500M");
 class ClassifierTrainer
 {
     /**
-     *  This is the function that should be called to get the
-     *  classifier_trainer to start training a logistic regression instance for
-     *  a particular classifier. The class label corresponding to the
-     *  classifier to be finalized should be passed as the second command-line
-     *  argument.
+     * This is the function that should be called to get the
+     * classifier_trainer to start training a logistic regression instance for
+     * a particular classifier. The class label corresponding to the
+     * classifier to be finalized should be passed as the second command-line
+     * argument.
      */
     function start()
     {

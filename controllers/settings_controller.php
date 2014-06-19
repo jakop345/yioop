@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -32,7 +32,7 @@
  */
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 /**
- *  Load base controller class, if needed
+ * Load base controller class, if needed
  */
 require_once BASE_DIR."/controllers/controller.php";
 /**
@@ -47,9 +47,9 @@ require_once BASE_DIR."/controllers/controller.php";
 class SettingsController extends Controller
 {
     /**
-     *  Sets up the available perpage language options.
-     *  If handling data sent from a  form, it stores cleaned versions of
-     *  the number of results per page and language options into a sesssion
+     * Sets up the available perpage language options.
+     * If handling data sent from a  form, it stores cleaned versions of
+     * the number of results per page and language options into a sesssion
      *
      */
     function processRequest()
@@ -132,11 +132,11 @@ class SettingsController extends Controller
         $this->displayView($view, $data);
     }
     /**
-     *  Changes settings for a logged in user, this might involve storing
-     *  data into the active session.
+     * Changes settings for a logged in user, this might involve storing
+     * data into the active session.
      *
-     *  @param array &$data fields which might be sent to the view
-     *  @return bool if any settings were changed
+     * @param array& $data fields which might be sent to the view
+     * @return bool if any settings were changed
      */
     function loggedInChangeSettings(&$data)
     {

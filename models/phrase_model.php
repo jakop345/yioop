@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -72,7 +72,7 @@ class PhraseModel extends ParallelModel
      * the max description length of results if such a meta word is used
      * this array is typically set in index.php
      *
-     *  @var array
+     * @var array
      */
     var $additional_meta_words;
     /**
@@ -97,6 +97,10 @@ class PhraseModel extends ParallelModel
      const NUM_CACHE_PAGES = 10;
     /**
      * {@inheritDoc}
+     *
+     * @param string $db_name the name of the database for the search engine
+     * @param bool $connect whether to connect to the database by default
+     *     after making the datasource class
      */
     function __construct($db_name = DB_NAME, $connect = true)
     {
@@ -107,7 +111,7 @@ class PhraseModel extends ParallelModel
     /**
      * Returns whether there is a index with the provide timestamp
      *
-     * @param int $index_timestamp timestamp of the index to check if in cache
+     * @param int $index_time_stamp timestamp of the index to check if in cache
      * @return bool whether it exists or not
      */
     function indexExists($index_time_stamp)
@@ -188,28 +192,28 @@ class PhraseModel extends ParallelModel
      * Given a query phrase, returns formatted document summaries of the
      * documents that match the phrase.
      *
-     * @param string $phrase  the phrase to try to match
+     * @param string $input_phrase the phrase to try to match
      * @param int $low  return results beginning with the $low document
      * @param int $results_per_page  how many results to return
      * @param bool $format  whether to highlight in the returned summaries the
-     *      matched text
+     *     matched text
      * @param array $filter an array of hashes of domains to filter from
-     *      results
+     *     results
      * @param bool $use_cache_if_allowed if true and USE_CACHE is true then
-     *      an attempt will be made to look up the results in either
-     *      the file cache or memcache. Otherwise, items will be recomputed
-     *      and then potentially restored in cache
+     *     an attempt will be made to look up the results in either
+     *     the file cache or memcache. Otherwise, items will be recomputed
+     *     and then potentially restored in cache
      * @param int $raw ($raw == 0) normal grouping, ($raw == 1)
-     *      no grouping done on data also no summaries returned (only lookup
-     *      info), $raw > 1 return summaries but no grouping
+     *     no grouping done on data also no summaries returned (only lookup
+     *     info), $raw > 1 return summaries but no grouping
      * @param array $queue_servers a list of urls of yioop machines which might
-     *      be used during lookup
+     *     be used during lookup
      * @param bool $guess_semantics whether to do query rewriting before lookup
      * @param int $save_timestamp if this timestamp is nonzero, then save
-     *      iterate position, so can resume on future queries that make
-     *      use of the timestamp
+     *     iterate position, so can resume on future queries that make
+     *     use of the timestamp
      * @param bool $limit_news if true the number of media:news items to
-     *      allow in search results is limited to WordIterator::LIMIT_NEWS_COUNT
+     *     allow in search results is limited to WordIterator::LIMIT_NEWS_COUNT
      *
      * @return array an array of summary data
      */
@@ -457,14 +461,14 @@ class PhraseModel extends ParallelModel
         return $output;
     }
     /**
-     *  Parses from a string phrase representing a conjunctive query, a struct
-     *  consisting of the words keys searched for, the allowed and disallowed
-     *  phrases, the weight that should be put on these query results, and
-     *  which archive to use.
+     * Parses from a string phrase representing a conjunctive query, a struct
+     * consisting of the words keys searched for, the allowed and disallowed
+     * phrases, the weight that should be put on these query results, and
+     * which archive to use.
      *
-     * @param string &$phrase string to extract struct from, if the phrase
-     *  semantics is guessed or an if condition is processed the value of
-     *  phrase will be altered. (Helps for feeding to network queries)
+     * @param string& $phrase string to extract struct from, if the phrase
+     * semantics is guessed or an if condition is processed the value of
+     * phrase will be altered. (Helps for feeding to network queries)
      * @param bool $guess_semantics whether to do query rewriting before parse
      * @return array struct representing the conjunctive query
      */
@@ -500,7 +504,10 @@ class PhraseModel extends ParallelModel
         $num_words = 0;
         $quote_positions = array();
         foreach($phrase_parts as $phrase_part) {
-            if(trim($phrase_part) == "") {continue;}
+            if(trim($phrase_part) == "") {
+                $quote_state = ($quote_state) ? false : true;
+                continue;
+            }
             /*still use original phrase string here to handle
                acronyms abbreviations and the like that use periods */
             if($quote_state) {
@@ -693,9 +700,9 @@ class PhraseModel extends ParallelModel
      * but apersand substitution applied, the index and the weights found
      * as part of the query string.
      *
-     *  @param string $phrase the query string
-     *  @return array containing items listed above in the description of this
-     *      method
+     * @param string $phrase the query string
+     * @return array containing items listed above in the description of this
+     *     method
      */
     function extractMetaWordInfo($phrase)
     {
@@ -779,9 +786,9 @@ class PhraseModel extends ParallelModel
      * when a query term is a url and rewriting it to the appropriate meta
      * meta word.
      *
-     *  @param string $phrase input query to guess semantics of
-     *  @return string a phrase that more closely matches the intentions of the
-     *      query.
+     * @param string $phrase input query to guess semantics of
+     * @return string a phrase that more closely matches the intentions of the
+     *     query.
      */
     function guessSemantics($phrase)
     {
@@ -860,20 +867,20 @@ class PhraseModel extends ParallelModel
         return $phrase;
     }
     /**
-     *  Matches terms (non white-char strings) in the language $lang_tag in
-     *  $phrase that begin with  $start_with and don't contain  $not_contain,
-     *  replaces $start_with with $new_prefix and adds $suffix to the end
+     * Matches terms (non white-char strings) in the language $lang_tag in
+     * $phrase that begin with  $start_with and don't contain  $not_contain,
+     * replaces $start_with with $new_prefix and adds $suffix to the end
      *
-     *  @param string $phrase string to look for terms in
-     *  @param string $start_with what we're looking to see if term begins with
-     *  @param string $new_prefix what to change $start_with to
-     *  @param string $suffix what to tack on to the end of the term if there is
-     *      a match
-     *  @param string $not_contain string match is not allowed to contain
-     *  @param string $lang_tag what language the phrase must be in for the rule
-     *      to apply
+     * @param string $phrase string to look for terms in
+     * @param string $start_with what we're looking to see if term begins with
+     * @param string $new_prefix what to change $start_with to
+     * @param string $suffix what to tack on to the end of the term if there is
+     *     a match
+     * @param string $not_contains string match is not allowed to contain
+     * @param string $lang_tag what language the phrase must be in for the rule
+     *     to apply
      *
-     *  @return string $phrase after modifications have been made
+     * @return string $phrase after modifications have been made
      */
     function beginMatch($phrase, $start_with, $new_prefix, $suffix = "",
         $not_contains=array(), $lang_tag = "en-US")
@@ -904,24 +911,24 @@ class PhraseModel extends ParallelModel
         return $result_phrase;
     }
     /**
-     *  Matches terms (non white-char strings) in the language $lang_tag in
-     *  $phrase that end with $end_with and don't contain  $not_contain,
-     *  replaces $end_with with $new_suffix (if not empty) and adds $prefix to
-     *  the beginning
+     * Matches terms (non white-char strings) in the language $lang_tag in
+     * $phrase that end with $end_with and don't contain  $not_contain,
+     * replaces $end_with with $new_suffix (if not empty) and adds $prefix to
+     * the beginning
      *
-     *  @param string $phrase string to look for terms in
-     *  @param string $end_with what we're looking to see if term ends with
-     *  @param string $prefix what to tack on to the start if there is
-     *      a match
-     *  @param string $new_suffix what to change $end_with to
-     *  @param string $lang_tag what language the phrase must be in for the rule
-     *      to apply
+     * @param string $phrase string to look for terms in
+     * @param string $end_with what we're looking to see if term ends with
+     * @param string $prefix what to tack on to the start if there is
+     *     a match
+     * @param string $new_suffix what to change $end_with to
+     * @param string $not_contains string match is not allowed to contain
+     * @param string $lang_tag what language the phrase must be in for the rule
+     *     to apply
      *
-     *  @return string $phrase after modifications have been made
+     * @return string $phrase after modifications have been made
      */
     function endMatch($phrase, $end_with, $prefix, $new_suffix = "",
-        $not_contains=array(),
-        $lang_tag = "en-US")
+        $not_contains = array(), $lang_tag = "en-US")
     {
         $phrase .= " ";
         $quote_end_with = preg_quote($end_with, "/");
@@ -982,34 +989,34 @@ class PhraseModel extends ParallelModel
      * Gets doc summaries of documents containing given words and meeting the
      * additional provided criteria
      * @param array $word_structs an array of word_structs. Here a word_struct
-     *      is an associative array with at least the following fields
-     *      KEYS -- an array of word keys
-     *      QUOTE_POSITIONS -- an array of positions of words that appeared in
-     *          quotes (so need to be matched exactly)
-     *      DISALLOW_PHRASES -- an array of words the document must not contain
-     *      WEIGHT -- a weight to multiple scores returned from this iterator by
-     *      INDEX_NAME -- an index timestamp to get results from
+     *     is an associative array with at least the following fields
+     *     KEYS -- an array of word keys
+     *     QUOTE_POSITIONS -- an array of positions of words that appeared in
+     *         quotes (so need to be matched exactly)
+     *     DISALLOW_PHRASES -- an array of words the document must not contain
+     *     WEIGHT -- a weight to multiple scores returned from this iterator by
+     *     INDEX_NAME -- an index timestamp to get results from
      * @param int $limit number of first document in order to return
      * @param int $num number of documents to return summaries of
-     * @param array &$filter an array of hashes of domains to filter from
-     *      results
+     * @param array& $filter an array of hashes of domains to filter from
+     *     results
      * @param bool $use_cache_if_allowed if true and USE_CACHE is true then
-     *      an attempt will be made to look up the results in either
-     *      the file cache or memcache. Otherwise, items will be recomputed
-     *      and then potentially restored in cache
+     *     an attempt will be made to look up the results in either
+     *     the file cache or memcache. Otherwise, items will be recomputed
+     *     and then potentially restored in cache
      * @param int $raw ($raw == 0) normal grouping, ($raw > 0)
-     *      no grouping done on data. if ($raw == 1) no lookups of summaries
-     *      done
+     *     no grouping done on data. if ($raw == 1) no lookups of summaries
+     *     done
      * @param array $queue_servers a list of urls of yioop machines which might
-     *      be used during lookup
+     *     be used during lookup
      * @param string $original_query if set, the original query that corresponds
-     *      to $word_structs
+     *     to $word_structs
      * @param string $save_timestamp_name if this timestamp is not empty, then
-     *      save iterate position, so can resume on future queries that make
-     *      use of the timestamp. If used then $limit ignored and get next $num
-     *      docs after $save_timestamp 's previous iterate position.
+     *     save iterate position, so can resume on future queries that make
+     *     use of the timestamp. If used then $limit ignored and get next $num
+     *     docs after $save_timestamp 's previous iterate position.
      * @param bool $limit_news if true the number of media:news items to
-     *      allow in search results is limited to WordIterator::LIMIT_NEWS_COUNT
+     *     allow in search results is limited to WordIterator::LIMIT_NEWS_COUNT
      *
      * @return array document summaries
      */
@@ -1311,7 +1318,9 @@ class PhraseModel extends ParallelModel
      * do WordNet processing. Also user has to specify the WordNet directory
      *
      * @param array $results document summaries
-     * @param string $original query
+     * @param string $original_query the original query that we are computing
+     *      results for
+     * @param string $lang locale tag of query
      * @return array results document summaries sorted by wordnet score
      */
     function sortByThesaurusScore($results, $original_query, $lang)
@@ -1347,11 +1356,11 @@ class PhraseModel extends ParallelModel
      * are location's then looks these up in turn. This method handles robot
      * meta tags which might forbid indexing.
      *
-     * @param array &$pages of page data without text summaries
-     * @param array &$queue_servers array of queue server to find data on
+     * @param array& $pages of page data without text summaries
+     * @param array& $queue_servers array of queue server to find data on
      * @param int $raw only lookup locations if 0
      * @param bool $groups_with_docs whether to return only groups that
-     *      contain at least one doc as opposed to a groups with only links
+     *     contain at least one doc as opposed to a groups with only links
      * @return array pages with summaries added
      */
     function getSummariesFromOffsets(&$pages, &$queue_servers, $raw,
@@ -1446,33 +1455,33 @@ class PhraseModel extends ParallelModel
      * results to a query
      *
      * @param array $word_structs an array of word_structs. Here a word_struct
-     *      is an associative array with at least the following fields
-     *      KEYS -- an array of word keys
-     *      QUOTE_POSITIONS -- an array of positions of words that appreared in
-     *          quotes (so need to be matched exactly)
-     *      DISALLOW_PHRASES -- an array of words the document must not contain
-     *      WEIGHT -- a weight to multiple scores returned from this iterator by
-     *      INDEX_NAME -- an index timestamp to get results from
-     * @param array &$filter an array of hashes of domains to filter from
-     *      results
-     *      and then potentially restored in cache
+     *     is an associative array with at least the following fields
+     *     KEYS -- an array of word keys
+     *     QUOTE_POSITIONS -- an array of positions of words that appreared in
+     *         quotes (so need to be matched exactly)
+     *     DISALLOW_PHRASES -- an array of words the document must not contain
+     *     WEIGHT -- a weight to multiple scores returned from this iterator by
+     *     INDEX_NAME -- an index timestamp to get results from
+     * @param array& $filter an array of hashes of domains to filter from
+     *     results
+     *     and then potentially restored in cache
      * @param int $raw ($raw == 0) normal grouping, ($raw == 1)
-     *      no grouping done on data also no summaries returned (only lookup
-     *      info), $raw > 1 return summaries but no grouping
+     *     no grouping done on data also no summaries returned (only lookup
+     *     info), $raw > 1 return summaries but no grouping
      * @param int $to_retrieve number of items to retrieve from location in
-     *      in interator
+     *     in interator
      * @param array $queue_servers a list of urls of yioop machines which might
-     *      be used during lookup
+     *     be used during lookup
      * @param string $original_query if set, the orginal query that corresponds
-     *      to $word_structs
+     *     to $word_structs
      * @param string $save_timestamp_name if this timestamp is non empty, then
-     *      when making iterator get sub-iterators to advance to gen doc_offset
-     *      stored with respect to save_timestamp if exists.
+     *     when making iterator get sub-iterators to advance to gen doc_offset
+     *     stored with respect to save_timestamp if exists.
      * @param bool $limit_news if true the number of media:news items to
-     *      allow in search results is limited to WordIterator::LIMIT_NEWS_COUNT
+     *     allow in search results is limited to WordIterator::LIMIT_NEWS_COUNT
      *
      * @return &object an iterator for iterating through results to the
-     *  query
+     * query
      */
     function getQueryIterator($word_structs, &$filter, $raw,
         &$to_retrieve, $queue_servers = array(), $original_query = "",

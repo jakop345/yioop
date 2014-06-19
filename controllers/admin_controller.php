@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -256,7 +256,7 @@ class AdminController extends Controller implements CrawlConstants
      * This is called from {@link processRequest()} once a user is logged in.
      *
      * @return array $data the results of doing the activity for display in the
-     *      view
+     *     view
      */
     function processSession()
     {
@@ -340,8 +340,8 @@ class AdminController extends Controller implements CrawlConstants
      * current web crawl
      *
      * @return array $data contains crawl status of current crawl as well as
-     *      info about prior crawls and which crawl is being used for default
-     *      search results
+     *     info about prior crawls and which crawl is being used for default
+     *     search results
      */
     function crawlStatus()
     {
@@ -389,10 +389,10 @@ class AdminController extends Controller implements CrawlConstants
      * of the machines managed by this Yioop instance and then passes
      * this data the the machinestatus view.
      * @return array $data MACHINES field has information about each
-     *      machine managed by this Yioop instance as well the on off
-     *      status of its queue_servers and fetchers.
-     *      The REFRESH field is used to tell the controller that the
-     *      view shouldn't have its own sidemenu.
+     *     machine managed by this Yioop instance as well the on off
+     *     status of its queue_servers and fetchers.
+     *     The REFRESH field is used to tell the controller that the
+     *     view shouldn't have its own sidemenu.
      */
     function machineStatus()
     {
@@ -413,11 +413,11 @@ class AdminController extends Controller implements CrawlConstants
     /**
      * Used to update the yioop installation profile based on $_REQUEST data
      *
-     * @param array &$data field data to be sent to the view
-     * @param array &$profile used to contain the current and updated profile
-     *      field values
+     * @param array& $data field data to be sent to the view
+     * @param array& $profile used to contain the current and updated profile
+     *     field values
      * @param array $check_box_fields fields whose data comes from a html
-     *      checkbox
+     *     checkbox
      */
     function updateProfileFields(&$data, &$profile, $check_box_fields = array())
     {
@@ -453,21 +453,21 @@ class AdminController extends Controller implements CrawlConstants
         }
     }
     /**
-     *  Used to set up view data for table search form (might make use of
-     *  $_REQUEST if form was submitted, results gotten, and we want to preserve
-     *  form drop down). Table search forms
-     *  are used by manageUsers, manageRoles, manageGroups, to do advanced
-     *  search of the entity they are responsible for.
+     * Used to set up view data for table search form (might make use of
+     * $_REQUEST if form was submitted, results gotten, and we want to preserve
+     * form drop down). Table search forms
+     * are used by manageUsers, manageRoles, manageGroups, to do advanced
+     * search of the entity they are responsible for.
      *
-     *  @param array &$data modified to contain the field data needed for
-     *      the view to draw the search form
-     *  @param array $comparison_fields those fields of the entity
-     *      in question ( for example, users) which we can search both with
-     *      string comparison operators and equality operators
-     *  @param array $equal_comparison_fields those fields of the entity in 
-     *      question which can only be search by equality/inequality operators
-     *  @param string $field_postfix suffix to append onto field names in
-     *      case there are multiple forms on the same page
+     * @param array& $data modified to contain the field data needed for
+     *     the view to draw the search form
+     * @param array $comparison_fields those fields of the entity
+     *     in question ( for example, users) which we can search both with
+     *     string comparison operators and equality operators
+     * @param array $equal_comparison_fields those fields of the entity in 
+     *     question which can only be search by equality/inequality operators
+     * @param string $field_postfix suffix to append onto field names in
+     *     case there are multiple forms on the same page
      */
     function tableSearchRequestHandler(&$data, $comparison_fields = array(),
         $equal_comparison_fields = array(), $field_postfix = "")

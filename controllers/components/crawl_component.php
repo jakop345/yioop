@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -52,7 +52,7 @@ class CrawlComponent extends Component implements CrawlConstants
      * by which a crawl is conducted
      *
      * @return array $data information and statistics about crawls in the system
-     *      as well as status messages on performing a given sub activity
+     *     as well as status messages on performing a given sub activity
      */
     function manageCrawls()
     {
@@ -170,9 +170,11 @@ class CrawlComponent extends Component implements CrawlConstants
      * Called from @see manageCrawls to start a new crawl on the machines
      * $machine_urls. Updates $data array with crawl start message
      *
-     * @param array &$data an array of info to supply to AdminView
+     * @param array& $data an array of info to supply to AdminView
      * @param array $machine_urls string urls of machines managed by this
-     *  Yioop name server on which to perform the crawl
+     *      Yioop name server on which to perform the crawl
+     * @param array $seed_info allowed, disallowed, seed urls, etc to use in
+     *      crawl
      */
     function startCrawl(&$data, $machine_urls, $seed_info = NULL)
     {
@@ -233,7 +235,7 @@ class CrawlComponent extends Component implements CrawlConstants
      * Reads the parameters for a crawl from an array gotten from a crawl.ini
      * file
      *
-     * @param array &$crawl_params parameters to write to queue_server
+     * @param array& $crawl_params parameters to write to queue_server
      * @param array $seed_info data from crawl.ini file
      */
     function getCrawlParametersFromSeedInfo(&$crawl_params, $seed_info)
@@ -305,9 +307,9 @@ class CrawlComponent extends Component implements CrawlConstants
      * crawl (or current crawl) to be carried out by the machines
      * $machine_urls. Updates $data array to be supplied to AdminView
      *
-     * @param array &$data an array of info to supply to AdminView
+     * @param array& $data an array of info to supply to AdminView
      * @param array $machine_urls string urls of machines managed by this
-     *  Yioop name server on which to perform the crawl
+     * Yioop name server on which to perform the crawl
      */
     function editCrawlOption(&$data, $machine_urls)
     {
@@ -682,9 +684,9 @@ class CrawlComponent extends Component implements CrawlConstants
      *
      * @param array $data data to be passed on to the view
      * @param array $classifiers map from class labels to their associated
-     *     classifiers
+     *    classifiers
      * @param array $machine_urls string urls of machines managed by this
-     *     Yioop name server
+     *    Yioop name server
      */
     function editClassifier(&$data, $classifiers, $machine_urls)
     {
@@ -1253,7 +1255,7 @@ class CrawlComponent extends Component implements CrawlConstants
      * filtered out the search results
      *
      * @return array $data info about the groups and their contents for a
-     *      particular crawl mix
+     *     particular crawl mix
      */
     function resultsEditor()
     {
@@ -1338,7 +1340,7 @@ class CrawlComponent extends Component implements CrawlConstants
      * appear on the SearchView page
      *
      * @return array $data info about current search sources, and current
-     *      sub-searches
+     *     sub-searches
      */
     function searchSources()
     {

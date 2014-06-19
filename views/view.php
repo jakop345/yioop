@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -51,17 +51,17 @@ require_once BASE_DIR."/views/layouts/layout.php";
 abstract class View
 {
     /** The name of the type of layout object that the view is drawn on
-     *  @var string
+     * @var string
      */
     var $layout = "";
     /** The reference to the layout object that the view is drawn on
-     *  @var object
+     * @var object
      */
     var $layout_object;
     /**
-     *  The constructor reads in any Element and Helper subclasses which are
-     *  needed to draw the view. It also reads in the Layout subclass on which
-     *  the View will be drawn.
+     * The constructor reads in any Element and Helper subclasses which are
+     * needed to draw the view. It also reads in the Layout subclass on which
+     * the View will be drawn.
      *
      */
     function __construct()
@@ -104,7 +104,7 @@ abstract class View
      * Dynamic loader for Helper objects which might live on the current
      * View
      *
-     * @param $string element name of Helper to return
+     * @param string $helper name of Helper to return
      */
     function helper($helper)
     {
@@ -125,7 +125,7 @@ abstract class View
      * implement renderView.
      *
      * @param array $data  an array of values set up by a controller to be used
-     *      in rendering the view
+     *     in rendering the view
      */
     function render($data) {
         $this->layout_object->render($data);
@@ -135,8 +135,8 @@ abstract class View
      * actually draws the view. The current layouts render method calls this
      * function.
      *
-     *  @param array $data  an array of values set up by a controller to be used
-     *      in rendering the view
+     * @param array $data  an array of values set up by a controller to be used
+     *     in rendering the view
      */
     abstract function renderView($data);
 }

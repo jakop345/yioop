@@ -1,30 +1,30 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2011 - 2014 Priya Gangaraju priya.gangaraju@gmail.com,
- *      Chris Pollett, chris@pollett.org
+ * Copyright (C) 2011 - 2014 Priya Gangaraju priya.gangaraju@gmail.com,
+ *     Chris Pollett, chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Priya Gangaraju priya.gangaraju@gmail.com, Chris Pollett
- *      chris@pollett.org
+ *     chris@pollett.org
  * @package seek_quarry
  * @subpackage indexing_plugin
  * @license http://www.gnu.org/licenses/ GPL3
@@ -55,7 +55,7 @@ require_once BASE_DIR."/lib/processors/html_processor.php";
 /** Base indexing plugin class*/
 require_once BASE_DIR."/lib/indexing_plugins/indexing_plugin.php";
 /** Used to create index shards to add ingredient: entries
- *  to index
+ * to index
  */
 require_once BASE_DIR."/lib/index_shard.php";
 /** Used to extract text from documents*/
@@ -84,7 +84,7 @@ require_once BASE_DIR."/controllers/search_controller.php";
  *
  *
  * @author Priya Gangaraju, Chris Pollett (re-organized, added documentation,
- *      updated)
+ *     updated)
  * @package seek_quarry
  * @subpackage indexing_plugin
  */
@@ -100,13 +100,13 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
      * of the ingredients of the recipe. Ingredients will be separated by
      * ||
      *
-     *  @param string $page web-page contents
-     *  @param string $url the url where the page contents came from,
-     *     used to canonicalize relative links
+     * @param string $page web-page contents
+     * @param string $url the url where the page contents came from,
+     *    used to canonicalize relative links
      *
-     *  @return array consisting of a sequence of subdoc arrays found
-     *      on the given page. Each subdoc array has a self::TITLE and
-     *      a self::DESCRIPTION
+     * @return array consisting of a sequence of subdoc arrays found
+     *     on the given page. Each subdoc array has a self::TITLE and
+     *     a self::DESCRIPTION
      */
     function pageProcessing($page, $url)
     {
@@ -405,10 +405,10 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
         }
     }
     /**
-     *  Extracts the main ingredient from the ingredient.
+     * Extracts the main ingredient from the ingredient.
      *
-     *  @param string $text ingredient.
-     *  @return string $name main ingredient
+     * @param string $text ingredient.
+     * @return string $name main ingredient
      */
     function getIngredientName($text)
     {
@@ -490,8 +490,8 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
      * this plugin
      *
      * @return array meta words and maximum description length of results
-     *      allowed for that meta word (in this case 2000 as want
-     *      to allow sufficient descriptions of whole recipes)
+     *     allowed for that meta word (in this case 2000 as want
+     *     to allow sufficient descriptions of whole recipes)
      */
     static function getAdditionalMetaWords()
     {
@@ -499,72 +499,134 @@ class RecipePlugin extends IndexingPlugin implements CrawlConstants
             "ingredient:" => MAX_DESCRIPTION_LEN);
     }
 }
-/**
- * Gets the language tag (for instance, en_US for American English) of the
- * locale that is currently being used.
- *
- * @return string  "en-US" since for now the recipe plugin only works
- *      with English recipes
- */
 if(!function_exists("getLocaleTag")) {
+    /**
+     * Gets the language tag (for instance, en_US for American English) of the
+     * locale that is currently being used.
+     *
+     * @return string  "en-US" since for now the recipe plugin only works
+     *     with English recipes
+     */
     function getLocaleTag()
     {
         return "en_US";
     }
 }
 /**
- * class to define vertex
+ * Vertex class for Recipe Clustering Minimal Spanning Tree
  * @package seek_quarry
  * @subpackage indexing_plugin
  */
 class Vertex
 {
-    private $label;
-    private $visited;
-    function __construct($label){
+    /**
+     * Name of this Vertex (recipe title)
+     * @var string
+     */
+    var $label;
+    /**
+     * Whether this node has been seen as part of MST construction
+     * @var bool
+     */
+    var $visited;
+    /**
+     * Construct a vertex suitable for the Recipe Clustering Minimal Spanning
+     * Tree
+     *
+     * @param string $label name of this Vertex (recipe title)
+     */
+    function __construct($label)
+    {
         $this->label = $label;
         $this->visited = false;
     }
-    function getLabel(){
+    /**
+     * Accessor for label of this Vertex
+     * @return string label of Vertex
+     */
+    function getLabel()
+    {
         return $this->label;
     }
-    function visited(){
+    /**
+     * Sets the vertex to visited
+     */
+    function visited()
+    {
         $this->visited = true;
     }
-    function isVisited(){
+    /**
+     * Accessor for $visited state of this Vertex
+     * @return bool $visited state
+     */
+    function isVisited()
+    {
         return $this->visited;
     }
 }
 /**
- * class to define edge
+ * Directed Edge class for Recipe Clustering Minimal Spanning Tree
+ *
  * @package seek_quarry
  * @subpackage indexing_plugin
  */
 class Edge
 {
-    private $start_vertex;
-    private $end_vertex;
-    private $cost;
-    function __construct($vertex1,$vertex2,$cost){
+    /**
+     * Starting vertex of the directed edge this object represents
+     * @var Vertex
+     */
+    var $start_vertex;
+    /**
+     * End vertex of the directed edge this object represents
+     * @var Vertex
+     */
+    var $end_vertex;
+    /**
+     * Weight of this edge
+     * @var float
+     */
+    var $cost;
+    /**
+     * Construct a directed Edge using a starting and ending vertex and a weight
+     *
+     * @param Vertex $vertex1 starting Vertex
+     * @param Vertex $vertex2 ending Vertex
+     * @param float $cost weight of this edge
+     */
+    function __construct($vertex1, $vertex2, $cost)
+    {
         $this->start_vertex = new Vertex($vertex1);
         $this->end_vertex = new Vertex($vertex2);
         $this->cost = $cost;
     }
+    /**
+     * Accessor for starting vertex of this edge
+     * @return Vertex starting vertex
+     */
     function getStartVertex()
     {
         return $this->start_vertex;
     }
+    /**
+     * Accessor for ending vertex of this edge
+     * @return Vertex ending vertex
+     */
     function getEndVertex()
     {
         return $this->end_vertex;
     }
+    /**
+     * Accessor for weight of this edge
+     * @return float weight of this edge
+     */
     function getCost()
     {
         return $this->cost;
     }
 }
 /**
- * Class to define Minimum Spanning tree. constructMST constructs
+ * Class to define Minimum Spanning tree for recipes. constructMST constructs
  * the minimum spanning tree using heap. formCluster forms clusters by
  * deleting the most expensive edge. BreadthFirstSearch is used to
  * traverse the MST.
@@ -573,17 +635,34 @@ class Edge
  */
 class Tree
 {
-    private $cluster_heap;
-    private $vertices;
-    private $adjMatrix;
-    function __construct(){
+    /**
+     * Maintains a priority queue of edges ordered by max weight
+     * @var Cluster
+     */
+    var $cluster_heap;
+    /**
+     * Array of Vertices (Recipes)
+     * @var array
+     */
+    var $vertices;
+    /**
+     * Adjacency matrix of whether recipes are adjacent to each other
+     * @var array
+     */
+    var $adjMatrix;
+    /**
+     * Constructs a tree suitable for building containing a Minimal Spanning
+     * Tree for Kruskal clustering
+     */
+    function __construct()
+    {
         $this->cluster_heap = new Cluster();
         $this->vertices = array();
     }
    /**
     * Constructs the adjacency matrix for the MST.
     *
-    * @param object array $edges vertices and edge weights of MST
+    * @param array $edges vertices and edge weights of MST
     */
     function constructMST($edges)
     {
@@ -615,6 +694,11 @@ class Tree
         $nodeQueue = new Queue($k);
         $cluster_count = $size * CLUSTER_RATIO;
         $cluster = array();
+        /*
+            Idea remove $cluster_count many weightiest edges from tree
+            to get a forest. As do this add to queue end points of
+            removed edges.
+         */
         for($j = 0; $j < $cluster_count - 1; $j++) {
             $max_edge = $this->cluster_heap->extract();
             $cluster1_start = $max_edge->getStartVertex()->getLabel();
@@ -625,7 +709,8 @@ class Tree
             $nodeQueue->enqueue($cluster2_start);
         }
         $queue = new Queue($k);
-        $i=0;
+        $i = 0;
+        // Now use Queue above to make clusters (trees in resulting forest)
         while(!$nodeQueue->isEmpty()) {
             $node = $nodeQueue->dequeue();
             if($this->vertices[$node]->isVisited() == false){
@@ -658,7 +743,6 @@ class Tree
                 && ($this->vertices[$value]->isVisited() == false)) {
                 return $this->adjMatrix[$vertex][$vert];
             }
-
         }
         return -1;
     }
@@ -713,6 +797,9 @@ class Tree
 }
 
 if(!class_exists("SplHeap")) {
+    /**
+     * Dummy version of PHP SplHeap so code doesn't crash if doesn exist
+     */
     class SplHeap {
     }
 }
@@ -724,7 +811,14 @@ if(!class_exists("SplHeap")) {
  */
 class Cluster extends SplHeap
 {
-
+    /**
+     *  Compares the weights of two edges and returns -1, 0, 1 depending
+     *  on which is the largest first, equal, or second
+     *
+     * @param Edge $edge1 first Edge to compare
+     * @param Edge $edge2 second Edge to compare
+     * @return int -1,-0,1 as described above
+     */
     function compare($edge1, $edge2)
     {
         $values1 = $edge1->getCost();
@@ -740,7 +834,14 @@ class Cluster extends SplHeap
  */
 class TreeCluster extends SplHeap
 {
-
+    /**
+     *  Compares the weights of two edges and returns -1, 0, 1 depending
+     *  on which is the largest first, equal, or second
+     *
+     * @param Edge $edge1 first Edge to compare
+     * @param Edge $edge2 second Edge to compare
+     * @return int -1,-0,1 as described above
+     */
     function compare($edge1, $edge2)
     {
         $values1 = $edge1->getCost();
@@ -757,32 +858,64 @@ class TreeCluster extends SplHeap
  */
 class Queue
 {
-    private $size;
-    private $queArray;
-    private $front;
-    private $rear;
-
-    function __construct($size){
+    /**
+     * Number of elements queue can hold
+     * @var int
+     */
+    var $size;
+    /**
+     * Circular array used to store queue elements
+     * @var array
+     */
+    var $queArray;
+    /**
+     * Index in $queArray of the front of the queue
+     * @var int
+     */
+    var $front;
+    /**
+     * Index in $queArray of the end of the queue
+     * @var int
+     */
+    var $rear;
+    /**
+     * Builds a queue suitable for doing breadth first search traversal
+     * @param int $size number of elements queue can hold
+     */
+    function __construct($size)
+    {
         $this->queArray = array();
         $this->front = 0;
         $this->rear = -1;
         $this->size = $size;
     }
-
-    function enqueue($i){
-        if($this->rear == $this->size-1)
+    /**
+     * Add an element, typically a Vertex label to the queue
+     * @param string $i typically a Vertex label
+     */
+    function enqueue($i)
+    {
+        if($this->rear == $this->size - 1)
             $this->rear = -1;
         $this->queArray[++$this->rear] = $i;
     }
-
-    function dequeue(){
+    /**
+     * Removes the front of the queue and returns it
+     * @return string front of queue
+     */
+    function dequeue()
+    {
         $temp = $this->queArray[$this->front++];
         if($this->front == $this->size)
             $this->front = 0;
         return $temp;
     }
-
-    function isEmpty(){
+    /**
+     * Whether or not the queue is empty
+     * @return bool
+     */
+    function isEmpty()
+    {
         if(($this->rear + 1)== $this->front ||
             ($this->front + $this->size - 1) == $this->rear)
             return true;
@@ -793,7 +926,7 @@ class Queue
 /**
  * Creates tree from the input and apply Kruskal's algorithm to find MST.
  *
- * @param object array $edges recipes with distances between them.
+ * @param array $edges recipes with distances between them.
  * @return object arrat $min_edges MST
  */
 function construct_tree($edges)
@@ -843,10 +976,10 @@ function construct_tree($edges)
 }
 /**
  * Clusters the recipes by applying Kruskal's algorithm
- * @param array $edges recipes and distances between them.
  *
+ * @param array $edges array of triples (recipe_1_title, recipe_2_title, weight)
  * @param int $count number of recipes.
- * @param array $distinct_ingredients recipe names with ingredients.
+ * @param array $distinct_ingredients list of possible ingredients
  * @return clusters of recipes.
  */
 function kruskalClustering($edges, $count, $distinct_ingredients)

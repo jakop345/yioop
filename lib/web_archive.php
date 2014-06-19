@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -94,11 +94,11 @@ class WebArchive
      *
      * @param string $fname filename to use to store archive to disk
      * @param string $compressor what kind of Compressor object should be
-     *      used to read and write objects in the archive
+     *     used to read and write objects in the archive
      * @param bool $fast_construct do we read the info block of the web
-     *      archive as part of the constructing process
+     *     archive as part of the constructing process
      * @param bool $is_string says whether the archive stores to string
-     *      rather than a file
+     *     rather than a file
      */
     function __construct($fname, $compressor, $fast_construct = false,
         $is_string = false)
@@ -156,8 +156,8 @@ class WebArchive
      * stored
      *
      * @param resource $fh resource for the web archive file. If null
-     *      the web archive is open first and close when the data is written
-     * @param array &$data data to write into the info block of the archive
+     *     the web archive is open first and close when the data is written
+     * @param array& $data data to write into the info block of the archive
      */
     function writeInfoBlock($fh = NULL, &$data = NULL)
     {
@@ -214,16 +214,16 @@ class WebArchive
      * Adds objects to the WebArchive
      *
      * @param string $offset_field field in objects to return the byte offset
-     *      at which they were stored
-     * @param array &$objects references to objects that will be stored
-     *      the offset field in these references will be adjusted if
+     *     at which they were stored
+     * @param array& $objects references to objects that will be stored
+     *     the offset field in these references will be adjusted if
      * @param array $data data to write in the WebArchive's info block
      * @param string $callback name of a callback
-     *      $callback($data, $new_objects, $offset_field)
-     *      used to modify $data before it is written
-     *      to the info block. For instance, we can add offset info to data.
+     *     $callback($data, $new_objects, $offset_field)
+     *     used to modify $data before it is written
+     *     to the info block. For instance, we can add offset info to data.
      * @param bool $return_flag if true rather than adjust the offsets by
-     *      reference, create copy objects and adjust their offsets anf return
+     *     reference, create copy objects and adjust their offsets anf return
      * @return mixed adjusted objects or void
      */
     function addObjects($offset_field, &$objects,
@@ -289,6 +289,8 @@ class WebArchive
     }
     /**
      * Closes a file handle (which should be of a web archive)
+     *
+     * @param resource $fh filehandle to close
      */
     function close($fh)
     {

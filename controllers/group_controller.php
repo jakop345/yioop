@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -39,8 +39,8 @@ require_once BASE_DIR."/lib/crawl_constants.php";
 require_once BASE_DIR."/lib/wiki_parser.php";
 /**
  * Controller used to handle user group activities outside of
- *  the admin panel setting. This either could be because the admin panel
- *  is "collapsed" or because the request concerns a wiki page.
+ * the admin panel setting. This either could be because the admin panel
+ * is "collapsed" or because the request concerns a wiki page.
  *
  * @author Chris Pollett
  * @package seek_quarry
@@ -56,9 +56,9 @@ class GroupController extends Controller implements CrawlConstants
      */
     var $activities = array("groupFeeds", "wiki");
     /**
-     *  Used to process requests related to user group activities outside of
-     *  the admin panel setting. This either could be because the admin panel
-     *  is "collapsed" or because the request concerns a wiki page.
+     * Used to process requests related to user group activities outside of
+     * the admin panel setting. This either could be because the admin panel
+     * is "collapsed" or because the request concerns a wiki page.
      */
     function processRequest()
     {
@@ -143,11 +143,11 @@ class GroupController extends Controller implements CrawlConstants
      * sets up any particular $data fields needed for displaying that 
      * view correctly.
      *
-     *  @param string $format can be one of rss, json, or serialize,
-     *       if different, default HTML GroupView used.
-     *  @param string &$view variable used to set the view in calling
-     *      method
-     *  @param array &$data used to send data to the view for drawing
+     * @param string $format can be one of rss, json, or serialize,
+     *      if different, default HTML GroupView used.
+     * @param string& $view variable used to set the view in calling
+     *     method
+     * @param array& $data used to send data to the view for drawing
      */
     function setupViewFormatOutput($format, &$view, &$data)
     {

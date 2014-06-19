@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -74,7 +74,7 @@ abstract class IndexBundleIterator implements CrawlConstants
      */
     var $results_per_block = self::RESULTS_PER_BLOCK;
     /**
-     *  Default number of documents returned for each block (at most)
+     * Default number of documents returned for each block (at most)
      * @var int
      */
     const RESULTS_PER_BLOCK = 200;
@@ -83,7 +83,7 @@ abstract class IndexBundleIterator implements CrawlConstants
      * iterator and generation
      * @param int $generation the generation the posting offset is for
      * @param int $posting_offset an offset into word_docs to compute the
-     *      relevance of
+     *     relevance of
      * @return float a relevancy score based on BM25F.
      */
     abstract function computeRelevance($generation, $posting_offset);
@@ -95,9 +95,9 @@ abstract class IndexBundleIterator implements CrawlConstants
     /**
      * Forwards the iterator one group of docs
      * @param array $gen_doc_offset a generation, doc_offset pair. If set,
-     *      the must be of greater than or equal generation, and if equal the
-     *      next block must all have $doc_offsets larger than or equal to
-     *      this value
+     *     the must be of greater than or equal generation, and if equal the
+     *     next block must all have $doc_offsets larger than or equal to
+     *     this value
      */
     abstract function advance($gen_doc_offset = NULL);
     /**
@@ -105,7 +105,7 @@ abstract class IndexBundleIterator implements CrawlConstants
      * would be return by this iterator
      *
      * @return mixed an array with the desired document offset
-     *  and generation; -1 on fail
+     * and generation; -1 on fail
      */
     abstract function currentGenDocOffsetWithWord();
     /**
@@ -116,11 +116,11 @@ abstract class IndexBundleIterator implements CrawlConstants
      */
      abstract function findDocsWithWord();
     /**
-     *  Compares two arrays each containing a (generation, offset) pair.
+     * Compares two arrays each containing a (generation, offset) pair.
      *
-     *  @param array $gen_doc1  first ordered pair
-     *  @param array $gen_doc1  second ordered pair
-     *  @return int -1,0,1 depending on which is bigger
+     * @param array $gen_doc1  first ordered pair
+     * @param array $gen_doc2  second ordered pair
+     * @return int -1,0,1 depending on which is bigger
      */
      function genDocOffsetCmp($gen_doc1, $gen_doc2)
      {
@@ -156,7 +156,7 @@ abstract class IndexBundleIterator implements CrawlConstants
      * Gets the summaries associated with the keys provided the keys
      * can be found in the current block of docs returned by this iterator
      * @param array $keys keys to try to find in the current block of returned
-     *      results
+     *     results
      * @return array doc summaries that match provided keys
      */
     function getCurrentDocsForKeys($keys = NULL)
@@ -196,7 +196,7 @@ abstract class IndexBundleIterator implements CrawlConstants
      * the next block must be of docs after this doc_index
      *
      * @param $doc_offset if set the next block must all have $doc_offsets
-     *      equal to or larger than this value
+     *     equal to or larger than this value
      * @return array doc summaries matching the $this->restrict_phrases
      */
     function nextDocsWithWord($doc_offset = NULL)
@@ -228,7 +228,7 @@ abstract class IndexBundleIterator implements CrawlConstants
      * currentDocsWithWord()
      *
      * @param int $num the maximum number of results that can be returned by
-     *      a block
+     *     a block
      */
      function setResultsPerBlock($num)
      {

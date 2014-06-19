@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -43,7 +43,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 class WikiView extends View
 {
     /** This view is drawn on a web layout
-     *  @var string
+     * @var string
      */
     var $layout = "web";
 
@@ -53,7 +53,7 @@ class WikiView extends View
      *
      * @param array $data with fields used for drawing the container and page
      */
-    function renderView($data) 
+    function renderView($data)
     {
         $logo = "resources/yioop.png";
         $logged_in = isset($data["ADMIN"]) && $data["ADMIN"];
@@ -143,7 +143,12 @@ class WikiView extends View
         }
     }
     /**
-     * @param array $data
+     * Draws a HTML-parsed wiki page in the browser for reading
+     *
+     * @param array $data fields containing data about the wiki page being
+     *      displayed. In particular, PAGE contains the raw page data
+     * @param bool $can_edit whether this page could be edited by the user
+     * @param bool $logged_in whether the viewing user is currently logged in
      */
     function renderReadPage($data, $can_edit, $logged_in)
     {
@@ -189,8 +194,8 @@ class WikiView extends View
     /**
      * Used to drawn the form that let's someone edit a wiki page
      *
-     * @param array $data fields contain data about the page being
-     *  edited. In particular, PAGE contains the raw page data
+     * @param array $data fields containing data about the page being
+     *      edited. In particular, PAGE contains the raw page data
      */
     function renderEditPageForm($data)
     {
@@ -249,7 +254,15 @@ class WikiView extends View
     }
 
     /**
-     * @param array $data
+     * Draw a list of wiki pages that are present in the current group
+     *
+     * @param array $data fields containing data about the group and 
+     *      page list being displayed. In particular, PAGES contains info about
+     *      the pages in the current group, and GROUP contains info about the
+     *      group
+     * @param bool $can_edit whether the user can edit wiki pages for the
+     *      current group
+     * @param bool $logged_in whether the viewing user is currently logged in
      */
     function renderPages($data, $can_edit, $logged_in)
     {

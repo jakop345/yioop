@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -92,6 +92,8 @@ class NetworkIterator extends IndexBundleIterator
      */
     var $next_results_per_block;
     /**
+     * Used to keep track of the original desired number of results to be
+     * returned in one find docs call versus the number actually retrieved.
      * @var int
      */
     var $hard_query;
@@ -109,14 +111,14 @@ class NetworkIterator extends IndexBundleIterator
      * @param string $query the query that was supplied by the end user
      *      that we are trying to get search results for
      * @param array $queue_servers urls of yioop instances on which documents
-     *  indexes live
+     *      indexes live
      * @param string $timestamp the timestamp of the particular current index
      *      archive bundles that we look in for results
-     * @param array $filter an array of hashes of domains to filter from
+     * @param array& $filter an array of hashes of domains to filter from
      *      results
-     * @param string $save_timestamp if this timestamp is nonzero, then when
-     *      making queries to separate machines the save_timestamp is sent so
-     *      the queries on those machine can make savepoints. Note the
+     * @param string $save_timestamp_name if this timestamp is nonzero, then 
+     *      when making queries to separate machines the save_timestamp is sent
+     *      so the queries on those machine can make savepoints. Note the
      *      format of save_timestamp is timestamp-query_part where query_part
      *      is the number of the item in a query presentation (usually 0).
      * @param bool $limit_news if true the number of media:news items to
@@ -157,7 +159,7 @@ class NetworkIterator extends IndexBundleIterator
      *
      * @param int $generation the generation the posting offset is for
      * @param int $posting_offset an offset into word_docs to compute the
-     *      relevance of
+     *     relevance of
      * @return float a relevancy score based on BM25F -- always 1.0.
      */
     function computeRelevance($generation, $posting_offset)
@@ -181,9 +183,9 @@ class NetworkIterator extends IndexBundleIterator
     /**
      * Forwards the iterator one group of docs
      * @param array $gen_doc_offset a generation, doc_offset pair. If set,
-     *      the must be of greater than or equal generation, and if equal the
-     *      next block must all have $doc_offsets larger than or equal to
-     *      this value
+     *     the must be of greater than or equal generation, and if equal the
+     *     next block must all have $doc_offsets larger than or equal to
+     *     this value
      */
     function advance($gen_doc_offset = NULL)
      {
@@ -198,7 +200,7 @@ class NetworkIterator extends IndexBundleIterator
      * iterator
      *
      * @return mixed an array with the desired document offset
-     *  and generation; -1 on fail
+     * and generation; -1 on fail
      */
     function currentGenDocOffsetWithWord()
     {
@@ -339,7 +341,7 @@ class NetworkIterator extends IndexBundleIterator
      * Gets the summaries associated with the keys provided the keys
      * can be found in the current block of docs returned by this iterator
      * @param array $keys keys to try to find in the current block of returned
-     *      results
+     *     results
      * @return array doc summaries that match provided keys
      */
     function getCurrentDocsForKeys($keys = NULL)

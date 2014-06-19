@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Shawn Tice, (docs added by Chris Pollett chris@pollett.org)
  * @package seek_quarry
@@ -53,10 +53,10 @@ class BZip2BlockIterator
     /** String at the end of each bz2 block*/
     const BLOCK_ENDMARK = "\x17\x72\x45\x38\x50\x90";
     /**
-     *  Blocks are NOT byte-aligned, so the block header (and endmark) may show
-     *  up shifted right by 0-8 bits in various places throughout the file. This
-     *  regular expression matches any of the possible shifts for both the block
-     *  header and the block endmark.
+     * Blocks are NOT byte-aligned, so the block header (and endmark) may show
+     * up shifted right by 0-8 bits in various places throughout the file. This
+     * regular expression matches any of the possible shifts for both the block
+     * header and the block endmark.
      */
     const BLOCK_LEADER_RE = '
         /
@@ -69,10 +69,10 @@ class BZip2BlockIterator
         |\x5d\xc9\x14\xe1\x42 | \x2e\xe4\x8a\x70\xa1
         /x';
     /**
-     *  Lookup table fpr the number of bits by which the magic
-     *  number for the next block has been shifted right. Second
-     *  components of sub-arrays say whether block header or endmark
-     *  @var array
+     * Lookup table fpr the number of bits by which the magic
+     * number for the next block has been shifted right. Second
+     * components of sub-arrays say whether block header or endmark
+     * @var array
      */
     static $header_info = array(
         "\x41" => array(0,  true), "\xa0" => array(1,  true),
@@ -296,8 +296,8 @@ class BZip2BlockIterator
      * Computes a new bzip2 block portions and bits left over after adding
      * $bytes to the passed $block.
      *
-     * @param string &$block the block to add to
-     * @param int &$bits used to hold bits left over
+     * @param string& $block the block to add to
+     * @param int& $bits used to hold bits left over
      * @param string $bytes what to add to the bzip block
      * @param int $num_extra_bits how many extra bits there are
      */

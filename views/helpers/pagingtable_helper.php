@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -32,7 +32,7 @@
  */
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 /**
- *  Load base helper class if needed
+ * Load base helper class if needed
  */
 require_once BASE_DIR."/views/helpers/helper.php";
 /**
@@ -50,16 +50,20 @@ require_once BASE_DIR."/views/helpers/helper.php";
 class PagingtableHelper extends Helper
 {
     /**
-     *  The choices for how many rows out of the database table to display
-     *  @var array
+     * The choices for how many rows out of the database table to display
+     * @var array
      */
     var $show_choices = array(
         10 => 10, 20 => 20, 50 => 50, 100 => 100, 200=> 200
     );
     /**
-     *  Used to render the  links to go
-     *  backwards and forwards through a databse table. We have two separate
-     *  functions for the mobile and desktop drawers.
+     * Used to render the  links to go
+     * backwards and forwards through a databse table. We have two separate
+     * functions for the mobile and desktop drawers.
+     *
+     * @param array $data fields of this contain values from teh controller
+     *      for the CSRF_TOKEN; NUM_TOTAL of rows; NUM_SHOW, the number to show;
+     *      etc.
      */
     function render($data)
     {
@@ -73,11 +77,11 @@ class PagingtableHelper extends Helper
         }
     }
     /**
-     *  Draws the heading before a paging table as well as the controls
-     *  for what rows to see (mobile phone case).
+     * Draws the heading before a paging table as well as the controls
+     * for what rows to see (mobile phone case).
      *
-     *  @param array $data needed for dropdown values for number of groups to
-     *      display
+     * @param array $data needed for dropdown values for number of groups to
+     *     display
      */
     function mobileTableControls($data)
     {
@@ -151,11 +155,11 @@ class PagingtableHelper extends Helper
         <?php
     }
     /**
-     *  Draws the heading before the user table as well as the controls
-     *  for what user to see (desktop, laptop, tablet case).
+     * Draws the heading before the user table as well as the controls
+     * for what user to see (desktop, laptop, tablet case).
      *
-     *  @param array $data needed for dropdown values for number of groups to
-     *      display
+     * @param array $data needed for dropdown values for number of groups to
+     *     display
      */
     function desktopTableControls($data)
     {

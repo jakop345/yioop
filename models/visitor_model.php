@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -44,20 +44,21 @@ require_once BASE_DIR."/models/model.php";
 class VisitorModel extends Model
 {
     /**
-     *  Looks up an ip address to get the last time it was seen and the
-     *  duration of the last time out period. If the last time it was seen
-     *  was more than the forget age then it is removed from the visitor
-     *  table and treated as in never seen (i.e., this function returns
-     *  false if never seen before)
+     * Looks up an ip address to get the last time it was seen and the
+     * duration of the last time out period. If the last time it was seen
+     * was more than the forget age then it is removed from the visitor
+     * table and treated as in never seen (i.e., this function returns
+     * false if never seen before)
      *
-     *  @param string $ip_address the ipv4 or ipv6 address as a string
-     *  @return array associtaive array containing ADDRESS, the ip address;
-     *      PAGE_NAME, the name of the static page to show if within the
-     *      timeout period, END_TIME, time in seconds of current epoch until
-     *      timeout period is over; DELAY, the current length of a timeout
-     *      in seconds that a failed account creation or recovery should incur;
-     *      FORGET_AGE, how long without a visit by this ip until the address
-     *      should be treated as never seen before.
+     * @param string $ip_address the ipv4 or ipv6 address as a string
+     * @param string $page_name name of timeout page that we are checking for
+     * @return array associative array containing ADDRESS, the ip address;
+     *     PAGE_NAME, the name of the static page to show if within the
+     *     timeout period, END_TIME, time in seconds of current epoch until
+     *     timeout period is over; DELAY, the current length of a timeout
+     *     in seconds that a failed account creation or recovery should incur;
+     *     FORGET_AGE, how long without a visit by this ip until the address
+     *     should be treated as never seen before.
      */
     function getVisitor($ip_address, $page_name = 'captcha_time_out')
     {
@@ -79,10 +80,10 @@ class VisitorModel extends Model
         return $row;
     }
     /**
-     *  Deletes an ip address from the VISITOR table
+     * Deletes an ip address from the VISITOR table
      *
-     *  @param string $ip_address the ipv4 or ipv6 address as a string
-     *  @param string $page_name
+     * @param string $ip_address the ipv4 or ipv6 address as a string
+     * @param string $page_name
      */
     function removeVisitor($ip_address, $page_name = 'captcha_time_out')
     {
@@ -90,22 +91,22 @@ class VisitorModel extends Model
         $this->db->execute($sql, array($ip_address, $page_name));
     }
     /**
-     *  This creates or updates a visitor table entry for an ip address.
-     *  These entries are used to keep track of which ip should be made to
-     *  see a timeout static page because of failing to input captcha or
-     *  recovery info correctly.
+     * This creates or updates a visitor table entry for an ip address.
+     * These entries are used to keep track of which ip should be made to
+     * see a timeout static page because of failing to input captcha or
+     * recovery info correctly.
      *
-     *  @param string $ip_address ipv4 or ipv6 address to insert or update.
-     *  @param string $page_name name of page (served by
-     *      StaticController) to display if ip is in a timeout period
-     *  @param int $start_delay only is used if ip address does not
-     *      already have an entry in the VISITOR table in which case it
-     *      is the initial timeout period a user must wait if the there is
-     *      a captcha or receovery info error
-     *  @param int $forget_age how long without a visit by this ip until the
-     *      address should be treated as never seen before
-     *  @param int string $count_till_double how many accesses before start
-     *      double the delay
+     * @param string $ip_address ipv4 or ipv6 address to insert or update.
+     * @param string $page_name name of page (served by
+     *     StaticController) to display if ip is in a timeout period
+     * @param int $start_delay only is used if ip address does not
+     *     already have an entry in the VISITOR table in which case it
+     *     is the initial timeout period a user must wait if the there is
+     *     a captcha or receovery info error
+     * @param int $forget_age how long without a visit by this ip until the
+     *     address should be treated as never seen before
+     * @param int $count_till_double how many accesses before start
+     *     double the delay
      */
     function updateVisitor($ip_address, $page_name, $start_delay = 1,
         $forget_age = self::ONE_WEEK, $count_till_double = 1)

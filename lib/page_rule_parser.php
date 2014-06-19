@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -44,31 +44,31 @@ require_once BASE_DIR."/lib/crawl_constants.php";
  * and does a function call to manipulate that page.
  * These have the syntax:
  * addMetaWords(field)       ;add the field and field value to the META_WORD
- *                           ;array for the page
+ *                          ;array for the page
  * addKeywordLink(field)     ;split the field on a comma, view this as a search
- *                           ;keywords => link text association, and add this
- *                           ;the KEYWORD_LINKS array.
+ *                          ;keywords => link text association, and add this
+ *                          ;the KEYWORD_LINKS array.
  * setStack(field)           ;set which field value should be used as a stack
  * pushStack(field)          ;add the field value for field to the top of stack
  * popStack(field)           ;pop the top of the stack into the field value for
- *                           ;field
+ *                          ;field
  * setOutputFolder(dir)      ;if auxiliary output, rather than just to the
- *                           ; a yioop index, is being done, then set the folder
- *                           ; the folder for this output to be dir
+ *                          ; a yioop index, is being done, then set the folder
+ *                          ; the folder for this output to be dir
  * setOutputFormat(format)   ;format of auxiliary output either CSV or SQL
- *                           ;SQL mean that writeOutput will write an insert
- *                           ;statement
+ *                          ;SQL mean that writeOutput will write an insert
+ *                          ;statement
  * setOutputTable(table)     ;if output is SQL then what table to use for the
- *                           ;insert statements
+ *                          ;insert statements
  * toArray(field)            ;splits field value for field on a comma and
- *                           ;assign field value to be the resulting array
+ *                          ;assign field value to be the resulting array
  * toString(field)           ;if field value is an array then implode that
- *                           ;array using comma and store the result in field
- *                           ;value
+ *                          ;array using comma and store the result in field
+ *                          ;value
  * unset(field)              ;unset that field value
  * writeOutput(field)        ;use the contents of field value viewed as an array
- *                           ;to fill in the columns of a SQL insert statement
- *                           ;or CSV row
+ *                          ;to fill in the columns of a SQL insert statement
+ *                          ;or CSV row
  *
  * Assignments can either be straight assignments with '=' or concatenation
  * assignments with '.='. There are the following kinds of values that one
@@ -77,10 +77,10 @@ require_once BASE_DIR."/lib/crawl_constants.php";
  * field = some_other_field ; sets $page['field'] = $page['some_other_field']
  * field = "some_string" ; sets $page['field'] to "some string"
  * field = /some_regex/replacement_where_dollar_vars_allowed/
- *     ; computes the results of replacing matches to some_regex in
- *     ; $page['field'] with replacement_where_dollar_vars_allowed
+ *    ; computes the results of replacing matches to some_regex in
+ *    ; $page['field'] with replacement_where_dollar_vars_allowed
  * field = /some_regex/g ;sets $page['field'] to the array of all matches
- *     ; of some regex in $page['field']
+ *    ; of some regex in $page['field']
  *
  * For each of the above assignments we could have used ".=" instead of "="
  *
@@ -129,7 +129,7 @@ class PageRuleParser implements CrawlConstants
      * Constructs a PageRuleParser using the supplied page_rules
      *
      * @param string $page_rules a sequence of lines with page rules
-     *      as described in the class comments
+     *     as described in the class comments
      */
     function __construct($page_rules = "")
     {
@@ -140,7 +140,7 @@ class PageRuleParser implements CrawlConstants
      * later
      *
      * @param string $page_rules a sequence of lines with page rules
-     *      as described in the class comments
+     *     as described in the class comments
      * @return array of parse trees which can be executed in sequence
      */
     function parseRules($page_rules)
@@ -203,10 +203,10 @@ class PageRuleParser implements CrawlConstants
      * Executes either the internal $rule_trees or the passed $rule_trees
      * on the provided $page_data associative array
      *
-     *  @param array &$page_data an associative array of containing summary
-     *      info of a web page/record (will be changed by this operation)
-     *  @param array $rule_trees an array of annotated syntax trees to
-     *      for rules used to update $page_data
+     * @param array& $page_data an associative array of containing summary
+     *     info of a web page/record (will be changed by this operation)
+     * @param array $rule_trees an array of annotated syntax trees to
+     *     for rules used to update $page_data
      */
     function executeRuleTrees(&$page_data, $rule_trees = NULL)
     {
@@ -222,11 +222,11 @@ class PageRuleParser implements CrawlConstants
         }
     }
     /**
-     *  Used to execute a single command rule on $page_data
+     * Used to execute a single command rule on $page_data
      *
-     *  @param array $tree annotated syntax tree of a function call rule
-     *  @param array &$page_data an associative array of containing summary
-     *      info of a web page/record (will be changed by this operation)
+     * @param array $tree annotated syntax tree of a function call rule
+     * @param array& $page_data an associative array of containing summary
+     *     info of a web page/record (will be changed by this operation)
      */
     function executeFunctionRule($tree, &$page_data)
     {
@@ -249,11 +249,11 @@ class PageRuleParser implements CrawlConstants
         }
     }
     /**
-     *  Used to execute a single assignment rule on $page_data
+     * Used to execute a single assignment rule on $page_data
      *
-     *  @param array $tree annotated syntax tree of an assignment rule
-     *  @param array &$page_data an associative array of containing summary
-     *      info of a web page/record (will be changed by this operation)
+     * @param array $tree annotated syntax tree of an assignment rule
+     * @param array& $page_data an associative array of containing summary
+     *     info of a web page/record (will be changed by this operation)
      */
     function executeAssignmentRule($tree, &$page_data)
     {
@@ -303,12 +303,12 @@ class PageRuleParser implements CrawlConstants
         return $var_name;
     }
     /**
-     *  Adds a meta word u:$field:$page_data[$field_name] to the array
-     *  of meta words for this page
+     * Adds a meta word u:$field:$page_data[$field_name] to the array
+     * of meta words for this page
      *
-     *  @param $field the key in $page_data to use
-     *  @param array &$page_data an associative array of containing summary
-     *      info of a web page/record
+     * @param $field the key in $page_data to use
+     * @param array& $page_data an associative array of containing summary
+     *     info of a web page/record
      */
     function addMetaWord($field, &$page_data)
     {
@@ -321,19 +321,19 @@ class PageRuleParser implements CrawlConstants
         $page_data[CrawlConstants::META_WORDS][] = $meta_word;
     }
     /**
-     *  Adds a $keywords => $link_text pair to the KEYWORD_LINKS array fro
-     *  this page based on the value $field on the page. The pair is extracted
-     *  by splitting on comma. The KEYWORD_LINKS array can be used when
-     *  a cached version of a page is displayed to show a list of links
-     *  from the cached page in the header. These links correspond to search
-     *  in Yioop. for example the value:
-     *  madonna, rock star
-     *  would add a link to the top of the cache page with text "rock star"
-     *  which when clicked would perform a Yioop search on madonna.
+     * Adds a $keywords => $link_text pair to the KEYWORD_LINKS array fro
+     * this page based on the value $field on the page. The pair is extracted
+     * by splitting on comma. The KEYWORD_LINKS array can be used when
+     * a cached version of a page is displayed to show a list of links
+     * from the cached page in the header. These links correspond to search
+     * in Yioop. for example the value:
+     * madonna, rock star
+     * would add a link to the top of the cache page with text "rock star"
+     * which when clicked would perform a Yioop search on madonna.
      *
-     *  @param $field the key in $page_data to use
-     *  @param array &$page_data an associative array of containing summary
-     *      info of a web page/record
+     * @param $field the key in $page_data to use
+     * @param array& $page_data an associative array of containing summary
+     *     info of a web page/record
      */
     function addKeywordLink($field, &$page_data)
     {
@@ -348,11 +348,11 @@ class PageRuleParser implements CrawlConstants
         $page_data[CrawlConstants::KEYWORD_LINKS][$key_words] = $link_text;
     }
     /**
-     *  Set field variable to be used as a stack
+     * Set field variable to be used as a stack
      *
-     *  @param $field what field variable to use for current stack
-     *  @param array &$page_data an associative array of containing summary
-     *      info of a web page/record
+     * @param $field what field variable to use for current stack
+     * @param array& $page_data an associative array of containing summary
+     *     info of a web page/record
      */
     function setStack($field, &$page_data)
     {
@@ -366,12 +366,12 @@ class PageRuleParser implements CrawlConstants
         }
     }
     /**
-     *  Pushes an element or items in an array stored in field onto the current
-     *  stack
+     * Pushes an element or items in an array stored in field onto the current
+     * stack
      *
-     *  @param $field what field  to get data to push onto fcurrent stack
-     *  @param array &$page_data an associative array of containing summary
-     *      info of a web page/record
+     * @param $field what field  to get data to push onto fcurrent stack
+     * @param array& $page_data an associative array of containing summary
+     *     info of a web page/record
      */
     function pushStack($field, &$page_data)
     {
@@ -389,12 +389,12 @@ class PageRuleParser implements CrawlConstants
         }
     }
     /**
-     *  Pop an element or items in an array stored in field onto the current
-     *  stack
+     * Pop an element or items in an array stored in field onto the current
+     * stack
      *
-     *  @param $field what field  to get data to push onto fcurrent stack
-     *  @param array &$page_data an associative array of containing summary
-     *      info of a web page/record
+     * @param $field what field  to get data to push onto fcurrent stack
+     * @param array& $page_data an associative array of containing summary
+     *     info of a web page/record
      */
     function popStack($field, &$page_data)
     {
@@ -405,23 +405,23 @@ class PageRuleParser implements CrawlConstants
         $page_data[$var_field] = array_pop($page_data[$this->stack]);
     }
     /**
-     *  Set output folder
+     * Set output folder
      *
-     *  @param $dir output directory in which to write data.txt files containing
-     *      the contents of some fields after writeOutput commands
-     *  @param array &$page_data an associative array of containing summary
-     *      info of a web page/record
+     * @param $dir output directory in which to write data.txt files containing
+     *     the contents of some fields after writeOutput commands
+     * @param array& $page_data an associative array of containing summary
+     *     info of a web page/record
      */
     function setOutputFolder($dir, &$page_data)
     {
         $this->output_folder = realpath(trim($dir));
     }
     /**
-     *  Set output format
+     * Set output format
      *
-     *  @param $format can be either csv or sql
-     *  @param array &$page_data an associative array of containing summary
-     *      info of a web page/record
+     * @param $format can be either csv or sql
+     * @param array& $page_data an associative array of containing summary
+     *     info of a web page/record
      */
     function setOutputFormat($format, &$page_data)
     {
@@ -430,25 +430,25 @@ class PageRuleParser implements CrawlConstants
         }
     }
     /**
-     *  Set output table
+     * Set output table
      *
-     *  @param $table table to use if output format is sql
-     *  @param array &$page_data an associative array of containing summary
-     *      info of a web page/record
+     * @param $table table to use if output format is sql
+     * @param array& $page_data an associative array of containing summary
+     *     info of a web page/record
      */
     function setOutputTable($table, &$page_data)
     {
             $this->output_table = $table;
     }
     /**
-     *  If $page_data[$field] is a string, splits it into an array on comma,
-     *  trims leading and trailing spaces from each item and stores the result
-     *  back into $page_data[$field]
+     * If $page_data[$field] is a string, splits it into an array on comma,
+     * trims leading and trailing spaces from each item and stores the result
+     * back into $page_data[$field]
      *
      *
-     *  @param $field the key in $page_data to use
-     *  @param array &$page_data an associative array of containing summary
-     *      info of a web page/record
+     * @param $field the key in $page_data to use
+     * @param array& $page_data an associative array of containing summary
+     *     info of a web page/record
      */
     function toArray($field, &$page_data)
     {
@@ -462,12 +462,12 @@ class PageRuleParser implements CrawlConstants
         }
     }
     /**
-     *  If $page_data[$field] is an array, implode it into a string on comma,
-     *  and stores the result back into $page_data[$field]
+     * If $page_data[$field] is an array, implode it into a string on comma,
+     * and stores the result back into $page_data[$field]
      *
-     *  @param $field the key in $page_data to use
-     *  @param array &$page_data an associative array of containing summary
-     *      info of a web page/record
+     * @param $field the key in $page_data to use
+     * @param array& $page_data an associative array of containing summary
+     *     info of a web page/record
      */
     function toString($field, &$page_data)
     {
@@ -477,13 +477,13 @@ class PageRuleParser implements CrawlConstants
         }
     }
     /**
-     *  Unsets the key $field (or the crawl constant it corresponds to)
-     *  in $page_data. If it is a crawlconstant it doesn't unset it --
-     *  it just sets it to the empty string
+     * Unsets the key $field (or the crawl constant it corresponds to)
+     * in $page_data. If it is a crawlconstant it doesn't unset it --
+     * it just sets it to the empty string
      *
-     *  @param $field the key in $page_data to use
-     *  @param array &$page_data an associative array of containing summary
-     *      info of a web page/record
+     * @param $field the key in $page_data to use
+     * @param array& $page_data an associative array of containing summary
+     *     info of a web page/record
      */
     function unsetVariable($field, &$page_data)
     {
@@ -495,12 +495,12 @@ class PageRuleParser implements CrawlConstants
         }
     }
     /**
-     *  Write the value of a field to the output folder in the current
-     *  format. If the field is not set nothing is written
+     * Write the value of a field to the output folder in the current
+     * format. If the field is not set nothing is written
      *
-     *  @param $field the key in $page_data to use
-     *  @param array &$page_data an associative array of containing summary
-     *      info of a web page/record
+     * @param $field the key in $page_data to use
+     * @param array& $page_data an associative array of containing summary
+     *     info of a web page/record
      */
     function writeOutput($field, &$page_data)
     {

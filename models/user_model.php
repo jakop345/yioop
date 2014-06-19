@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -46,42 +46,57 @@ require_once BASE_DIR."/lib/utility.php";
 class UserModel extends Model
 {
     /**
-     *  Associations of the form
-     *      name of field for web forms => database column names/abbreviations
-     *  In this case, things will in general map to the USERS table in the
-     *  Yioop data base
-     *  var array
+     * Associations of the form
+     *     name of field for web forms => database column names/abbreviations
+     * In this case, things will in general map to the USERS table in the
+     * Yioop data base
+     * var array
      */
     var $search_table_column_map = array("first"=>"FIRST_NAME",
         "last" => "LAST_NAME", "user" => "USER_NAME", "email"=>"EMAIL",
         "status"=>"STATUS");
     /**
-     *  These fields if present in $search_array (used by @see getRows() ),
-     *  but with value "0", will be skipped as part of the where clause
-     *  but will be used for order by clause
+     * These fields if present in $search_array (used by @see getRows() ),
+     * but with value "0", will be skipped as part of the where clause
+     * but will be used for order by clause
      * @var array
      */
     var $any_fields = array("status");
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     *
+     * @param mixed $args any additional arguments which should be used to
+     *     determine these tables (in this case none)
+     */
     function selectCallback($args = NULL)
     {
         return "USER_ID, USER_NAME, FIRST_NAME, LAST_NAME, EMAIL, STATUS";
     }
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     *
+     * @param mixed $args any additional arguments which should be used to
+     *     determine these tables (in this case none)
+     */
     function fromCallback($args = NULL)
     {
         return "USERS";
     }
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     *
+     * @param mixed $args any additional arguments which should be used to
+     *     determine these tables (in this case none)
+     */
     function whereCallback($args = NULL)
     {
         return "USER_ID != '".PUBLIC_USER_ID."'";
     }
     /**
-     *  Get a list of admin activities that a user is allowed to perform.
-     *  This includes their name and their associated method.
+     * Get a list of admin activities that a user is allowed to perform.
+     * This includes their name and their associated method.
      *
-     *  @param string $user_id  id of user to get activities fors
+     * @param string $user_id  id of user to get activities fors
      */
     function getUserActivities($user_id)
     {
@@ -130,12 +145,12 @@ class UserModel extends Model
         return $activities;
     }
     /**
-     *  Checks if a user is allowed to perform the activity given by
-     *  method name
+     * Checks if a user is allowed to perform the activity given by
+     * method name
      *
-     *  @param string $user_id  id of user to check
-     *  @param string $method_name to see if user allowed to do
-     *  @return bool whether or not the user is allowed
+     * @param string $user_id  id of user to check
+     * @param string $method_name to see if user allowed to do
+     * @return bool whether or not the user is allowed
      */
     function isAllowedUserActivity($user_id, $method_name)
     {
@@ -235,12 +250,12 @@ class UserModel extends Model
         return $row;
     }
     /**
-     *  Looks up a USERS row based on their $email (potentially not unique)
-     *  and the time at which their account was create in microseconds
-     *  @param string $email of user to lookup
-     *  @param string $creation_time when the user's account was created in
-     *      the current epoch
-     *  @return array row from USERS table
+     * Looks up a USERS row based on their $email (potentially not unique)
+     * and the time at which their account was create in microseconds
+     * @param string $email of user to lookup
+     * @param string $creation_time when the user's account was created in
+     *     the current epoch
+     * @return array row from USERS table
      */
     function getUserByEmailTime($email, $creation_time)
     {
@@ -255,9 +270,11 @@ class UserModel extends Model
         return $row;
     }
     /**
-     * Get a status of user by user_id
+     * Set status of user by user_id
      *
      * @param string $user_id id of the user
+     * @param int $status one of ACTIVE_STATUS, INACTIVE_STATUS, or
+     *      BANNED_STATUS
      */
     function updateUserStatus($user_id, $status)
     {
@@ -269,7 +286,20 @@ class UserModel extends Model
         $sql = "UPDATE USERS SET STATUS=? WHERE USER_ID=?";
         $db->execute($sql, array($status, $user_id));
     }
-
+    /**
+     *  Does the insert into Users table portion of the creation of a new
+     *  user
+     *
+     * @param string $username  the username of the user to be added
+     * @param string $password  the password of the user to be added
+     * @param string $firstname the firstname of the user to be added
+     * @param string $lastname the lastname of the user to be added
+     * @param string $email the email of the user to be added
+     * @param int $status one of ACTIVE_STATUS, INACTIVE_STATUS, or
+     *      BANNED_STATUS
+     * @param string $zkp_password  the password parameters need to
+     *  verify a Fiat-Shamir password
+     */
     function addUserToUsersTable($username, $password, $firstname='',
         $lastname='', $email='', $status = ACTIVE_STATUS, $zkp_password='')
     {
@@ -288,10 +318,16 @@ class UserModel extends Model
      * that can login to the admin panel
      *
      * @param string $username  the username of the user to be added
-     * @param string $password  the password of the user to be added
+     * @param string $password  the password in plaintext
+     *      of the user to be added, and ZKP auth not being used (else
+     *      this can be the empty string)
      * @param string $firstname the firstname of the user to be added
      * @param string $lastname the lastname of the user to be added
      * @param string $email the email of the user to be added
+     * @param int $status one of ACTIVE_STATUS, INACTIVE_STATUS, or
+     *      BANNED_STATUS
+     * @param string $zkp_password  the password parameters needed to
+     *      verify a Fiat-Shamir password
      * @return mixed false if operation not successful, user_id otherwise
      */
     function addUser($username, $password, $firstname='', $lastname='',
@@ -324,7 +360,7 @@ class UserModel extends Model
      * Deletes a user by username from the list of users that can login to
      * the admin panel
      *
-     * @param string $username  the login name of the user to delete
+     * @param string $user_name  the login name of the user to delete
      */
     function deleteUser($user_name)
     {
@@ -342,10 +378,10 @@ class UserModel extends Model
         $result = $db->execute($sql, array($user_id));
     }
     /**
-     *  Used to update the fields stored in a USERS row according to
-     *  an array holding new values
+     * Used to update the fields stored in a USERS row according to
+     * an array holding new values
      *
-     *  @param array $user updated values for a USERS row
+     * @param array $user updated values for a USERS row
      */
     function updateUser($user)
     {

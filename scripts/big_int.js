@@ -22,7 +22,7 @@
  * END LICENSE
  *
  * @author Akash Patel (edited by Chris Pollett chris@pollett.org)
- *      Ideas adapted Leemon Baird's bigint.js
+ *     Ideas adapted Leemon Baird's bigint.js
  * @package seek_quarry
  * @subpackage javascript
  * @license http://www.gnu.org/licenses/ GPL3
@@ -95,7 +95,7 @@ function expandBigInt(x, n)
  * @param int bits expected number of bits
  * @param int min_size minimum size of the BigInt.
  * @return Array stores the BigInt in bits_per_element-bit chunks,
- *     little endian
+ *    little endian
  */
 function int2BigInt(t, bits, min_size)
 {

@@ -1,25 +1,25 @@
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -453,7 +453,7 @@ var Classifier = (function() {
      * @param string label anchor text displayed to the user
      * @param string action action associated with this anchor
      * @param object doc data structure representing the document the action
-     *  should be applied to
+     * should be applied to
      * @return object paragraph DOM element wrapping the created anchor
      */
     self.buildActionLinkHTML = function(label, action, doc)
@@ -474,7 +474,7 @@ var Classifier = (function() {
      *
      * @param object doc data structure representing the document
      * @return string HTML string to be used to display confidence and
-     *  disagreement
+     * disagreement
      */
     self.buildPredictionHTML = function(doc)
     {
@@ -500,9 +500,9 @@ var Classifier = (function() {
      *
      * @param string tagname opening and closing tag name
      * @param object attributes optional object for which the keys are
-     *  attribute names, and the values are attribute values (may be empty)
+     * attribute names, and the values are attribute values (may be empty)
      * @param string|array nested... optional sequence of HTML strings or
-     *  arrays of HTML strings to be nested within the opening and closing tags
+     * arrays of HTML strings to be nested within the opening and closing tags
      * @return string HTML string for the described element
      */
     function tags(tagname, attributes /* ... */)
@@ -531,7 +531,7 @@ var Classifier = (function() {
      *
      * @param string tagname opening tag name
      * @param object attributes optional object for which the keys are
-     *  attribute names, and the values are attribute values (may be empty)
+     * attribute names, and the values are attribute values (may be empty)
      * @return string HTML string for the described element
      */
     function tag(tagname, attributes)
@@ -544,7 +544,7 @@ var Classifier = (function() {
      *
      * @param string tagname opening tag name
      * @param object attributes optional object for which the keys are
-     *  attribute names, and the values are attribute values (may be empty)
+     * attribute names, and the values are attribute values (may be empty)
      * @return string HTML string for the opening (or self-closing) tag
      */
     function makeOpenTag(tagname, attributes, endtag)
@@ -567,11 +567,11 @@ var Classifier = (function() {
      * template string.
      *
      * @param string template template string that optionally contains sentinel
-     *  sequences of the form '{\d+}' to be replaced
+     * sequences of the form '{\d+}' to be replaced
      * @param string arg... positional arguments to be substituted into the
-     *  template string
+     * template string
      * @return string the template string with each sentinel pattern replaced
-     *  by the appropriate argument
+     * by the appropriate argument
      */
     function format(template /* ... */)
     {
@@ -591,41 +591,41 @@ var Classifier = (function() {
      * being passed to the onSuccess handler. The options object supports the
      * following keys:
      *
-     *     string url: URL to send the request to (required)
+     *    string url: URL to send the request to (required)
      *
-     *     string method: HTTP method to use (default GET, but changes to POST
-     *         if postdata is specified without also setting the method)
+     *    string method: HTTP method to use (default GET, but changes to POST
+     *        if postdata is specified without also setting the method)
      *
-     *     object postdata: object containing key/value pairs of POST arguments
-     *         to be sent with the request; the values are automatically
-     *         URI-encoded (optional)
+     *    object postdata: object containing key/value pairs of POST arguments
+     *        to be sent with the request; the values are automatically
+     *        URI-encoded (optional)
      *
-     *     function onSuccess: function to be called upon the completion of a
-     *         successful request; the response body is passed as the first and
-     *         only argument, JSON-decoded if the response content-type was
-     *         application/json (optional)
+     *    function onSuccess: function to be called upon the completion of a
+     *        successful request; the response body is passed as the first and
+     *        only argument, JSON-decoded if the response content-type was
+     *        application/json (optional)
      *
-     *     function onFailure: function called if the request times out or
-     *         otherwise can't be completed (optional)
+     *    function onFailure: function called if the request times out or
+     *        otherwise can't be completed (optional)
      *
      * Example:
      *
-     *     sendRequest({
-     *         'url': '?c=classifier&a=classify&arg=getdocs',
-     *         'postdata': {
-     *             'time': self.authTime,
-     *             'session': self.authSession,
-     *             'label': self.classLabel,
-     *             'mix': label_docs_source.value
-     *             'keywords': label_docs_keywords.value
-     *         },
-     *         'onSuccess': function(response) {
-     *             ...
-     *         },
-     *         'onFailure': function() {
-     *             ...
-     *         }
-     *     });
+     *    sendRequest({
+     *        'url': '?c=classifier&a=classify&arg=getdocs',
+     *        'postdata': {
+     *            'time': self.authTime,
+     *            'session': self.authSession,
+     *            'label': self.classLabel,
+     *            'mix': label_docs_source.value
+     *            'keywords': label_docs_keywords.value
+     *        },
+     *        'onSuccess': function(response) {
+     *            ...
+     *        },
+     *        'onFailure': function() {
+     *            ...
+     *        }
+     *    });
      *
      * @param object options request options.
      */
@@ -679,9 +679,9 @@ var Classifier = (function() {
      * a.b.c would be converted to a[b][c] in the query string.
      *
      * @param object obj optionally-nested object to be converted to a query
-     *  string
+     * string
      * @param string prefix optional prefix to prepend to keys in obj (used in
-     *  recursive calls)
+     * recursive calls)
      * @return string query string representation of obj
      */
     function buildQueryString(obj, prefix)
@@ -747,32 +747,32 @@ var Classifier = (function() {
      * order to cancel the loading state. The options object may contain the
      * following fields:
      *
-     *     bool dots: whether to automatically append dots to the loading text
-     *         with the passage of a set time interval; the dots start over
-     *         each time they reach three (default true)
+     *    bool dots: whether to automatically append dots to the loading text
+     *        with the passage of a set time interval; the dots start over
+     *        each time they reach three (default true)
      *
-     *     int dotsInterval: how long to wait before drawing the next dot
-     *         (default 333ms)
+     *    int dotsInterval: how long to wait before drawing the next dot
+     *        (default 333ms)
      *
-     *     string className: class name to add to the element when loading
-     *         starts, and to remove when it completes (default none)
+     *    string className: class name to add to the element when loading
+     *        starts, and to remove when it completes (default none)
      *
      * Example:
      *
-     *     var loading = loadingText(el, 'Loading');
-     *     someAsynchronousAction({
-     *         onComplete: function() {
-     *             loading.clear();
-     *             ...
-     *         }
-     *     });
+     *    var loading = loadingText(el, 'Loading');
+     *    someAsynchronousAction({
+     *        onComplete: function() {
+     *            loading.clear();
+     *            ...
+     *        }
+     *    });
      *
      * @param object el DOM object to be manipulated
      * @param string text loading text with which to replace el's innerHTML
      * @param object options loading options
      * @return object object with a clear method, which can be called in order
-     *  to cancel the loading state, restoring everything to the way it was
-     *  before loading started
+     * to cancel the loading state, restoring everything to the way it was
+     * before loading started
      */
     function loadingText(el, text, options)
     {

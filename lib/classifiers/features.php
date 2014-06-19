@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -83,7 +83,7 @@ abstract class Features
      * terms with feature indices.
      *
      * @param array $terms array of terms mapped to the number of times they
-     *  occur in the example
+     *      occur in the example
      * @param int $label label for this example, either -1 or 1
      * @return array input example with terms replaced by feature indices
      */
@@ -119,10 +119,10 @@ abstract class Features
      * one occurrence of a term per example.
      *
      * @param array $features feature vector from when the example was
-     *  originally added
+     *      originally added
      * @param int $old_label old example label in {-1, 1}
      * @param int $new_label new example label in {-1, 0, 1}, where 0 indicates
-     *  that the example should be removed entirely
+     *      that the example should be removed entirely
      */
     function updateExampleLabel($features, $old_label, $new_label)
     {
@@ -154,7 +154,7 @@ abstract class Features
      * Returns the positive and negative label counts for the training set.
      *
      * @return array positive and negative label counts indexed by label,
-     *  either 1 or -1
+     * either 1 or -1
      */
     function labelStats()
     {
@@ -166,10 +166,10 @@ abstract class Features
      * fails to appear in examples with or without the target label. They are
      * returned in a flat array, in the following order:
      *
-     *     0 => # examples where feature present, label matches
-     *     1 => # examples where feature present, label doesn't match
-     *     2 => # examples where feature absent, label matches
-     *     3 => # examples where feature absent, label doesn't match
+     *    0 => # examples where feature present, label matches
+     *    1 => # examples where feature present, label doesn't match
+     *    2 => # examples where feature absent, label matches
+     *    3 => # examples where feature absent, label doesn't match
      *
      * @param int $j feature index
      * @param int $label target label
@@ -196,7 +196,7 @@ abstract class Features
      * indices from the larger feature set to indices for the reduced set.
      *
      * @param object $fs FeatureSelection instance to be used to select the
-     *  most informative terms
+     * most informative terms
      * @return object new Features instance using the restricted feature set
      */
     function restrict(FeatureSelection $fs)
@@ -243,10 +243,10 @@ abstract class Features
      * returned unmodified.
      *
      * @param array $features feature vector mapping feature indices to
-     *  frequencies
+     * frequencies
      * @return array original feature vector with indices mapped
-     *  according to the feature_map property, and any features that don't
-     *  occcur in feature_map dropped
+     * according to the feature_map property, and any features that don't
+     * occcur in feature_map dropped
      */
     function mapToRestrictedFeatures($features)
     {
@@ -271,9 +271,9 @@ abstract class Features
      * set prior to its input to a classification algorithm.
      *
      * @param array $docs array of training examples represented as feature
-     *  vectors where the values are per-example counts
+     *      vectors where the values are per-example counts
      * @return object SparseMatrix instance whose rows are the transformed
-     *  feature vectors
+     *      feature vectors
      */
     abstract function mapTrainingSet($docs);
     /**
@@ -283,9 +283,9 @@ abstract class Features
      * document prior to classification.
      *
      * @param array $tokens associative array of terms mapped to their
-     *  within-document counts
+     * within-document counts
      * @return array feature vector corresponding to the tokens, mapped
-     *  according to the implementation of a particular Features subclass
+     * according to the implementation of a particular Features subclass
      */
     abstract function mapDocument($tokens);
 }
@@ -312,9 +312,9 @@ class BinaryFeatures extends Features
      * more thorough introduction to the interface.
      *
      * @param array $docs array of training examples represented as feature
-     *  vectors where the values are per-example counts
+     * vectors where the values are per-example counts
      * @return object SparseMatrix instance whose rows are the transformed
-     *  feature vectors
+     * feature vectors
      */
     function mapTrainingSet($docs)
     {
@@ -341,9 +341,9 @@ class BinaryFeatures extends Features
      * corresponding sparse binary feature vector used for classification.
      *
      * @param array $tokens associative array of terms mapped to their
-     *  within-document counts
+     *      within-document counts
      * @return array feature vector corresponding to the tokens, mapped
-     *  according to the implementation of a particular Features subclass
+     *      according to the implementation of a particular Features subclass
      */
     function mapDocument($tokens)
     {
@@ -370,9 +370,24 @@ class BinaryFeatures extends Features
  */
 class WeightedFeatures extends Features
 {
+    /**
+     * Number of trainin examples
+     * @var int
+     */
     var $D = 0;
+    /**
+     * Number of elements in Vocabulary
+     * @var int
+     */
     var $n = array();
-
+    /**
+     * {@inheritDocs}
+     *
+     * @param array $docs array of training examples represented as feature
+     *      vectors where the values are per-example counts
+     * @return object SparseMatrix instance whose rows are the transformed
+     *      feature vectors
+     */
     function mapTrainingSet($docs)
     {
         $m = count($this->examples);
@@ -411,6 +426,14 @@ class WeightedFeatures extends Features
         }
         return array($X, $y);
     }
+    /**
+     *  {@inheritDocs}
+     *
+     * @param array $tokens associative array of terms mapped to their
+     *      within-document counts
+     * @return array feature vector corresponding to the tokens, mapped
+     *      according to the implementation of a particular Features subclass
+     */
     function mapDocument($tokens)
     {
         $u = array();
@@ -495,7 +518,7 @@ class SparseMatrix implements Iterator //Iterator is built-in to PHP
      */
     function columns() 
     {
-        return $this->n; 
+        return $this->n;
     }
     /**
      * Accessor method which the number of nonzero entries in the matrix
@@ -524,7 +547,7 @@ class SparseMatrix implements Iterator //Iterator is built-in to PHP
      * @param array $a_indices row indices for first new sparse matrix
      * @param array $b_indices row indices for second new sparse matrix
      * @return array array with two entries corresponding to the first and
-     *  second new matrices
+     * second new matrices
      */
     function partition($a_indices, $b_indices)
     {
@@ -541,10 +564,29 @@ class SparseMatrix implements Iterator //Iterator is built-in to PHP
         return array($a, $b);
     }
     /* Iterator Interface */
+    /**
+     *  Resets the iterator
+     */
     function rewind() { reset($this->data); }
+    /**
+     * Returns the current iterated over row
+     * @return array current row
+     */
     function current() { return current($this->data); }
+    /**
+     * Returns the index of the current row
+     * @return int index of row
+     */
     function key() { return key($this->data); }
+    /**
+     * Returns the next row to be iterated over
+     * @return array next row
+     */
     function next() { return next($this->data); }
+    /**
+     * Whether the current key position is not null
+     * @return bool whether it is null or not
+     */
     function valid() { return !is_null(key($this->data)); }
 }
 ?>

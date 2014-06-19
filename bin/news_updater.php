@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -51,7 +51,7 @@ if(!PROFILE) {
  */
 define("NO_CACHE", true);
 /** We do want logging, but crawl model and other will try to turn off
- *  if we don't set this
+ * if we don't set this
  */
 define("NO_LOGGING", false);
 /**
@@ -77,17 +77,17 @@ if(file_exists(APP_DIR."/models/source_model.php")) {
     require_once BASE_DIR."/models/source_model.php";
 }
 /*
- *  We'll set up multi-byte string handling to use UTF-8
+ * We'll set up multi-byte string handling to use UTF-8
  */
 mb_internal_encoding("UTF-8");
 mb_regex_encoding("UTF-8");
 if (function_exists('lcfirst') === false) {
     /**
-     *  Lower cases the first letter in a string
+     * Lower cases the first letter in a string
      *
-     *  This function is only defined if the PHP version is before 5.3
-     *  @param string $str  string to be lower cased
-     *  @return string the lower cased string
+     * This function is only defined if the PHP version is before 5.3
+     * @param string $str  string to be lower cased
+     * @return string the lower cased string
      */
     function lcfirst( $str )
     {
@@ -95,12 +95,12 @@ if (function_exists('lcfirst') === false) {
     }
 }
 /**
- *  Separate process/command-line script which can be used to update
- *  news sources for Yioop. This is as an alternative to using the web app
- *  for updating. Makes use of the web-apps code.
+ * Separate process/command-line script which can be used to update
+ * news sources for Yioop. This is as an alternative to using the web app
+ * for updating. Makes use of the web-apps code.
  *
- *  @author Chris Pollett
- *  @package seek_quarry
+ * @author Chris Pollett
+ * @package seek_quarry
  */
 class NewsUpdater implements CrawlConstants
 {
@@ -119,9 +119,9 @@ class NewsUpdater implements CrawlConstants
         $this->update_time = 0;
     }
     /**
-     *  This is the function that should be called to get the newsupdater to
-     *  start to start updating. Calls init to handle the command-line
-     *  arguments then enters news_updaters main loop
+     * This is the function that should be called to get the newsupdater to
+     * start to start updating. Calls init to handle the command-line
+     * arguments then enters news_updaters main loop
      */
     function start()
     {
@@ -154,14 +154,14 @@ class NewsUpdater implements CrawlConstants
         crawlLog("News Updater shutting down!!");
     }
     /**
-     *  If news_update time has passed, then updates news feeds associated with
-     *  this Yioop instance
+     * If news_update time has passed, then updates news feeds associated with
+     * this Yioop instance
      *
-     *  @param array $data used by view to render itself. In this case, if there
-     *      is a problem updating the news then we will flash a message
-     *  @param bool $no_news_process if true than assume news_updater.php is
-     *      not running. If false, assume being run from news_updater.php so
-     *      update news_process cron time.
+     * @param array $data used by view to render itself. In this case, if there
+     *     is a problem updating the news then we will flash a message
+     * @param bool $no_news_process if true than assume news_updater.php is
+     *     not running. If false, assume being run from news_updater.php so
+     *     update news_process cron time.
      */
     function newsUpdate()
     {
@@ -201,7 +201,7 @@ class NewsUpdater implements CrawlConstants
     }
 }
 /*
- *  Instantiate and runs the NewsUpdater program
+ * Instantiate and runs the NewsUpdater program
  */
 $news_updater =  new NewsUpdater();
 $news_updater->start();

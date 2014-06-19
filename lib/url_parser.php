@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -47,7 +47,7 @@ class UrlParser
      *
      * @param string $url  the url to check
      * @return bool returns true if it is either http or https and false
-     *      otherwise
+     *     otherwise
      */
     static function isSchemeHttpOrHttps($url)
     {
@@ -102,6 +102,8 @@ class UrlParser
     }
     /**
      * Get the port number of a url if present; if not return 80
+     *
+     * @param string $url the url to extract port number from
      * @return int a port number
      */
     static function getPort($url)
@@ -114,6 +116,8 @@ class UrlParser
     }
     /**
      * Get the scheme of a url if present; if not return http
+     *
+     * @param string $url the url to extract scheme from
      * @return int a port number
      */
     static function getScheme($url)
@@ -125,10 +129,10 @@ class UrlParser
         return "http";
     }
     /**
-     *  Attempts to guess the language tag based on url
+     * Attempts to guess the language tag based on url
      *
-     *  @param string $url the url to parse
-     *  @return the top level domain if present; false otherwise
+     * @param string $url the url to parse
+     * @return the top level domain if present; false otherwise
      */
     static function getLang($url)
     {
@@ -229,7 +233,8 @@ class UrlParser
      * Get the host name portion of a url if present; if not return false
      *
      * @param string $url the url to parse
-     * @param bool $with_login whether to include user,password,port if present
+     * @param bool $with_login_and_port whether to include user,password,port 
+     *      if present
      * @return the host portion of the url if present; false otherwise
      */
     static function getHost($url, $with_login_and_port = true)
@@ -263,12 +268,12 @@ class UrlParser
         return $host_url;
     }
     /**
-     *  Get the path portion of a url if present; if not return NULL
+     * Get the path portion of a url if present; if not return NULL
      *
-     *  @param string $url the url to parse
-     *  @param bool $with_query_string (whether to also include the query
-     *      string at the end of the path)
-     *  @return the host portion of the url if present; NULL otherwise
+     * @param string $url the url to parse
+     * @param bool $with_query_string (whether to also include the query
+     *     string at the end of the path)
+     * @return the host portion of the url if present; NULL otherwise
      */
     static function getPath($url, $with_query_string = false)
     {
@@ -295,9 +300,9 @@ class UrlParser
      *
      * @param string $url initial url to get host and path of
      * @param bool $with_login_and_port controls whether the host should
-     *      should contain login and port info
+     *     should contain login and port info
      * @param bool $with_query_string says whether the path should contain
-     *      the query string as well
+     *     the query string as well
      * @return array host and the path as a pair
      */
     static function getHostAndPath($url, $with_login_and_port = true,
@@ -613,7 +618,7 @@ class UrlParser
      * @param string $link  a relative or complete url
      * @param string $site  a base url
      * @param string $no_fragment if false then if the url had a fragment
-     *      (#link_within_page) then the fragement will be included
+     *     (#link_within_page) then the fragement will be included
      *
      * @return string a complete url based on these two pieces of information
      *
@@ -699,7 +704,7 @@ class UrlParser
      * Checks if a url has a repeated set of subdirectories, and if the number
      * of repeats occurs more than some threshold number of times
      *
-     *  A pattern like bob/.../bob counts as own reptition.
+     * A pattern like bob/.../bob counts as own reptition.
      * bob/.../alice/.../bob/.../alice would count as two (... should be read
      * as ellipsis, not a directory name).If the threshold is three and there
      * are at least three repeated mathes this function return true; it returns
@@ -707,9 +712,9 @@ class UrlParser
      *
      * @param string $url the url to check
      * @param int $repeat_threshold the number of repeats of a subdir name to
-     *      trigger a true response
+     *     trigger a true response
      * @return bool whether a repeated subdirectory name with more matches than
-     *      the threshold was found
+     *     the threshold was found
      *
      */
     static function checkRecursiveUrl($url, $repeat_threshold = 3)
@@ -762,9 +767,9 @@ class UrlParser
      * @param string $url url to check
      * @param array $site_array sites to check against
      * @param string $name identifier to store $site_array with in this
-     *      function's cache
-     * @param bool whether when a match is found to return true or to
-     *      return the matching site rule
+     *     function's cache
+     * @param bool $return_rule whether when a match is found to return true or
+     *     to return the matching site rule
      * @return mixed whether the url belongs to one of the sites
      */
     static function urlMemberSiteArray($url, $site_array,
@@ -831,7 +836,7 @@ class UrlParser
      * @param string $url the url to check
      * @param array $video_prefixes an array of prefixes of video sites
      * @return bool whether or not corresponds to video playback page of a known
-     *      video site
+     *     video site
      */
     static function isVideoUrl(&$url, $video_prefixes)
     {
@@ -850,13 +855,13 @@ class UrlParser
         return false;
     }
     /**
-     *  Used to delete links from array of links $links based on whether
-     *  they are the same as the site they came from (or otherwise judged
-     *  irrelevant)
+     * Used to delete links from array of links $links based on whether
+     * they are the same as the site they came from (or otherwise judged
+     * irrelevant)
      *
-     *  @param array $links pairs of the form $link =>$text
-     *  @param string $parent_url a site that the links were found on
-     *  @return array just those links which pass the relevancy test
+     * @param array $links pairs of the form $link =>$text
+     * @param string $parent_url a site that the links were found on
+     * @return array just those links which pass the relevancy test
      */
     static function cleanRedundantLinks($links, $parent_url)
     {
@@ -870,14 +875,14 @@ class UrlParser
         return $out_links;
     }
     /**
-     *  Prunes a list of url => text pairs down to max_link many pairs
-     *  by choosing those whose text has the most information. Information
-     *  crudely measured by the length of the gzipped version of the text.
+     * Prunes a list of url => text pairs down to max_link many pairs
+     * by choosing those whose text has the most information. Information
+     * crudely measured by the length of the gzipped version of the text.
      *
-     *  @param array $links list of pairs $url=>$text
-     *  @param int $max_links maximum number of links from $links to return
-     *  @return array $out_links extracted from $links accodring to the
-     *      description above.
+     * @param array $links list of pairs $url=>$text
+     * @param int $max_links maximum number of links from $links to return
+     * @return array $out_links extracted from $links accodring to the
+     *     description above.
      */
     static function pruneLinks($links, $max_links = MAX_LINKS_PER_PAGE)
     {
@@ -902,10 +907,10 @@ class UrlParser
         return $out_links;
     }
     /**
-     *  Guess mime type based on extension of the file in Git object
+     * Guess mime type based on extension of the file in Git object
      *
-     *  @param string $file_name name of the file
-     *  @return string $mime_type for the given file name
+     * @param string $file_name name of the file
+     * @return string $mime_type for the given file name
      */
     static function guessMimeTypeFromFileName($file_name)
     {

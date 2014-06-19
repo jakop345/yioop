@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Mallika Perepa, Chris Pollett
  * @package seek_quarry
@@ -52,11 +52,11 @@ require_once BASE_DIR."/lib/wiki_parser.php";
 class GroupModel extends Model
 {
     /**
-     *  Associations of the form
-     *      name of field for web forms => database column names/abbreviations
-     *  In this case, things will in general map to the GROUPS, or USER_GROUP
-     *  or GROUP_ITEM tables in the Yioop database
-     *  @var array
+     * Associations of the form
+     *     name of field for web forms => database column names/abbreviations
+     * In this case, things will in general map to the GROUPS, or USER_GROUP
+     * or GROUP_ITEM tables in the Yioop database
+     * @var array
      */
     var $search_table_column_map = array("access"=>"G.MEMBER_ACCESS",
         "group_id"=>"G.GROUP_ID", "post_id" => "GI.ID",
@@ -66,18 +66,18 @@ class GroupModel extends Model
         "register"=>"G.REGISTER_TYPE", "status"=>"UG.STATUS",
         "user_id"=>"P.USER_ID");
     /**
-     *  These fields if present in $search_array (used by @see getRows() ),
-     *  but with value "0", will be skipped as part of the where clause
-     *  but will be used for order by clause
-     *  @var array
+     * These fields if present in $search_array (used by @see getRows() ),
+     * but with value "0", will be skipped as part of the where clause
+     * but will be used for order by clause
+     * @var array
      */
     var $any_fields = array("access", "register");
     /**
-     *  Used to determine the select clause for GROUPS table when do query
-     *  to marshal group objects for the controller mainly in mangeGroups
-     *  @param mixed $args -- $args[1] say whether in browse mode or not
-     *      browse mode is for groups a user could join rather than ones already
-     *      joined
+     * Used to determine the select clause for GROUPS table when do query
+     * to marshal group objects for the controller mainly in mangeGroups
+     * @param mixed $args We use $args[1] to say whether in browse mode or not.
+     *     browse mode is for groups a user could join rather than ones already
+     *     joined
      */
     function selectCallback($args)
     {
@@ -98,24 +98,29 @@ class GroupModel extends Model
             G.MEMBER_ACCESS $join_date";
         return $select;
     }
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     *
+     * @param mixed $args any additional arguments which should be used to
+     *     determine these tables (in this case none)
+     */
     function fromCallback($args)
     {
         return "GROUPS G, USER_GROUP UG, USERS O";
     }
     /**
-     *  Used to restrict getRows in which rows it returns. Rows in this
-     *  case corresponding to Yioop groups. The restrictions added are to
-     *  restrict to those group available to a given user_id and whether or
-     *  not the user wants groups subscribed to, or groups that could be
-     *  subscribed to
+     * Used to restrict getRows in which rows it returns. Rows in this
+     * case corresponding to Yioop groups. The restrictions added are to
+     * restrict to those group available to a given user_id and whether or
+     * not the user wants groups subscribed to, or groups that could be
+     * subscribed to
      *
-     *  @param array $args first two elements are the $user_id of the user
-     *      and the $browse flag which says whether or not user is browing
-     *      through all groups to which he could subscribe and read or
-     *      just those groups to which he is alrady subscribed.
-     *  @return string a SQL WHERE clause suitable to perform the above
-     *      restrictions
+     * @param array $args first two elements are the $user_id of the user
+     *     and the $browse flag which says whether or not user is browing
+     *     through all groups to which he could subscribe and read or
+     *     just those groups to which he is alrady subscribed.
+     * @return string a SQL WHERE clause suitable to perform the above
+     *     restrictions
      */
     function whereCallback($args)
     {
@@ -136,13 +141,13 @@ class GroupModel extends Model
         return $where;
     }
     /**
-     *  Get an array of users that belong to a group
+     * Get an array of users that belong to a group
      *
-     *  @param string $group_id  the group_id to get users for
-     *  @param string $filter to LIKE filter users
-     *  @param int $limit first user to get
-     *  @param int $num number of users to return
-     *  @return array of USERS rows
+     * @param string $group_id  the group_id to get users for
+     * @param string $filter to LIKE filter users
+     * @param int $limit first user to get
+     * @param int $num number of users to return
+     * @return array of USERS rows
      */
     function getGroupUsers($group_id, $filter, $limit,
         $num = NUM_RESULTS_PER_PAGE)
@@ -170,12 +175,12 @@ class GroupModel extends Model
         return $users;
     }
     /**
-     *  Get the number of users which belong to a group and whose user_name
-     *  matches a filter
+     * Get the number of users which belong to a group and whose user_name
+     * matches a filter
      *
-     *  @param int $group_id id of the group to get a count of
-     *  @param string $filter to filter usernames by
-     *  @return int count of matching users
+     * @param int $group_id id of the group to get a count of
+     * @param string $filter to filter usernames by
+     * @return int count of matching users
      */
     function countGroupUsers($group_id, $filter="")
     {
@@ -197,12 +202,18 @@ class GroupModel extends Model
         return $row['NUM'];
     }
     /**
-     *  Add a groupname to the database using provided string
+     * Add a groupname to the database using provided string
      *
-     *  @param string $group_name  the groupname to be added
+     * @param string $group_name  the groupname to be added
+     * @param int $user_id user identifier of who owns the group
+     * @param int $register flag that says what kinds of registration are
+     *      allowed for this group NO_JOIN, REQUEST_JOIN, PUBLIC_JOIN
+     * @param int $member flag that says how members other than the owner can
+     *      access this group GROUP_READ, GROUP_READ_COMMENT (can comment
+     *      on threads but not start. i.e., a blog), GROUP_READ_WRITE
      */
     function addGroup($group_name, $user_id, $register = REQUEST_JOIN,
-        $member=GROUP_READ)
+        $member = GROUP_READ)
     {
         $db = $this->db;
         $timestamp = microTimestamp();
@@ -225,12 +236,12 @@ class GroupModel extends Model
         return $last_id;
     }
     /**
-     *  Takes the passed associated array $group representing changes
-     *  fields of a GROUPS row, and executes an UPDATE statement to persist
-     *  those changes fields to the database.
+     * Takes the passed associated array $group representing changes
+     * fields of a GROUPS row, and executes an UPDATE statement to persist
+     * those changes fields to the database.
      *
-     *  @param array $group associative array with a GROUP_ID as well as the
-     *      fields to update
+     * @param array $group associative array with a GROUP_ID as well as the
+     *     fields to update
      */
     function updateGroup($group)
     {
@@ -254,14 +265,14 @@ class GroupModel extends Model
         $db->execute($sql, $params);
     }
     /**
-     *   Check is a user given by $user_id belongs to a group given
-     *   by $group_id. If the field $status is sent then check if belongs
-     *   to the group with $status access (active, invited, request, banned)
+     * Check is a user given by $user_id belongs to a group given
+     * by $group_id. If the field $status is sent then check if belongs
+     * to the group with $status access (active, invited, request, banned)
      *
-     *   @param int $user_id user to look up
-     *   @param int $group_id group to check if member of
-     *   @param int $status membership type
-     *   @return bool whether or not is a member
+     * @param int $user_id user to look up
+     * @param int $group_id group to check if member of
+     * @param int $status membership type
+     * @return bool whether or not is a member
      */
     function checkUserGroup($user_id, $group_id, $status = -1)
     {
@@ -283,11 +294,11 @@ class GroupModel extends Model
         return true;
     }
     /**
-     *  Change the status of a user in a group
+     * Change the status of a user in a group
      *
-     *  @param int $user_id of user to change
-     *  @param int $group_id of group to change status for
-     *  @pram int $status what the new status should be
+     * @param int $user_id of user to change
+     * @param int $group_id of group to change status for
+     * @param int $status what the new status should be
      */
     function updateStatusUserGroup($user_id, $group_id, $status)
     {
@@ -314,10 +325,10 @@ class GroupModel extends Model
         return $row['GROUP_ID'];
     }
     /**
-     *  Delete a group from the database and any associated data in
-     *  GROUP_ITEM and USER_GROUP tables.
+     * Delete a group from the database and any associated data in
+     * GROUP_ITEM and USER_GROUP tables.
      *
-     *  @param string $group_id id of the group to delete
+     * @param string $group_id id of the group to delete
      */
     function deleteGroup($group_id)
     {
@@ -333,12 +344,12 @@ class GroupModel extends Model
         $db->execute($sql, $params);
     }
     /**
-     *  Return the type of the registration for a group given by $group_id
-     *  This says who is allowed to register for the group (i.e., is it
-     *   by invitation only, by request, or anyone can join)
+     * Return the type of the registration for a group given by $group_id
+     * This says who is allowed to register for the group (i.e., is it
+     *  by invitation only, by request, or anyone can join)
      *
-     *  @param int $group_id which group to find the type of
-     *  @return int the numeric code for the registration type
+     * @param int $group_id which group to find the type of
+     * @return int the numeric code for the registration type
      */
     function getRegisterType($group_id)
     {
@@ -352,13 +363,13 @@ class GroupModel extends Model
         return $row['REGISTER_TYPE'];
     }
     /**
-     *  Returns information about the group with id $group_id provided
-     *  that the requesting user $user_id has access to it
+     * Returns information about the group with id $group_id provided
+     * that the requesting user $user_id has access to it
      *
-     *  @param int $group_id id of group to look up
-     *  @param int $user_id user asking for group info
-     *  @return array row from group table or false (if no access or doesn't
-     *      exists)
+     * @param int $group_id id of group to look up
+     * @param int $user_id user asking for group info
+     * @return array row from group table or false (if no access or doesn't
+     *     exists)
      */
     function getGroupById($group_id, $user_id)
     {
@@ -390,15 +401,15 @@ class GroupModel extends Model
         return $group;
     }
    /**
-    *  Get a list of all groups which user_id belongs to. Group names
-    *  are not localized since these are
-    *  created by end user admins of the search engine
+    * Get a list of all groups which user_id belongs to. Group names
+    * are not localized since these are
+    * created by end user admins of the search engine
     *
-    *  @param int $user_id to get groups for
-    *  @param string $filter to LIKE filter groups
-    *  @param int $limit first user to get
-    *  @param int $num number of users to return
-    *  @return array an array of group_id, group_name pairs
+    * @param int $user_id to get groups for
+    * @param string $filter to LIKE filter groups
+    * @param int $limit first user to get
+    * @param int $num number of users to return
+    * @return array an array of group_id, group_name pairs
     */
     function getUserGroups($user_id, $filter, $limit,
         $num = NUM_RESULTS_PER_PAGE)
@@ -426,11 +437,11 @@ class GroupModel extends Model
         return $groups;
     }
     /**
-     *  Get a count of the number of groups to which user_id belongs.
+     * Get a count of the number of groups to which user_id belongs.
      *
-     *  @param int $user_id to get groups for
-     *  @param string $filter to LIKE filter groups
-     *  @return int number of groups of the filtered type for the user
+     * @param int $user_id to get groups for
+     * @param string $filter to LIKE filter groups
+     * @return int number of groups of the filtered type for the user
      */
     function countUserGroups($user_id, $filter="")
     {
@@ -452,10 +463,10 @@ class GroupModel extends Model
         return $row['NUM'];
     }
     /**
-     *  To update the OWNER_ID of a group
+     * To update the OWNER_ID of a group
      *
-     *  @param string $groupid  the group id  to transfer admin privileges
-     *  @param string $userid the id of the user who becomes the admin of group
+     * @param string $group_id  the group id  to transfer admin privileges
+     * @param string $user_id the id of the user who becomes the admin of group
      */
     function changeOwnerGroup($user_id, $group_id)
     {
@@ -464,10 +475,13 @@ class GroupModel extends Model
         $db->execute($sql, array($user_id, $group_id));
     }
     /**
-     *  Add an allowed user to an existing group
+     * Add an allowed user to an existing group
      *
-     *  @param string $userid the id of the user to add
-     *  @param string $groupid  the group id of the group to add the user to
+     * @param string $user_id the id of the user to add
+     * @param string $group_id  the group id of the group to add the user to
+     * @param int $status what should be the membership status of the added
+     *      user. Should be one of ACTIVE_STATUS, INACTIVE_STATUS,
+     *      BANNED_STATUS, INVITED_STATUS
      */
     function addUserGroup($user_id, $group_id, $status = ACTIVE_STATUS)
     {
@@ -477,12 +491,12 @@ class GroupModel extends Model
         $db->execute($sql, array($user_id, $group_id, $status, $join_date));
     }
     /**
-     *  Checks if a user belongs to a group but is not the owner of that group
-     *  Such a user could be deleted from the group
+     * Checks if a user belongs to a group but is not the owner of that group
+     * Such a user could be deleted from the group
      *
-     *  @param int $user_id which user to look up
-     *  @param int $group_id which group to look up for
-     *  @return bool where user is deletable
+     * @param int $user_id which user to look up
+     * @param int $group_id which group to look up for
+     * @return bool where user is deletable
      */
     function deletableUser($user_id, $group_id)
     {
@@ -499,10 +513,10 @@ class GroupModel extends Model
         return true;
     }
     /**
-     *  Delete a user from a group by userid an groupid
+     * Delete a user from a group by userid an groupid
      *
-     *  @param string $userid  the userid of the user to delete
-     *  @param string $groupid  the group id of the group to delete
+     * @param string $user_id  the userid of the user to delete
+     * @param string $group_id  the group id of the group to delete
      */
     function deleteUserGroup($user_id, $group_id)
     {
@@ -511,10 +525,10 @@ class GroupModel extends Model
         $db->execute($sql, array($user_id, $group_id));
     }
     /**
-     *  Returns the GROUP_FEED item with the given id
+     * Returns the GROUP_FEED item with the given id
      *
-     *  @param int $item_id the item to get info about
-     *  @return array row from GROUP_FEED table
+     * @param int $item_id the item to get info about
+     * @return array row from GROUP_FEED table
      */
     function getGroupItem($item_id)
     {
@@ -526,14 +540,17 @@ class GroupModel extends Model
         return $row;
     }
     /**
-     *  Creates a new group item
+     * Creates a new group item
      *
-     *  @param int $parent_id thread id to use for the item
-     *  @param int $group_id what group the item should be added to
-     *  @param int $user_id of user making the post
-     *  @param string $title title of the group feed item
-     *  @param string $description actual content of the post
-     *  @return int $id of item added
+     * @param int $parent_id thread id to use for the item
+     * @param int $group_id what group the item should be added to
+     * @param int $user_id of user making the post
+     * @param string $title title of the group feed item
+     * @param string $description actual content of the post
+     * @param int $type flag saying what kind of group item this is. One of
+     *      STANDARD_GROUP_ITEM, WIKI_GROUP_ITEM (used for threads discussing
+     *      a wiki page)
+     * @return int $id of item added
      */
     function addGroupItem($parent_id, $group_id, $user_id, $title,
         $description, $type= STANDARD_GROUP_ITEM)
@@ -553,12 +570,12 @@ class GroupModel extends Model
         return $id;
     }
     /**
-     *  Updates a group feed item's title and description. This assumes
-     *  the given item already exists.
+     * Updates a group feed item's title and description. This assumes
+     * the given item already exists.
      *
-     *  @param int $post_id which item to change
-     *  @param string $title the new title
-     *  @pararm string $description the new description
+     * @param int $id which item to change
+     * @param string $title the new title
+     * @param string $description the new description
      */
     function updateGroupItem($id, $title, $description)
     {
@@ -571,8 +588,8 @@ class GroupModel extends Model
      *
      * @param int $post_id of item to remove
      * @param int $user_id the id of the person trying to perform the
-     *      removal. If not root, or the original creator of the item,
-     *      the item won'r be removed
+     *     removal. If not root, or the original creator of the item,
+     *     the item won'r be removed
      */
     function deleteGroupItem($post_id, $user_id)
     {
@@ -589,20 +606,20 @@ class GroupModel extends Model
         return $db->affectedRows();
     }
     /**
-     *  Gets the group feed items visible to a user with $user_id
-     *  and which match the supplied search criteria found in $search_array,
-     *  starting from the $limit'th matching item to the $limit+$num item.
+     * Gets the group feed items visible to a user with $user_id
+     * and which match the supplied search criteria found in $search_array,
+     * starting from the $limit'th matching item to the $limit+$num item.
      *
-     *  @param int $limit starting offset group item to display
-     *  @param int $num number of items from offset to display
-     *  @param array $search_array each element of this is a quadruple
-     *      name of a field, what comparison to perform, a value to check,
-     *      and an order (ascending/descending) to sort by
-     *  @param int $user_id who is making this request to determine which
-     *  @param int $for_group if this value is set it is a assumed
-     *      that group_items are being returned for only one group
-     *      and that they should be grouped by thread
-     *  @return array elements of which represent one group feed item
+     * @param int $limit starting offset group item to display
+     * @param int $num number of items from offset to display
+     * @param array $search_array each element of this is a quadruple
+     *     name of a field, what comparison to perform, a value to check,
+     *     and an order (ascending/descending) to sort by
+     * @param int $user_id who is making this request to determine which
+     * @param int $for_group if this value is set it is a assumed
+     *     that group_items are being returned for only one group
+     *     and that they should be grouped by thread
+     * @return array elements of which represent one group feed item
      */
     function getGroupItems($limit = 0, $num = 100, $search_array = array(),
         $user_id = ROOT_ID, $for_group = -1)
@@ -671,19 +688,19 @@ class GroupModel extends Model
         return $groups;
     }
     /**
-     *  Gets the number of group feed items visible to a user with $user_id
-     *  and which match the supplied search criteria found in $search_array
+     * Gets the number of group feed items visible to a user with $user_id
+     * and which match the supplied search criteria found in $search_array
      *
-     *  @param array $search_array each element of this is a quadruple
-     *      name of a field, what comparison to perform, a value to check,
-     *      and an order (ascending/descending) to sort by
-     *  @param int $user_id who is making this request to determine which
-     *  @param int $for_group if this value is set it is a assumed
-     *      that group_items are being returned for only one group
-     *      and that the count desrired is over the number of threads in that
-     *      group
-     *  @return int number of items matching the search criteria for the
-     *      given user_id
+     * @param array $search_array each element of this is a quadruple
+     *     name of a field, what comparison to perform, a value to check,
+     *     and an order (ascending/descending) to sort by
+     * @param int $user_id who is making this request to determine which
+     * @param int $for_group if this value is set it is a assumed
+     *     that group_items are being returned for only one group
+     *     and that the count desrired is over the number of threads in that
+     *     group
+     * @return int number of items matching the search criteria for the
+     *     given user_id
      */
     function getGroupItemCount($search_array = array(), $user_id = ROOT_ID,
         $for_group = -1)
@@ -721,28 +738,28 @@ class GroupModel extends Model
         return $row['NUM'];
     }
     /**
-     *  Used to add a wiki page revision by a given user to a wiki page
-     *  of a given name in a given group viewing the group under a given
-     *  language. If the page does not exist yet it, and its corresponding
-     *  discussion thread is created. Two pages are used for storage
-     *  GROUP_PAGE which contains a parsed to html version of the most recent
-     *  revision of a wiki page and GROUP_PAGE_HISTORY which contains non-parsed
-     *  versions of all revisions
+     * Used to add a wiki page revision by a given user to a wiki page
+     * of a given name in a given group viewing the group under a given
+     * language. If the page does not exist yet it, and its corresponding
+     * discussion thread is created. Two pages are used for storage
+     * GROUP_PAGE which contains a parsed to html version of the most recent
+     * revision of a wiki page and GROUP_PAGE_HISTORY which contains non-parsed
+     * versions of all revisions
      *
-     *  @param int $user_id identifier of who is adding this revision
-     *  @param int $group_id which group the wiki page revision if being done in
-     *  @param string $page_name title of page being revised
-     *  @param string $page wiki page with potential wiki mark up containing the
-     *      revision
-     *  @param string $locale_tag locale we are adding the revision to
-     *  @param string $edit_comment user's reason for making the revision
-     *  @param string $thread_title if this is the first revision, then this
-     *      should contain the title for the discussion thread about the
-     *      revision
-     *  @param string $thread_description if this is the first revision, then
-     *      this should be the body of the first post in discussion thread
-     *  @param string $base_address default url to be used in links
-     *      on wiki page that use short syntax
+     * @param int $user_id identifier of who is adding this revision
+     * @param int $group_id which group the wiki page revision if being done in
+     * @param string $page_name title of page being revised
+     * @param string $page wiki page with potential wiki mark up containing the
+     *     revision
+     * @param string $locale_tag locale we are adding the revision to
+     * @param string $edit_comment user's reason for making the revision
+     * @param string $thread_title if this is the first revision, then this
+     *     should contain the title for the discussion thread about the
+     *     revision
+     * @param string $thread_description if this is the first revision, then
+     *     this should be the body of the first post in discussion thread
+     * @param string $base_address default url to be used in links
+     *     on wiki page that use short syntax
      */
     function setPageName($user_id, $group_id, $page_name, $page, $locale_tag,
         $edit_comment, $thread_title, $thread_description, $base_address = "")
@@ -771,14 +788,14 @@ class GroupModel extends Model
             $page_name, $page, $locale_tag, $pubdate, $edit_comment));
     }
     /**
-     *  Looks up the page_id of a wiki page based on the group it belongs to,
-     *  its title, and the language it is in (these three things together
-     *  should uniquely fix a page).
+     * Looks up the page_id of a wiki page based on the group it belongs to,
+     * its title, and the language it is in (these three things together
+     * should uniquely fix a page).
      *
-     *  @param int $group_id group identifier of group wiki page belongs to
-     *  @param string $name title of wiki page to look up
-     *  @param string $locale_tag IANA language tag of page to lookup
-     *  @return mixed $page_id of page if exists, false otherwise
+     * @param int $group_id group identifier of group wiki page belongs to
+     * @param string $page_name title of wiki page to look up
+     * @param string $locale_tag IANA language tag of page to lookup
+     * @return mixed $page_id of page if exists, false otherwise
      */
     function getPageId($group_id, $page_name, $locale_tag)
     {
@@ -794,18 +811,18 @@ class GroupModel extends Model
         return false;
     }
     /**
-     *  Return the page id, page string, and discussion thread id of the
-     *  most recent revision of a wiki page
+     * Return the page id, page string, and discussion thread id of the
+     * most recent revision of a wiki page
      *
-     *  @param int $group_id group identifier of group wiki page belongs to
-     *  @param string $name title of wiki page to look up
-     *  @param string $locale_tag IANA language tag of page to lookup
-     *  @param string mode if "edit" we assume we are looking up the page
-     *      so that it can be edited and so we return the most recent non-parsed
-     *      revision of the page. Otherwise, we assume the page is meant to be
-     *      read and so we return the variant of the page where wiki markup
-     *      has already been replaced with HTML
-     *  @return array (page_id, page, discussion_id) of desired wiki page
+     * @param int $group_id group identifier of group wiki page belongs to
+     * @param string $name title of wiki page to look up
+     * @param string $locale_tag IANA language tag of page to lookup
+     * @param string $mode if "edit" we assume we are looking up the page
+     *     so that it can be edited and so we return the most recent non-parsed
+     *     revision of the page. Otherwise, we assume the page is meant to be
+     *     read and so we return the variant of the page where wiki markup
+     *     has already been replaced with HTML
+     * @return array (page_id, page, discussion_id) of desired wiki page
      */
     function getPageInfoByName($group_id, $name, $locale_tag, $mode)
     {
@@ -829,11 +846,11 @@ class GroupModel extends Model
         return $row;
     }
     /**
-     *  Returns the group_id, language, and page name of a wiki page
-     *      corresponding to a page discussion thread with id $page_thread_id
-     *  @param int $page_thread_id the id of a wiki page discussion thread
-     *      to look up page info for
-     *  @return array(group_id, language, and page name) of that wiki page
+     * Returns the group_id, language, and page name of a wiki page
+     *     corresponding to a page discussion thread with id $page_thread_id
+     * @param int $page_thread_id the id of a wiki page discussion thread
+     *     to look up page info for
+     * @return array(group_id, language, and page name) of that wiki page
      */
     function getPageInfoByThread($page_thread_id)
     {
@@ -849,10 +866,10 @@ class GroupModel extends Model
         return $row;
     }
     /**
-     *  Returns the group_id, language, and page name of a wiki page
-     *      corresponding to $page_id
-     *  @param int $page_id to look up page info for
-     *  @return array(group_id, language, and page name) of that wiki page
+     * Returns the group_id, language, and page name of a wiki page
+     *     corresponding to $page_id
+     * @param int $page_id to look up page info for
+     * @return array(group_id, language, and page name) of that wiki page
      */
     function getPageInfoByPageId($page_id)
     {
@@ -868,12 +885,12 @@ class GroupModel extends Model
         return $row;
     }
     /**
-     *  Returns an historical revision of a wiki page
+     * Returns an historical revision of a wiki page
      *
-     *  @param int $page_id identifier of wiki page want revision for
-     *  @param int $pubdate timestamp of revision desired
-     *  @return array (id, non-parsed wiki page, page_name,
-     *      discussion thread id) of page revision
+     * @param int $page_id identifier of wiki page want revision for
+     * @param int $pubdate timestamp of revision desired
+     * @return array (id, non-parsed wiki page, page_name,
+     *     discussion thread id) of page revision
      */
     function getHistoryPage($page_id, $pubdate)
     {
@@ -891,15 +908,15 @@ class GroupModel extends Model
         return $row;
     }
     /**
-     *  Returns a list of revision history info for a wiki page.
+     * Returns a list of revision history info for a wiki page.
      *
-     *  @param int $page_id indentifier for page want revision history of
-     *  @param string $limit first row we want from the result set
-     *  @param string $num number of rows we want starting from the first row
-     *      in the result set
-     *  @return array elements of which are array with the revision date
-     *      (PUBDATE), user name, page length, edit reason for the wiki pages
-     *      revision
+     * @param int $page_id indentifier for page want revision history of
+     * @param string $limit first row we want from the result set
+     * @param string $num number of rows we want starting from the first row
+     *     in the result set
+     * @return array elements of which are array with the revision date
+     *     (PUBDATE), user name, page length, edit reason for the wiki pages
+     *     revision
      */
     function getPageHistoryList($page_id, $limit, $num)
     {
@@ -935,18 +952,18 @@ class GroupModel extends Model
         return array($total, $page_name, $pages);
     }
     /**
-     *  Returns a list of applicable wiki pages of a group
+     * Returns a list of applicable wiki pages of a group
      *
-     *  @param int $group_id of group want list of wiki pages for
-     *  @param string $locale_tag language want wiki page list for
-     *  @param string $filter string we want to filter wiki page title by
-     *  @param string $limit first row we want from the result set
-     *  @param string $num number of rows we want starting from the first row
-     *      in the result set
-     *  @return array a pair ($total, $pages) where $total is the total number
-     *      of rows that could be returned if $limit and $num not present
-     *      $pages is an array each of whose elements is an array corresponding
-     *      to one TITLE and the first 100 chars out of a wiki page.
+     * @param int $group_id of group want list of wiki pages for
+     * @param string $locale_tag language want wiki page list for
+     * @param string $filter string we want to filter wiki page title by
+     * @param string $limit first row we want from the result set
+     * @param string $num number of rows we want starting from the first row
+     *     in the result set
+     * @return array a pair ($total, $pages) where $total is the total number
+     *     of rows that could be returned if $limit and $num not present
+     *     $pages is an array each of whose elements is an array corresponding
+     *     to one TITLE and the first 100 chars out of a wiki page.
      */
     function getPageList($group_id, $locale_tag, $filter, $limit, $num)
     {

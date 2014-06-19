@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -85,7 +85,11 @@ class ParallelModel extends Model implements CrawlConstants
      */
     const MIN_DESCRIPTION_LENGTH = 100;
     /**
-     *  {@inheritDoc}
+     * {@inheritDoc}
+     *
+     * @param string $db_name the name of the database for the search engine
+     * @param bool $connect whether to connect to the database by default
+     *     after making the datasource class
      */
     function __construct($db_name = DB_NAME, $connect = true)
     {
@@ -223,25 +227,6 @@ class ParallelModel extends Model implements CrawlConstants
         }
         return $summaries;
     }
-    function getMachinesTimestamp($timestamp, $machine_urls)
-    {
-        static $machines = array();
-        if(isset($machines[$timestamp])) {
-            return $machines[$timestamp];
-        }
-        $cache_file = CRAWL_DIR."/cache/".self::network_base_name.
-            $timestamp.".txt";
-        if(file_exists($cache_file)) {
-            $info = unserialize(file_get_contents($cache_file));
-        }
-        if(isset($info["MACHINE_URLS"])) {
-            $machines[$timestamp] = $info["MACHINE_URLS"];
-        } else {
-            $machines[$timestamp] = array(NAME_SERVER);
-        }
-        return $machines[$timestamp];
-    }
-
     /**
      * Gets summaries on a particular machine for a set of document by
      * their url, or by group of 5-tuples of the form
@@ -254,7 +239,6 @@ class ParallelModel extends Model implements CrawlConstants
      * their descriptions.
      *
      * @param string $lookups things whose summaries we are trying to look up
-     * @param array $machine_urls an array of urls of yioop queue servers
      * @return array of summary data for the matching documents
      */
     function nonNetworkGetCrawlItems($lookups)
@@ -377,10 +361,10 @@ class ParallelModel extends Model implements CrawlConstants
      * that the info:url  meta word has been stored.
      *
      * @param string $url_or_key either info:base64_hash_url or just a url to
-     *      lookup
+     *     lookup
      * @param string $index_name index into which to do the lookup
      * @param bool $is_key whether the string is info:base64_hash_url or just a
-     *      url
+     *     url
      * @return array (offset, generation) into the web archive bundle
      */
     function lookupSummaryOffsetGeneration($url_or_key, $index_name = "",
@@ -429,11 +413,11 @@ class ParallelModel extends Model implements CrawlConstants
         return array($summary_offset, $generation);
     }
     /**
-     *  A save point is used to store to disk a sequence generation-doc-offset
-     *  pairs of a particular mix query when doing an archive crawl of a crawl
-     *  mix. This is used so that the mix can remember where it was the next
-     *  time it is invoked by the web app on the machine in question.
-     *  This function deletes such a save point associated with a timestamp
+     * A save point is used to store to disk a sequence generation-doc-offset
+     * pairs of a particular mix query when doing an archive crawl of a crawl
+     * mix. This is used so that the mix can remember where it was the next
+     * time it is invoked by the web app on the machine in question.
+     * This function deletes such a save point associated with a timestamp
      *
      * @param int $save_timestamp timestamp of save point to delete
      * @param array $machine_urls  machines on which to try to delete savepoint
@@ -463,24 +447,25 @@ class ParallelModel extends Model implements CrawlConstants
         }
     }
     /**
-     *  This method is invoked by other ParallelModel (@see CrawlModel
-     *  for examples) methods when they want to have their method performed
-     *  on an array of other  Yioop instances. The results returned can then
-     *  be aggregated.  The invocation sequence is
-     *  crawlModelMethodA invokes execMachine with a list of
-     *  urls of other Yioop instances. execMachine makes REST requests of
-     *  those instances of the given command and optional arguments
-     *  This request would be handled by a CrawlController which in turn
-     *  calls crawlModelMethodA on the given Yioop instance, serializes the
-     *  result and gives it back to execMachine and then back to the originally
-     *  calling function.
+     * This method is invoked by other ParallelModel (@see CrawlModel
+     * for examples) methods when they want to have their method performed
+     * on an array of other  Yioop instances. The results returned can then
+     * be aggregated.  The invocation sequence is
+     * crawlModelMethodA invokes execMachine with a list of
+     * urls of other Yioop instances. execMachine makes REST requests of
+     * those instances of the given command and optional arguments
+     * This request would be handled by a CrawlController which in turn
+     * calls crawlModelMethodA on the given Yioop instance, serializes the
+     * result and gives it back to execMachine and then back to the originally
+     * calling function.
      *
-     *  @param string $command the ParallelModel method to invoke on the remote
-     *      Yioop instances
-     *  @param array $machine_urls machines to invoke this command on
-     *  @param string additional arguments to be passed to the remote machine
-     *  @param int $num_machines the integer to be used in calculating partition
-     *  @return array a list of outputs from each machine that was called.
+     * @param string $command the ParallelModel method to invoke on the remote
+     *     Yioop instances
+     * @param array $machine_urls machines to invoke this command on
+     * @param string $arg additional arguments to be passed to the remote
+     *      machine
+     * @param int $num_machines the integer to be used in calculating partition
+     * @return array a list of outputs from each machine that was called.
      */
     function execMachines($command, $machine_urls, $arg = NULL,
         $num_machines = 0)

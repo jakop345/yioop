@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -48,7 +48,7 @@ class ManagelocalesElement extends Element
      * locales as well ass the screen for adding modifying translations
      *
      * @param array $data  contains info about the available locales and what
-     *      has been translated
+     *     has been translated
      */
     function render($data)
     {
@@ -108,10 +108,10 @@ class ManagelocalesElement extends Element
     <?php
     }
     /**
-     *  Draws the add locale and edit locale forms
+     * Draws the add locale and edit locale forms
      *
-     *  @param array $data consists of values of locale fields set
-     *      so far as well as values of the drops downs on the form
+     * @param array $data consists of values of locale fields set
+     *     so far as well as values of the drops downs on the form
      */
     function renderLocaleForm($data)
     {
@@ -176,10 +176,10 @@ class ManagelocalesElement extends Element
         <?php
     }
     /**
-     *  Draws the search for locales forms
+     * Draws the search for locales forms
      *
-     *  @param array $data consists of values of locale fields set
-     *      so far as well as values of the drops downs on the form
+     * @param array $data consists of values of locale fields set
+     *     so far as well as values of the drops downs on the form
      */
     function renderSearchForm($data)
     {

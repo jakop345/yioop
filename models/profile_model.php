@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -47,9 +47,9 @@ require_once(BASE_DIR.'/lib/url_parser.php');
 class ProfileModel extends Model
 {
     /**
-     *  These are fields whose values might be set in a Yioop instance
-     *  profile.php file
-     *  @var array
+     * These are fields whose values might be set in a Yioop instance
+     * profile.php file
+     * @var array
      */
     var $profile_fields = array('API_ACCESS', 'AUTH_KEY',
         'AUTHENTICATION_MODE', 'CACHE_LINK', 'CAPTCHA_MODE','DEBUG_LEVEL',
@@ -65,14 +65,18 @@ class ProfileModel extends Model
         'USER_AGENT_SHORT', 'WEB_URI', 'WEB_ACCESS', 'WORD_SUGGEST'
         );
     /**
-     *  Associative array (table_name => SQL statement to create that table)
-     *  List is alphabetical and contains all Yioop tables. List is only
-     *  initialized after an @see initializeSql call.
-     *  @var array
+     * Associative array (table_name => SQL statement to create that table)
+     * List is alphabetical and contains all Yioop tables. List is only
+     * initialized after an @see initializeSql call.
+     * @var array
      */
     var $create_statements;
     /**
-     *  {@inheritDoc}
+     * {@inheritDoc}
+     *
+     * @param string $db_name the name of the database for the search engine
+     * @param bool $connect whether to connect to the database by default
+     *     after making the datasource class
      */
     function __construct($db_name = DB_NAME, $connect = true)
     {
@@ -80,13 +84,13 @@ class ProfileModel extends Model
         $this->create_statements = array();
     }
     /**
-     *  Used to construct $this->create_statements, the list of all SQL
-     *  CREATE statements needed to build a Yioop database
+     * Used to construct $this->create_statements, the list of all SQL
+     * CREATE statements needed to build a Yioop database
      *
-     *  @param object $dbm a datasource_manager object used to get strings
-     *      for autoincrement and serial types for a given db
-     *  @param array $dbinfo connect info for the database, also used in
-     *      getting autoincrement and serial types
+     * @param object $dbm a datasource_manager object used to get strings
+     *     for autoincrement and serial types for a given db
+     * @param array $dbinfo connect info for the database, also used in
+     *     getting autoincrement and serial types
      */
     function initializeSql($dbm, $dbinfo)
     {
@@ -223,7 +227,7 @@ class ProfileModel extends Model
      * Creates the directory provides as well as subdirectories for crawls,
      * locales, logging, and sqlite DBs.
      *
-     *  @param string $directory parth and name of directory to create
+     * @param string $directory parth and name of directory to create
      */
     function makeWorkDirectory($directory)
     {
@@ -261,12 +265,12 @@ class ProfileModel extends Model
      * doesn't exist, etc.
      *
      * @param string $directory the work directory to output the profile.php
-     *      file
+     *     file
      * @param array $new_profile_data fields and values containing at least
-     *      some profile information (only $this->profile_fields
+     *     some profile information (only $this->profile_fields
      * fields of $new_profile_data will be considered).
      * @param array $old_profile_data fields and values that come from
-     *      presumably a previously existing profile
+     *     presumably a previously existing profile
      */
     function updateProfile($directory, $new_profile_data, $old_profile_data)
     {
@@ -274,27 +278,27 @@ class ProfileModel extends Model
         $n[] = <<<EOT
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009-2012  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009-2012  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * Computer generated file giving the key defines of directory locations
  * as well as database settings used to run the SeekQuarry/Yioop search engine
@@ -374,11 +378,11 @@ EOT;
      * to recreate the database from the default copy stored in /data dir.
      *
      * @param array $dbinfo has fields for DBMS, DB_USER, DB_PASSWORD, DB_HOST
-     *      and DB_NAME
+     *     and DB_NAME
      * @param array $skip_list an array of table or index names not to bother
-     *      creating or copying
+     *     creating or copying
      * @return bool returns true if can connect to/create a valid database;
-     *      returns false otherwise
+     *     returns false otherwise
      */
     function migrateDatabaseIfNecessary($dbinfo, $skip_list = array())
     {
@@ -411,9 +415,10 @@ EOT;
      * Yioop less those on a skip list
      *
      * @param object $dbm a DatabaseManager open to some DBMS and with a
-     *      blank database selected
+     *     blank database selected
+     * @param array $dbinfo name of database, host, user, and password
      * @param array $skip_list an array of table or index names not to bother
-     *      creating
+     *     creating
      * @return bool whether all of the creates were successful or not
      */
     function createDatabaseTables($dbm, $dbinfo, $skip_list = array())
@@ -434,13 +439,13 @@ EOT;
      * app db.
      *
      * @param array $dbinfo has field for DBMS, DB_USER, DB_PASSWORD, DB_HOST
-     *      and DB_NAME
+     *     and DB_NAME
      * @return mixed returns true if can connect to DBMS with username and
-     *      password, can select the given database name and that database
-     *      seems to be of Yioop/SeekQuarry type. If the connection works
-     *      but database isn't there it attempts to create it. If the
-     *      database is there but no data, then it returns a resource for
-     *      the database. Otherwise, it returns false.
+     *     password, can select the given database name and that database
+     *     seems to be of Yioop/SeekQuarry type. If the connection works
+     *     but database isn't there it attempts to create it. If the
+     *     database is there but no data, then it returns a resource for
+     *     the database. Otherwise, it returns false.
      */
     function testDatabaseManager($dbinfo)
     {

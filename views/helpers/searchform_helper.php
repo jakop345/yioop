@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -32,7 +32,7 @@
  */
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 /**
- *  Load base helper class if needed
+ * Load base helper class if needed
  */
 require_once BASE_DIR."/views/helpers/helper.php";
 /**
@@ -46,22 +46,22 @@ require_once BASE_DIR."/views/helpers/helper.php";
 class SearchformHelper extends Helper
 {
     /**
-     *  Draw the form for advanced search for any HTML table drawn based on
-     *  using a model's getRow function
+     * Draw the form for advanced search for any HTML table drawn based on
+     * using a model's getRow function
      *
-     *  @param array  $data from the controller with info of what fields might
-     *      already be filled.
-     *  @param object $controller what controller is being used to handle logic
-     *  @param string $activity what activity the controller was executing
-     *      (for return link)
-     *  @param object $view which view is responsible for calling this helper
-     *  @param string $title what to display as the header of this form
-     *  @param string $return_form_name string to use for return link to previous
-     *      page
-     *  @param array $fields a list of searchable fields
-     *  @param array $dropdowns which fields should be rendered as dropdowns
-     *  @param string $postfix string to tack on to form variables (might use
-     *      to make var names unique on page)
+     * @param array  $data from the controller with info of what fields might
+     *     already be filled.
+     * @param object $controller what controller is being used to handle logic
+     * @param string $activity what activity the controller was executing
+     *     (for return link)
+     * @param object $view which view is responsible for calling this helper
+     * @param string $title what to display as the header of this form
+     * @param string $return_form_name string to use for return link to previous
+     *     page
+     * @param array $fields a list of searchable fields
+     * @param array $dropdowns which fields should be rendered as dropdowns
+     * @param string $postfix string to tack on to form variables (might use
+     *     to make var names unique on page)
      */
     function render($data, $controller, $activity, $view, $title,
         $return_form_name, $fields, $dropdowns = array(), $postfix = "")

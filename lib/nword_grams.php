@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Ravi Dhillon ravi.dhillon@yahoo.com, Chris Pollett
  * @package seek_quarry
@@ -43,7 +43,7 @@ require_once BASE_DIR."/lib/phrase_parser.php";
  * Library of functions used to create and extract n word grams
  *
  * @author Ravi Dhillon (Bigram Version), Chris Pollett (ngrams + rewrite +
- *  support for page count dumps)
+ * support for page count dumps)
  *
  * @package seek_quarry
  * @subpackage library
@@ -56,7 +56,7 @@ class NWordGrams
       */
     static $ngrams = NULL;
      /**
-      *
+      * How many bytes to read in one go from wiki file when creating filter
       */
      const BLOCK_SIZE = 8192;
      /**
@@ -79,7 +79,7 @@ class NWordGrams
      * @param $phrase what to check if is a bigram
      * @param string $lang language of bigrams file
      * @param string $filter_prefix either the word "segment", "all", or
-     *      number n of the number of words in an ngram in filter.
+     *     number n of the number of words in an ngram in filter.
      * @return true or false
      */
     static function ngramsContains($phrase, $lang, $filter_prefix = 2)
@@ -107,6 +107,8 @@ class NWordGrams
      * is available for $lang and then stored in filter file.
      *
      * @param string $lang locale to be used to stem n grams.
+     * @param string $num_gram value of n in n-gram (how many words in sequence
+     *      should constitute a gram)
      * @param int $num_ngrams_found count of n word grams in text file.
      * @param int $max_gram_len value n of longest n gram to be added.
      * @return none
@@ -181,13 +183,15 @@ class NWordGrams
      * the text file.
      *
      * @param string $wiki_file compressed or uncompressed wikipedia
-     *      XML file path to be used to extract bigrams. This can also
-     *      be a folder containing such files
+     *     XML file path to be used to extract bigrams. This can also
+     *     be a folder containing such files
      * @param string $lang Language to be used to create n grams.
      * @param string $locale Locale to be used to store results.
      * @param int $num_gram number of words in grams we are looking for
      * @param int $ngram_type where in Wiki Dump to extract grams from
-     * @return number $num_ngrams_found count of bigrams in text file.
+     * @param int $max_terms maximum number of n-grams to compute and put in
+     *      file
+     * @return int $num_ngrams_found count of bigrams in text file.
      */
     static function makeNWordGramsTextFile($wiki_file, $lang,
         $locale, $num_gram = 2, $ngram_type = self::PAGE_COUNT_WIKIPEDIA,

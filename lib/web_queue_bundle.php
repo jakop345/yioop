@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -53,15 +53,15 @@ require_once 'hash_table.php';
  */
 require_once BASE_DIR.'/lib/compressors/non_compressor.php';
 /**
- *  Used to store to crawl urls
+ * Used to store to crawl urls
  */
 require_once 'web_archive.php';
 /**
- *  Used for getHost function
+ * Used for getHost function
  */
 require_once 'url_parser.php';
 /**
- *  Used for the crawlHash function
+ * Used for the crawlHash function
  */
 require_once 'utility.php';
 /**
@@ -69,7 +69,7 @@ require_once 'utility.php';
  */
 require_once "btree.php";
 /**
- *  Needed for robot stuff
+ * Needed for robot stuff
  */
 require_once 'crawl_constants.php';
 /**
@@ -228,10 +228,10 @@ class WebQueueBundle implements Notifier
      *
      * @param string $dir_name folder name used by this WebQueueBundle
      * @param int $filter_size size of each partition in the page exists
-     *      BloomFilterBundle
+     *     BloomFilterBundle
      * @param int $num_urls_ram number of entries in ram for the priority queue
      * @param string $min_or_max when the priority queue maintain the heap
-     *      property with respect to the least or the largest weight
+     *     property with respect to the least or the largest weight
      */
     function __construct($dir_name,
         $filter_size, $num_urls_ram, $min_or_max)
@@ -411,7 +411,7 @@ class WebQueueBundle implements Notifier
      *
      * @param string $url url whose weight in queue we want to adjust
      * @param int $flag should be one of self::ROBOT, self::NO_FLAGS,
-     *      self::SCHEDULABLE or self::SCHEDULABLE + crawl_delay
+     *     self::SCHEDULABLE or self::SCHEDULABLE + crawl_delay
      */
     function setQueueFlag(&$url, $flag)
     {
@@ -514,7 +514,7 @@ class WebQueueBundle implements Notifier
     /**
      * Makes the weight sum of the to-crawl priority queue sum to $new_total
      * @param int $new_total amount weights should sum to. All weights will be
-     *      scaled by the same factor.
+     *     scaled by the same factor.
      */
     function normalize($new_total = NUM_URLS_QUEUE_RAM)
     {
@@ -551,10 +551,10 @@ class WebQueueBundle implements Notifier
     }
     /**
      * Removes all url objects from $url_array which have been seen
-     * @param array &$url_array objects to check if have been seen
+     * @param array& $url_array objects to check if have been seen
      * @param array $field_names an array of components of a url_array element
      * which
-     *      contains a url to check if seen
+     *     contains a url to check if seen
      */
     function differenceSeenUrls(&$url_array, $field_names = NULL)
     {
@@ -581,8 +581,8 @@ class WebQueueBundle implements Notifier
     /**
      * Adds all the paths for a host to the Robots Web Archive.
      * @param string $host name that the paths are to be added for.
-     * @param array an array with two keys CrawlConstants::ALLOWED_SITES and
-     *      CrawlConstants::DISALLOWED_SITES. For each key
+     * @param array $paths an array with two keys CrawlConstants::ALLOWED_SITES
+     *      and CrawlConstants::DISALLOWED_SITES. For each key
      *      one has an array of paths
      */
     function addRobotPaths($host, $paths)
@@ -651,7 +651,7 @@ class WebQueueBundle implements Notifier
      *
      * @param string $host hostname to add to DNS Lookup table
      * @param string $ip_address in presentation format (not as int) to add
-     *      to table
+     *     to table
      */
     function addDNSCache($host, $ip_address)
     {
@@ -759,13 +759,13 @@ class WebQueueBundle implements Notifier
      *
      * @param string $key the things to look up
      * @param int $return_probe_value one of self::ALWAYS_RETURN_PROBE,
-     *      self::RETURN_PROBE_ON_KEY_FOUND, self::RETURN_VALUE, or self::BOTH.
-     *      Here value means the value associated with the key and probe is
-     *      either the location in the array where the key was found or
-     *      the first location in the array where it was determined the
-     *      key could not be found.
+     *     self::RETURN_PROBE_ON_KEY_FOUND, self::RETURN_VALUE, or self::BOTH.
+     *     Here value means the value associated with the key and probe is
+     *     either the location in the array where the key was found or
+     *     the first location in the array where it was determined the
+     *     key could not be found.
      * @return mixed would be string if the value is being returned,
-     *      otherwise, false if the key is not found
+     *     otherwise, false if the key is not found
      */
     function lookupHashTable($key, $return_probe_value =
         HashTable::RETURN_VALUE)
@@ -775,7 +775,7 @@ class WebQueueBundle implements Notifier
     /**
      * Removes an entries from the to crawl hash table
      * @param int $probe if the location in the hash table is already known
-     *      to be $probe then this variable can be used to save a lookup
+     *     to be $probe then this variable can be used to save a lookup
      * @param string $key usually a hash of a url
      */
     function deleteHashTable($key, $probe = false)
@@ -791,9 +791,9 @@ class WebQueueBundle implements Notifier
      *
      * @param string $key intended to be a hash of a url
      * @param string $value intended to be offset into a webarchive for urls
-     *      together with an index into the priority queue
+     *     together with an index into the priority queue
      * @param int $probe if the location in the hash table is already known
-     *      to be $probe then this variable can be used to save a lookup
+     *     to be $probe then this variable can be used to save a lookup
      * @return bool whether the insert was a success or not
      */
     function insertHashTable($key, $value, $probe = false)

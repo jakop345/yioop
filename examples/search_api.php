@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -37,8 +37,8 @@
 // this example should be only run from the command-line
 if(php_sapi_name() != 'cli') {echo "BAD REQUEST"; exit();}
 /** Calculate base directory of script @ignore
- *  If you have Yioop! in a separate folder from your web-site
- *  You should change BASE_DIR to the location of the Yioop! directory
+ * If you have Yioop! in a separate folder from your web-site
+ * You should change BASE_DIR to the location of the Yioop! directory
  */
 define("BASE_DIR", substr(
     dirname(realpath($_SERVER['PHP_SELF'])), 0,
@@ -78,11 +78,11 @@ if(class_exists("ZipArchive")) {
 }
 if (function_exists('lcfirst') === false) {
     /**
-     *  Lower cases the first letter in a string
+     * Lower cases the first letter in a string
      *
-     *  This function is only defined if the PHP version is before 5.3
-     *  @param string $str  string to be lower cased
-     *  @return string the lower cased string
+     * This function is only defined if the PHP version is before 5.3
+     * @param string $str  string to be lower cased
+     * @return string the lower cased string
      */
     function lcfirst( $str )
     {
@@ -100,7 +100,7 @@ require_once(BASE_DIR."/lib/file_cache.php");
 define("NO_CACHE", true);
 
 /** USE_FILECACHE will let us use this tool to store long running
- *  queries into the filecache
+ * queries into the filecache
  */
 if(USE_FILECACHE) {
     $CACHE = new FileCache(WORK_DIRECTORY."/cache/queries");
@@ -121,7 +121,7 @@ require_once BASE_DIR."/lib/crawl_constants.php";
 /**Load search controller class needed to get search results*/
 require_once BASE_DIR."/controllers/search_controller.php";
 /*
- *  Set-up multi-byte string handling to use UTF-8
+ * Set-up multi-byte string handling to use UTF-8
  */
 mb_internal_encoding("UTF-8");
 mb_regex_encoding("UTF-8");

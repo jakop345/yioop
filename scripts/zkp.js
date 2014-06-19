@@ -1,25 +1,25 @@
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Akash Patel (edited by Chris Pollett chris@pollett.org)
  * @package seek_quarry
@@ -30,11 +30,11 @@
  * @filesource
  */
 /*
- *  Returns RSA like modulus.
+ * Returns RSA like modulus.
  *
- *  @param String id identifier of a hidden input field containing the
- *      modulus to use in the Fiat Shamir Protocol
- *  @return BigInt RSA-like modulus.
+ * @param String id identifier of a hidden input field containing the
+ *     modulus to use in the Fiat Shamir Protocol
+ * @return BigInt RSA-like modulus.
  */
 function getN(id)
 {
@@ -42,15 +42,15 @@ function getN(id)
     return str2BigInt(n, 10, 0);
 }
 /*
- *  Generates Fiat shamir parameters such as x and y and append
- *  with the input form
+ * Generates Fiat shamir parameters such as x and y and append
+ * with the input form
  *
- *  @param Object fiat_shamir_id id of the form
- *  @param String sha1 of the user password
- *  @param int e random value sent by the server. Either 0 or 1.
- *  @param String user_name id of the form
- *  @param String modulus_id identifier of hidden field with modulus to use in
- *      Fiat Shamir
+ * @param Object fiat_shamir_id id of the form
+ * @param String sha1 of the user password
+ * @param int e random value sent by the server. Either 0 or 1.
+ * @param String user_name id of the form
+ * @param String modulus_id identifier of hidden field with modulus to use in
+ *     Fiat Shamir
  */
 function dynamicForm(zkp_form_id, sha1, e, user_name, modulus_id)
 {
@@ -77,16 +77,16 @@ function dynamicForm(zkp_form_id, sha1, e, user_name, modulus_id)
     zkp_form.submit();
 }
 /*
- *  Generates Fiat shamir parameters Y. When user gives username, password
- *  for the first time it stored the password on the cookie. From rest of
- *  the Fiat shamir iteration it uses password stores on the client side
- *  cookie.
+ * Generates Fiat shamir parameters Y. When user gives username, password
+ * for the first time it stored the password on the cookie. From rest of
+ * the Fiat shamir iteration it uses password stores on the client side
+ * cookie.
  *
- *  @param String sha1 sha1 of the password
- *  @param int e random value sent by the server. Either 0 or 1.
- *  @param BigInt r random value picked by the client
- *  @param BigInt n RSA like modulus
- *  @return BigInt y fiat-shamir parameter Y.
+ * @param String sha1 sha1 of the password
+ * @param int e random value sent by the server. Either 0 or 1.
+ * @param BigInt r random value picked by the client
+ * @param BigInt n RSA like modulus
+ * @return BigInt y fiat-shamir parameter Y.
  */
 function getY(sha1, e, r, n)
 {
@@ -102,10 +102,10 @@ function getY(sha1, e, r, n)
     return y;
 }
 /*
- *  Generates random number and converts it into BigInteger in provided range
+ * Generates random number and converts it into BigInteger in provided range
  *
- *  @param BigInt range. Random number be from 0 to range - 1
- *  @return BigInteger final_r random BigInteger
+ * @param BigInt range. Random number be from 0 to range - 1
+ * @return BigInteger final_r random BigInteger
  */
 function getR(range)
 {
@@ -142,15 +142,15 @@ function getR(range)
     return final_r;
 }
 /*
- *  Generates Fiat shamir parameters such as x and y and append
- *  with the input form. This method calls first time when user
- *  provides user name and password
+ * Generates Fiat shamir parameters such as x and y and append
+ * with the input form. This method calls first time when user
+ * provides user name and password
  *
- *  @param Object zkp_form_id identifier of the form with zkp data
- *  @param String username_id identifier of the form element with the username
- *  @param String password_id identifier of the form element with the password
- *  @param int e random value send by the server. Either 0 or 1.
- *  @param int auth_count number of Fiat-Shamir iterations
+ * @param Object zkp_form_id identifier of the form with zkp data
+ * @param String username_id identifier of the form element with the username
+ * @param String password_id identifier of the form element with the password
+ * @param int e random value send by the server. Either 0 or 1.
+ * @param int auth_count number of Fiat-Shamir iterations
  */
 function generateKeys(zkp_form_id, username_id, password_id,
     modulus_id, e, auth_count)
@@ -199,16 +199,16 @@ function generateKeys(zkp_form_id, username_id, password_id,
     dynamicForm(zkp_form_id, sha1, e, u, modulus_id);
 }
 /*
- *  Sends Fiat-Shamir via AJAX parameters and receives parameter e from server
+ * Sends Fiat-Shamir via AJAX parameters and receives parameter e from server
  *
- *  @param BigInt x Fiat-Shamir parameter x 
- *      (@see SigninModel::checkValidSigninForZKP for details)
- *  @param BigInt y Fiat-Shamir parameter y
- *  @param String u username provided by user
- *  @param String token CSRF token sent by the server
- *  @param String token_name name to use for CSRF token
- *  @param String round_num on the server this is used only to see if 0
- *      in which case it restarts the count
+ * @param BigInt x Fiat-Shamir parameter x 
+ *     (@see SigninModel::checkValidSigninForZKP for details)
+ * @param BigInt y Fiat-Shamir parameter y
+ * @param String u username provided by user
+ * @param String token CSRF token sent by the server
+ * @param String token_name name to use for CSRF token
+ * @param String round_num on the server this is used only to see if 0
+ *     in which case it restarts the count
  */
 function sendFiatShamirParameters(x, y, u, token, token_name, round_num)
 {
@@ -226,12 +226,12 @@ function sendFiatShamirParameters(x, y, u, token, token_name, round_num)
     http.send(params);
 }
 /*
- *  This function is used during create account module and when
- *  authentication mode is ZKP.
+ * This function is used during create account module and when
+ * authentication mode is ZKP.
  *
- *  @param String password_id element that holds ZKP password
- *  @param String repassword_id element that holds retyped ZKP password
- *  @param String modulus_id element that holds fiat shamir modulus
+ * @param String password_id element that holds ZKP password
+ * @param String repassword_id element that holds retyped ZKP password
+ * @param String modulus_id element that holds fiat shamir modulus
  */
 function registration(password_id, repassword_id, modulus_id)
 {

@@ -45,8 +45,8 @@ class LanguageElement extends Element
      * Draws a selects tag with a list of available languages
      *
      * @param array $data this variables LANGUAGES elt contains pairs of
-     *      IANA tag and language names; its LOCALE_TAG is the current
-     *      IANA locale tag
+     *     IANA tag and language names; its LOCALE_TAG is the current
+     *     IANA locale tag
      */
     function render($data)
     {

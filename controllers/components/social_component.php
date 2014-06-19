@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -34,12 +34,12 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /**
- *  Provides activities to AdminController related to creating, updating
- *  blogs (and blog entries), static web pages, and crawl mixes.
+ * Provides activities to AdminController related to creating, updating
+ * blogs (and blog entries), static web pages, and crawl mixes.
  *
- *  @author Chris Pollett
- *  @package seek_quarry
- *  @subpackage component
+ * @author Chris Pollett
+ * @package seek_quarry
+ * @subpackage component
  */
 class SocialComponent extends Component implements CrawlConstants
 {
@@ -447,13 +447,13 @@ class SocialComponent extends Component implements CrawlConstants
     }
 
     /**
-     *  Uses $_REQUEST and $user_id to look up all the userss that a group
-     *  has to subject to $_REQUEST['user_limit'] and
-     *  $_REQUEST['user_filter']. Information about these roles is added as
-     *  fields to $data[NUM_USERS_GROUP'] and $data['GROUP_USERS']
+     * Uses $_REQUEST and $user_id to look up all the userss that a group
+     * has to subject to $_REQUEST['user_limit'] and
+     * $_REQUEST['user_filter']. Information about these roles is added as
+     * fields to $data[NUM_USERS_GROUP'] and $data['GROUP_USERS']
      *
-     *  @param array &$data data for the manageGroups view.
-     *  @param int $user_id user to look up groups for
+     * @param array& $data data for the manageGroups view.
+     * @param int $group_id group to look up users for
      */
     function getGroupUsersData(&$data, $group_id)
     {
@@ -489,18 +489,18 @@ class SocialComponent extends Component implements CrawlConstants
     }
 
     /**
-     *  Used by $this->manageGroups to check and clean $_REQUEST variables
-     *  related to groups, to check that a user has the correct permissions
-     *  if the current group is to be modfied, and if so, to call model to
-     *  handle the update
+     * Used by $this->manageGroups to check and clean $_REQUEST variables
+     * related to groups, to check that a user has the correct permissions
+     * if the current group is to be modfied, and if so, to call model to
+     * handle the update
      *
-     *  @param array &$data used to add any information messages for the view
-     *      about changes or non-changes to the model
-     *  @param array &$group current group which might be altered
-     *  @param array $update_field which fields in the current group might be
-     *      changed. Elements of this array are triples, the name of the
-     *      group field, name of the request field to use for data, and an
-     *      array of allowed values for the field
+     * @param array& $data used to add any information messages for the view
+     *     about changes or non-changes to the model
+     * @param array& $group current group which might be altered
+     * @param array $update_fields which fields in the current group might be
+     *     changed. Elements of this array are triples, the name of the
+     *     group field, name of the request field to use for data, and an
+     *     array of allowed values for the field
      */
     function updateGroup(&$data, &$group, $update_fields)
     {
@@ -544,10 +544,10 @@ class SocialComponent extends Component implements CrawlConstants
         }
     }
     /**
-     *  Used to support requests related to posting, editing, modifying,
-     *  and deleting group feed items.
+     * Used to support requests related to posting, editing, modifying,
+     * and deleting group feed items.
      *
-     *  @return array $data fields to be used by GroupfeedElement
+     * @return array $data fields to be used by GroupfeedElement
      */
     function groupFeeds()
     {
@@ -893,7 +893,7 @@ class SocialComponent extends Component implements CrawlConstants
      * Handles requests to reading, editing, viewing history, reverting, etc
      * wiki pages
      * @return $data an associative array of form variables used to draw
-     *      the appropriate wiki page
+     *     the appropriate wiki page
      */
     function wiki()
     {
@@ -1200,13 +1200,13 @@ class SocialComponent extends Component implements CrawlConstants
      * Called to include the Javascript Wiki Editor (wiki.js) on a page
      * and to send any localizations needed from PHP to Javascript-land
      *
-     * @param array &$data an asscoiative array of data to be used by the
-     *      view and layout that the wiki editor will be drawn on
-     *      This method tacks on to INCLUDE_SCRIPTS to make the layout load
-     *      wiki.js.
+     * @param array& $data an asscoiative array of data to be used by the
+     *     view and layout that the wiki editor will be drawn on
+     *     This method tacks on to INCLUDE_SCRIPTS to make the layout load
+     *     wiki.js.
      * @param $id if "" then all textareas on page will get editor buttons
-     *      otherwise just the on with $id will. (Can call this method
-     *      multiple times, if want more than one but not all)
+     *     otherwise just the on with $id will. (Can call this method
+     *     multiple times, if want more than one but not all)
      */
     function initializeWikiEditor(&$data, $id = "")
     {
@@ -1267,8 +1267,8 @@ class SocialComponent extends Component implements CrawlConstants
      * weighted combinations of search indexes
      *
      * @return array $data info about available crawl mixes and changes to them
-     *      as well as any messages about the success or failure of a
-     *      sub activity.
+     *     as well as any messages about the success or failure of a
+     *     sub activity.
      */
     function mixCrawls()
     {
@@ -1452,7 +1452,7 @@ class SocialComponent extends Component implements CrawlConstants
      * Handles admin request related to the editing a crawl mix activity
      *
      * @param array $data info about the fragments and their contents for a
-     *      particular crawl mix (changed by this method)
+     *     particular crawl mix (changed by this method)
      */
     function editMix(&$data)
     {

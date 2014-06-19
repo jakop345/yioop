@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * This file contains global functions connected to localization that
  * are used throughout the web site part of Yioop!
@@ -37,8 +37,8 @@
  */
 require_once BASE_DIR."/models/locale_model.php";
 /**
- *  Attempts to guess the user's locale based on the request, session,
- *  and user-agent data
+ * Attempts to guess the user's locale based on the request, session,
+ * and user-agent data
  *
  * @return string IANA language tag of the guessed locale
  */
@@ -91,7 +91,7 @@ function guessLocale()
  *
  * @param string $phrase_string used to make guess
  * @param string $locale_tag language tag to use if can't guess -- if not
- *      provided uses current locale's value
+ *     provided uses current locale's value
  * @param int threshold number of chars to guess a particular encoding
  * @return string IANA language tag of the guessed locale
 
@@ -152,9 +152,9 @@ function guessLocaleFromString($phrase_string, $locale_tag = NULL)
 /**
  * Tries to find wether query belongs to a programming language
  *
- *  @param string $query query entered by user
+ * @param string $query query entered by user
  *
- *  @return string $lang programming language for the the query provided
+ * @return string $lang programming language for the the query provided
  */
 function checkQuery($query)
 {
@@ -178,9 +178,9 @@ function checkQuery($query)
  * Tries to guess at a language tag based on the name of a character
  * encoding
  *
- *  @param string $encoding a character encoding name
+ * @param string $encoding a character encoding name
  *
- *  @return string guessed language tag
+ * @return string guessed language tag
  */
 function guessLangEncoding($encoding)
 {
@@ -204,18 +204,18 @@ function guessLangEncoding($encoding)
     return 'en';
 }
 /**
- *  Tries to guess the encoding used for an Html document
+ * Tries to guess the encoding used for an Html document
  *
- *  @param string $html a character encoding name
- *  @param string $return_loc_info if meta http-equiv info was used to
- *      find the encoding, then if $return_loc_info is true, we
- *      return the location of charset substring. This allows converting to
- *      UTF-8 later so cached pages will display correctly and
- *      redirects without char encoding won't be given a different hash.
+ * @param string $html a character encoding name
+ * @param string $return_loc_info if meta http-equiv info was used to
+ *     find the encoding, then if $return_loc_info is true, we
+ *     return the location of charset substring. This allows converting to
+ *     UTF-8 later so cached pages will display correctly and
+ *     redirects without char encoding won't be given a different hash.
  *
- *  @return mixed either string or array if string then guessed encoding,
- *      if array guessed encoding, start_pos of where charset info came from,
- *      length
+ * @return mixed either string or array if string then guessed encoding,
+ *     if array guessed encoding, start_pos of where charset info came from,
+ *     length
  */
 function guessEncodingHtml($html, $return_loc_info = false)
 {
@@ -287,7 +287,7 @@ function tl()
  * Sets the language to be used for locale settings
  *
  * @param string $locale_tag the tag of the language to use to determine
- *      locale settings
+ *     locale settings
  */
 function setLocaleObject($locale_tag)
 {
@@ -302,7 +302,7 @@ if(!function_exists("getLocaleTag")) {
      * locale that is currently being used.
      *
      * @return string  the tag of the language currently being used for locale
-     *      settings
+     *     settings
      */
     function getLocaleTag()
     {
@@ -344,7 +344,7 @@ function getLocaleQueryStatistics()
  * top of the page to the bottom. Other languages like classical Chinese list
  * them from right to left.
  *
- *  @return string  tb lr rl depending on the current locales block progression
+ * @return string  tb lr rl depending on the current locales block progression
  */
 function getBlockProgression()
 {
@@ -357,7 +357,7 @@ function getBlockProgression()
  * locale direction and the block progression. For instance, for English the
  * writing mode is lr-tb (left-to-right top-to-bottom).
  *
- *  @return string   the locales writing mode
+ * @return string   the locales writing mode
  */
 function getWritingMode()
 {

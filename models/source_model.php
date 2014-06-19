@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -50,15 +50,15 @@ class SourceModel extends Model
     /** Mamimum number of feeds to download in one try */
     const MAX_FEEDS_ONE_GO = 100;
     /**
-     *  Controls which tables and the names of tables
-     *  underlie the given model and should be used in a getRows call
-     *  As SourceModel is used for both media sources and subsearches.
-     *  The underlying table might be MEDIA_SOURCE or it might be SUBSEARCH.
-     *  The $args variable is a string which is assumed to say which.
+     * Controls which tables and the names of tables
+     * underlie the given model and should be used in a getRows call
+     * As SourceModel is used for both media sources and subsearches.
+     * The underlying table might be MEDIA_SOURCE or it might be SUBSEARCH.
+     * The $args variable is a string which is assumed to say which.
      *
-     *  @param string $args if is "SUBSEARCH" then the SUBSEARCH table will
-     *      be used by getRows rather than MEDIA_SOURCE.
-     *  @return string which table to use
+     * @param string $args if is "SUBSEARCH" then the SUBSEARCH table will
+     *     be used by getRows rather than MEDIA_SOURCE.
+     * @return string which table to use
      */
     function fromCallback($args = NULL)
     {
@@ -68,14 +68,14 @@ class SourceModel extends Model
         return "MEDIA_SOURCE";
     }
     /**
-     *  Returns a list of media sources such as (video, rss sites) and their
-     *  URL and thumb url formats, etc
+     * Returns a list of media sources such as (video, rss sites) and their
+     * URL and thumb url formats, etc
      *
-     *  @param string $source_type the particular kind of media source to return
-     *      for example, video
-     *  @param bool $has_feed_no_items if true returns only those items which
-     *      have not feed_items associated with them.
-     *  @return array a list of web sites which are either video or news sites
+     * @param string $source_type the particular kind of media source to return
+     *     for example, video
+     * @param bool $has_no_feed_items if true returns only those items which
+     *     have not feed_items associated with them.
+     * @return array a list of web sites which are either video or news sites
      */
     function getMediaSources($source_type = "", $has_no_feed_items = false)
     {
@@ -106,10 +106,10 @@ class SourceModel extends Model
         return $sources;
     }
     /**
-     *  Return the media source by the name of the source
-     *  @param string $timestamp of the media source to look up
-     *  @return array associative array with SOURCE_NAME, TYPE, SOURCE_URL,
-     *      THUMB_URL, and LANGUAGE
+     * Return the media source by the name of the source
+     * @param string $timestamp of the media source to look up
+     * @return array associative array with SOURCE_NAME, TYPE, SOURCE_URL,
+     *     THUMB_URL, and LANGUAGE
      */
     function getMediaSource($timestamp)
     {
@@ -123,19 +123,19 @@ class SourceModel extends Model
         return $row;
     }
     /**
-     *  Used to add a new video, rss, or other sources to Yioop
+     * Used to add a new video, rss, or other sources to Yioop
      *
-     *  @param string $name
-     *  @param string $source_type whether video, rss, etc
-     *  @param string $source_url url regex of resource (video) or actual
-     *      resource (rss). Not quite a real regex you add {} to the
-     *      location in the url where the name of the particular video
-     *      should go http://www.youtube.com/watch?v={}&
-     *      (anything after & is ignored, so between = and & will be matched
-     *      as the name of a video)
-     *  @param string $thumb_url regex of where to get thumbnails for videos
-     *      based on match of $source_url, for example,
-     *      http://img.youtube.com/vi/{}/2.jpg
+     * @param string $name
+     * @param string $source_type whether video, rss, etc
+     * @param string $source_url url regex of resource (video) or actual
+     *     resource (rss). Not quite a real regex you add {} to the
+     *     location in the url where the name of the particular video
+     *     should go http://www.youtube.com/watch?v={}&
+     *     (anything after & is ignored, so between = and & will be matched
+     *     as the name of a video)
+     * @param string $thumb_url regex of where to get thumbnails for videos
+     *     based on match of $source_url, for example,
+     *     http://img.youtube.com/vi/{}/2.jpg
      * @param string $language the locale tag for the media source (rss)
      */
     function addMediaSource($name, $source_type, $source_url, $thumb_url,
@@ -148,10 +148,10 @@ class SourceModel extends Model
             $thumb_url, $language));
     }
     /**
-     *  Used to update the fields stored in a MEDIA_SOURCE row according to
-     *  an array holding new values
+     * Used to update the fields stored in a MEDIA_SOURCE row according to
+     * an array holding new values
      *
-     *  @param array $source_info updated values for a MEDIA_SOURCE row
+     * @param array $source_info updated values for a MEDIA_SOURCE row
      */
     function updateMediaSource($source_info)
     {
@@ -196,7 +196,7 @@ class SourceModel extends Model
      * including their names translated to the current locale
      *
      * @return array associative array containing subsearch info name in locale,
-     *     folder name, index, number of results per page
+     *    folder name, index, number of results per page
      */
     function getSubsearches()
     {
@@ -241,9 +241,9 @@ class SourceModel extends Model
         return $subsearches;
     }
     /**
-     *  Return the media source by the name of the source
-     *  @param string $folder_name 
-     *  @return array 
+     * Return the media source by the name of the source
+     * @param string $folder_name 
+     * @return array 
      */
     function getSubsearch($folder_name)
     {
@@ -261,11 +261,11 @@ class SourceModel extends Model
      * at the top od the Yioop search pages.
      *
      * @param string $folder_name name of subsearch in terms of urls
-     *      (not translated name that appears in the subsearch bar)
+     *     (not translated name that appears in the subsearch bar)
      * @param string $index_identifier timestamp of crawl or mix to be
-     *      used for results of subsearch
+     *     used for results of subsearch
      * @param int $per_page number of search results per page when this
-     *      subsearch is used
+     *     subsearch is used
      */
     function addSubsearch($folder_name, $index_identifier, $per_page)
     {
@@ -278,10 +278,10 @@ class SourceModel extends Model
         $db->execute($sql, array(time(), $locale_string));
     }
     /**
-     *  Used to update the fields stored in a SUBSEARCH row according to
-     *  an array holding new values
+     * Used to update the fields stored in a SUBSEARCH row according to
+     * an array holding new values
      *
-     *  @param array $search_info updated values for a SUBSEARCH row
+     * @param array $search_info updated values for a SUBSEARCH row
      */
     function updateSubsearch($search_info)
     {
@@ -326,12 +326,12 @@ class SourceModel extends Model
         $db->execute($sql, array($locale_string));
     }
     /**
-     *  For each feed source downloads the feeds, checks which items are
-     *  not in the database, adds them. This method does not update
-     *  the inverted index shard.
+     * For each feed source downloads the feeds, checks which items are
+     * not in the database, adds them. This method does not update
+     * the inverted index shard.
      *
-     *  @param int $age how many seconds old records should be ignored
-     *  @return bool whether feed item update was successful
+     * @param int $age how many seconds old records should be ignored
+     * @return bool whether feed item update was successful
      */
     function updateFeedItems($age = self::ONE_WEEK)
     {
@@ -487,7 +487,7 @@ class SourceModel extends Model
      *
      * @param array $item data from a single news feed item
      * @param string $source_name string name of the news feed $item was found
-     *  on
+     * on
      * @param int $age how many seconds old records should be ignored
      * @param string $lang locale-tag of the news feed
      * @return bool whether an item was added
@@ -529,14 +529,14 @@ class SourceModel extends Model
         return true;
     }
     /**
-     *  Used to calculate the meta words for RSS feed items
+     * Used to calculate the meta words for RSS feed items
      *
-     *  @param string $lang the locale_tag of the feed item
-     *  @param int $pubdate UNIX timestamp publication date of item
-     *  @param string $source_name the name of the news feed
-     *  @param string $guid the guid of the news item
+     * @param string $lang the locale_tag of the feed item
+     * @param int $pubdate UNIX timestamp publication date of item
+     * @param string $source_name the name of the news feed
+     * @param string $guid the guid of the news item
      *
-     *  @return array $meta_ids meta words found
+     * @return array $meta_ids meta words found
      */
     function calculateMetas($lang, $pubdate, $source_name, $guid)
     {

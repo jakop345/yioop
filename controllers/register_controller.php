@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -32,7 +32,7 @@
  */
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 /**
- *  Load base controller class, if needed
+ * Load base controller class, if needed
  */
 require_once BASE_DIR."/controllers/controller.php";
 /**
@@ -113,8 +113,8 @@ class RegisterController extends Controller implements CrawlConstants
      */
     const HASH_CAPTCHA_LEVEL = 2;
     /**
-     *  Besides invoking the base controller, sets up in field variables
-     *  the captcha and recovery question and possible answers.
+     * Besides invoking the base controller, sets up in field variables
+     * the captcha and recovery question and possible answers.
      */
     function __construct()
     {
@@ -167,11 +167,11 @@ class RegisterController extends Controller implements CrawlConstants
         parent::__construct();
     }
     /**
-     *  Main entry method for this controller. Determine which account
-     *  creation/recovery activity needs to be performed. Calls the
-     *  appropriate method, then sends the return $data to a view
-     *  determined by that activity. $this->displayView then renders that
-     *  view
+     * Main entry method for this controller. Determine which account
+     * creation/recovery activity needs to be performed. Calls the
+     * appropriate method, then sends the return $data to a view
+     * determined by that activity. $this->displayView then renders that
+     * view
      */
     function processRequest()
     {
@@ -282,12 +282,12 @@ class RegisterController extends Controller implements CrawlConstants
         $this->displayView($view, $data);
     }
     /**
-     *  Sets up the form variables need to present the initial account creation
-     *  form. If this form is submitted with missing fields, this method
-     *  would also be called to set up an appropriate MISSING field
+     * Sets up the form variables need to present the initial account creation
+     * form. If this form is submitted with missing fields, this method
+     * would also be called to set up an appropriate MISSING field
      *
-     *  @return array $data field correspond to values needed for account
-     *      creation form
+     * @return array $data field correspond to values needed for account
+     *     creation form
      */
     function createAccount()
     {
@@ -295,15 +295,15 @@ class RegisterController extends Controller implements CrawlConstants
         return $data;
     }
     /**
-     *  Used to process account data from completely filled in create account
-     *  forms. Depending on the registration type: no_activation,
-     *  email registration, or admin activation, either the account is
-     *  immediately activated or it is created in an active state and an email
-     *  to the person who could activate it is sent.
+     * Used to process account data from completely filled in create account
+     * forms. Depending on the registration type: no_activation,
+     * email registration, or admin activation, either the account is
+     * immediately activated or it is created in an active state and an email
+     * to the person who could activate it is sent.
      *
-     *  @return array $data will contain a SCRIPT field with the
-     *      Javascript doMessage call saying whether this step was successful
-     *      or not
+     * @return array $data will contain a SCRIPT field with the
+     *     Javascript doMessage call saying whether this step was successful
+     *     or not
      */
     function processAccountData()
     {
@@ -401,12 +401,12 @@ class RegisterController extends Controller implements CrawlConstants
         return $data;
     }
     /**
-     *  Used to verify the email sent to a user try to set up an account.
-     *  If the email is legit the account is activated
+     * Used to verify the email sent to a user try to set up an account.
+     * If the email is legit the account is activated
      *
-     *  @return array $data will contain a SCRIPT field with the
-     *      Javascript doMessage call saying whether verification was
-     *      successful or not
+     * @return array $data will contain a SCRIPT field with the
+     *     Javascript doMessage call saying whether verification was
+     *     successful or not
      */
     function emailVerification()
     {
@@ -458,12 +458,12 @@ class RegisterController extends Controller implements CrawlConstants
         return $data;
     }
     /**
-     *  Sets up the form variables need to present the initial recover account
-     *  form. If this form is submitted with missing fields, this method
-     *  would also be called to set up an appropriate MISSING field
+     * Sets up the form variables need to present the initial recover account
+     * form. If this form is submitted with missing fields, this method
+     * would also be called to set up an appropriate MISSING field
      *
-     *  @return array $data field correspond to values needed for account
-     *      recovery form
+     * @return array $data field correspond to values needed for account
+     *     recovery form
      */
     function recoverPassword()
     {
@@ -472,14 +472,14 @@ class RegisterController extends Controller implements CrawlConstants
         return $data;
     }
     /**
-     *  Called with the data from the initial recover form was completely
-     *  provided and captcha was correct. This method
-     *  sends the recover email provided the account had
-     *  recover questions set otherwise sets up an error message.
+     * Called with the data from the initial recover form was completely
+     * provided and captcha was correct. This method
+     * sends the recover email provided the account had
+     * recover questions set otherwise sets up an error message.
      *
-     *  @return array $data will contain a SCRIPT field with the
-     *      Javascript doMessage call saying whether email sent or if there
-     *      was a problem
+     * @return array $data will contain a SCRIPT field with the
+     *     Javascript doMessage call saying whether email sent or if there
+     *     was a problem
      */
     function processRecoverData()
     {
@@ -526,12 +526,12 @@ class RegisterController extends Controller implements CrawlConstants
         return $data;
     }
     /**
-     *  This activity either verifies the recover email and sets up the
-     *  appropriate  data for a change password form or it verifies the
-     *  change password form data and changes the password. If verifications
-     *  error messages are set up
+     * This activity either verifies the recover email and sets up the
+     * appropriate  data for a change password form or it verifies the
+     * change password form data and changes the password. If verifications
+     * error messages are set up
      *
-     *  @return array form data to be used by recover or signin views
+     * @return array form data to be used by recover or signin views
      */
     function recoverComplete()
     {
@@ -635,12 +635,12 @@ class RegisterController extends Controller implements CrawlConstants
         return $data;
     }
     /**
-     *  Used to handle data from the suggest-a-url to crawl form
-     *  (suggest_view.php). Basically, it saves any data submitted to
-     *  a file which can then be imported in manageCrawls
+     * Used to handle data from the suggest-a-url to crawl form
+     * (suggest_view.php). Basically, it saves any data submitted to
+     * a file which can then be imported in manageCrawls
      *
-     *  @return array $data contains fields with the current value for
-     *      the url (if set but not submitted) as well as for a captcha
+     * @return array $data contains fields with the current value for
+     *     the url (if set but not submitted) as well as for a captcha
      */
     function suggestUrl()
     {
@@ -823,12 +823,12 @@ class RegisterController extends Controller implements CrawlConstants
         return $data;
     }
     /**
-     *  Sets up the captcha question and or recovery questions in a $data
-     *  associative array so that they can be drawn by the register or recover
-     *  views.
+     * Sets up the captcha question and or recovery questions in a $data
+     * associative array so that they can be drawn by the register or recover
+     * views.
      *
-     *  @return array $data associate array with field to help the register and
-     *      recover view draw themselves
+     * @return array $data associate array with field to help the register and
+     *     recover view draw themselves
      */
     function setupQuestionViewData()
     {
@@ -894,9 +894,9 @@ class RegisterController extends Controller implements CrawlConstants
      * Sets up the graphical captcha view
      * Draws the string for graphical captcha
      *
-     *  @param array &$data used by view to draw any dynamic content
-     *      in this case we append a field "CAPTCHA_IMAGE" with a data
-     *      url of the captcha to draw.
+     * @param array& $data used by view to draw any dynamic content
+     *     in this case we append a field "CAPTCHA_IMAGE" with a data
+     *     url of the captcha to draw.
      */
     function setupGraphicalCaptchaViewData(&$data)
     {
@@ -920,24 +920,24 @@ class RegisterController extends Controller implements CrawlConstants
             $this->model("captcha")->makeGraphicalCaptcha($word);
     }
     /**
-     *  Picks $num_select most/least questions from an array of triplets of
-     *  the form a string question: Which is the most ..?, a string
-     *  question: Which is the least ..?, followed by a comma separated list
-     *  of choices ranked from least to most. For each question pick,
-     *  $num_choices many items from the last element of the triplet are
-     *  chosen.
+     * Picks $num_select most/least questions from an array of triplets of
+     * the form a string question: Which is the most ..?, a string
+     * question: Which is the least ..?, followed by a comma separated list
+     * of choices ranked from least to most. For each question pick,
+     * $num_choices many items from the last element of the triplet are
+     * chosen.
      *
-     *  @param array $questions_answers an array t_1, t_2, t_3, t_4, where
-     *      each t_i is an associative array containing the most
-     *      and least arrays as described above
-     *  @param int $num_select number of triples from the list to pick
-     *      for each triple pick either the most question or the least
-     *      question
-     *  @param int $num_choices from the list component of a triplet we
-     *      we pick this many elements
-     *  @return array a pair consisting of an array of questions and possible
-     *      choice for least/most, and another array of the correct answers
-     *      to the least/most problem.
+     * @param array $question_answers an array t_1, t_2, t_3, t_4, where
+     *     each t_i is an associative array containing the most
+     *     and least arrays as described above
+     * @param int $num_select number of triples from the list to pick
+     *     for each triple pick either the most question or the least
+     *     question
+     * @param int $num_choices from the list component of a triplet we
+     *     we pick this many elements
+     * @return array a pair consisting of an array of questions and possible
+     *     choice for least/most, and another array of the correct answers
+     *     to the least/most problem.
      */
     function selectQuestionsAnswers($question_answers, $num_select,
         $num_choices = -1)
@@ -984,20 +984,20 @@ class RegisterController extends Controller implements CrawlConstants
         return array($questions, $answers);
     }
     /**
-     *  Used to select which activity a controller will do. If the $activity
-     *  is $activity_success, then this method checks the prereqs for
-     *  $activity_success. If they are not met then the view $data array is
-     *  updated with an error message and $activity_fail is set to be the
-     *  next activity. If the prereq is met then the $activity is left as
-     *  $activity_success. If $activity was not initially equal to
-     *  $activity_success then this method does nothing.
+     * Used to select which activity a controller will do. If the $activity
+     * is $activity_success, then this method checks the prereqs for
+     * $activity_success. If they are not met then the view $data array is
+     * updated with an error message and $activity_fail is set to be the
+     * next activity. If the prereq is met then the $activity is left as
+     * $activity_success. If $activity was not initially equal to
+     * $activity_success then this method does nothing.
      *
-     *  @param string &$activity current tentative activity
-     *  @param string $activity_success activity to test for and to test prereqs
-     *      for.
-     *  @param string $activity_fail if prereqs not met which acitivty to switch
-     *      to
-     *  @param array &$data data to help render the view this controller draws
+     * @param string& $activity current tentative activity
+     * @param string $activity_success activity to test for and to test prereqs
+     *     for.
+     * @param string $activity_fail if prereqs not met which acitivty to switch
+     *     to
+     * @param array& $data data to help render the view this controller draws
      */
     function preactivityPrerequisiteCheck(&$activity,
         $activity_success, $activity_fail, &$data)
@@ -1058,12 +1058,12 @@ class RegisterController extends Controller implements CrawlConstants
         }
     }
     /**
-     *  Add SCRIPT tags for errors to the view $data array if there were any
-     *  missing fields on a create account or recover account form.
-     *  also adds error info if try to create an existing using.
+     * Add SCRIPT tags for errors to the view $data array if there were any
+     * missing fields on a create account or recover account form.
+     * also adds error info if try to create an existing using.
      *
-     *  @param array &$data contains info for the view on which the above
-     *      forms are to be drawn.
+     * @param array& $data contains info for the view on which the above
+     *     forms are to be drawn.
      */
     function dataIntegrityCheck(&$data)
     {
@@ -1089,10 +1089,10 @@ class RegisterController extends Controller implements CrawlConstants
         }
     }
     /**
-     *  Checks whether the answers to the captcha question presented to a user
-     *  are all correct or if any were mis-answered
+     * Checks whether the answers to the captcha question presented to a user
+     * are all correct or if any were mis-answered
      *
-     *  @return bool true if only if all were correct
+     * @return bool true if only if all were correct
      */
     function checkCaptchaAnswers()
     {
@@ -1107,11 +1107,11 @@ class RegisterController extends Controller implements CrawlConstants
         return $captcha_passed;
     }
     /**
-     *  Checks whether the answers to the account recovery questions match
+     * Checks whether the answers to the account recovery questions match
      * those provided earlier by an account user
      *
-     *  @param array $user who to check recovery answers for
-     *  @return bool true if only if all were correct
+     * @param array $user who to check recovery answers for
+     * @return bool true if only if all were correct
      */
     function checkRecoveryQuestions($user)
     {
@@ -1132,17 +1132,17 @@ class RegisterController extends Controller implements CrawlConstants
         return $recovery_passed;
     }
     /**
-     *  Used to clean the inputs for form variables
-     *  for creating/recovering an account. It also puts
-     *  in blank values for missing fields into a "MISSING"
-     *  array
+     * Used to clean the inputs for form variables
+     * for creating/recovering an account. It also puts
+     * in blank values for missing fields into a "MISSING"
+     * array
      *
-     *  @param array &$data an array of data to be sent to the view
-     *      After this method is done it will have cleaned versions
-     *      of the $_REQUEST variables from create or recover account
-     *      forms as well as a "MISSING" field which is an array of
-     *      those items which did not have values on the create/recover
-     *      account form
+     * @param array& $data an array of data to be sent to the view
+     *     After this method is done it will have cleaned versions
+     *     of the $_REQUEST variables from create or recover account
+     *     forms as well as a "MISSING" field which is an array of
+     *     those items which did not have values on the create/recover
+     *     account form
      */
     function getCleanFields(&$data)
     {
@@ -1212,12 +1212,12 @@ class RegisterController extends Controller implements CrawlConstants
         $data['MISSING'] = $missing;
     }
      /**
-     *  Calculates the sha1 of a string consist of a randomString,request_time
-     *  send by a server and the nonce send by a client.It checks
-     *  whether the sha1 produces expected number of a leading zeroes
+     * Calculates the sha1 of a string consist of a randomString,request_time
+     * send by a server and the nonce send by a client.It checks
+     * whether the sha1 produces expected number of a leading zeroes
      *
-     *  @return bool true if the sha1 produces expected number
-     *  of a leading zeroes.
+     * @return bool true if the sha1 produces expected number
+     * of a leading zeroes.
      */
     function validateHashCode()
     {

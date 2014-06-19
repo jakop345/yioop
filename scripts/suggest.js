@@ -1,25 +1,25 @@
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Sandhya Vissapragada, Chris Pollett
  * @package seek_quarry
@@ -35,7 +35,7 @@
  */
 SUGGEST_VERSION_NO = 0;
 /*
- *  Constants for key codes will handle
+ * Constants for key codes will handle
  */
 KeyCodes = new Object();
 KeyCodes.UP_ARROW = 38;
@@ -449,7 +449,7 @@ function sortLocalTerms()
  * @param String a in format described above
  * @param String b in format described above
  * @return number 0 - if same frequncy, negative if b has larger frequency,
- *      postive otherwise
+ *     postive otherwise
  */
 function termFrequencyComparison(a, b)
 {
@@ -493,7 +493,7 @@ function termClick(term,termid)
  * @param Array trie_array contains all search terms
  * @param String parent_word the prefix want to find sub-term for in trie
  * @param String highlighted_word parent_word, root_word + "<b>" + rest of
- *   parent
+ *  parent
  */
 function getTrieTerms(trie_array, parent_word, highlighted_word)
 {

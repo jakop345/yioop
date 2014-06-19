@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -58,7 +58,11 @@ class CronModel extends Model
      */
     var $cron_table;
     /**
-     *  {@inheritDoc}
+     * {@inheritDoc}
+     *
+     * @param string $db_name the name of the database for the search engine
+     * @param bool $connect whether to connect to the database by default
+     *     after making the datasource class
      */
     function __construct($db_name = DB_NAME, $connect = true)
     {
@@ -67,10 +71,12 @@ class CronModel extends Model
         $this->cron_file = WORK_DIRECTORY."/data/cron_time.txt";
     }
     /**
-     *  Returns the timestamp of last time cron run. Not using db as sqlite
-     *  seemed to have locking issues if the transaction takes a while
+     * Returns the timestamp of last time the $key field was updated in
+     * the cron_time.txt file associate array. Not using db as sqlite
+     * seemed to have locking issues if the transaction takes a while
      *
-     *  @return int a Unix timestamp
+     * @param $key field to find last update of
+     * @return int a Unix timestamp
      */
     function getCronTime($key)
     {
@@ -99,10 +105,12 @@ class CronModel extends Model
     }
     /**
      * Updates the Cron timestamp to the current time.
+     *
+     * @param $key field to update time for
      * @param bool $transaction if you are doing a sequence of cron updates
-     *      you can set this value to true so data is not immediately
-     *      written to disk. Then you can write to disk using saveCronTable
-     *      so only do one write.
+     *     you can set this value to true so data is not immediately
+     *     written to disk. Then you can write to disk using saveCronTable
+     *     so only do one write.
      */
     function updateCronTime($key, $transaction = false)
     {

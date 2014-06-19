@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -105,8 +105,8 @@ class HashTable extends StringArray
      * @param int $num_values number of key value pairs the table can hold
      * @param int $key_size number of bytes to store a hash table key
      * @param int $value_size number of bytes to store a hash table value
-     * @param int $save_fequency how many non read operation before saving to
-     *      disk
+     * @param int $save_frequency how many non read operation before saving to
+     *     disk
      */
     function __construct($fname, $num_values, $key_size, $value_size,
         $save_frequency = self::DEFAULT_SAVE_FREQUENCY)
@@ -123,10 +123,10 @@ class HashTable extends StringArray
      * Inserts the provided $key - $value pair into the hash table
      *
      * @param string $key the key to use for the insert (will be needed for
-     *      lookup)
+     *     lookup)
      * @param string $value the value associated with $key
      * @param int $probe if the location in the hash table is already known
-     *      to be $probe then this variable can be used to save a lookup
+     *     to be $probe then this variable can be used to save a lookup
      * @return bool whether the insert was successful or not
      */
     function insert($key, $value, $probe = false)
@@ -171,14 +171,14 @@ class HashTable extends StringArray
      *
      * @param string $key key to look up in the hash table
      * @param int $return_probe_value one of self::ALWAYS_RETURN_PROBE,
-     *      self::RETURN_PROBE_ON_KEY_FOUND, self::RETURN_VALUE, or self::BOTH.
-     *      Here value means the value associated with the key and probe is
-     *      either the location in the array where the key was found or
-     *      the first location in the array where it was determined the
-     *      key could not be found.
+     *     self::RETURN_PROBE_ON_KEY_FOUND, self::RETURN_VALUE, or self::BOTH.
+     *     Here value means the value associated with the key and probe is
+     *     either the location in the array where the key was found or
+     *     the first location in the array where it was determined the
+     *     key could not be found.
      * @return mixed would be string if the value is being returned,
-     *      an int if the probe is being returned, and false if the key
-     *      is not found
+     *     an int if the probe is being returned, and false if the key
+     *     is not found
      */
     function lookup($key, $return_probe_value = self::RETURN_VALUE)
     {
@@ -196,16 +196,16 @@ class HashTable extends StringArray
      *
      * @param string $key key to look up in the hash table
      * @param array $null_array key values that would cut-off the search
-     *      for key if the initial probe failed
+     *     for key if the initial probe failed
      * @param int $return_probe_value one of self::ALWAYS_RETURN_PROBE,
-     *      self::RETURN_PROBE_ON_KEY_FOUND, or self::RETURN_VALUE. Here
-     *      value means the value associated with the key and probe is
-     *      either the location in the array where the key was found or
-     *      the first location in the array where it was determined the
-     *      key could not be found.
+     *     self::RETURN_PROBE_ON_KEY_FOUND, or self::RETURN_VALUE. Here
+     *     value means the value associated with the key and probe is
+     *     either the location in the array where the key was found or
+     *     the first location in the array where it was determined the
+     *     key could not be found.
      * @return mixed would be string if the value is being returned,
-     *      an int if the probe is being returned, and false if the key
-     *      is not found
+     *     an int if the probe is being returned, and false if the key
+     *     is not found
      */
     function lookupArray($key, $null_array,
         $return_probe_value = self::RETURN_VALUE)
@@ -244,7 +244,7 @@ class HashTable extends StringArray
      *
      * @param string $key the key to delete the entry for
      * @param int $probe if the location in the hash table is already known
-     *      to be $probe then this variable can be used to save a lookup
+     *     to be $probe then this variable can be used to save a lookup
      * @return bool whether or not something was deleted
      */
     function delete($key, $probe = false)

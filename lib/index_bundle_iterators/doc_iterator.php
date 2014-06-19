@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -99,9 +99,11 @@ class DocIterator extends IndexBundleIterator
      * Creates a word iterator with the given parameters.
      * @param string $index_name time_stamp of the to use
      * @param int $limit the first element to return from the list of docs
-     *      iterated over
-     * @param array $filter an array of hashes of domains to filter from
-     *      results
+     *     iterated over
+     * @param array& $filter an array of hashes of domains to filter from
+     *     results
+     * @param int $results_per_block the maximum number of results that can 
+     *      be returned by a findDocsWithWord call
      */
     function __construct($index_name, &$filter = NULL,
         $results_per_block = IndexBundleIterator::RESULTS_PER_BLOCK)
@@ -129,7 +131,7 @@ class DocIterator extends IndexBundleIterator
      *
      * @param int $generation the generation the posting offset is for
      * @param int $posting_offset an offset into word_docs to compute the
-     *      relevance of
+     *     relevance of
      * @return float always 1.0.
      */
     function computeRelevance($generation, $posting_offset)
@@ -150,13 +152,13 @@ class DocIterator extends IndexBundleIterator
         $this->getShardInfo($this->current_generation);
     }
     /**
-     *  Mainly used to get the last_offset in shard $generation of the
-     *  current index bundle. In the case where this wasn't previously
-     *  cached it loads in the index bundle, sets the current generation to
-     *  $generation, stores the docids_len (the last offset) of this shard
-     *  in shard_lens and sets up last_offset as $generation's docids_len
+     * Mainly used to get the last_offset in shard $generation of the
+     * current index bundle. In the case where this wasn't previously
+     * cached it loads in the index bundle, sets the current generation to
+     * $generation, stores the docids_len (the last offset) of this shard
+     * in shard_lens and sets up last_offset as $generation's docids_len
      *
-     *  @param $generation to get last offset for
+     * @param $generation to get last offset for
      */
     function getShardInfo($generation)
     {
@@ -253,9 +255,9 @@ class DocIterator extends IndexBundleIterator
     /**
      * Forwards the iterator one group of docs
      * @param array $gen_doc_offset a generation, doc_offset pair. If set,
-     *      the must be of greater than or equal generation, and if equal the
-     *      next block must all have $doc_offsets larger than or equal to
-     *      this value
+     *     the must be of greater than or equal generation, and if equal the
+     *     next block must all have $doc_offsets larger than or equal to
+     *     this value
      */
     function advance($gen_doc_offset = NULL)
     {
@@ -311,7 +313,7 @@ class DocIterator extends IndexBundleIterator
      * would be return by this iterator
      *
      * @return mixed an array with the desired document offset
-     *  and generation; -1 on fail
+     * and generation; -1 on fail
      */
     function currentGenDocOffsetWithWord() {
         if(($this->current_offset > $this->last_offset ||

@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Shailesh Padave shaileshpadave49@gmail.com
  * @package seek_quarry
@@ -49,34 +49,34 @@ require_once BASE_DIR."/lib/phrase_parser.php";
  * PhraseModel and used to reorder the results.
  * To add thesaurus reordering for a different locale, two methods need to be
  * written in that locale tokenizer.php file
- *  tagPartsOfSpeechPhrase($phrase) which on an input phrase return a string
- *      where each term_i in the phrase has been replace with term_i~pos
- *      where pos is a two character part of speech NN, VB, AJ, AV, or NA (if
- *      none of the previous apply)
- *  scoredThesaurusMatches($term, $word_type, $whole_query) which takes
- *      a term from an original whole_query which has been tagged to be
- *      one of the types VB (for verb), NN (for noun), AJ (for adjective),
- *      AV (for adverb), or NA (for anything else), it outputs
- *      a sequence of  (score => array of thesaurus terms) associations. 
- *      The score representing one word sense of term
+ * tagPartsOfSpeechPhrase($phrase) which on an input phrase return a string
+ *     where each term_i in the phrase has been replace with term_i~pos
+ *     where pos is a two character part of speech NN, VB, AJ, AV, or NA (if
+ *     none of the previous apply)
+ * scoredThesaurusMatches($term, $word_type, $whole_query) which takes
+ *     a term from an original whole_query which has been tagged to be
+ *     one of the types VB (for verb), NN (for noun), AJ (for adjective),
+ *     AV (for adverb), or NA (for anything else), it outputs
+ *     a sequence of  (score => array of thesaurus terms) associations. 
+ *     The score representing one word sense of term
  * Given that these methods have been implemented if the use_thesaurus field
  * of that language tokenizer is set to true, the thesaurus will be used.
  */
 class Thesaurus
 {
     /**
-     *  Extracts similar phrases to the input query using thesaurus results.
-     *  Part of speech tagging is processed on input and the output is
-     *  looked up in the thesaurus. USing this a ranked list of alternate
-     *  query phrases is created.
-     *  For those phrases, counts in the Yioop index are calculated 
-     *  and the top two phrases are selected.
-     *  @param string $orig_query input query from user
-     *  @param string $index_name selected index for search engine
-     *  @param string $lang locale tag for the query
-     *  @param integer $threshold once count in posting list for any word
-     *      reaches to threshold then return the number
-     *  @return array of top two words
+     * Extracts similar phrases to the input query using thesaurus results.
+     * Part of speech tagging is processed on input and the output is
+     * looked up in the thesaurus. USing this a ranked list of alternate
+     * query phrases is created.
+     * For those phrases, counts in the Yioop index are calculated 
+     * and the top two phrases are selected.
+     * @param string $orig_query input query from user
+     * @param string $index_name selected index for search engine
+     * @param string $lang locale tag for the query
+     * @param integer $threshold once count in posting list for any word
+     *     reaches to threshold then return the number
+     * @return array of top two words
      */
     static function getSimilarPhrases($orig_query, $index_name,
         $lang, $threshold = 10)
@@ -105,9 +105,9 @@ class Thesaurus
      * and thesaurus generated queries
      * @param array $similar_phrases an array of thesaurus generated queries
      * @param array $summaries an array of summaries which is generated
-     *      during crawl time.
+     *     during crawl time.
      * @return array of BM25 score for each document based on the thesaurus
-     *  simimar phrases
+     * simimar phrases
      */
     static function scorePhrasesSummaries($similar_phrases, $summaries)
     {
@@ -146,13 +146,13 @@ class Thesaurus
         }
     }
     /**
-     *  Computes suggested related phrases from thesaurus based on part of
-     *  speech  done on each query term.
+     * Computes suggested related phrases from thesaurus based on part of
+     * speech  done on each query term.
      *
-     *  @param string $query query entered by user
-     *  @param string $lang locale tag for the query
-     *  @return string array $suggestion consisting of phrases suggested to
-     *      be similar in meaning to some sens of the query
+     * @param string $query query entered by user
+     * @param string $lang locale tag for the query
+     * @return string array $suggestion consisting of phrases suggested to
+     *     be similar in meaning to some sens of the query
      */
     static function getInitialSuggestions($query, $lang)
     {
@@ -204,15 +204,15 @@ class Thesaurus
         return $suggestions;
     }
     /**
-     *  Returns the number of documents in an index that a phrase occurs in.
-     *  If it occurs in more than threshold documents then cut off search.
+     * Returns the number of documents in an index that a phrase occurs in.
+     * If it occurs in more than threshold documents then cut off search.
      *
-     *  @param string $phrase to look up in index
-     *  @param int $threshold once count in posting list for any word
-     *      reaches to threshold then return the number
-     *  @param string $index_name selected index for search engine
-     *  @param string $lang locale tag for the query
-     *  @return int number of documents phrase occurs in
+     * @param string $phrase to look up in index
+     * @param int $threshold once count in posting list for any word
+     *     reaches to threshold then return the number
+     * @param string $index_name selected index for search engine
+     * @param string $lang locale tag for the query
+     * @return int number of documents phrase occurs in
      */
     static function numDocsIndex($phrase, $threshold, $index_name, $lang)
     {
@@ -232,7 +232,7 @@ class Thesaurus
     /**
      * Lower cases an array of strings
      *
-     * @param array $summary strings to put into lower case
+     * @param array $summaries strings to put into lower case
      * @return array with strings converted to lower case
      */
     static function changeCaseOfStringArray($summaries)
@@ -273,8 +273,8 @@ class Thesaurus
      * @param array $summaries list of summary strings to compute BM25TF w.r.t
      * @param array $terms we want the term frequency computation for
      * @return array $tfbm25 a 2d array with rows being indexed by terms and
-     *      columns indexed by summaries and the values of an entry being
-     *      the tfbm25 score for that term in that document
+     *     columns indexed by summaries and the values of an entry being
+     *     the tfbm25 score for that term in that document
      */
     static function calculateTFBM25($summaries, $terms)
     {
@@ -303,11 +303,11 @@ class Thesaurus
         return $tfbm25;
     }
     /**
-     *  Computes a 2D array of the number of occurences of term i in document j
+     * Computes a 2D array of the number of occurences of term i in document j
      *
-     *  @param array $summaries documents to compute frequencies in
-     *  @param array $terms terms to compute frequencies for
-     *  @return array 2D array as described above
+     * @param array $summaries documents to compute frequencies in
+     * @param array $terms terms to compute frequencies for
+     * @return array 2D array as described above
      */
     static function calculateTermFreq($summaries, $terms)
     {
@@ -323,14 +323,14 @@ class Thesaurus
         return $tf_values;
     }
     /**
-     *  To get the inverse document frequencies for a collection of terms in
-     *  a set of documents.
-     *  IDF(term_i) = log_10(# of document / # docs term i in)
+     * To get the inverse document frequencies for a collection of terms in
+     * a set of documents.
+     * IDF(term_i) = log_10(# of document / # docs term i in)
      *
      * @param array $summaries documents to use in calculating IDF score
      * @param array $terms terms to compute IDF score for
      * @return array $idf 1D-array saying the inverse document frequency for
-     *  each term
+     * each term
      */
     static function calculateIDF($summaries, $terms)
     {

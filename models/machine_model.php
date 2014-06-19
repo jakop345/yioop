@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -47,18 +47,34 @@ require_once BASE_DIR."/lib/fetch_url.php";
  */
 class MachineModel extends Model
 {
+    /**
+     * Associations of the form
+     *     name of field for web forms => database column names/abbreviations
+     * @var array
+     */
     var $search_table_column_map = array("name" => "NAME");
-    /** {@inheritDoc} */
+    /**
+     * Called after getRows has retrieved all the rows that it would retrieve
+     * but before they are returned to give one last place where they could
+     * be further manipulated. This callback
+     * is used to make parallel network calls to get the status of each machine
+     * returned by getRows. The default for this method is to leave the
+     * rows that would be returned unchanged
+     *
+     * @param array $rows that have been calculated so far by getRows
+     * @return array $rows after this final manipulation
+     *
+     */
     function postQueryCallback($rows)
     {
         return $this->getMachineStatuses($rows);
     }
     /**
-     *  Returns urls for all the queue_servers stored in the DB
+     * Returns urls for all the queue_servers stored in the DB
      *
-     *  @param string a crawl_time of a crawl to see the machines used in
-     *      that crawl
-     *  @return array machine names
+     * @param string $crawl_time of a crawl to see the machines used in
+     *     that crawl
+     * @return array machine names
      */
     function getQueueServerUrls($crawl_time = 0)
     {
@@ -89,11 +105,11 @@ class MachineModel extends Model
         return $machines[$crawl_time];
     }
     /**
-     *   Check if there is a machine with $column equal to value
+     * Check if there is a machine with $column equal to value
      *
-     *   @param string $column to use to look up machine (either name or url)
-     *   @param string $value for that field
-     *   @return bool whether or not has machine
+     * @param string $field to use to look up machine (either name or url)
+     * @param string $value for that field
+     * @return bool whether or not has machine
      */
     function checkMachineExists($field, $value)
     {
@@ -111,16 +127,16 @@ class MachineModel extends Model
         return true;
     }
     /**
-     *  Add a machine to the database using provided string
+     * Add a machine to the database using provided string
      *
-     *  @param string $name  the name of the machine to be added
-     *  @param string $url the url of this machine
-     *  @param boolean $has_queue_server - whether this machine is running a
-     *      queue_server
-     *  @param int $num_fetchers - how many managed fetchers are on this
-     *      machine.
-     *  @param string $parent - if this machine replicates some other machine
-     *      then the name of the parent
+     * @param string $name  the name of the machine to be added
+     * @param string $url the url of this machine
+     * @param boolean $has_queue_server - whether this machine is running a
+     *     queue_server
+     * @param int $num_fetchers - how many managed fetchers are on this
+     *     machine.
+     * @param string $parent - if this machine replicates some other machine
+     *     then the name of the parent
      */
     function addMachine($name, $url, $has_queue_server, $num_fetchers,
         $parent = "")
@@ -133,9 +149,9 @@ class MachineModel extends Model
             $parent));
     }
     /**
-     *  Delete a machine by its name
+     * Delete a machine by its name
      *
-     *  @param string name - the name of the machine to delete
+     * @param string $machine_name the name of the machine to delete
      */
     function deleteMachine($machine_name)
     {
@@ -149,7 +165,7 @@ class MachineModel extends Model
      *
      * @param array $machines an array of machines to check the status for
      * @return array  a list of machines, together with all their properties
-     *  and the statuses of their fetchers and queue_servers
+     * and the statuses of their fetchers and queue_servers
      */
     function getMachineStatuses($machines = array())
     {
@@ -194,13 +210,17 @@ class MachineModel extends Model
         return $machines;
     }
     /**
-     *  Get either a fetcher or queue_server log for a machine
+     * Get either a fetcher or queue_server log for a machine
      *
-     *  @param string name  the name of the machine to get the log file for
-     *  @param int $fetcher_num  if a fetcher, which instance on the machine
-     *  @param bool whether the requested machine is a mirror of another machine
-     *  @return string containing the last MachineController::LOG_LISTING_LEN
-     *      bytes of the log record
+     * @param string $machine_name the name of the machine to get the log file
+     *      for
+     * @param int $fetcher_num  if a fetcher, which instance on the machine
+     * @param string $filter only lines out of log containing this string
+     *      returned
+     * @param bool $is_mirror whether the requested machine is a mirror of
+     *      another machine
+     * @return string containing the last MachineController::LOG_LISTING_LEN
+     *     bytes of the log record
      */
     function getLog($machine_name,
         $fetcher_num = NULL, $filter="", $is_mirror = false)
@@ -240,7 +260,12 @@ class MachineModel extends Model
      * a machine managed by the current one
      *
      * @param string $machine_name name of machine
-     * @param bool whether the requested machine is a mirror of another machine
+     * @param string $action "start" or "stop"
+     * @param int $fetcher_num if the action is for a fetcher this value is not
+     *      NULL and indicated which fetcher.
+     * @param bool $is_mirror whether the requested machine is a mirror of
+     *      another machine. (If $fetcher_num is NULL and this is false,
+     *      then message is for a queue server)
      *
      */
     function update($machine_name, $action, $fetcher_num = NULL,

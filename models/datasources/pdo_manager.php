@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -32,7 +32,7 @@
  */
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 /**
- *  Loads base datasource class if necessary
+ * Loads base datasource class if necessary
  */
 require_once "datasource_manager.php";
 /**
@@ -51,8 +51,8 @@ require_once "datasource_manager.php";
 class PdoManager extends DatasourceManager
 {
     /**
-     *  Used to hold the PDO database object
-     *  @var resource
+     * Used to hold the PDO database object
+     * @var resource
      */
     var $pdo = NULL;
     /**
@@ -61,13 +61,24 @@ class PdoManager extends DatasourceManager
      */
     var $num_affected = 0;
     /**
-     *  if DBMS is one like postgres which lower cases table names that aren't
-     *  in quotes that this field has the name of the database;
-     *  otherwise, false.
+     * If DBMS is one like postgres which lower cases table names that aren't
+     * in quotes that this field has the name of the database;
+     * otherwise, false.
      * @var mixed
      */
     var $to_upper_dbms;
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     *
+     * @param string $db_host the hostname of where the database is located
+     *     (not used in all dbms's)
+     * @param string $db_user the user to connect as
+     * @param string $db_password the password of the user to connect as
+     * @param string $db_name the name of the database on host we are
+     * connecting to
+     * @return mixed return false if not successful and some kind of
+     *     connection object/identifier otherwise
+     */
     function connect($db_host = DB_HOST, $db_user = DB_USER,
         $db_password = DB_PASSWORD, $db_name = DB_NAME)
     {
@@ -90,7 +101,14 @@ class PdoManager extends DatasourceManager
         unset($this->pdo);
         $this->pdo = NULL;
     }
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     *
+     * @param string $sql  SQL statement to execute
+     * @param array $params bind_name => value values to interpolate into
+     *      the $sql to be executes
+     * @return mixed false if query fails, resource or true otherwise
+     */
     function exec($sql, $params = array())
     {
         static $last_sql = NULL;
@@ -129,16 +147,27 @@ class PdoManager extends DatasourceManager
     {
         return $this->num_affected;
     }
-    /** {@inheritDoc} */
-    function insertID($table = "")
+    /**
+     * {@inheritDoc}
+     *
+     * @param string $table_name of table of last insert
+     * @return string  the ID of the insert
+     */
+    function insertID($table_name = "")
     {
-        if($table && $this->to_upper_dbms == "PGSQL") {
-            $table .= "_ID_SEQ";
-            return $this->pdo->lastInsertId($table);
+        if($table_name && $this->to_upper_dbms == "PGSQL") {
+            $table_name .= "_ID_SEQ";
+            return $this->pdo->lastInsertId($table_name);
         }
         return $this->pdo->lastInsertId();
     }
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     *
+     * @param resource $result   result set reference of a query
+     * @return array the next row from the result set as an
+     *      associative array in the form column_name => value
+     */
     function fetchArray($result)
     {
         if(!$result) {
@@ -154,7 +183,12 @@ class PdoManager extends DatasourceManager
         }
         return $out_row;
     }
-    /** {@inheritDoc} */
+    /** 
+     * {@inheritDoc}
+     *
+     * @param string $str  string to escape
+     * @return string a string which is safe to insert into the db
+     */
     function escapeString($str)
     {
         return substr($this->pdo->quote($str), 1, -1);

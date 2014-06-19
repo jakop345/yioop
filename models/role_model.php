@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -50,15 +50,21 @@ class RoleModel extends Model
      * @var array
      */
     var $search_table_column_map = array("name"=>"NAME");
-    /** {@inheritDoc} */
+    /** {@inheritDoc}
+     *
+     * @param mixed $args any additional arguments which should be used to
+     *     determine the columns (ignored in this case)
+     * @return string a comma separated list of columns suitable for a SQL
+     *     query ("NAME" in this case)
+     */
     function selectCallback($args = NULL)
     {
         return "NAME";
     }
     /**
-     *  Get the activities  (name, method, id) that a given role can perform
+     * Get the activities  (name, method, id) that a given role can perform
      *
-     *  @param string $role_id  the rolid_id to get activities for
+     * @param string $role_id  the rolid_id to get activities for
      */
     function getRoleActivities($role_id)
     {
@@ -105,6 +111,9 @@ class RoleModel extends Model
      * Gets all the roles associated with a user id
      *
      * @param string $user_id  the user_id to get roles of
+     * @param string $filter to SQL LIKE filter roles
+     * @param int $limit starting index of first role to return
+     * @param int $num number of roles to return
      * @return array of role_ids and their names
      */
     function getUserRoles($user_id, $filter, $limit,
@@ -138,11 +147,11 @@ class RoleModel extends Model
         return $roles;
     }
     /**
-     *  Get a count of the number of groups that a user_id has.
+     * Get a count of the number of groups that a user_id has.
      *
-     *  @param int $user_id to get roles for
-     *  @param string $filter to LIKE filter groups
-     *  @return int number of roles of the filtered type for the user
+     * @param int $user_id to get roles for
+     * @param string $filter to SQL LIKE filter roles
+     * @return int number of roles of the filtered type for the user
      */
     function countUserRoles($user_id, $filter="")
     {
@@ -164,11 +173,11 @@ class RoleModel extends Model
         return $row['NUM'];
     }
     /**
-     *   Check is a user given by $user_id has the role $role_id
+     * Check is a user given by $user_id has the role $role_id
      *
-     *   @param int $user_id user to look up
-     *   @param int $role_id role to check if member of
-     *   @return bool whether or not has role
+     * @param int $user_id user to look up
+     * @param int $role_id role to check if member of
+     * @return bool whether or not has role
      */
     function checkUserRole($user_id, $role_id)
     {
@@ -188,8 +197,8 @@ class RoleModel extends Model
     /**
      * Adds a role to a given user
      *
-     * @param string $userid  the id of the user to add the role to
-     * @param string $roleid  the id of the role to add
+     * @param string $user_id  the id of the user to add the role to
+     * @param string $role_id  the id of the role to add
      */
     function addUserRole($user_id, $role_id)
     {
@@ -199,8 +208,8 @@ class RoleModel extends Model
     /**
      * Deletes a role from a given user
      *
-     * @param string $userid  the id of the user to delete the role from
-     * @param string $roleid  the id of the role to delete
+     * @param string $user_id  the id of the user to delete the role from
+     * @param string $role_id  the id of the role to delete
      */
     function deleteUserRole($user_id, $role_id)
     {
@@ -241,9 +250,9 @@ class RoleModel extends Model
         return $row;
     }
     /**
-     *  Add a rolename to the database using provided string
+     * Add a rolename to the database using provided string
      *
-     *  @param string $role_name  the rolename to be added
+     * @param string $role_name  the rolename to be added
      */
     function addRole($role_name)
     {
@@ -251,10 +260,10 @@ class RoleModel extends Model
         $this->db->execute($sql, array($role_name));
     }
     /**
-     *  Add an allowed activity to an existing role
+     * Add an allowed activity to an existing role
      *
-     *  @param string $role_id  the role id of the role to add the activity to
-     *  @param string $activity_id the id of the acitivity to add
+     * @param string $role_id  the role id of the role to add the activity to
+     * @param string $activity_id the id of the acitivity to add
      */
     function addActivityRole($role_id, $activity_id)
     {
@@ -262,9 +271,9 @@ class RoleModel extends Model
         $this->db->execute($sql, array($role_id, $activity_id));
     }
     /**
-     *  Delete a role by its roleid
+     * Delete a role by its roleid
      *
-     *  @param string $role_id - the roleid of the role to delete
+     * @param string $role_id - the roleid of the role to delete
      */
     function deleteRole($role_id)
     {
@@ -274,10 +283,10 @@ class RoleModel extends Model
         $this->db->execute($sql, array($role_id));
     }
     /**
-     *  Remove an allowed activity from a role
+     * Remove an allowed activity from a role
      *
-     *  @param string $role_id  the roleid of the role to be modified
-     *  @param string $activity_id  the activityid of the activity to remove
+     * @param string $role_id  the roleid of the role to be modified
+     * @param string $activity_id  the activityid of the activity to remove
      */
     function deleteActivityRole($role_id, $activity_id)
     {

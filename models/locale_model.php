@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -42,7 +42,7 @@ require_once BASE_DIR."/lib/url_parser.php";
  * @param array $b an associative array of locale info
  *
  * @return int -1, 0, or 1 depending on which is alphabetically smaller or if
- *      they are the same size
+ *     they are the same size
  */
 function lessThanLocale($a, $b) {
     if ($a["LOCALE_TAG"] == $b["LOCALE_TAG"]) {
@@ -99,36 +99,43 @@ class LocaleModel extends Model
      */
     var $extensions = array("php");
     /**
-     *  Associations of the form
-     *      name of field for web forms => database column names/abbreviations
-     *  In this case, things will in general map to the LOCALES tables in the 
-     *  Yioop database
-     *  @var array
+     * Associations of the form
+     *     name of field for web forms => database column names/abbreviations
+     * In this case, things will in general map to the LOCALES tables in the 
+     * Yioop database
+     * @var array
      */
     var $search_table_column_map = array("name"=>"LOCALE_NAME",
         "tag"=>"LOCALE_TAG", "mode" => "WRITING_MODE");
     /**
-     *  These fields if present in $search_array (used by @see getRows() ),
-     *  but with value "0", will be skipped as part of the where clause
-     *  but will be used for order by clause
+     * These fields if present in $search_array (used by @see getRows() ),
+     * but with value "0", will be skipped as part of the where clause
+     * but will be used for order by clause
      * @var array
      */
     var $any_fields = array("mode");
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     *
+     * @param mixed $args any additional arguments which should be used to
+     *     determine the columns
+     * @return string a comma separated list of columns suitable for a SQL
+     *     query
+     */
     function selectCallback($args = NULL)
     {
         return "LOCALE_ID, LOCALE_TAG, LOCALE_NAME, WRITING_MODE";
     }
     /**
-     *  This is called after each row is retrieved by getRows. This method
-     *  Then reads in the corresponding statistics.txt file (or rebuilds
-     *  it from the configure.ini file if it is out of date) to add to the
-     *  row percent translated info.
+     * This is called after each row is retrieved by getRows. This method
+     * Then reads in the corresponding statistics.txt file (or rebuilds
+     * it from the configure.ini file if it is out of date) to add to the
+     * row percent translated info.
      *
-     *  @param string $locale one getRows row corresponding to a given locale
-     *  @param mixed $args additional arguments that might be used for this
-     *      method (none used for this sub-class)
-     *  @return $locale row with PERCENT_WITH_STRINGS field added
+     * @param string $locale one getRows row corresponding to a given locale
+     * @param mixed $args additional arguments that might be used for this
+     *     method (none used for this sub-class)
+     * @return $locale row with PERCENT_WITH_STRINGS field added
      */
     function rowCallback($locale, $args)
     {
@@ -171,7 +178,7 @@ class LocaleModel extends Model
      * (for to format numbers, etc.)
      *
      * @param string $locale_tag  the tag of the locale to use as the current
-     *      locale
+     *     locale
      */
     function initialize($locale_tag)
     {
@@ -202,9 +209,9 @@ class LocaleModel extends Model
 
     }
     /**
-     *  Returns information about all available locales
+     * Returns information about all available locales
      *
-     *  @return array rows of locale information
+     * @return array rows of locale information
      */
     function getLocaleList()
     {
@@ -257,10 +264,10 @@ class LocaleModel extends Model
     }
 
     /**
-     *   Check if there is a locale with tag equal to $locale_tag
+     * Check if there is a locale with tag equal to $locale_tag
      *
-     *   @param string $locale_tag to check for
-     *   @return bool whether or not has exists
+     * @param string $locale_tag to check for
+     * @return bool whether or not has exists
      */
     function checkLocaleExists($locale_tag)
     {
@@ -278,10 +285,10 @@ class LocaleModel extends Model
         return true;
     }
     /**
-     *   Returns the locale name, tag, and writing mode for tag $locale_tag
+     * Returns the locale name, tag, and writing mode for tag $locale_tag
      *
-     *   @param string $locale_tag to get name for
-     *   @return string name of locale
+     * @param string $locale_tag to get name for
+     * @return string name of locale
      */
     function getLocaleInfo($locale_tag)
     {
@@ -296,10 +303,10 @@ class LocaleModel extends Model
         return $row;
     }
     /**
-     *   Returns the name of the locale for tag $locale_tag
+     * Returns the name of the locale for tag $locale_tag
      *
-     *   @param string $locale_tag to get name for
-     *   @return string name of locale
+     * @param string $locale_tag to get name for
+     * @return string name of locale
      */
     function getLocaleName($locale_tag)
     {
@@ -317,10 +324,10 @@ class LocaleModel extends Model
      * Adds information concerning a new locale to the database
      *
      * @param string $locale_name the name of the locale in the locale's
-     *      language
+     *     language
      * @param string $locale_tag the IANA langauge tag for the locale
      * @param string $writing_mode  a combination of the horizontal and
-     *      vertical text direction used for writing in the locale
+     *     vertical text direction used for writing in the locale
      */
     function addLocale($locale_name, $locale_tag, $writing_mode)
     {
@@ -334,9 +341,9 @@ class LocaleModel extends Model
         }
     }
     /**
-     *  Remove a locale from the database
+     * Remove a locale from the database
      *
-     *  @param string $locale_tag the IANA language tag for the locale to remove
+     * @param string $locale_tag the IANA language tag for the locale to remove
      */
     function deleteLocale($locale_tag)
     {
@@ -347,10 +354,10 @@ class LocaleModel extends Model
         }
     }
     /**
-     *  Used to update the fields stored in a LOCALE row according to
-     *  an array holding new values
+     * Used to update the fields stored in a LOCALE row according to
+     * an array holding new values
      *
-     *  @param array $locale_indo updated values for a LOCALE row
+     * @param array $locale_info updated values for a LOCALE row
      */
     function updateLocaleInfo($locale_info)
     {
@@ -375,8 +382,8 @@ class LocaleModel extends Model
      * return its name together with its translation into the given locale
      * if such a translation exists.
      *
-     *  @param string $locale_tag the IANA language tag to translate string into
-     *  @return array  rows of identfier string - translation pairs
+     * @param string $locale_tag the IANA language tag to translate string into
+     * @return array  rows of identfier string - translation pairs
      */
     function getStringData($locale_tag)
     {
@@ -450,7 +457,7 @@ class LocaleModel extends Model
     }
     /**
      * Translate an array consisting of an identifier string together with
-     *      additional variable parameters into the current locale.
+     *     additional variable parameters into the current locale.
      *
      * Suppose the identifier string was some_view_fraction_received and two
      * additional arguments 5 and 10 were given. Suppose further that its
@@ -458,10 +465,10 @@ class LocaleModel extends Model
      * Then the string returned by translate would be "5 out of 10".
      *
      * @param array $arr an array consisting of an identifier string followed
-     *      optionally by parameter values.
+     *     optionally by parameter values.
      * @return mixed the translation of the identifier string into the
-     *      current locale where all %s have been replaced by the corresponding
-     *      parameter values. Returns false if no translation
+     *     current locale where all %s have been replaced by the corresponding
+     *     parameter values. Returns false if no translation
      */
     function translate($arr) {
         if(!is_array($arr)) {return; }
@@ -484,18 +491,18 @@ class LocaleModel extends Model
         return $msg_string;
     }
     /**
-     *  Get the current IANA language tag being used by the search engine
+     * Get the current IANA language tag being used by the search engine
      *
-     *  @return string an IANA language tag
+     * @return string an IANA language tag
      */
     function getLocaleTag()
     {
         return $this->locale_tag;
     }
     /**
-     *  The text direction of the current locale being used by the text engine
+     * The text direction of the current locale being used by the text engine
      *
-     *  @return string either ltr (left-to-right) or rtl (right-to-left)
+     * @return string either ltr (left-to-right) or rtl (right-to-left)
      */
     function getLocaleDirection()
     {
@@ -521,7 +528,7 @@ class LocaleModel extends Model
      * the current locale
      *
      * @return string a direction which is one of tb -- top-bottom,
-     *      rl -- right-to-left, or lr -- left-to-right
+     *     rl -- right-to-left, or lr -- left-to-right
      */
     function getBlockProgression()
     {
@@ -558,10 +565,10 @@ class LocaleModel extends Model
      * translation the translation is untouched by this process).
      *
      * @param array $force_folders which locale subfolders should be forced
-     *      updated to the fallback dir's version
+     *     updated to the fallback dir's version
      *
      * @return array a pair consisting of the data from the general.ini file
-     *      together with an array of msg_ids msg_strings.
+     *     together with an array of msg_ids msg_strings.
      */
     function extractMergeLocales($force_folders = array())
     {
@@ -574,18 +581,18 @@ class LocaleModel extends Model
         return array($general_ini, $strings);
     }
     /**
-     *  Cycles through locale subdirectories in LOCALE_DIR, for each
-     *  locale it merges out the current general_ini and strings data.
-     *  It deletes identifiers that are not in strings, it adds new identifiers
-     *  and it leaves existing identifier translation pairs untouched.
+     * Cycles through locale subdirectories in LOCALE_DIR, for each
+     * locale it merges out the current general_ini and strings data.
+     * It deletes identifiers that are not in strings, it adds new identifiers
+     * and it leaves existing identifier translation pairs untouched.
      *
      * @param array $general_ini  data that would typically come from the
-     *      general.ini file
-     * @param array $string lines from what is equivalent to an ini file
-     *      of msg_id msg_string pairs these lines also have comments on the
-     *      file that strings were extracted from
+     *     general.ini file
+     * @param array $strings lines from what is equivalent to an ini file
+     *     of msg_id msg_string pairs these lines also have comments on the
+     *     file that strings were extracted from
      * @param array $force_folders which locale subfolders should be forced
-     *      updated to the fallback dir's version
+     *     updated to the fallback dir's version
      *
      */
     function updateLocales($general_ini, $strings, $force_folders = array())
@@ -619,13 +626,13 @@ class LocaleModel extends Model
      *
      * @param array $general_ini data from the general.ini file
      * @param array $strings line array data extracted from files in
-     *      directories that have strings in need of translation
+     *     directories that have strings in need of translation
      * @param string $dir the directory of all the locales
      * @param string $locale the particular locale in $dir to update
      * @param array $new_configure translations of identifier strings from
-     *      another source such as a localizer using a web form
+     *     another source such as a localizer using a web form
      * @param array $force_folders which locale subfolders should be forced
-     *      updated to the fallback dir's version
+     *     updated to the fallback dir's version
      */
     function updateLocale($general_ini, $strings,
         $dir, $locale, $new_configure = NULL, $force_folders = array())
@@ -706,19 +713,19 @@ EOT;
         file_put_contents($cur_path.'/configure.ini', $out);
     }
     /**
-     *  Computes a string of the form string_id = 'translation' for a string_id
-     *  from among translation array data in $new_configure (most preferred,
-     *  probably come from recent web form data), $old_configure
-     *  (probably from work dir), and $fallback_configure (probably from base
-     *  dir of Yioop instance, least preferred).
+     * Computes a string of the form string_id = 'translation' for a string_id
+     * from among translation array data in $new_configure (most preferred,
+     * probably come from recent web form data), $old_configure
+     * (probably from work dir), and $fallback_configure (probably from base
+     * dir of Yioop instance, least preferred).
      *
-     *  @param array $new_configure string_id => translation pairs
-     *  @param array $old_configure string_id => translation pairs
-     *  @param array $fallback_configure string_id => translation pairs
-     *  @param string $string_id an id to translate
-     *  @param string $default_value value to use if no configuration
-     *      has a translation for a string_id
-     *  @return string translation in format describe above
+     * @param array $new_configure string_id => translation pairs
+     * @param array $old_configure string_id => translation pairs
+     * @param array $fallback_configure string_id => translation pairs
+     * @param string $string_id an id to translate
+     * @param string $default_value value to use if no configuration
+     *     has a translation for a string_id
+     * @return string translation in format describe above
      */
     function updateTranslation($new_configure, $old_configure,
         $fallback_configure, $string_id, $default_value = "")
@@ -729,18 +736,18 @@ EOT;
         return $translation;
     }
     /**
-     *  Translates a string_id from among translation array data in
-     *  $new_configure (most preferred, probably come from recent web form
-     *  data), $old_configure  (probably from work dir), and $fallback_configure
-     *  (probably from base  dir of Yioop instance, least preferred).
+     * Translates a string_id from among translation array data in
+     * $new_configure (most preferred, probably come from recent web form
+     * data), $old_configure  (probably from work dir), and $fallback_configure
+     * (probably from base  dir of Yioop instance, least preferred).
      *
-     *  @param array $new_configure string_id => translation pairs
-     *  @param array $old_configure string_id => translation pairs
-     *  @param array $fallback_configure string_id => translation pairs
-     *  @param string $string_id an id to translate
-     *  @param string $default_value value to use if no configuration
-     *      has a translation for a string_id
-     *  @return string translation of string id
+     * @param array $new_configure string_id => translation pairs
+     * @param array $old_configure string_id => translation pairs
+     * @param array $fallback_configure string_id => translation pairs
+     * @param string $string_id an id to translate
+     * @param string $default_value value to use if no configuration
+     *     has a translation for a string_id
+     * @return string translation of string id
      */
     function lookupTranslation($new_configure, $old_configure,
         $fallback_configure, $string_id, $default_value = "")
@@ -764,7 +771,7 @@ EOT;
      *
      * @param string $string_id what to check if translated
      * @param array $translations of form string_id => translation
-     *      defaults to current configuration
+     *     defaults to current configuration
      * @return bool whether a translation of nonzero length exists
      */
     function isTranslated($string_id, $translations = false)
@@ -776,16 +783,16 @@ EOT;
             strlen($translations[$string_id]) > 0;
     }
     /**
-     *  Copies over subfolder items of the correct file extensions
-     *  which exists in a fallback directory, but not in the actual directory
-     *  of a locale.
+     * Copies over subfolder items of the correct file extensions
+     * which exists in a fallback directory, but not in the actual directory
+     * of a locale.
      *
-     *  @param string $locale_pages_path static page directory to which will
-     *     copy
-     *  @param string $fallback_pages_path static page directory from which will
-     *     copy
-     *  @param array $file_extensions an array of strings names of file
-     *      extensions for example: .txt.gz .thtml .php ,etc
+     * @param string $locale_pages_path static page directory to which will
+     *    copy
+     * @param string $fallback_pages_path static page directory from which will
+     *    copy
+     * @param array $file_extensions an array of strings names of file
+     *     extensions for example: .txt.gz .thtml .php ,etc
      */
     function updateLocaleSubFolder($locale_pages_path, $fallback_pages_path,
         $file_extensions) {
@@ -818,9 +825,9 @@ EOT;
      * configure.ini files in the locale directory
      *
      * @param array $extract_dirs directories to start looking for files with
-     *      strings to be translated
+     *     strings to be translated
      * @param array $extensions file extensions of files which might contain
-     *      such strings
+     *     such strings
      * @return array of lines for any ini file of msg_id msg_string pairs
      */
     function getTranslateStrings($extract_dirs, $extensions)
@@ -850,9 +857,9 @@ EOT;
      * line file and line number of the item to be translated
      *
      * @param string $dir current directory to start looking for files with
-     *      strings to be translated
+     *     strings to be translated
      * @param array $extensions  file extensions of files which might contain
-     *      such strings
+     *     such strings
      * @return array of lines for any ini file of msg_id msg_string pairs
      */
     function traverseExtractRecursive($dir, $extensions)

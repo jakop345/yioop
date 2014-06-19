@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -52,21 +52,21 @@ class FetchUrl implements CrawlConstants
      * @param array $sites  an array containing urls of pages to request
      * @param bool $timer  flag, true means print timing statistics to log
      * @param int $page_range_request maximum number of bytes to download/page
-     *      0 means download all
+     *     0 means download all
      * @param string $temp_dir folder to store temporary ip header info
      * @param string $key  the component of $sites[$i] that has the value of
-     *      a url to get defaults to URL
+     *     a url to get defaults to URL
      * @param string $value component of $sites[$i] in which to store the
-     *      page that was gotten
+     *     page that was gotten
      * @param bool $minimal if true do a faster request of pages by not
-     *      doing things like extract HTTP headers sent, etcs
+     *     doing things like extract HTTP headers sent, etcs
      * @param array $post_data data to be POST'd to each site
      * @param bool $follow whether to follow redirects or not
      * @param string $tor_proxy url of a proxy that knows how to download
-     *      .onion urls
+     *     .onion urls
      * @param array $proxy_servers if not array(), then an array of proxy
-     *      server to use rather than to directly download web pages from
-     *      the current machine
+     *     server to use rather than to directly download web pages from
+     *     the current machine
      *
      * @return array an updated array with the contents of those pages
      */
@@ -255,11 +255,11 @@ class FetchUrl implements CrawlConstants
      * work. The http Host: with the url is added a header after the
      * for the curl request. The job of this function is to do this replace
      * @param string $url site to download with ip address at end potentially
-     *   afte ###
+     *  afte ###
      * @param bool $minimal don't try to do replacement, but do add an Expect
-     *      header
+     *     header
      * @param array $proxy_servers if not empty an array of proxy servers
-     *      used to crawl through
+     *     used to crawl through
      * @return array 3-tuple (orig url, url with replacement, http header array)
      */
     static function prepareUrlHeaders($url, $minimal = false,
@@ -336,8 +336,8 @@ class FetchUrl implements CrawlConstants
      * Computes a hash of a string containing page data for use in
      * deduplication of pages with similar content
      *
-     *  @param string &$page  web page data
-     *  @return string 8 byte hash to identify page contents
+     * @param string& $page reference to web page data
+     * @return string 8 byte hash to identify page contents
      */
     static function computePageHash(&$page)
     {
@@ -362,15 +362,15 @@ class FetchUrl implements CrawlConstants
         return crawlHash($dedup_string, true);
     }
     /**
-     *  Splits an http response document into the http headers sent
-     *  and the web page returned. Parses out useful information from
-     *  the header and return an array of these two parts and the useful info.
+     * Splits an http response document into the http headers sent
+     * and the web page returned. Parses out useful information from
+     * the header and return an array of these two parts and the useful info.
      *
-     *  @param string &$header_and_page reference to string of downloaded data
-     *  @param string $value field to store the page portion of page
-     *  @return array info array consisting of a header, page for an http
-     *      response, as well as parsed from the header the server, server
-     *      version, operating system, encoding, and date information.
+     * @param string& $header_and_page reference to string of downloaded data
+     * @param string $value field to store the page portion of page
+     * @return array info array consisting of a header, page for an http
+     *     response, as well as parsed from the header the server, server
+     *     version, operating system, encoding, and date information.
      */
     static function parseHeaderPage(&$header_and_page,
         $value=CrawlConstants::PAGE)
@@ -528,7 +528,7 @@ class FetchUrl implements CrawlConstants
     /**
      * Computes the IP address from http get-responser header
      *
-     * @param string contains complete transcript of HTTP get/response
+     * @param string $header contains complete transcript of HTTP get/response
      * @return string IPv4 address as a string of dot separated quads.
      */
     static function getCurlIp($header)
@@ -552,14 +552,14 @@ class FetchUrl implements CrawlConstants
         }
     }
     /**
-     *  Make a curl request for the provide url
+     * Make a curl request for the provide url
      *
-     *  @param string $site  url of page to request
-     *  @param string $post_data  any data to be POST'd to the URL
-     *  @param bool whether or not to check the response for the words,
-     *      NOTICE, WARNING, FATAL which might indicate an error on the server
-     *
-     *  @return string the contents of what the curl request fetched
+     * @param string $site url of page to request
+     * @param string $post_data  any data to be POST'd to the URL
+     * @param bool $check_for_errors whether or not to check the response
+     *      for the words, NOTICE, WARNING, FATAL which might indicate an
+     *      error on the server
+     * @return string the contents of what the curl request fetched
      */
     static function getPage($site, $post_data = NULL, $check_for_errors = false)
     {
@@ -612,10 +612,10 @@ class FetchUrl implements CrawlConstants
         return $response;
     }
     /**
-     *  Given the results of a getPage call, check whether or not the response
-     *  had the words NOTICE, WARNING, FATAL which might indicate an error on
-     *  the server. If it does, then the $response string is sent to the
-     *  crawlLog
+     * Given the results of a getPage call, check whether or not the response
+     * had the words NOTICE, WARNING, FATAL which might indicate an error on
+     * the server. If it does, then the $response string is sent to the
+     * crawlLog
      *
      * @param string $response getPage response in which to check for errors
      */

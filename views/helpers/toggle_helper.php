@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -32,7 +32,7 @@
  */
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 /**
- *  Load base helper class if needed
+ * Load base helper class if needed
  */
 require_once BASE_DIR."/views/helpers/helper.php";
 /**
@@ -46,12 +46,15 @@ require_once BASE_DIR."/views/helpers/helper.php";
 class ToggleHelper extends Helper
 {
     /**
-     *  Draws an On Off switch in HTML where to toggle state one
-     *  clicks a link
+     * Draws an On Off switch in HTML where to toggle state one
+     * clicks a link
      *
-     *  @param bool $state whether the switch is on or off
-     *  @param string $on_url - url that is sent when one clicks on
-     *  @param string $off_url - url that is sent when one clicks off
+     * @param bool $state whether the switch is on or off
+     * @param string $on_url  url that is sent when one clicks on
+     * @param string $off_url  url that is sent when one clicks off
+     * @param bool $caution is set to true if on in the database but the
+     *      status received from testing the state of the toggle some other
+     *      way is off (causes things to draw in yellow rather than green)
      */
     function render($state, $on_url, $off_url, $caution = false)
     {

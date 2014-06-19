@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -56,23 +56,23 @@ require_once BASE_DIR."/lib/utility.php";
 class IndexManager implements CrawlConstants
 {
     /**
-     *  Open IndexArchiveBundle's managed by this manager
-     *  @var array
+     * Open IndexArchiveBundle's managed by this manager
+     * @var array
      */
     static $indexes = array();
     /**
-     *  Used to cache word lookup of posting list locations for a given
-     *  index
-     *  @var array
+     * Used to cache word lookup of posting list locations for a given
+     * index
+     * @var array
      */
     static $dictionary = array();
     /**
-     *  Returns a reference to the managed copy of an IndexArchiveBundle object
-     *  with a given timestamp or an IndexShard in the case where
-     *  $index_name == "feed" (for handling news feeds)
+     * Returns a reference to the managed copy of an IndexArchiveBundle object
+     * with a given timestamp or an IndexShard in the case where
+     * $index_name == "feed" (for handling news feeds)
      *
-     *  @param string $index_name timestamp of desired IndexArchiveBundle
-     *  @return object the desired IndexArchiveBundle reference
+     * @param string $index_name timestamp of desired IndexArchiveBundle
+     * @return object the desired IndexArchiveBundle reference
      */
     static function getIndex($index_name)
     {
@@ -100,14 +100,14 @@ class IndexManager implements CrawlConstants
         return self::$indexes[$index_name];
     }
     /**
-     *  Returns the version of the index, so that Yioop can determine
-     *  how to do word lookup.The only major change to the format was
-     *  when word_id's went from 8 to 20 bytes which happened around Unix
-     *  time 1369754208.
+     * Returns the version of the index, so that Yioop can determine
+     * how to do word lookup.The only major change to the format was
+     * when word_id's went from 8 to 20 bytes which happened around Unix
+     * time 1369754208.
      *
-     *  @param string $index_name unix timestamp of index
-     *  @return int 0 - if the orginal format for Yioop indexes; 1 -if 20 byte
-     *      word_id format
+     * @param string $index_name unix timestamp of index
+     * @return int 0 - if the orginal format for Yioop indexes; 1 -if 20 byte
+     *     word_id format
      */
     static function getVersion($index_name)
     {
@@ -121,21 +121,21 @@ class IndexManager implements CrawlConstants
         return 1;
     }
     /**
-     *  Gets an array posting list positions for each shard in the
-     *  bundle $index_name for the word id $hash
+     * Gets an array posting list positions for each shard in the
+     * bundle $index_name for the word id $hash
      *
-     *  @param string $index_name bundle to look $hash in
-     *  @param string $hash hash of phrasse or word to look up in bundle
-     *      dictionary
-     *  @param int $shift if $hash is for a phrase, how many low order
-     *      bits of word id to discard
-     *  @param string $mask if $hash is for a word, after the 9th byte what
-     *      meta word mask should be applied to the 20 byte hash
-     *  @param int $threshold after the number of results exceeds this amount
-     *      stop looking for more dictionary entries.
-     *  @return array sequence of four tuples:
-     *      (index_shard generation, posting_list_offset, length, exact id
-     *       that match $hash)
+     * @param string $index_name bundle to look $hash in
+     * @param string $hash hash of phrasse or word to look up in bundle
+     *     dictionary
+     * @param int $shift if $hash is for a phrase, how many low order
+     *     bits of word id to discard
+     * @param string $mask if $hash is for a word, after the 9th byte what
+     *     meta word mask should be applied to the 20 byte hash
+     * @param int $threshold after the number of results exceeds this amount
+     *     stop looking for more dictionary entries.
+     * @return array sequence of four tuples:
+     *     (index_shard generation, posting_list_offset, length, exact id
+     *      that match $hash)
      */
     static function getWordInfo($index_name, $hash, $shift = 0, $mask = "",
        $threshold = -1)
@@ -218,16 +218,16 @@ class IndexManager implements CrawlConstants
            $threshold];
     }
     /**
-     *  Returns the number of document that a given term or phrase appears in
-     *  in the given index
+     * Returns the number of document that a given term or phrase appears in
+     * in the given index
      *
-     *  @param string $term_or_phrase what to look up in the indexes dictionary
-     *      no  mask is used for this look up
-     *  @param string $index_name index to look up term or phrase in
-     *  @param int $threshold if set and positive then once threshold many
-     *      documents are found the search for more documents to add to the
-     *      total is stopped
-     *  @return int number of documents
+     * @param string $term_or_phrase what to look up in the indexes dictionary
+     *     no  mask is used for this look up
+     * @param string $index_name index to look up term or phrase in
+     * @param int $threshold if set and positive then once threshold many
+     *     documents are found the search for more documents to add to the
+     *     total is stopped
+     * @return int number of documents
      */
     static function numDocsTerm($term_or_phrase, $index_name, $threshold = -1)
     {

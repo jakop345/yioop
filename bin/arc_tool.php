@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -91,7 +91,7 @@ require_once BASE_DIR."/lib/fetch_url.php";
 /** Loads common constants for web crawling*/
 require_once BASE_DIR."/lib/crawl_constants.php";
 /*
- *  We'll set up multi-byte string handling to use UTF-8
+ * We'll set up multi-byte string handling to use UTF-8
  */
 mb_internal_encoding("UTF-8");
 mb_regex_encoding("UTF-8");
@@ -110,7 +110,7 @@ mb_regex_encoding("UTF-8");
  * php arc_tool.php list bundle_name start_doc_num num_results
  *
  * @author Chris Pollett (non-yioop archive code derived from earlier
- *      stuff by Shawn Tice)
+ *     stuff by Shawn Tice)
  * @package seek_quarry
  */
 class ArcTool implements CrawlConstants
@@ -243,7 +243,7 @@ class ArcTool implements CrawlConstants
      * bundle by calling the appropriate sub-function.
      *
      * @param string $archive_path the path of a directory that holds
-     *      WebArchiveBundle,IndexArchiveBundle, or non-Yioop archive data
+     *     WebArchiveBundle,IndexArchiveBundle, or non-Yioop archive data
      */
     function outputInfo($archive_path)
     {
@@ -266,7 +266,7 @@ class ArcTool implements CrawlConstants
      * Prints the IndexDictionary records for a word in an IndexArchiveBundle
      *
      * @param string $archive_path the path of a directory that holds
-     *      an IndexArchiveBundle
+     *     an IndexArchiveBundle
      * @param string $word to look up dictionary record for
      */
     function outputDictInfo($archive_path, $word)
@@ -318,7 +318,7 @@ class ArcTool implements CrawlConstants
      * within the $generation'th index shard in the bundle
      *
      * @param string $archive_path the path of a directory that holds
-     *      an IndexArchiveBundle
+     *     an IndexArchiveBundle
      * @param int $generation which index shard to use
      */
     function outputShardInfo($archive_path, $generation)
@@ -373,7 +373,7 @@ class ArcTool implements CrawlConstants
      * provided $generation and $offset
      *
      * @param string $archive_path the path of a directory that holds
-     *      an IndexArchiveBundle
+     *     an IndexArchiveBundle
      * @param int $generation which index shard to use
      * @param int $offset offset into posting lists for that shard
      * @param int $num how many postings to print info for
@@ -495,8 +495,8 @@ class ArcTool implements CrawlConstants
      *
      * @param string $path file path to dictionary of an IndexArchiveBundle
      * @param int $max_tier tier up to which the dictionary tiers should be
-     *      merge (typically a value greater than the max_tier of the
-     *      dictionary)
+     *     merge (typically a value greater than the max_tier of the
+     *     dictionary)
      */
     function reindexIndexArchive($path, $max_tier = -1)
     {
@@ -547,7 +547,7 @@ class ArcTool implements CrawlConstants
      * bundle.
      *
      * @param array $info header info that has already been read from
-     *      the description.txt file
+     *     the description.txt file
      * @param string $archive_path file path of the folder containing the bundle
      */
     function outputInfoIndexArchiveBundle($info, $archive_path)
@@ -595,7 +595,7 @@ class ArcTool implements CrawlConstants
      * bundle.
      *
      * @param array $info header info that has already been read from
-     *      the description.txt file
+     *     the description.txt file
      * @param string $archive_path file path of the folder containing the bundle
 
      */
@@ -888,9 +888,9 @@ class ArcTool implements CrawlConstants
      *
      * @param string $archive_path path to non-yioop archive
      * @param string $iterator_type name of archive_bundle_iterator used to
-     *      iterate over archive.
+     *     iterate over archive.
      * @param return an ArchiveBundleIterator of the correct type using
-     *      a temporary folder to store savepoints
+     *     a temporary folder to store savepoints
      */
     function instantiateIterator($archive_path, $iterator_type)
     {
@@ -919,7 +919,7 @@ class ArcTool implements CrawlConstants
      *
      * @param string $archive_path the path to archive folder
      * @return string the archive bundle type, either: WebArchiveBundle or
-     *      IndexArchiveBundle
+     *     IndexArchiveBundle
      */
     function getArchiveKind($archive_path)
     {
@@ -943,9 +943,9 @@ class ArcTool implements CrawlConstants
      * Outputs the "hey, this isn't a known bundle message" and then exit()'s.
      *
      * @param string $archive_name name or path to what was supposed to be
-     *      an archive
+     *     an archive
      * @param string $allowed_archives a string list of archives types
-     *      that $archive_name could belong to
+     *     that $archive_name could belong to
      */
     function badFormatMessageAndExit($archive_name,
         $allowed_archives = "web or index")

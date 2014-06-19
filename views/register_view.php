@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett
  * @package seek_quarry
@@ -41,7 +41,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 class RegisterView extends View
 {
     /** This view is drawn on a web layout
-     *  @var string
+     * @var string
      */
     var $layout = "web";
     /**
@@ -66,11 +66,11 @@ class RegisterView extends View
      */
     var $recovery_qa;
     /**
-     *  Besides setting calling the constructor for the base class this
-     *  constructor also sets up the captchas_qa and recovery_qa arrays
-     *  so they can be localized. The reason for putting these arrays in a
-     *  view is so that multiple controllers/components can see and manipulate
-     *  them
+     * Besides setting calling the constructor for the base class this
+     * constructor also sets up the captchas_qa and recovery_qa arrays
+     * so they can be localized. The reason for putting these arrays in a
+     * view is so that multiple controllers/components can see and manipulate
+     * them
      */
     function __construct()
     {
@@ -129,10 +129,10 @@ class RegisterView extends View
         parent::__construct();
     }
     /**
-     *  Draws the create account web page.
+     * Draws the create account web page.
      *
-     *  @param array $data  contains the anti CSRF token
-     *      the view, data for captcha and recover dropdowns
+     * @param array $data  contains the anti CSRF token
+     *     the view, data for captcha and recover dropdowns
      */
     function renderView($data)
     {

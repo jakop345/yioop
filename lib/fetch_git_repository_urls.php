@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Snigdha Rao Parvatneni
  * @package seek_quarry
@@ -220,13 +220,17 @@ class FetchGitRepositoryUrls implements CrawlConstants
         return $repository_type;
     }
     /**
-     * Checks repository type based on extension
+     * Sets up the seed sites with urls from a git repository (updates
+     * these sites if have already started downloading from repository)
      *
      * @param string $url_to_check url needs to be processed
      * @param int $counter to keep track of number of urls processed
      * @param array $seeds store sites which are ready to be downloaded
      * @param array $repository_indicator indicates the type of the repository
      * @param array $site_pair contains original Git url crawled
+     * @param int $total_git_urls number of urls in repository less those
+     *      already processed
+     * @param array $all_git_urls current list of urls from git repository
      * @return array $git_internal_urls containing all the internal Git urls
      * fetched from the parent Git url
      */
@@ -306,7 +310,7 @@ class FetchGitRepositoryUrls implements CrawlConstants
      *
      * @param string $url_to_check url needs to be processed
      * @return an array $git_next_urls consists of list of Git
-     * internal urls wich are called during the git clone
+     *      internal urls wich are called during the git clone
      */
     static function fetchGitRepositoryUrl($url_to_check)
     {
@@ -358,7 +362,7 @@ class FetchGitRepositoryUrls implements CrawlConstants
     }
     /**
      * Get the Git third url which contains the information about the
-     *     organization of entire git repository
+     *    organization of entire git repository
      *
      * @param string $git_second_url_content contents of Git second url
      * @param string $git_base_url common portion of git urls
@@ -379,7 +383,7 @@ class FetchGitRepositoryUrls implements CrawlConstants
     }
     /**
      * Get the Git content from url which will be used to get the
-     *     next git url
+     *    next git url
      *
      * @param string $git_url git url to extract contents from it
      * @param string $compression_indicator indicator for compress and
@@ -404,7 +408,7 @@ class FetchGitRepositoryUrls implements CrawlConstants
      * Get the Git blob and tree objects
      *
      * @param string $git_object_content compressed content of git master tree
-     *     file
+     *    file
      * @param string $git_base_url common content of git url
      * @return array $blob_url contains information and url for git blob objects
      */
@@ -464,7 +468,7 @@ class FetchGitRepositoryUrls implements CrawlConstants
      * @param string $git_tree_position first occuence of git tree access code
      * @param string $git_object_content compressed content of git master tree
      * @return array $git_object_positions length of the compressed content
-     *     afterthe access code
+     *    afterthe access code
      */
     static function checkPosition($git_blob_position, $git_tree_position,
         $git_object_content)
@@ -485,7 +489,7 @@ class FetchGitRepositoryUrls implements CrawlConstants
      *
      * @param string $git_object_content compressed content of git master tree
      * @param string $blob_position first occuence of git blob access code
-     *     in $content
+     *    in $content
      * @param string $length length of the compressed content of git master tree
      * @param string $git_base_url common portion of git url
      * @return array $git_blob_content contains details of git blob object
@@ -528,7 +532,7 @@ class FetchGitRepositoryUrls implements CrawlConstants
      *
      * @param string $git_object_content compressed content of git master tree
      * @param string $tree_position first occuence of git tree access code in
-     *  the $content
+     * the $content
      * @param string $length length of the compressed content of git master tree
      * @param string $git_base_url common portion of git url
      * @return array $git_tree_content contains details of git blob object

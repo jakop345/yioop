@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -41,7 +41,7 @@ require_once BASE_DIR."/lib/crawl_constants.php";
  * Base class common to all processors of web page data
  *
  * Subclasses PageProcessor stored in
- *      WORK_DIRECTORY/app/lib/processors
+ *     WORK_DIRECTORY/app/lib/processors
  * will be detected by Yioop. So one can add code there to make it easier
  * to upgrade Yioop. I.e., your site specific code can stay in the work
  * directory and you merely need to replace the Yioop folder when upgrading.
@@ -71,12 +71,16 @@ abstract class PageProcessor implements CrawlConstants
      */
     static $max_description_len;
     /**
-     *  Set-ups the any indexing plugins associated with this page
-     *  processor
+     * Set-ups the any indexing plugins associated with this page
+     * processor
      *
-     *  @param array $plugins an array of indexing plugins which might
-     *      do further processing on the data handles by this page
-     *      processor
+     * @param array $plugins an array of indexing plugins which might
+     *     do further processing on the data handles by this page
+     *     processor
+     * @param int $max_description_len maximal length of a page summary
+     * @param int $summarizer_option CRAWL_CONSTANT specifying what kind
+     *      of summarizer to use self::BASIC_SUMMARIZER or
+     *      self::CENTROID_SUMMARIZER
      */
     function __construct($plugins = array(), $max_description_len = NULL,
         $summarizer_option = self::BASIC_SUMMARIZER) {
@@ -89,18 +93,18 @@ abstract class PageProcessor implements CrawlConstants
         }
     }
     /**
-     *  Method used to handle processing data for a web page. It makes
-     *  a summary for the page (via the process() function which should
-     *  be subclassed) as well as runs any plugins that are associated with
-     *  the processors to create sub-documents
+     * Method used to handle processing data for a web page. It makes
+     * a summary for the page (via the process() function which should
+     * be subclassed) as well as runs any plugins that are associated with
+     * the processors to create sub-documents
      *
      * @param string $page string of a web document
      * @param string $url location the document came from
      *
      * @return array a summary of (title, description,links, and content) of
-     *      the information in $page also has a subdocs array containing any
-     *      subdocuments returned from a plugin. A subdocumenst might be
-     *      things like recipes that appeared in a page or tweets, etc.
+     *     the information in $page also has a subdocs array containing any
+     *     subdocuments returned from a plugin. A subdocumenst might be
+     *     things like recipes that appeared in a page or tweets, etc.
      */
     function handle($page, $url)
     {
@@ -139,7 +143,7 @@ abstract class PageProcessor implements CrawlConstants
      * @param string $url location the document came from
      *
      * @return array a summary of (title, description,links, and content) of
-     *      the information in $page
+     *     the information in $page
      */
     abstract function process($page, $url);
 }

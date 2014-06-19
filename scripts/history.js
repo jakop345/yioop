@@ -31,9 +31,9 @@
  */
 if(typeof(elt) == "undefined") {
     /*
-     *  Shorthand for document.getElementById
+     * Shorthand for document.getElementById
      *
-     *  @param String id  the id of the DOM element one wants
+     * @param String id  the id of the DOM element one wants
      */
     function elt(id)
     {

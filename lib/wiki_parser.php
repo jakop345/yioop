@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -59,6 +59,8 @@ class WikiParser implements CrawlConstants
      * regexes)
      *
      * @param string $base_address base url for link substitutions
+     * @param array $add_substitutions additional wiki rule subsitutions in
+     *      addition to the default ones that should be used by this wiki parser
      */
     function __construct($base_address = "", $add_substitutions = array())
     {
@@ -209,19 +211,19 @@ class WikiParser implements CrawlConstants
         }
     }
     /**
-     *  Parses a mediawiki document to produce an HTML equivalent
+     * Parses a mediawiki document to produce an HTML equivalent
      *
-     *  @param string $document a document which might have mediawiki markup
-     *  @param bool $parse_head_vars header variables are an extension of
-     *      mediawiki syntax used to add meta variable and titles to
-     *      the head tag of an html document. This flag controls whether to
-     *      supprot this extension or not
-     *  @param bool $handle_big_files for indexing purposes Yioop by default
-     *      truncates long documents before indexing them. If true, this
-     *      method does not do this default truncation. The true value
-     *      is more useful when using Yioop's built-in wiki.
-     *  @return string HTML document obtained by parsing mediawiki
-     *      markup in $document
+     * @param string $document a document which might have mediawiki markup
+     * @param bool $parse_head_vars header variables are an extension of
+     *     mediawiki syntax used to add meta variable and titles to
+     *     the head tag of an html document. This flag controls whether to
+     *     supprot this extension or not
+     * @param bool $handle_big_files for indexing purposes Yioop by default
+     *     truncates long documents before indexing them. If true, this
+     *     method does not do this default truncation. The true value
+     *     is more useful when using Yioop's built-in wiki.
+     * @return string HTML document obtained by parsing mediawiki
+     *     markup in $document
      */
     function parse($document, $parse_head_vars = true,
         $handle_big_files = false)
@@ -301,9 +303,9 @@ class WikiParser implements CrawlConstants
      * Used to make a table of contents for a wiki page based on the
      * level two headings on that page.
      *
-     *  @param string $page a wiki document
-     *  @return string HTML table of contents to be inserted after wiki
-     *      page processed
+     * @param string $page a wiki document
+     * @return string HTML table of contents to be inserted after wiki
+     *     page processed
      */
     function makeTableOfContents($page)
     {
@@ -326,9 +328,9 @@ class WikiParser implements CrawlConstants
      * Used to make a reference list for a wiki page based on the
      * cite tags on that page.
      *
-     *  @param string $page a wiki document
-     *  @return string HTML reference list to be inserted after wiki
-     *      page processed
+     * @param string $page a wiki document
+     * @return string HTML reference list to be inserted after wiki
+     *     page processed
      */
     function makeReferences($page)
     {
@@ -456,13 +458,13 @@ class WikiParser implements CrawlConstants
         return array($page, $references);
     }
     /**
-     *  After regex processing has been done on a wiki page this function
-     *  inserts into the resulting page a table of contents just before
-     *  the first h2 tag, then returns the result page
+     * After regex processing has been done on a wiki page this function
+     * inserts into the resulting page a table of contents just before
+     * the first h2 tag, then returns the result page
      *
-     *  @param string $page page in which to insert table of contents
-     *  @param string $toc HTML table of contents
-     *  @return string resulting page after insert
+     * @param string $page page in which to insert table of contents
+     * @param string $toc HTML table of contents
+     * @return string resulting page after insert
      */
     function insertTableOfContents($page, $toc)
     {
@@ -475,13 +477,13 @@ class WikiParser implements CrawlConstants
         return $page;
     }
     /**
-     *  After regex processing has been done on a wiki page this function
-     *  inserts into the resulting page a reference at
-     *  {{reflist locations, then returns the result page
+     * After regex processing has been done on a wiki page this function
+     * inserts into the resulting page a reference at
+     * {{reflist locations, then returns the result page
      *
-     *  @param string $page page in which to insert the reference lists
-     *  @param string $toc HTML table of contents
-     *  @return string resulting page after insert
+     * @param string $page page in which to insert the reference lists
+     * @param string $references HTML table of contents
+     * @return string resulting page after insert
      */
     function insertReferences($page, $references)
     {
@@ -566,7 +568,7 @@ function makeTableCallback($matches)
  * Used to convert {{cite }} to a numbered link to a citation
  *
  * @param array $matches from regular expression to check for {{cite }}
- * @param int init used to initialize counter for citations
+ * @param int $init used to initialize counter for citations
  * @return string a HTML link to citation in current document
  */
 function citeCallback($matches, $init = -1)
@@ -597,7 +599,7 @@ function fixLinksCallback($matches)
  * Callback used to base64 encode the contents of nowiki tags so they
  * won't be manipulated by wiki replacements.
  *
- * @param array $matches[1] should contain the contents of a nowiki tag
+ * @param array $matches $matches[1] should contain the contents of a nowiki tag
  * @return string base 64 encoded contents surrounded by an escaped nowiki tag.
  */
 function base64EncodeCallback($matches)
@@ -610,7 +612,7 @@ function base64EncodeCallback($matches)
  * (@see base64EncodeCallback) nowiki tags after all mediawiki substitutions
  * have been done
  *
- * @param array $matches[1] should contain the contents of a nowiki tag
+ * @param array $matches $matches[1] should contain the contents of a nowiki tag
  * @return string base 64 decoded contents surrounded by a pre-formatted tag.
  */
 function base64DecodeCallback($matches)

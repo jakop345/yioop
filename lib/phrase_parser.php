@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -116,7 +116,7 @@ class PhraseParser
      * Converts a summary of a web page into a string of space separated words
      *
      * @param array $page associative array of page summary data. Contains
-     *      title, description, and links fields
+     *     title, description, and links fields
      * @return string the concatenated words extracted from the page summary
      */
     static function extractWordStringPageSummary($page)
@@ -145,9 +145,12 @@ class PhraseParser
      *
      * @param string $string subject to extract phrases from
      * @param string $lang locale tag for stemming
-     * @param string $index_name name of index to be used a s a reference
-     *      when extracting phrases
+     * @param string $index_name name of index to be used as a reference
+     *     when extracting phrases
      * @param bool $exact_match whether the match has to be exact or not
+     * @param int $threshold roughly causes a stop to extracting more phrases
+     *  if exceed $threshold (still might get more than $threshold back, only
+     *  when detect have more stop)
      * @return array of phrases
      */
     static function extractPhrases($string, $lang = NULL, $index_name = NULL,
@@ -244,7 +247,7 @@ class PhraseParser
      * @param string $string subject to extract phrases from
      * @param string $lang locale tag for stemming
      * @return array word => list of positions at which the word occurred in
-     *      the document
+     *     the document
      */
     static function extractPhrasesInLists($string, $lang = NULL)
     {
@@ -258,9 +261,10 @@ class PhraseParser
      * a format that does not involved punctuation that will be stripped
      * as we extract phrases.
      *
-     * @param &$string a string of words, etc which might involve such terms
+     * @param string& $string a string of words, etc which might involve such
+     *      terms
      * @param $lang a language tag to use as part of the canonicalization
-     *      process not used right now
+     *     process not used right now
      */
     static function canonicalizePunctuatedTerms(&$string, $lang = NULL)
     {
@@ -319,7 +323,7 @@ class PhraseParser
      * @param string $string to extract terms from
      * @param string $lang IANA tag to look up stemmer under
      * @return array of terms and n word grams in the order they appeared in
-     *      string
+     *     string
      */
     static function extractMaximalTermsAndFilterPhrases($string,
         $lang = NULL)
@@ -349,7 +353,7 @@ class PhraseParser
      *
      * @param string $string what to extract terms from
      * @param string $lang locale tag to determine which stemmers, chargramming
-     *      and segmentation needs to be done.
+     *     and segmentation needs to be done.
      *
      * @return array the terms computed from the string
      */
@@ -689,7 +693,7 @@ class PhraseParser
      *
      * @param string $segment string to split into terms
      * @param string $lang IANA tag to look up segmenter under
-     *      from some other language
+     *     from some other language
      * @param array of terms found in the segments
      */
     static function segmentSegment($segment, &$lang)
@@ -778,8 +782,10 @@ class PhraseParser
      * index for (server:apache) even if the document itself did not contain
      * them.
      *
-     * @param array &$site associated array containing info about a downloaded
-     *      (or read from archive) document.
+     * @param array& $site associated array containing info about a downloaded
+     *     (or read from archive) document.
+     * @param array $video_sources used to check if a page should be marked as
+     *      having meta media:video
      * @return array of meta words to be associate with this document
      */
     static function calculateMetas(&$site, $video_sources = array())
@@ -971,11 +977,11 @@ class PhraseParser
         return $link_meta_ids;
     }
     /**
-     *  Computes the Cosine-similarity of two phrases
+     * Computes the Cosine-similarity of two phrases
      *
-     *  @param array $phrase1 first input phrase as array of terms
-     *  @param array $phrase2 second input phrase as array of terms
-     *  @return float Cosine-similarity of the phrases
+     * @param array $phrase1 first input phrase as array of terms
+     * @param array $phrase2 second input phrase as array of terms
+     * @return float Cosine-similarity of the phrases
      */
     static function getCosineRank($phrase1, $phrase2)
     {
@@ -1016,12 +1022,12 @@ class PhraseParser
         return $score;
     }
     /**
-     *  Computes the ratio of the number of terms shared by two phrases
-     *  divided by the average number of terms in a pair of phrases.
+     * Computes the ratio of the number of terms shared by two phrases
+     * divided by the average number of terms in a pair of phrases.
      *
-     *  @param array $terms1 first input phrase as array of terms
-     *  @param array $terms2 second input phrase as array of terms
-     *  @return float the above described ratio
+     * @param array $terms1 first input phrase as array of terms
+     * @param array $terms2 second input phrase as array of terms
+     * @return float the above described ratio
      */
     static function getIntersection($terms1, $terms2)
     {
@@ -1041,9 +1047,9 @@ class PhraseParser
      * word.
      *
      * @param string $segment string to make into a string of space separated
-     *      words
+     *     words
      * @param string $locale IANA tag used to look up dictionary filter to
-     *      use to do this segmenting
+     *     use to do this segmenting
      * @return string space separated words
      */
     static function reverseMaximalMatch($segment, $locale)
@@ -1132,12 +1138,12 @@ class PhraseParser
         return $out_segment;
     }
     /**
-     *  Scores documents according to the lack or nonlack of sexually explicit
-     *  terms. Tries to work for several languages. Very crude classifier.
+     * Scores documents according to the lack or nonlack of sexually explicit
+     * terms. Tries to work for several languages. Very crude classifier.
      *
-     *  @param array $word_lists word => pos_list tuples
-     *  @param int $len length of text being examined in characters
-     *  @return int $score of how explicit document is
+     * @param array $word_lists word => pos_list tuples
+     * @param int $len length of text being examined in characters
+     * @return int $score of how explicit document is
      */
     static function computeSafeSearchScore(&$word_lists, $len)
     {

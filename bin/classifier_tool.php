@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -125,7 +125,7 @@ php bin/classifier_tool.php -a TrainAndTest -d 'DATASET' -l 'spam'
 EOD;
 
 /*
- *  We'll set up multi-byte string handling to use UTF-8
+ * We'll set up multi-byte string handling to use UTF-8
  */
 mb_internal_encoding("UTF-8");
 mb_regex_encoding("UTF-8");
@@ -160,35 +160,35 @@ class ClassifierTool
      * command line, where nesting is denoted by a period (e.g., cls.chi2.max).
      * The supported options are:
      *
-     *    debug: An integer, the level of debug statements to print. Larger
-     *        integers specify more detailed debug output; the default value of
-     *        0 indicates no debug output.
+     *   debug: An integer, the level of debug statements to print. Larger
+     *       integers specify more detailed debug output; the default value of
+     *       0 indicates no debug output.
      *
-     *    max_train: An integer, the maximum number of examples to use when
-     *        training a classifier. The default value of NULL indicates that
-     *        all available training examples should be used.
+     *   max_train: An integer, the maximum number of examples to use when
+     *       training a classifier. The default value of NULL indicates that
+     *       all available training examples should be used.
      *
-     *    test_interval: An integer, the number of new training examples to be
-     *        added before a round of testing on ALL test instances is to be
-     *        executed. With an interval of 5, for example, after adding five
-     *        new training examples, the classifier would be finalized and used
-     *        to classify all test instances. The error is reported for each
-     *        round of testing. The default value of NULL indicates that
-     *        testing should only occur after all training examples have been
-     *        added.
+     *   test_interval: An integer, the number of new training examples to be
+     *       added before a round of testing on ALL test instances is to be
+     *       executed. With an interval of 5, for example, after adding five
+     *       new training examples, the classifier would be finalized and used
+     *       to classify all test instances. The error is reported for each
+     *       round of testing. The default value of NULL indicates that
+     *       testing should only occur after all training examples have been
+     *       added.
      *
-     *    split: An integer, the number of examples from the entire set of
-     *        labeled examples to use for training. The remainder are used for
-     *        testing.
+     *   split: An integer, the number of examples from the entire set of
+     *       labeled examples to use for training. The remainder are used for
+     *       testing.
      *
-     *    cls.use_nb: A boolean, whether or not to use the Naive Bayes
-     *        classification algorithm instead of the logistic regression one
-     *        in order to finalize the classifier.  The default value is false,
-     *        indicating that logistic regression should be used.
+     *   cls.use_nb: A boolean, whether or not to use the Naive Bayes
+     *       classification algorithm instead of the logistic regression one
+     *       in order to finalize the classifier.  The default value is false,
+     *       indicating that logistic regression should be used.
      *
-     *    cls.chi2.max: An integer, the maximum number of features to use when
-     *        training the classifier.  The default is a relatively
-     *        conservative 200.
+     *   cls.chi2.max: An integer, the maximum number of features to use when
+     *       training the classifier.  The default is a relatively
+     *       conservative 200.
      *
      * @var array
      */
@@ -409,11 +409,11 @@ class ClassifierTool
      *
      * @param string $dataset_name prefix of index names to draw examples from
      * @param string $class_label class label of the classifier the examples
-     *  will be used to train (used to name the crawl mix that iterates over
-     *  each index)
+     * will be used to train (used to name the crawl mix that iterates over
+     * each index)
      * @return array training and test datasets in an associative array with
-     *  keys `train' and `test', where each dataset is wrapped up in a
-     *  PageIterator that implements the CrawlMixIterator interface.
+     * keys `train' and `test', where each dataset is wrapped up in a
+     * PageIterator that implements the CrawlMixIterator interface.
      */
     function loadDataset($dataset_name, $class_label)
     {
@@ -470,10 +470,10 @@ class ClassifierTool
      *
      * @param int $i the size of the current training set
      * @param int $total the total number of documents available to be added to
-     *  the training set
+     * the training set
      * @return bool true if the `test_interval' option specifies that a round
-     *  of testing should occur for the current training offset, and false
-     *  otherwise
+     * of testing should occur for the current training offset, and false
+     * otherwise
      */
     function isTestPoint($i, $total)
     {
@@ -495,7 +495,7 @@ class ClassifierTool
      *
      * @param object $classifier classifier instance to test
      * @param array $data the array of training and test datasets, constructed
-     *  by loadDataset, of which only the `test' dataset it used.
+     * by loadDataset, of which only the `test' dataset it used.
      */
     function testClassifier($classifier, $data)
     {
@@ -528,9 +528,9 @@ class ClassifierTool
      * by the `debug' option then nothing is printed. The treatment for the
      * available detail levels are as follows:
      *
-     *     -2: Used for errors; always printed; prefix '! '
-     *     -1: Used for log of set options; always printed; prefix '# '
-     *     0+: Used for normal messages; prefix '> '
+     *    -2: Used for errors; always printed; prefix '! '
+     *    -1: Used for log of set options; always printed; prefix '# '
+     *    0+: Used for normal messages; prefix '> '
      *
      * The second argument is a printf-style string template specifying the
      * message, and each following (optional) argument is used by the template.
@@ -539,7 +539,7 @@ class ClassifierTool
      * @param int $level level of detail for the message
      * @param string $message printf-style template for the message
      * @param string $args,... optional arguments to be used for the message
-     *  template
+     * template
      */
     function log(/* varargs */)
     {
@@ -562,6 +562,10 @@ class ClassifierTool
      * Logs the current options using the log method of this class. This method
      * is used to explicitly state which settings were used for a given run of
      * an activity. The detail level passed to the log method is -1.
+     *
+     * @param string $root folder to write to
+     * @param string $prefix to pre message (like Warning) to put at start of
+     *  log message
      */
     function logOptions($root = NULL, $prefix = '')
     {
@@ -585,9 +589,9 @@ class ClassifierTool
      * string corresponds to an option of the same type (e.g., int).
      *
      * @param string|array $opts single option in the format NAME=VALUE, or
-     *  array of options, each for the same target type (e.g., int)
+     * array of options, each for the same target type (e.g., int)
      * @param string $converter the name of a function that takes a string and
-     *  casts it to a particular type (e.g., intval, floatval)
+     * casts it to a particular type (e.g., intval, floatval)
      */
     function setOptions($opts, $converter = NULL)
     {
@@ -626,6 +630,9 @@ class ClassifierTool
      * Sets a default value for a runtime parameter. This method is used by
      * activities to specify default values that may be overridden by passing
      * the appropriate command-line flag.
+     *
+     * @param string $name should end with name of runtime parameter to set
+     * @param string $value what to set it to
      */
     function setDefault($name, $value)
     {
@@ -706,9 +713,9 @@ class PageIterator
      * returned.
      *
      * @param int $n maximum number of pages to return, or -1 to return all
-     *  remaining pages
+     * remaining pages
      * @return array next $n pages, or less if there are fewer than $n
-     *  pages remaining
+     * pages remaining
      */
     function nextPages($n = -1)
     {

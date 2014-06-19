@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -46,7 +46,7 @@ class ManageclassifiersElement extends Element
      * Draws the "new classifier" form and table of existing classifiesr
      *
      * @param array $data used to pass the list of existing classifier
-     *  instances
+     * instances
      */
     function render($data)
     {
@@ -147,10 +147,10 @@ class ManageclassifiersElement extends Element
         }
     }
     /**
-     *  Used to draw the form to create a new classifier
+     * Used to draw the form to create a new classifier
      *
-     *  @param array $data data for the view in this case we just make
-     *      use of the CSRF_TOKEN
+     * @param array $data data for the view in this case we just make
+     *     use of the CSRF_TOKEN
      */
      function renderClassifierForm($data)
      {
@@ -174,9 +174,9 @@ class ManageclassifiersElement extends Element
         <?php
      }
     /**
-     *  Used to draw the form to search and filter through existing classifiers
+     * Used to draw the form to search and filter through existing classifiers
      *
-     *  @param array $data data for the view
+     * @param array $data data for the view
      */
      function renderSearchForm($data)
      {

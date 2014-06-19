@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -80,7 +80,7 @@ class BloomFilterBundle
      *
      * @param $dir_name directory when this bundles data is stored
      * @param $filter_size the size of an individual filter in this bundle
-     *      once a filter is filled a new one is added to the directory
+     *     once a filter is filled a new one is added to the directory
      */
     function __construct($dir_name,
         $filter_size = self::default_filter_size )
@@ -132,9 +132,9 @@ class BloomFilterBundle
      * Removes from the passed array those elements $elt who either are in
      * the filter bundle or whose $elt[$field_name] is in the bundle.
      *
-     * @param array &$arr the array to remove elements from
+     * @param array& $arr the array to remove elements from
      * @param array $field_names if not NULL an array of field names of $arr
-     *      to use to do filtering
+     *     to use to do filtering
      */
     function differenceFilter(&$arr, $field_names = NULL)
     {
@@ -210,8 +210,8 @@ class BloomFilterBundle
         file_put_contents($this->dir_name.'/meta.txt', serialize($meta));
     }
     /**
-     *  Empties the contents of the bloom filter bundle and resets
-     *  it to start storing new data.
+     * Empties the contents of the bloom filter bundle and resets
+     * it to start storing new data.
      */
     function reset()
     {

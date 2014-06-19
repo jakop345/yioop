@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -86,7 +86,7 @@ class GroupIterator extends IndexBundleIterator
     var $grouped_keys;
     /**
      * hashed of document web pages used to keep track of track of
-     *  groups seen so far
+     * groups seen so far
      * @var array
      */
     var $grouped_hashes;
@@ -120,13 +120,13 @@ class GroupIterator extends IndexBundleIterator
      * Creates a group iterator with the given parameters.
      *
      * @param object $index_bundle_iterator to use as a source of documents
-     *      to iterate over
+     *     to iterate over
      * @param int $num_iterators number of word iterators appearing in
-     *      in sub-iterators -- if larger than reduce the default grouping
-     *      number
+     *     in sub-iterators -- if larger than reduce the default grouping
+     *     number
      * @param int $current_machine if this iterator is being used in a multi-
-     *      queue_server setting, then this is the id of the current
-     *      queue_server
+     *     queue_server setting, then this is the id of the current
+     *     queue_server
      * @param bool $network_flag the iterator is being used for a network query
      */
     function __construct($index_bundle_iterator, $num_iterators = 1,
@@ -161,7 +161,7 @@ class GroupIterator extends IndexBundleIterator
      * iterator and generation
      * @param int $generation the generation the posting offset is for
      * @param int $posting_offset an offset into word_docs to compute the
-     *      relevance of
+     *     relevance of
      * @return float a relevancy score based on BM25F.
      */
     function computeRelevance($generation, $posting_offset)
@@ -246,7 +246,7 @@ class GroupIterator extends IndexBundleIterator
      * have been remembered in grouped_keys and will be ignored in the return
      * result of this function.
      *
-     * @param array &$pages pages to group
+     * @param array& $pages pages to group
      * @return array $pre_out_pages pages after grouping
      */
     function groupByHashUrl(&$pages)
@@ -289,7 +289,7 @@ class GroupIterator extends IndexBundleIterator
      * that group as its representative. The function then modifies the
      * supplied argument array to make it an array of group representatives.
      *
-     * @param array &$pre_out_pages documents previously grouped by hash of url
+     * @param array& $pre_out_pages documents previously grouped by hash of url
      */
     function groupByHashAndAggregate(&$pre_out_pages)
     {
@@ -339,8 +339,8 @@ class GroupIterator extends IndexBundleIterator
      * of single summarized documents for each group. These single summarized
      * documents have aggregated scores.
      *
-     * @param array &$pre_out_pages array of groups of pages for which out pages
-     *      are to be generated.
+     * @param array& $pre_out_pages array of groups of pages for which out pages
+     *     are to be generated.
      * @return array $out_pages array of single summarized documents
      */
     function computeOutPages(&$pre_out_pages)
@@ -397,7 +397,10 @@ class GroupIterator extends IndexBundleIterator
      * This process is described in detail at:
      * http://www.seekquarry.com/?c=main&p=ranking#search
      *
-     *  @param array &$pre_hash_page pages to compute scores for
+     * @param string $hash_url the crawlHash of the url of the page we are
+     *      scoring which will be compared with that of the host to see if
+     *      the current page has the url of a hostname.
+     * @param array& $pre_hash_page pages to compute scores for
      */
     function aggregateScores($hash_url, &$pre_hash_page)
     {
@@ -441,9 +444,9 @@ class GroupIterator extends IndexBundleIterator
     /**
      * Forwards the iterator one group of docs
      * @param array $gen_doc_offset a generation, doc_offset pair. If set,
-     *      the must be of greater than or equal generation, and if equal the
-     *      next block must all have $doc_offsets larger than or equal to
-     *      this value
+     *     the must be of greater than or equal generation, and if equal the
+     *     next block must all have $doc_offsets larger than or equal to
+     *     this value
      */
     function advance($gen_doc_offset = NULL)
     {
@@ -474,7 +477,7 @@ class GroupIterator extends IndexBundleIterator
      * would be return by this iterator
      *
      * @return mixed an array with the desired document offset
-     *  and generation; -1 on fail
+     * and generation; -1 on fail
      */
     function currentGenDocOffsetWithWord() {
         $this->index_bundle_iterator->currentGenDocOffsetWithWord();

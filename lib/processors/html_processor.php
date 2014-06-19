@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -68,18 +68,18 @@ require_once BASE_DIR."/lib/locale_functions.php";
 class HtmlProcessor extends TextProcessor
 {
     /**
-     *  Maximum number of characters in a title
+     * Maximum number of characters in a title
      */
     const MAX_TITLE_LEN = 100;
     /**
-     *  Used to extract the title, description and links from
-     *  a string consisting of webpage data.
+     * Used to extract the title, description and links from
+     * a string consisting of webpage data.
      *
-     *  @param string $page web-page contents
-     *  @param string $url the url where the page contents came from,
-     *     used to canonicalize relative links
+     * @param string $page web-page contents
+     * @param string $url the url where the page contents came from,
+     *    used to canonicalize relative links
      *
-     *  @return array  a summary of the contents of the page
+     * @return array  a summary of the contents of the page
      *
      */
     function process($page, $url)
@@ -151,9 +151,9 @@ class HtmlProcessor extends TextProcessor
      * Return a document object based on a string containing the contents of
      * a web page
      *
-     *  @param string $page   a web page
+     * @param string $page   a web page
      *
-     *  @return object  document object
+     * @return object  document object
      */
     static function dom($page)
     {
@@ -183,9 +183,9 @@ class HtmlProcessor extends TextProcessor
      * Get any NOINDEX, NOFOLLOW, NOARCHIVE, NONE, info out of any robot
      * meta tags.
      *
-     *  @param object $dom - a document object to check the meta tags for
+     * @param object $dom - a document object to check the meta tags for
      *
-     *  @return array of robot meta instructions
+     * @return array of robot meta instructions
      */
     static function getMetaRobots($dom)
     {
@@ -206,16 +206,16 @@ class HtmlProcessor extends TextProcessor
         return $found_metas;
     }
     /**
-     *  Determines the language of the html document by looking at the root
-     *  language attribute. If that fails $sample_text is used to try to guess
-     *  the language
+     * Determines the language of the html document by looking at the root
+     * language attribute. If that fails $sample_text is used to try to guess
+     * the language
      *
-     *  @param object $dom  a document object to check the language of
-     *  @param string $sample_text sample text to try guess the language from
-     *  @param string $url url of web-page as a fallback look at the country
-     *      to figure out language
+     * @param object $dom  a document object to check the language of
+     * @param string $sample_text sample text to try guess the language from
+     * @param string $url url of web-page as a fallback look at the country
+     *     to figure out language
      *
-     *  @return string language tag for guessed language
+     * @return string language tag for guessed language
      */
     static function lang($dom, $sample_text = NULL, $url = NULL)
     {
@@ -249,10 +249,10 @@ class HtmlProcessor extends TextProcessor
         return $lang;
     }
     /**
-     *  Returns title of a webpage based on its document object
+     * Returns title of a webpage based on its document object
      *
-     *  @param object $dom   a document object to extract a title from.
-     *  @return string  a title of the page
+     * @param object $dom   a document object to extract a title from.
+     * @return string  a title of the page
      *
      */
     static function title($dom)
@@ -279,11 +279,11 @@ class HtmlProcessor extends TextProcessor
         return $title;
     }
     /**
-     *  Returns title of a webpage based on crude regex match,
-     *      used as a fall back if dom parsing did not work.
+     * Returns title of a webpage based on crude regex match,
+     *     used as a fall back if dom parsing did not work.
      *
-     *  @param string $page to extract title from
-     *  @return string  a title of the page
+     * @param string $page to extract title from
+     * @return string  a title of the page
      */
     static function crudeTitle($page)
     {
@@ -291,11 +291,11 @@ class HtmlProcessor extends TextProcessor
         return strip_tags("<title".$title[1]."</title>");
     }
     /**
-     *  Returns summary of body of a web page based on crude regex matching
-     *      used as a fall back if dom parsing did not work.
+     * Returns summary of body of a web page based on crude regex matching
+     *     used as a fall back if dom parsing did not work.
      *
-     *  @param string $page to extract description from
-     *  @return string  a title of the page
+     * @param string $page to extract description from
+     * @return string  a title of the page
      */
     static function crudeDescription($page)
     {
@@ -501,11 +501,11 @@ class HtmlProcessor extends TextProcessor
        return $sites;
     }
     /**
-     *  This returns the text content of a node but with spaces
-     *  where tags were (unlike just using textContent)
+     * This returns the text content of a node but with spaces
+     * where tags were (unlike just using textContent)
      *
-     *  @param object $node a DOMNode
-     *  @return string its text content with spaces
+     * @param object $node a DOMNode
+     * @return string its text content with spaces
      */
     static function domNodeToString($node)
     {

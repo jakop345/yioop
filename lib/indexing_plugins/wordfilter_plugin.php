@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2013 - 2014 Chris Pollett chris@pollett.org
+ * Copyright (C) 2013 - 2014 Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -76,7 +76,7 @@ require_once BASE_DIR."/lib/crawl_constants.php";
  *
  * This plugin has been created with a dummy list of filter rules. By doing a
  * crawl on the test site contain in the archive
- *      tests/word-filter-test-crawl.zip
+ *     tests/word-filter-test-crawl.zip
  * one can  test how it behaves on those terms. To make use of
  * this plugin on real web data one probably wants to alter the choice of words.
  * This can be done from Admin > Page Options > Crawl Time tab by clicking on
@@ -185,8 +185,8 @@ EOD;
      * whether the summary title and description satisfy various rules
      * in $this->filter_rules
      *
-     * @param array &$summary the summary data produced by the relevant page
-     *      processor's handle method; modified in-place.
+     * @param array& $summary the summary data produced by the relevant page
+     *     processor's handle method; modified in-place.
      */
     function pageSummaryProcessing(&$summary)
     {
@@ -216,7 +216,7 @@ EOD;
      *
      * @see $filter_terms to see what constitutes a valid precondition.
      *
-     * @param string $precondition the terms and their frequencies to search for
+     * @param string $preconditions the terms and their frequencies to search for
      * @param string $title of a web page summary
      * @param string $description of a web page summary
      * @return bool whether the summary should be filtered or not
@@ -241,8 +241,8 @@ EOD;
         return true;
     }
     /**
-     *  Saves to a file $this->rules_string, a field which contains the string
-     *  rules that are being used with this plugin
+     * Saves to a file $this->rules_string, a field which contains the string
+     * rules that are being used with this plugin
      */
     function saveConfiguration()
     {
@@ -250,12 +250,12 @@ EOD;
         file_put_contents($config_file, $this->rules_string);
     }
     /**
-     *  Reads plugin configuration data from data/word_filter_plugin.txt
-     *  on the name server into $this->rule_string. Then parse this string
-     *  to $this->filter_rules, the format used by
-     *  $this->pageSummaryProcessing(&$summary)
+     * Reads plugin configuration data from data/word_filter_plugin.txt
+     * on the name server into $this->rule_string. Then parse this string
+     * to $this->filter_rules, the format used by
+     * $this->pageSummaryProcessing(&$summary)
      *
-     *  @return array configuration associative array
+     * @return array configuration associative array
      */
     function loadConfiguration()
     {
@@ -268,13 +268,13 @@ EOD;
     }
     /**
      * Ttakes a configuration array of rules and sets them as the rules for
-     *  this instance of the plugin. Typically used on a
-     *  queue_server or on a fetcher. It first sets the value of
-     *  $this->filter_rules, then in case we later call saveConfiguration(),
-     *  it also call serializeRules to store the serial format in
-     *  $this->rules_string
+     * this instance of the plugin. Typically used on a
+     * queue_server or on a fetcher. It first sets the value of
+     * $this->filter_rules, then in case we later call saveConfiguration(),
+     * it also call serializeRules to store the serial format in
+     * $this->rules_string
      *
-     *  @param array $configuration
+     * @param array $configuration
      */
     function setConfiguration($configuration)
     {
@@ -282,15 +282,15 @@ EOD;
         $this->serializeRules();
     }
     /**
-     *  Behaves as a "controller" for the configuration page of the plugin.
-     *  It is called by the AdminController pageOptions activity method to
-     *  let the plugin handle any configuration $_REQUEST data sent by this
-     *  activity with regard to the plugin. This method sees if the $_REQUEST
-     *  has word filter plugin configuration data, and if so cleans and saves
-     *  it. It then modifies $data so that if the plugin's configuration view
-     *  is drawn it makes use of the current plugin configuration info.
+     * Behaves as a "controller" for the configuration page of the plugin.
+     * It is called by the AdminController pageOptions activity method to
+     * let the plugin handle any configuration $_REQUEST data sent by this
+     * activity with regard to the plugin. This method sees if the $_REQUEST
+     * has word filter plugin configuration data, and if so cleans and saves
+     * it. It then modifies $data so that if the plugin's configuration view
+     * is drawn it makes use of the current plugin configuration info.
      *
-     *  @param array &$data info to be used by the admin view to draw itself.
+     * @param array& $data info to be used by the admin view to draw itself.
      */
     function configureHandler(&$data)
     {
@@ -379,10 +379,10 @@ EOD;
         $this->rules_string = $rules_string;
     }
     /**
-     *  Used to draw the HTML configure screen for the word filter plugin.
+     * Used to draw the HTML configure screen for the word filter plugin.
      *
-     *  @param array &$data contains configuration data to be used in drawing
-     *      the view
+     * @param array& $data contains configuration data to be used in drawing
+     *     the view
      */
     function configureView(&$data)
     {

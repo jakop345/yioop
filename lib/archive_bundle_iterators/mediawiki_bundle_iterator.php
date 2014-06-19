@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -95,10 +95,10 @@ class MediaWikiArchiveBundleIterator extends TextArchiveBundleIterator
      * Creates a media wiki archive iterator with the given parameters.
      *
      * @param string $iterate_timestamp timestamp of the arc archive bundle to
-     *      iterate  over the pages of
+     *     iterate  over the pages of
      * @param string $iterate_dir folder of files to iterate over
      * @param string $result_timestamp timestamp of the arc archive bundle
-     *      results are being stored in
+     *     results are being stored in
      * @param string $result_dir where to write last position checkpoints to
      */
     function __construct($iterate_timestamp, $iterate_dir,
@@ -117,7 +117,7 @@ class MediaWikiArchiveBundleIterator extends TextArchiveBundleIterator
      * the particular archive iterator
      * @param $site an associative array containing info about a web page
      * @return int a 4-bit number based on the log_2 size - 10 of the wiki
-     *      entry (@see nextPage).
+     *     entry (@see nextPage).
      */
     function weight(&$site)
     {

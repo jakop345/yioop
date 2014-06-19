@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * token_tool is used to create suggest word dictionaries and 'n' word gram
  * filter files for the Yioop! search engine.
@@ -29,7 +29,7 @@
  *
  *
  * @author Ravi Dhillon  ravi.dhillon@yahoo.com, Chris Pollett (modified for n
- *      ngrams)
+ *     ngrams)
  * @package seek_quarry
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
@@ -48,12 +48,12 @@ define("BASE_DIR", substr(
 /** Load in global configuration settings */
 require_once BASE_DIR.'/configs/config.php';
 /**
- *  Contains makeNWordGramsTextFile and
- *  and makeNWordGramsFilterFile used to create the bloom filter
+ * Contains makeNWordGramsTextFile and
+ * and makeNWordGramsFilterFile used to create the bloom filter
  */
 require_once BASE_DIR."/lib/nword_grams.php";
 /**
- *  Contains Trie Class used to store suggest terms
+ * Contains Trie Class used to store suggest terms
  */
 require_once BASE_DIR."/lib/trie.php";
 /**
@@ -197,7 +197,7 @@ if(!PROFILE) {
  * is run and writes it into the resources folder of the given locale
  *
  * @param array $args command line arguments with first two elements of $argv
- *      removed. For details on which arguments do what see the $usage variable
+ *     removed. For details on which arguments do what see the $usage variable
  */
 function makeNWordGramsFiles($args)
 {
@@ -262,9 +262,9 @@ function makeSuggestTrie($dict_file, $locale, $end_marker)
     $trie = new Trie($end_marker);
 
     /** Ignore the words in the following cases. If the word
-     *   - contains punctuation
-     *   - is less than 3 characters
-     *   - is a stop word
+     *  - contains punctuation
+     *  - is less than 3 characters
+     *  - is a stop word
      */
     foreach($words as $word) {
         if(mb_ereg_match("\p{P}", $word) == 0 && mb_strlen($word) > 2) {

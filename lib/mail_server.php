@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -43,12 +43,12 @@ require_once BASE_DIR."/lib/utility.php";
  * configuration issues that might be needed with PHP's built-in mail()
  * function. Here is an example of how one might use this class:
  *
- *  $server = new MailServer('somewhere.com', 587, 'someone', 'pword', 'tls');
- *  $to = "cool@place.com";
- *  $from = "someone@somewhere.com";
- *  $subject = "Test Mail";
- *  $message = "This is a test";
- *  $server->send($subject, $from, $to, $message);
+ * $server = new MailServer('somewhere.com', 587, 'someone', 'pword', 'tls');
+ * $to = "cool@place.com";
+ * $from = "someone@somewhere.com";
+ * $subject = "Test Mail";
+ * $message = "This is a test";
+ * $server->send($subject, $from, $to, $message);
  *
  * @author Chris Pollett
  * @package seek_quarry
@@ -104,7 +104,7 @@ class MailServer
      */
     const SMTP_CODE_LEN = 3;
     /**
-     *  Service ready for requests
+     * Service ready for requests
      */
     const SERVER_READY = 220;
     /**
@@ -124,18 +124,18 @@ class MailServer
      */
     const START_INPUT = 354;
     /**
-     *  Encapuslates the domain and credentials of a SMTP server
-     *  in a MailServer object
+     * Encapuslates the domain and credentials of a SMTP server
+     * in a MailServer object
      *
-     *  @param string $sender_email who mail will be sent from (can be
-     *      overwritten)
-     *  @param string $server domain name of machine will connect to
-     *  @param int $port port on that machine
-     *  @param string $login username to use for authentication ("" if no
-     *      auth)
-     *  @param string $password password to use for authentication ("" if no
-     *      auth)
-     *  @param mixed $secure false is SSL and TLS not used, otherwise SSL or TLS
+     * @param string $sender_email who mail will be sent from (can be
+     *     overwritten)
+     * @param string $server domain name of machine will connect to
+     * @param int $port port on that machine
+     * @param string $login username to use for authentication ("" if no
+     *     auth)
+     * @param string $password password to use for authentication ("" if no
+     *     auth)
+     * @param mixed $secure false is SSL and TLS not used, otherwise SSL or TLS
      */
     function __construct($sender_email, $server, $port, $login, $password,
         $secure = false)
@@ -155,9 +155,9 @@ class MailServer
         $this->messages = "";
     }
     /**
-     *  Connects to and if needs be authenticates with a SMTP server
+     * Connects to and if needs be authenticates with a SMTP server
      *
-     *  @return bool whether the session was successfully established
+     * @return bool whether the session was successfully established
      */
     function startSession()
     {
@@ -204,7 +204,7 @@ class MailServer
         return true;
     }
     /**
-     *  Closes the currently active SMTP session
+     * Closes the currently active SMTP session
      */
     function endSession()
     {
@@ -212,9 +212,9 @@ class MailServer
         fclose($this->connection);
     }
     /**
-     *  Reads data from an SMTP server until a command response code detected
+     * Reads data from an SMTP server until a command response code detected
      *
-     *  @return string three byte response code
+     * @return string three byte response code
      */
     function readResponseGetCode()
     {
@@ -227,11 +227,11 @@ class MailServer
         return substr($data, 0, self::SMTP_CODE_LEN);
     }
     /**
-     *  Sends a single SMTP command to the current SMTP server and
-     *  then returns the SMTP response code
+     * Sends a single SMTP command to the current SMTP server and
+     * then returns the SMTP response code
      *
-     *  @param string $command the command to execute
-     *  @return string three character integer response code
+     * @param string $command the command to execute
+     * @return string three character integer response code
      */
     function smtpCommand($command)
     {
@@ -240,13 +240,13 @@ class MailServer
         return $this->readResponseGetCode();
     }
     /**
-     *  Sends an email (much like PHP's mail command, but not requiring
-     *  a configured smtp server on the current machine)
+     * Sends an email (much like PHP's mail command, but not requiring
+     * a configured smtp server on the current machine)
      *
-     *  @param string $subject subject line of the email
-     *  @param string $from sender email address
-     *  @param string $to recipient email address
-     *  @param string $message message body for the email
+     * @param string $subject subject line of the email
+     * @param string $from sender email address
+     * @param string $to recipient email address
+     * @param string $message message body for the email
      */
     function send($subject, $from, $to, $message)
     {

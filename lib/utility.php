@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * A library of string, error reporting, log, hash, time, and conversion
  * functions
@@ -43,7 +43,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @param string $errfile the filename the error occurred in
  * @param int $errline the line number of the error
  * @param array $errcontext the context (variables and their values)
- *      at the point the error occurred
+ *     at the point the error occurred
  */
 function yioop_error_handler($errno, $errstr, $errfile, $errline,
     $errcontext)
@@ -155,7 +155,7 @@ function parse_ini_with_fallback($file)
  * what kind of assignment occurred in the ini file being parsed.
  *
  * @param string $matches produced by a preg_match in
- *      parse_ini_with_fallback
+ *     parse_ini_with_fallback
  * @return mixed value of ini file assignment
  */
 function getIniAssignMatch($matches)
@@ -180,11 +180,11 @@ function getIniAssignMatch($matches)
  * bytes to destination string
  *
  * @param string $source  string to copy from
- * @param string &$destination string to copy to
+ * @param string& $destination string to copy to
  * @param int $start starting offset
  * @param int $length number of bytes to copy
  * @param string $timeout_msg for long copys message to print if taking more
- *      than 30 seconds
+ *     than 30 seconds
  */
 function charCopy($source, &$destination, $start, $length, $timeout_msg = "")
 {
@@ -207,10 +207,10 @@ function charCopy($source, &$destination, $start, $length, $timeout_msg = "")
     }
 }
 /**
- *  Encodes an integer using variable byte coding.
+ * Encodes an integer using variable byte coding.
  *
- *  @param int $pos_int integer to encode
- *  @return string a string of 1-5 chars depending on how bit $pos_int was
+ * @param int $pos_int integer to encode
+ * @return string a string of 1-5 chars depending on how bit $pos_int was
  */
 function vByteEncode($pos_int)
 {
@@ -223,11 +223,11 @@ function vByteEncode($pos_int)
     return $result;
 }
 /**
- *  Decodes from a string using variable byte coding an integer.
+ * Decodes from a string using variable byte coding an integer.
  *
- *  @param string &$str string to use for decoding
- *  @param int $offset byte offset into string when var int stored
- *  @return int the decoded integer
+ * @param string& $str string to use for decoding
+ * @param int $offset byte offset into string when var int stored
+ * @return int the decoded integer
  */
 function vByteDecode(&$str, &$offset)
 {
@@ -245,12 +245,12 @@ function vByteDecode(&$str, &$offset)
  * occurrences of a word in the document with that docindex.
  *
  * @param int $doc_index index (i.e., a count of which document it
- *      is rather than a byte offset) of a document in the document string
- * @param array integer positions word occurred in that doc
+ *     is rather than a byte offset) of a document in the document string
+ * @param array $position_list integer positions word occurred in that doc
  * @param bool $delta if true then stores the position_list as a sequence of
- *      differences (a delta list)
+ *     differences (a delta list)
  * @return string a modified9 (our compression scheme) packed
- *      string containing this info.
+ *     string containing this info.
  */
 function packPosting($doc_index, $position_list, $delta = true)
 {
@@ -278,14 +278,14 @@ function packPosting($doc_index, $position_list, $delta = true)
  * to computer a number of occurences of a word in that document.
  *
  * @param string $posting a string containing
- *      a doc index position list pair coded encoded using modified9
- * @param int &offset a offset into the string where the modified9 posting
- *      is encoded
+ *     a doc index position list pair coded encoded using modified9
+ * @param int& $offset a offset into the string where the modified9 posting
+ *     is encoded
  * @param bool $dedelta if true then assumes the list is a sequence of
- *      differences (a delta list) and undoes the difference to get
- *      the original sequence
+ *     differences (a delta list) and undoes the difference to get
+ *     the original sequence
  * @return array consisting of integer doc_index and a subarray consisting
- *      of integer positions of word in doc.
+ *     of integer positions of word in doc.
  */
 function unpackPosting($posting, &$offset, $dedelta = true)
 {
@@ -313,11 +313,11 @@ function unpackPosting($posting, &$offset, $dedelta = true)
  * Given a string of postings adds $add_offset add to each offset to the
  * document map in each posting.
  *
- * @param string &$postings a string of index shard postings
+ * @param string& $postings a string of index shard postings
  * @param int $add_offset an fixed amount to add to each postings doc map offset
  *
  * @return string $new_postings where each doc offset has had $add_offset added
- *      to it
+ *     to it
  */
 function addDocIndexPostings(&$postings, $add_offset)
 {
@@ -358,7 +358,7 @@ function addDocIndexPostings(&$postings, $add_offset)
  *
  * @param array $list a nondecreasing list of integers
  * @return array the corresponding list of differences of adjacent
- *      integers
+ *     integers
  */
 function deltaList($list)
 {
@@ -451,7 +451,7 @@ function encodeModified9($list)
  *
  * @param int $continue_bits the high order 2 bits of the word
  * @param int $cnt the number of element that will be packed in this word
- * @param array $list a list of positive integers to pack into word
+ * @param array $pack_list a list of positive integers to pack into word
  * @return string encoded 4 byte string
  * @see encodeModified9
  */
@@ -475,8 +475,8 @@ function packListModified9($continue_bits, $cnt, $pack_list)
  * Returns the next complete posting string from $input_string being at offset.
  * Does not do any decoding.
  *
- * @param string &$input_string a string of postings
- * @param int &offset an offset to this string which will be updated after call
+ * @param string& $input_string a string of postings
+ * @param int& $offset an offset to this string which will be updated after call
  * @return string undecoded posting
  */
 function nextPostString(&$input_string, &$offset)
@@ -510,9 +510,9 @@ function nextPostString(&$input_string, &$offset)
  * Decoded a sequence of positive integers from a string that has been
  * encoded using Modified 9
  *
- * @param string $int_string string to decode from
- * @param int &$offset where to string in the string, after decode
- *      points to where one was after decoding.
+ * @param string $input_string string to decode from
+ * @param int& $offset where to string in the string, after decode
+ *     points to where one was after decoding.
  * @return array sequence of positive integers that were decoded
  * @see encodeModified9
  */
@@ -527,7 +527,7 @@ if(!extension_loaded("yioop") ) {
 /**
  * Decoded a single word with high two bits off according to modified 9
  *
- * @param string $int_string 4 byte string to decode
+ * @param string $encoded_list four byte string to decode
  * @return array sequence of integers that results from the decoding.
  */
 function unpackListModified9($encoded_list)
@@ -573,11 +573,11 @@ function unpackListModified9($encoded_list)
     return $decoded_list;
 }
 /**
- *  Given an int encoding encoding a doc_index followed by a position
- *  list using Modified 9, extracts just the doc_index.
+ * Given an int encoding encoding a doc_index followed by a position
+ * list using Modified 9, extracts just the doc_index.
  *
- *  @param int $encoded_list in the just described format
- *  @return int a doc index into an index shard document map.
+ * @param int $encoded_list in the just described format
+ * @return int a doc index into an index shard document map.
  */
 function docIndexModified9($encoded_list)
 {
@@ -663,9 +663,9 @@ function unpackFloat($str)
     return $tmp[1];
 }
 /**
- * Packs an float into a 4 char string
+ * Packs an float into a four char string
  *
- * @param float $my_floatt the float to pack
+ * @param float $my_float the float to pack
  * @return string the packed string
  */
 function packFloat($my_float)
@@ -731,15 +731,18 @@ function metricToInt($metric_num)
     return $num;
 }
 /**
- *  Logs a message to a logfile or the screen
+ * Logs a message to a logfile or the screen
  *
- *  @param string $msg message to log
- *  @param string $lname name of log file in the LOG_DIR directory, rotated logs
- *      will also use this as their basename followed by a number followed by
- *      gzipped (since they are gzipped (older versions of Yioop used bzip
- *      Some distros don't have bzip but do have gzip. Also gzip was
- *      being used elsewhere in Yioop, so to remove the dependency bzip was
- *      replaced )).
+ * @param string $msg message to log
+ * @param string $lname name of log file in the LOG_DIR directory, rotated logs
+ *     will also use this as their basename followed by a number followed by
+ *     gzipped (since they are gzipped (older versions of Yioop used bzip
+ *     Some distros don't have bzip but do have gzip. Also gzip was
+ *     being used elsewhere in Yioop, so to remove the dependency bzip was
+ *     replaced )).
+ * @param bool $check_process_handler whether or not to call the processHandler
+ *      to check how long the code has run since the last time processHandler
+ *      called.
  */
 function crawlLog($msg, $lname = NULL, $check_process_handler = false)
 {
@@ -798,7 +801,7 @@ function crawlLog($msg, $lname = NULL, $check_process_handler = false)
  * say every 30 seconds).
  *
  * @param mixed $msg usually a string with what to be printed out after the
- *      timeout period. If $msg === true then clears the timout cache
+ *     timeout period. If $msg === true then clears the timout cache
  */
 function crawlTimeoutLog($msg)
 {
@@ -815,18 +818,18 @@ function crawlTimeoutLog($msg)
     $cache_time = microtime();
 }
 /**
- *  Computes an 8 byte hash of a string for use in storing documents.
+ * Computes an 8 byte hash of a string for use in storing documents.
  *
- *  An eight byte hash was chosen so that the odds of collision even for
- *  a few billion documents via the birthday problem are still reasonable.
- *  If the raw flag is set to false then an 11 byte base64 encoding of the
- *  8 byte hash is returned. The hash is calculated as the xor of the
- *  two halves of the 16 byte md5 of the string. (8 bytes takes less storage
- *  which is useful for keeping more doc info in memory)
+ * An eight byte hash was chosen so that the odds of collision even for
+ * a few billion documents via the birthday problem are still reasonable.
+ * If the raw flag is set to false then an 11 byte base64 encoding of the
+ * 8 byte hash is returned. The hash is calculated as the xor of the
+ * two halves of the 16 byte md5 of the string. (8 bytes takes less storage
+ * which is useful for keeping more doc info in memory)
  *
- *  @param string $string the string to hash
- *  @param bool $raw whether to leave raw or base 64 encode
- *  @return string the hash of $string
+ * @param string $string the string to hash
+ * @param bool $raw whether to leave raw or base 64 encode
+ * @return string the hash of $string
  */
 function crawlHash($string, $raw = false)
 {
@@ -847,16 +850,16 @@ function crawlHash($string, $raw = false)
     return $hash;
 }
 /**
- *  Used to create a 20 byte hash of a string (typically a word)
- *  together with a string of meta data about the page that the word
- *  appeared on (media:, safe:, class:) information
+ * Used to create a 20 byte hash of a string (typically a word)
+ * together with a string of meta data about the page that the word
+ * appeared on (media:, safe:, class:) information
  *
- *  @param string $string word to hash
- *  @param bool $raw whether to base64Hash the result
- *  @param $meta_string the up to 11 byte string of meta information
- *  @return string first 8 bytes of md5 of $string concatenated with \x00
- *      to indicate the hash is of a word not a phrase concatenated  with the
- *      padded to 11 byte $meta_string.
+ * @param string $string word to hash
+ * @param bool $raw whether to base64Hash the result
+ * @param $meta_string the up to 11 byte string of meta information
+ * @return string first 8 bytes of md5 of $string concatenated with \x00
+ *     to indicate the hash is of a word not a phrase concatenated  with the
+ *     padded to 11 byte $meta_string.
  */
 function crawlHashWord($string, $raw = false, $meta_string = "")
 {
@@ -875,13 +878,15 @@ function crawlHashWord($string, $raw = false, $meta_string = "")
     return $hash;
 }
 /**
- *  Used to compute all hashes for a phrase based on each possible cond_max
- *  point. Here cond_max is the location of a substring of a phase which is
- *  maximal.
+ * Used to compute all hashes for a phrase based on each possible cond_max
+ * point. Here cond_max is the location of a substring of a phase which is
+ * maximal.
  *
- *  @param string $string what to find hashes for
- *  @param $raw whether to modified base64 the result
- *  @return array of hashes with appropriates shifts if needed
+ * @param string $string what to find hashes for
+ * @param array $metas array of meta word values
+ * @param array $encode_metas a list of meta word names to encode in word_ids
+ * @param bool $raw whether to base64 the result
+ * @return array of hashes with appropriates shifts if needed
  */
 function allCrawlHashPaths($string, $metas = array(),
     $encode_metas = array(), $raw = false)
@@ -1005,10 +1010,10 @@ function allCrawlHashPaths($string, $metas = array(),
  * (meta word name => array(value of that name)) which should be encoded
  * into word id's
  *
- * @param array $meta array of meta word values
- * @param array $encode_meta a list of meta word names to encode in word_ids
+ * @param array $metas array of meta word values
+ * @param array $encode_metas a list of meta word names to encode in word_ids
  * @return array $found_materialized_metas associative array of name =>
- *      values for that name
+ *     values for that name
  */
 function findMaterialMetas($metas, $encode_metas)
 {
@@ -1038,12 +1043,12 @@ function findMaterialMetas($metas, $encode_metas)
  * in the case of a single word is described in the documentation for
  * @see crawlHashPath
  *
- * @param array $meta a list of meta word values extracted from a query
- *  string or document.
- * @param array $encode_meta a list of meta word names that should be encoded
- *  in word id's For example, (media:, safe:, class:)
+ * @param array $metas a list of meta word values extracted from a query
+ *      string or document.
+ * @param array $encode_metas a list of meta word names that should be encoded
+ *      in word id's For example, (media:, safe:, class:)
  * @return string a 9 byte string where encoded meta word values have been
- *      stored
+ *     stored
  */
 function encodeMaterialMetas($metas, $encode_metas)
 {
@@ -1064,43 +1069,43 @@ function encodeMaterialMetas($metas, $encode_metas)
     return $meta_string;
 }
 /**
- *  Given a string makes an 20 byte hash path - where first 8 bytes is
- *  a hash of the string before path start, last 12 bytes is the path
- *  given by splitting on space and separately hashing each element
- *  according to the number of elements and the 3bit selector below:
+ * Given a string makes an 20 byte hash path - where first 8 bytes is
+ * a hash of the string before path start, last 12 bytes is the path
+ * given by splitting on space and separately hashing each element
+ * according to the number of elements and the 3bit selector below:
  *
- *  general format: (64 bit lead word hash, 3bit selector, hashes of rest of
- *  words)  according to:
- *  Selector Bits for each remaining word
- *   001     29 32 32
- *   010     29 16 16 16 16
- *   011     29 16 16 8 8 8 8
- *   100     29 16 16 8 8 4 4 4 4
- *   101     29 16 16 8 8 4 4 2 2 2 2
- *   110     29 16 16 8 8 4 4 2 2 1 1 1 1
+ * general format: (64 bit lead word hash, 3bit selector, hashes of rest of
+ * words)  according to:
+ * Selector Bits for each remaining word
+ *  001     29 32 32
+ *  010     29 16 16 16 16
+ *  011     29 16 16 8 8 8 8
+ *  100     29 16 16 8 8 4 4 4 4
+ *  101     29 16 16 8 8 4 4 2 2 2 2
+ *  110     29 16 16 8 8 4 4 2 2 1 1 1 1
  *
- *  If $path_start is 0 behaves like crawlHashWord(). The above encoding is
- *  typically used to make word_ids for whole phrases, to make word id's
- *  for single words, the format is
- *  (64 bits for word, 1 byte null, remaining 11 bytes encode an materialized
- *  meta words present in document or query string). Of this 11 bytes,
- *  the first is used for the meta word media:, so if the document is of type
- *  media:image, then a single byte hash of media:image gives the value of this
- *  byte. The second byte encodes the meta word safe: in a similar fashion.
- *  The remaining 9 bytes encode different values of the class: meta word.
- *  To encode class:some_value., first class:some_value[0] is hashed to a value
- *  j betwen 0 and 8. Then class:some_value is hash to a single byte b. Then
- *  the jth value of the remaining bytes is set to b. Non affected bytes are
- *  null.
+ * If $path_start is 0 behaves like crawlHashWord(). The above encoding is
+ * typically used to make word_ids for whole phrases, to make word id's
+ * for single words, the format is
+ * (64 bits for word, 1 byte null, remaining 11 bytes encode an materialized
+ * meta words present in document or query string). Of this 11 bytes,
+ * the first is used for the meta word media:, so if the document is of type
+ * media:image, then a single byte hash of media:image gives the value of this
+ * byte. The second byte encodes the meta word safe: in a similar fashion.
+ * The remaining 9 bytes encode different values of the class: meta word.
+ * To encode class:some_value., first class:some_value[0] is hashed to a value
+ * j betwen 0 and 8. Then class:some_value is hash to a single byte b. Then
+ * the jth value of the remaining bytes is set to b. Non affected bytes are
+ * null.
  *
- *  @param string $string what to hash
- *  @param int $path_start what to use as the split between 5 byte front
- *      hash and the rest
- *  @param array $metas meta word values from a document or query string
- *  @param array $encode_metas a list of names of meta word values which should
- *      encoded into word ids. i.e., (media:, safe:, class:) or none.
- *  @param bool $raw whether to modified base64 the result
- *  @return string 8 bytes that results from this hash process
+ * @param string $string what to hash
+ * @param int $path_start what to use as the split between 5 byte front
+ *     hash and the rest
+ * @param array $metas meta word values from a document or query string
+ * @param array $encode_metas a list of names of meta word values which should
+ *     encoded into word ids. i.e., (media:, safe:, class:) or none.
+ * @param bool $raw whether to modified base64 the result
+ * @return string 8 bytes that results from this hash process
  */
 function crawlHashPath($string, $path_start = 0, $metas = array(),
     $encode_metas = array(), $raw = false)
@@ -1251,16 +1256,16 @@ function crawlHashPath($string, $path_start = 0, $metas = array(),
     return $hash;
 }
 /**
- *  Used to compare to ids for index dictionary lookup. ids
- *  might be either a crawlHash or a 8 byte crawlHash together
- *  with 12 byte hash path for suffix tree lookup. In the latter
- *  case the shift variable can be used to match up to a subtree
+ * Used to compare to ids for index dictionary lookup. ids
+ * might be either a crawlHash or a 8 byte crawlHash together
+ * with 12 byte hash path for suffix tree lookup. In the latter
+ * case the shift variable can be used to match up to a subtree
  *
- *  @param string $id1 20 byte word id to compare
- *  @param string $id2 20 byte word id to compare
- *  @param int $shift bit shift to apply before saying paths equal
- *  @return int negative if $id1 smaller, positive if bigger, and 0 if
- *      same
+ * @param string $id1 20 byte word id to compare
+ * @param string $id2 20 byte word id to compare
+ * @param int $shift bit shift to apply before saying paths equal
+ * @return int negative if $id1 smaller, positive if bigger, and 0 if
+ *     same
  */
 function compareWordHashes($id1, $id2, $shift = 0)
 {
@@ -1295,8 +1300,8 @@ function compareWordHashes($id1, $id2, $shift = 0)
  * Converts a crawl hash number to something closer to base64 coded but
  * so doesn't get confused in urls or DBs
  *
- *  @param string $string a hash to base64 encode
- *  @return string the encoded hash
+ * @param string $string a hash to base64 encode
+ * @return string the encoded hash
  */
 function base64Hash($string)
 {
@@ -1309,8 +1314,8 @@ function base64Hash($string)
 /**
  * Decodes a crawl hash number from base64 to raw ASCII
  *
- *  @param string $base64 a hash to decode
- *  @return string the decoded hash
+ * @param string $base64 a hash to decode
+ * @return string the decoded hash
  */
 function unbase64Hash($base64)
 {
@@ -1357,7 +1362,7 @@ function webdecode($str)
  *
  * @param string $string the string to encrypt
  * @param int $salt salt value to be used (needed to verify if a password is
- *      valid)
+ *     valid)
  * @return string the crypted string where crypting is done using crawlHash
  */
 function crawlCrypt($string, $salt = NULL)
@@ -1389,18 +1394,18 @@ function crawlCrypt($string, $salt = NULL)
  * table that a given queue_server would be responsible for handling
  *
  * @param array $table an array of rows of associative arrays which
- *      a queue_server might need to process
+ *     a queue_server might need to process
  * @param string $field column of $table whose values should be used
- *   for partitioning
+ *  for partitioning
  * @param int $num_partition number of queue_servers to choose between
  * @param int $instance the id of the particular server we are interested
- *  in
+ * in
  * @param object $callback function or static method that might be
- *      applied to input before deciding the responsible queue_server.
- *      For example, if input was a url we might want to get the host
- *      before deciding on the queue_server
+ *     applied to input before deciding the responsible queue_server.
+ *     For example, if input was a url we might want to get the host
+ *     before deciding on the queue_server
  * @return array the reduced table that the $instance queue_server is
- *      responsible for
+ *     responsible for
  */
 function partitionByHash($table, $field, $num_partition, $instance,
     $callback = NULL)
@@ -1420,14 +1425,14 @@ function partitionByHash($table, $field, $num_partition, $instance,
  * Used by a controller to say which queue_server should receive
  * a given input
  * @param string $input can view as a key that might be processes by a
- *      queue_server. For example, in some cases input might be
- *      a url and we want to determine which queue_server should be
- *      responsible for queuing that url
+ *     queue_server. For example, in some cases input might be
+ *     a url and we want to determine which queue_server should be
+ *     responsible for queuing that url
  * @param int $num_partition number of queue_servers to choose between
  * @param object $callback function or static method that might be
- *      applied to input before deciding the responsible queue_server.
- *      For example, if input was a url we might want to get the host
- *      before deciding on the queue_server
+ *     applied to input before deciding the responsible queue_server.
+ *     For example, if input was a url we might want to get the host
+ *     before deciding on the queue_server
  * @return int id of server responsible for input
  */
 function calculatePartition($input, $num_partition, $callback = NULL)
@@ -1466,20 +1471,20 @@ function changeInMicrotime($start, $end = NULL)
 }
 /**
  * Timestamp of current epoch with microsecond precision useful for situations
- *      where time() might cause too many collisions (account creation, etc)
+ *     where time() might cause too many collisions (account creation, etc)
  * @return string timestamp to microsecond of time in second since start of
- *      current epoch
+ *     current epoch
  */
 function microTimestamp()
 {
     return vsprintf('%d.%06d', gettimeofday());
 }
 /**
- *  Converts a CSS unit string into its equivalent in pixels. This is
- *  used by @see SvgProcessor.
+ * Converts a CSS unit string into its equivalent in pixels. This is
+ * used by @see SvgProcessor.
  *
- *  @param string $value  a number followed by a legal CSS unit
- *  @return int a number in pixels
+ * @param string $value  a number followed by a legal CSS unit
+ * @return int a number in pixels
  */
 function convertPixels($value)
 {
@@ -1557,9 +1562,9 @@ function setWorldPermissions($file)
  * This is a callback function used in the process of recursively calculating
  * an array of file modification times and files sizes for a directorys
  *
- *  @param string a name of a file in the file system
- *  @return an array whose single element contain an associative array
- *      with the size and modification time of the file
+ * @param string $file a name of a file in the file system
+ * @return an array whose single element contain an associative array
+ *     with the size and modification time of the file
  */
 function fileInfo($file)
 {
@@ -1571,15 +1576,15 @@ function fileInfo($file)
 }
 //ordering functions used in sorting
 /**
- *  Callback function used to sort documents by a field
+ * Callback function used to sort documents by a field
  *
- *  Should be initialized before using in usort with a call
- *  like: orderCallback($tmp, $tmp, "field_want");
+ * Should be initialized before using in usort with a call
+ * like: orderCallback($tmp, $tmp, "field_want");
  *
- *  @param string $word_doc_a doc id of first document to compare
- *  @param string $word_doc_b doc id of second document to compare
- *  @param string $field which field of these associative arrays to sort by
- *  @return int -1 if first doc bigger 1 otherwise
+ * @param string $word_doc_a doc id of first document to compare
+ * @param string $word_doc_b doc id of second document to compare
+ * @param string $order_field which field of these associative arrays to sort by
+ * @return int -1 if first doc bigger 1 otherwise
  */
 function orderCallback($word_doc_a, $word_doc_b, $order_field = NULL)
 {
@@ -1591,15 +1596,15 @@ function orderCallback($word_doc_a, $word_doc_b, $order_field = NULL)
         (float)$word_doc_b[$field]) ? -1 : 1;
 }
 /**
- *  Callback function used to sort documents by a field in reverse order
+ * Callback function used to sort documents by a field in reverse order
  *
- *  Should be initialized before using in usort with a call
- *  like: rorderCallback($tmp, $tmp, "field_want");
+ * Should be initialized before using in usort with a call
+ * like: rorderCallback($tmp, $tmp, "field_want");
  *
- *  @param string $word_doc_a doc id of first document to compare
- *  @param string $word_doc_b doc id of second document to compare
- *  @param string $field which field of these associative arrays to sort by
- *  @return int 1 if first doc bigger -1 otherwise
+ * @param string $word_doc_a doc id of first document to compare
+ * @param string $word_doc_b doc id of second document to compare
+ * @param string $order_field which field of these associative arrays to sort by
+ * @return int 1 if first doc bigger -1 otherwise
  */
 function rorderCallback($word_doc_a, $word_doc_b, $order_field = NULL)
 {
@@ -1629,7 +1634,7 @@ function lessThan($a, $b) {
     return ($a < $b) ? -1 : 1;
 }
 /**
- *  Callback to check if $a is greater than $b
+ * Callback to check if $a is greater than $b
  *
  * Used to help sort document results returned in PhraseModel called in
  * IndexArchiveBundle
@@ -1700,10 +1705,13 @@ function readMessage()
     return rtrim($message);
 }
 /**
- * Checks if class_1 is the same as class_2 of has class_2 as a parent
+ * Checks if class_1 is the same as class_2 or has class_2 as a parent
  * Behaves like 3 param version (last param true) of PHP is_a function
  * that came into being with Version 5.3.9.
  *
+ * @param mixed $class_1 object or string class name to see if in class2
+ * @param mixed $class_2 object or string class name to see if contains class1
+ * @return bool equal or contains class
  */
 function generalIsA($class_1, $class_2)
 {
@@ -1711,15 +1719,15 @@ function generalIsA($class_1, $class_2)
     return (is_a($class_1, $class_2) || is_subclass_of($class_1, $class_2));
 }
 /**
- *  Given an array of arrays acting much like a database table, this
- *  returns a sequence of key value pairs, where the keys are the distinct
- *  entries in $key_column and the values are the counts of numbers in
- *  $count_column for each particular key;
+ * Given an array of arrays acting much like a database table, this
+ * returns a sequence of key value pairs, where the keys are the distinct
+ * entries in $key_column and the values are the counts of numbers in
+ * $count_column for each particular key;
  *
- *  @param array $arr an array of arrays
- *  @param mixed $key_column (string or int) field name of key column
- *  @param mixed $count_column (string or int) field name of count column
- *  @return array key => values pairs of counts
+ * @param array $arr an array of arrays
+ * @param mixed $key_column (string or int) field name of key column
+ * @param mixed $count_column (string or int) field name of count column
+ * @return array key => values pairs of counts
  */
 function arrayColumnCount($arr, $key_column, $count_column)
 {
@@ -1733,13 +1741,13 @@ function arrayColumnCount($arr, $key_column, $count_column)
     return $out_arr;
 }
 /**
- *  Given the contents of a start XML/HMTL tag strips out all the attributes
- *  non listed in $safe_attribute_list
+ * Given the contents of a start XML/HMTL tag strips out all the attributes
+ * non listed in $safe_attribute_list
  *
- *  @param string $start_tag_contents the contents of an HTML/XML tag. I.e.,
- *      if the tag was &lt;tag stuff&gt; then $start_tag_contents could be stuff
- *  @param array $safe_attribute_list a list of attributes which should be kept
- *  @return string containing only safe attributes and their values
+ * @param string $start_tag_contents the contents of an HTML/XML tag. I.e.,
+ *     if the tag was &lt;tag stuff&gt; then $start_tag_contents could be stuff
+ * @param array $safe_attribute_list a list of attributes which should be kept
+ * @return string containing only safe attributes and their values
  */
  function stripAttributes($start_tag_contents, $safe_attribute_list = array())
  {
@@ -1765,14 +1773,14 @@ function arrayColumnCount($arr, $key_column, $count_column)
     return $out;
  }
 /**
- *  Computes a Unix-style diff of two strings. That is it only
- *  outputs lines which disagree between the two strings. It outputs +line
- *  if a line occurs in the second but not first string and -line if a
- *  line occurs in the first string but not the second.
+ * Computes a Unix-style diff of two strings. That is it only
+ * outputs lines which disagree between the two strings. It outputs +line
+ * if a line occurs in the second but not first string and -line if a
+ * line occurs in the first string but not the second.
  *
- *  @param string $data1 first string to compare
- *  @param string $data2 second string to compare
- *  @param bool $html whether to output html highlighting
+ * @param string $data1 first string to compare
+ * @param string $data2 second string to compare
+ * @param bool $html whether to output html highlighting
  */
 function diff($data1, $data2, $html = false)
 {
@@ -1894,11 +1902,11 @@ function diff($data1, $data2, $html = false)
     return $out_string;
 }
 /**
- *  Computes the longest common subsequence of two arrays
+ * Computes the longest common subsequence of two arrays
  *
- *  @param array $lines1 an array of lines to compute LCS of
- *  @param array $lines2 an array of lines to compute LCS of
- *  @param int $offset an offset to shift over array addresses in output by
+ * @param array $lines1 an array of lines to compute LCS of
+ * @param array $lines2 an array of lines to compute LCS of
+ * @param int $offset an offset to shift over array addresses in output by
  */
 function computeLCS($lines1, $lines2, $offset = 0)
 {
@@ -1943,20 +1951,21 @@ function computeLCS($lines1, $lines2, $offset = 0)
     return $lcs;
 }
 /**
- *  Extracts from a table of longest common sequence moves (probably calculated
- *  by @see computeLCS) and a starting coordinate $i, $j in that table,
- *  a longest common subsequence
+ * Extracts from a table of longest common sequence moves (probably calculated
+ * by @see computeLCS) and a starting coordinate $i, $j in that table,
+ * a longest common subsequence
  *
- *  @param array $lcs_moves a table of move computed by computeLCS
- *  @param int $i a line number in string 1
- *  @param int $j a line number in string 2
- *  @param int $offset a number to add to each line number output into $lcs.
- *      This is useful if we have trimmed off the initially common lines from
- *      our two strings we are trying to compute the LCS of
- *  @param array &$lcs an array of triples 
- *      (index_string1, index_string2, line)
- *      the indexes indicate the line number in each string, line is the line
- *      in common the two strings
+ * @param array $lcs_moves a table of move computed by computeLCS
+ * @param array $lines from first of the two arrays computing LCS of
+ * @param int $i a line number in string 1
+ * @param int $j a line number in string 2
+ * @param int $offset a number to add to each line number output into $lcs.
+ *     This is useful if we have trimmed off the initially common lines from
+ *     our two strings we are trying to compute the LCS of
+ * @param array& $lcs an array of triples 
+ *     (index_string1, index_string2, line)
+ *     the indexes indicate the line number in each string, line is the line
+ *     in common the two strings
  */
 function extractLCSFromTable($lcs_moves, $lines, $i, $j, $offset, &$lcs)
 {
@@ -2003,12 +2012,12 @@ function extractLCSFromTable($lcs_moves, $lines, $i, $j, $offset, &$lcs)
     return $tmp;
 }
 /**
- *  Returns a random prime of the given length in decimal
+ * Returns a random prime of the given length in decimal
  *
- *  @param int $len length of prime to generate in terms of base 10 digits
- *  @param int $accuracy the resulting number will be prime with prob
- *      1 - 1/2^($accuracy)
- *  @return string a big prime
+ * @param int $len length of prime to generate in terms of base 10 digits
+ * @param int $accuracy the resulting number will be prime with prob
+ *     1 - 1/2^($accuracy)
+ * @return string a big prime
  */
 function randProbablyPrime($len, $accuracy = 30)
 {
@@ -2019,12 +2028,12 @@ function randProbablyPrime($len, $accuracy = 30)
     return $num;
 }
 /**
- *  Check if a big num is a prime or not
+ * Check if a big num is a prime or not
  *
- *  @param string big number to check coded as a long string in decimal
- *  @param int $accuracy the resulting number will be prime with prob
- *      1 - 1/2^($accuracy)
- *  @param bool whether it is prime or not
+ * @param string $num big number to check coded as a long string in decimal
+ * @param int $accuracy the resulting number will be prime with prob
+ *     1 - 1/2^($accuracy)
+ * @param bool whether it is prime or not
  */
 function probablyPrime($num, $accuracy)
 {
@@ -2061,9 +2070,9 @@ function probablyPrime($num, $accuracy)
  * Generates a random big number between the two big number $low and $high
  *
  * @param string $low a decimal coded big num lower bounding the desired
- *      range (inclusive)
+ *     range (inclusive)
  * @param string $high a decimal coded big num upper bounding the desired
- *      range (exclusive)
+ *     range (exclusive)
  */
 function bcrand($low, $high)
 {

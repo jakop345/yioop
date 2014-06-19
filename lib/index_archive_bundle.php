@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -64,8 +64,8 @@ require_once 'crawl_constants.php';
  * offsets for documents containing that word for some particular IndexShard
  * generation.</li>
  * <li>A set of index shard generations. These generations
- *  have names index0, index1,... A shard has word entries, word doc entries
- *  and document entries. For more information see the index shard
+ * have names index0, index1,... A shard has word entries, word doc entries
+ * and document entries. For more information see the index shard
  * documentation.
  * </li>
  * <li>
@@ -133,18 +133,22 @@ class IndexArchiveBundle implements CrawlConstants
      */
     var $version;
     /**
-     *  Threshold hold beyond which we don't load old index shard when
-     *  restarting and instead just advance to a new shard
+     * Threshold hold beyond which we don't load old index shard when
+     * restarting and instead just advance to a new shard
      */
     const NO_LOAD_SIZE = 50000000;
     /**
      * Makes or initializes an IndexArchiveBundle with the provided parameters
      *
      * @param string $dir_name folder name to store this bundle
+     * @param bool $read_only_archive whether to open archive only for reading
+     *  or reading and writing
      * @param int $num_partitions_summaries number of WebArchive partitions
      *      to use in the summmaries WebArchiveBundle
      * @param string $description a text name/serialized info about this
      *      IndexArchiveBundle
+     * @param int $num_docs_per_generation the number of pages to be stored
+     *      in a single shard
      */
     function __construct($dir_name, $read_only_archive = true,
         $description = NULL, $num_docs_per_generation = NUM_DOCS_PER_GENERATION)
@@ -187,10 +191,10 @@ class IndexArchiveBundle implements CrawlConstants
      *
      * @param int $generation field used to select partition
      * @param string $offset_field field used to record offsets after storing
-     * @param array &$pages data to store
+     * @param array& $pages data to store
      * @param int $visited_urls_count number to add to the count of visited urls
-     *      (visited urls is a smaller number than the total count of objects
-     *      stored in the index).
+     *     (visited urls is a smaller number than the total count of objects
+     *     stored in the index).
      */
     function addPages($generation, $offset_field, &$pages,
         $visited_urls_count)
@@ -204,7 +208,7 @@ class IndexArchiveBundle implements CrawlConstants
      * Expects initGenerationToAdd to be called before, so generation is correct
      *
      * @param object $index_shard a mini inverted index of word_key=>doc data
-     *      to add to this IndexArchiveBundle
+     *     to add to this IndexArchiveBundle
      */
     function addIndexData($index_shard)
     {
@@ -221,11 +225,13 @@ class IndexArchiveBundle implements CrawlConstants
      * the dictionary of the old shard is copied to the bundles dictionary
      * and a log-merge performed if needed
      *
-     * @param int $num_docs number of docs in the shard about to be added
+     * @param int $add_num_docs number of docs in the shard about to be added
      * @param object $callback object with join function to be
-     *      called if process is taking too long
+     *     called if process is taking too long
+     * @param bool $blocking whether there is an ongoing merge tiers operation
+     *      occurring, if so don't do anything and return -1
      * @return int the active generation after the check and possible change has
-     *      been performed
+     *     been performed
      */
     function initGenerationToAdd($add_num_docs, $callback = NULL,
         $blocking = false)
@@ -258,7 +264,7 @@ class IndexArchiveBundle implements CrawlConstants
      * shard.
      *
      * @param object $callback object with join function to be
-     *      called if process is taking too long
+     *     called if process is taking too long
      */
     function addAdvanceGeneration($callback = NULL)
     {
@@ -278,7 +284,7 @@ class IndexArchiveBundle implements CrawlConstants
     /**
      * Adds the words from this shard to the dictionary
      * @param object $callback object with join function to be
-     *      called if process is taking too  long
+     *     called if process is taking too  long
      */
     function addCurrentShardDictionary($callback = NULL)
     {
@@ -359,7 +365,7 @@ class IndexArchiveBundle implements CrawlConstants
      *
      * @param $i which shard to set the current shard to be
      * @param $disk_based whether to read the whole shard in before using or
-     *      leave it on disk except for pages need and use memcache
+     *     leave it on disk except for pages need and use memcache
      */
      function setCurrentShard($i, $disk_based = false)
      {
@@ -380,7 +386,7 @@ class IndexArchiveBundle implements CrawlConstants
      *
      * @param int $offset byte offset in partition of desired page
      * @param int $generation which generation WebArchive to look up in
-     *      defaults to the same number as the current shard
+     *     defaults to the same number as the current shard
      * @return array desired page
      */
     function getPage($offset, $generation = -1)
@@ -430,7 +436,8 @@ class IndexArchiveBundle implements CrawlConstants
      * the sole purpose of allowing conversions of downloaded data such as arc
      * files into Yioop! format.
      *
-     * @param string path to a directory containing a summaries WebArchiveBundle
+     * @param string $dir_name path to a directory containing a summaries
+     *      WebArchiveBundle
      * @return array summary of the given archive
      */
     static function getArchiveInfo($dir_name)

@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -178,25 +178,25 @@ class Classifier implements CrawlConstants
      * Default per-classifier options, which may be overridden when
      * constructing a new classifier. The supported options are:
      *
-     *     float density.lambda: Lambda parameter used in the computation of a
-     *         candidate document's density (smoothing for 0-frequency terms).
+     *    float density.lambda: Lambda parameter used in the computation of a
+     *        candidate document's density (smoothing for 0-frequency terms).
      *
-     *     float density.beta: Beta parameter used in the computation of a
-     *         candidate document's density (sharpness of the KL-divergence).
+     *    float density.beta: Beta parameter used in the computation of a
+     *        candidate document's density (sharpness of the KL-divergence).
      *
-     *     int label_fs.max: Use the `label_fs' most informative features to
-     *         train the Naive Bayes classifiers used during labeling to
-     *         compute disagreement for a document.
+     *    int label_fs.max: Use the `label_fs' most informative features to
+     *        train the Naive Bayes classifiers used during labeling to
+     *        compute disagreement for a document.
      *
-     *     float threshold: Threshold used to convert a pseudo-probability to a
-     *         hard classification decision. Documents with pseudo-probability
-     *         >= `threshold' are classified as positive instances.
+     *    float threshold: Threshold used to convert a pseudo-probability to a
+     *        hard classification decision. Documents with pseudo-probability
+     *        >= `threshold' are classified as positive instances.
      *
-     *     string final_algo: Algorithm to use for finalization; 'lr' for
-     *         logistic regression, or 'nb' for Naive Bayes; default 'lr'.
+     *    string final_algo: Algorithm to use for finalization; 'lr' for
+     *        logistic regression, or 'nb' for Naive Bayes; default 'lr'.
      *
-     *     int final_fs.max: Use the `final_fs' most informative features to
-     *         train the final classifier.
+     *    int final_fs.max: Use the `final_fs' most informative features to
+     *        train the final classifier.
      *
      * @var array
      */
@@ -337,9 +337,9 @@ class Classifier implements CrawlConstants
      * the time of construction.
      *
      * @param string $label class label applied to positive instances of the
-     *  class this classifier is trained to recognize
+     * class this classifier is trained to recognize
      * @param array $options optional associative array of options that will
-     *  override the default options
+     * override the default options
      */
     function __construct($label, $options = array())
     {
@@ -354,7 +354,7 @@ class Classifier implements CrawlConstants
      * stored in individual, compressed files.
      *
      * @return array names of properties to store when serializing this
-     *  instance
+     * instance
      */
     function __sleep()
     {
@@ -462,7 +462,7 @@ class Classifier implements CrawlConstants
      * @param string $key key used to select the document from the docs array
      * @param int $label new label (-1, 1, or 0)
      * @param bool $is_active whether this operation is being carried out
-     *  during active labeling
+     * during active labeling
      * @return bool true if the training set was modified, and false otherwise
      */
     function labelDocument($key, $label, $is_active = true)
@@ -523,7 +523,7 @@ class Classifier implements CrawlConstants
      * @param object $mix_iterator crawl mix iterator to draw documents from
      * @param int $label label to apply to every document; -1 or 1, but NOT 0
      * @param int $limit optional upper bound on the number of documents to
-     *  add; defaults to no limit
+     * add; defaults to no limit
      * @return int total number of newly-labeled documents
      */
     function addAllDocuments($mix_iterator, $label, $limit = INF) {
@@ -558,7 +558,7 @@ class Classifier implements CrawlConstants
      *
      * @param object $mix_iterator crawl mix iterator to draw documents from
      * @param int $buffer_size optional buffer size to use; defaults to the
-     *  runtime parameter
+     * runtime parameter
      * @return int final buffer size
      */
     function initBuffer($mix_iterator, $buffer_size = NULL)
@@ -583,7 +583,7 @@ class Classifier implements CrawlConstants
      *
      * @param object $mix_iterator crawl mix iterator to draw documents from
      * @param int $buffer_size optional buffer size to use; defaults to the
-     *  runtime parameter
+     * runtime parameter
      * @return int final buffer size
      */
     function refreshBuffer($mix_iterator, $buffer_size = NULL)
@@ -662,9 +662,9 @@ class Classifier implements CrawlConstants
      * set of features.
      *
      * @return array two-element array containing first the best candidate, and
-     *  second the disagreement score, obtained by dividing the disagreement
-     *  for the document by the maximum disagreement possible for the committee
-     *  size
+     * second the disagreement score, obtained by dividing the disagreement
+     * for the document by the maximum disagreement possible for the committee
+     * size
      */
     function findNextDocumentToLabel()
     {
@@ -704,9 +704,9 @@ class Classifier implements CrawlConstants
      * Trains the Naive Bayes classification algorithm used during labeling on
      * the current training set, and optionally updates the estimated accuracy.
      *
-     * @param bool update_accuracy optional parameter specifying whether or not
-     *  to update the accuracy estimate after training completes; defaults to
-     *  false
+     * @param bool $update_accuracy optional parameter specifying whether or not
+     *      to update the accuracy estimate after training completes; defaults
+     *      to false
      */
     function train($update_accuracy = false)
     {
@@ -733,10 +733,10 @@ class Classifier implements CrawlConstants
      * blocks have been used for testing, and the average accuracy recorded.
      *
      * @param object $X optional sparse matrix representing the already-mapped
-     *  training set to use; if not provided, the current training set is
-     *  mapped using the label_features property
+     * training set to use; if not provided, the current training set is
+     * mapped using the label_features property
      * @param array $y optional array of document labels corresponding to the
-     *  training set; if not provided the current training set labels are used
+     * training set; if not provided the current training set labels are used
      */
     function updateAccuracy($X = NULL, $y = NULL)
     {
@@ -817,7 +817,7 @@ class Classifier implements CrawlConstants
      *
      * @param array $page page summary array for the page to be classified
      * @return float pseudo-probability that the page is a positive instance of
-     *  the target class
+     * the target class
      */
     function classify($page)
     {
@@ -843,7 +843,7 @@ class Classifier implements CrawlConstants
      *
      * @param array $page page summary for the document to add to the buffer
      * @param bool $is_active whether this operation is part of active
-     *  training, in which case some extra statistics must be maintained
+     * training, in which case some extra statistics must be maintained
      */
     function addBufferDoc($page, $is_active = true)
     {
@@ -875,7 +875,7 @@ class Classifier implements CrawlConstants
      * document being removed are maintained.
      *
      * @param bool $is_active whether this operation is part of active
-     *  training, in which case some extra statistics must be maintained
+     * training, in which case some extra statistics must be maintained
      */
     function dropBufferDoc($is_active = true)
     {
@@ -908,7 +908,7 @@ class Classifier implements CrawlConstants
      *
      * @param string $description string to tokenize
      * @return array associative array mapping terms to their within-string
-     *  frequencies
+     * frequencies
      */
     function tokenizeDescription($description)
     {
@@ -940,7 +940,7 @@ class Classifier implements CrawlConstants
      * as a variable number of arguments.
      *
      * @param string $property_name,... variably-sized list of property names
-     *  to try to load data for
+     * to try to load data for
      */
     function loadProperties(/* args... */)
     {
@@ -993,9 +993,9 @@ class Classifier implements CrawlConstants
      *
      * @param array $summary page summary to classify, passed by reference
      * @param array $classifiers list of Classifier instances, each prepared
-     *  for classifying (via the prepareToClassify method)
-     * @param array &$active_classifiers
-     * @param array &$active_rankers
+     * for classifying (via the prepareToClassify method)
+     * @param array& $active_classifiers
+     * @param array& $active_rankers
      */
     static function labelPage(&$summary, $classifiers, &$active_classifiers,
         &$active_rankers)
@@ -1032,7 +1032,7 @@ class Classifier implements CrawlConstants
      * containing only summary statistics.
      *
      * @return array associative array of class labels mapped to their
-     *  corresponding classifier instances
+     *      corresponding classifier instances
      */
     static function getClassifierList()
     {
@@ -1052,7 +1052,7 @@ class Classifier implements CrawlConstants
      *
      * @param string $label classifier's class label
      * @return object classifier instance with the relevant class label, or
-     *  NULL if no such classifier exists on disk
+     *      NULL if no such classifier exists on disk
      */
     static function getClassifier($label)
     {
@@ -1074,7 +1074,7 @@ class Classifier implements CrawlConstants
      *
      * @param array $labels flat array of class labels for which to load data
      * @return array associative array mapping class labels to arrays of data
-     *  necessary for initializing the associated classifier
+     * necessary for initializing the associated classifier
      */
     static function loadClassifiersData($labels)
     {
@@ -1109,7 +1109,7 @@ class Classifier implements CrawlConstants
      * name server when establishing a new crawl.
      *
      * @param array $data associative array mapping property names to their
-     *  serialized and compressed data
+     * serialized and compressed data
      * @return object Classifier instance built from the passed-in data
      */
     static function newClassifierFromData($data)
@@ -1135,7 +1135,7 @@ class Classifier implements CrawlConstants
      * The classifier directory and all of its contents are made world-writable
      * so that they can be manipulated without hassle from the command line.
      *
-     * @param object Classifier instance to store to disk
+     * @param object $classifier Classifier instance to store to disk
      */
     static function setClassifier($classifier)
     {
@@ -1182,7 +1182,7 @@ class Classifier implements CrawlConstants
      *
      * @param string $label class label associated with the crawl mix
      * @return string name that can be used for the crawl mix associated with
-     *  $label
+     * $label
      */
     static function getCrawlMixName($label)
     {
@@ -1209,9 +1209,9 @@ class Classifier implements CrawlConstants
      * classification score to the same document.
      *
      * @param array $ps probabilities describing several discrete two-element
-     *  probability distributions
+     * probability distributions
      * @return float KL-divergence to the mean for the collection of
-     *  distributions
+     * distributions
      */
     static function klDivergenceToMean($ps)
     {

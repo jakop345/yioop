@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -75,8 +75,8 @@ class BloomFilterFile extends PersistentStructure
      *
      * @param string $fname name of the file to store the BloomFilter data in
      * @param int $num_values the maximum number of values that will be stored
-     *      in the BloomFilter. Filter will be sized so the odds of a false
-     *      positive are roughly one over this value
+     *     in the BloomFilter. Filter will be sized so the odds of a false
+     *     positive are roughly one over this value
      * @param int $save_frequency how often to store the BloomFilter to disk
      */
     function __construct($fname, $num_values,
@@ -126,6 +126,8 @@ class BloomFilterFile extends PersistentStructure
      * Hashes $value to a bit position in the BloomFilter
      *
      * @param string $value value to map to a bit position in the filter
+     * @param int $num_keys number of bit positions in the Bloom filter 
+     *      used to say an item isin the filter
      * @return int the bit position mapped to
      */
     function getHashBitPositionArray($value, $num_keys)

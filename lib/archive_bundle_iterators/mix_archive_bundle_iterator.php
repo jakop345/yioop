@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -80,9 +80,9 @@ class MixArchiveBundleIterator extends ArchiveBundleIterator
      * Creates a web archive iterator with the given parameters.
      *
      * @param string $mix_timestamp timestamp of the crawl mix to
-     *      iterate over the pages of
+     *     iterate over the pages of
      * @param string $result_timestamp timestamp of the web archive bundle
-     *      results are being stored in
+     *     results are being stored in
      */
     function __construct($mix_timestamp, $result_timestamp)
     {
@@ -104,11 +104,11 @@ class MixArchiveBundleIterator extends ArchiveBundleIterator
         }
     }
     /**
-     *  Get the filename of the file that says information about the
-     *  current archive iterator (such as whether the end of the iterator
-     *  has been reached)
+     * Get the filename of the file that says information about the
+     * current archive iterator (such as whether the end of the iterator
+     * has been reached)
      *
-     *  @param int $timestamp of current archive crawl
+     * @param int $timestamp of current archive crawl
      */
     function getArchiveName($timestamp)
     {
@@ -117,6 +117,10 @@ class MixArchiveBundleIterator extends ArchiveBundleIterator
     /**
      * Saves the current state so that a new instantiation can pick up just
      * after the last batch of pages extracted.
+     *
+     * @param array $info data needed to restore where we are in the process
+     *      of iterating through archive. By default save fields LIMIT and
+     *      END_OF_ITERATOR
      */
     function saveCheckpoint($info = array())
     {
@@ -151,7 +155,7 @@ class MixArchiveBundleIterator extends ArchiveBundleIterator
      * the particular archive iterator
      * @param $site an associative array containing info about a web page
      * @return bool false we assume files were crawled roughly according to
-     *      page importance so we use default estimate of doc rank
+     *     page importance so we use default estimate of doc rank
      */
     function weight(&$site)
     {
@@ -162,7 +166,7 @@ class MixArchiveBundleIterator extends ArchiveBundleIterator
      *
      * @param int $num number of docs to get
      * @param bool $no_process this flag is inherited from base class but
-     *      does not do anything in this case
+     *     does not do anything in this case
      * @return array associative arrays for $num pages
      */
     function nextPages($num, $no_process = false)

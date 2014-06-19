@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -40,7 +40,7 @@ require_once BASE_DIR."/configs/config.php";
  */
 require_once BASE_DIR."/lib/utility.php";
 /**
- *  Load common constants for crawling
+ * Load common constants for crawling
  */
 require_once BASE_DIR."/lib/crawl_constants.php";
 /**
@@ -62,9 +62,9 @@ class CrawlDaemon implements CrawlConstants
      */
     static $name;
     /**
-     *  Subname of the name prefix used on files associated with this daemon
-     *  For example, the name might be fetcher, the subname might 2 to indicate
-     *  which fetcher daemon instance.
+     * Subname of the name prefix used on files associated with this daemon
+     * For example, the name might be fetcher, the subname might 2 to indicate
+     * which fetcher daemon instance.
      *
      * @var string
      * @static
@@ -82,7 +82,7 @@ class CrawlDaemon implements CrawlConstants
      * time has elapsed since the last processHandler call it stops the process
      *
      * @param bool $continue if true only stop if lock file not present,
-     *    ignore PROCESS_TIMEOUT time being exceeded.
+     *   ignore PROCESS_TIMEOUT time being exceeded.
      */
     static function processHandler($continue = false)
     {
@@ -119,17 +119,17 @@ class CrawlDaemon implements CrawlConstants
      * foreground.
      *
      * @param array $argv an array of command line arguments. The argument
-     *      start will check if the process control functions exists if these
-     *      do they will fork and detach a child process to act as a daemon.
-     *      a lock file will be created to prevent additional daemons from
-     *      running. If the message is stop then a message file is written to
-     *      tell the daemon to stop. If the argument is terminal then the
-     *      program won't be run as a daemon.
+     *     start will check if the process control functions exists if these
+     *     do they will fork and detach a child process to act as a daemon.
+     *     a lock file will be created to prevent additional daemons from
+     *     running. If the message is stop then a message file is written to
+     *     tell the daemon to stop. If the argument is terminal then the
+     *     program won't be run as a daemon.
      * @param string $name the prefix to use for lock and message files
      * @param bool $exit_type whether this function should exit or return
-     *      by default a lock file is only written if exit (this allows
-     *      both queue server processes (Indexer and Scheduler) to use the
-     *      same lock file
+     *     by default a lock file is only written if exit (this allows
+     *     both queue server processes (Indexer and Scheduler) to use the
+     *     same lock file
      */
     static function init($argv, $name, $exit_type = 1)
     {
@@ -201,14 +201,14 @@ class CrawlDaemon implements CrawlConstants
      * Used to start a daemon running in the background
      *
      * @param string $name the main name of this daemon such as queue_server
-     *      or fetcher.
+     *     or fetcher.
      * @param string $subname the instance name if it is possible for more
-     *      than one copy of the daemon to be running at the same time
+     *     than one copy of the daemon to be running at the same time
      * @param string $options a string of additional command line options
      * @param bool $exit whether this function should exit or return
-     *      by default a lock file is only written if exit (this allows
-     *      both queue server processes (Indexer and Scheduler) to use the
-     *      same lock file
+     *     by default a lock file is only written if exit (this allows
+     *     both queue server processes (Indexer and Scheduler) to use the
+     *     same lock file
      */
     static function start($name, $subname = "", $options = "", $exit = 1)
     {
@@ -259,9 +259,11 @@ class CrawlDaemon implements CrawlConstants
      * Used to stop a daemon that is running in the background
      *
      * @param string $name the main name of this daemon such as queue_server
-     *      or fetcher.
+     *     or fetcher.
      * @param string $subname the instance name if it is possible for more
-     *      than one copy of the daemon to be running at the same time
+     *     than one copy of the daemon to be running at the same time
+     * @param bool $exit whether this method should just return (false) or
+     *      call exit() (true)
      */
     static function stop($name, $subname = "", $exit = true)
     {
@@ -282,12 +284,12 @@ class CrawlDaemon implements CrawlConstants
      * messages to a daemon running in the background
      *
      * @param string $name the main name of this daemon such as queue_server
-     *      or fetcher.
+     *     or fetcher.
      * @param string $subname the instance name if it is possible for more
-     *      than one copy of the daemon to be running at the same time
+     *     than one copy of the daemon to be running at the same time
      *
      * @return string the name of the message file for the daemon with
-     *      the given name and subname
+     *     the given name and subname
      */
     static function getMesssageFileName($name, $subname = "")
     {
@@ -299,12 +301,12 @@ class CrawlDaemon implements CrawlConstants
      * by a daemon
      *
      * @param string $name the main name of this daemon such as queue_server
-     *      or fetcher.
+     *     or fetcher.
      * @param string $subname the instance name if it is possible for more
-     *      than one copy of the daemon to be running at the same time
+     *     than one copy of the daemon to be running at the same time
      *
      * @return string the name of the lock file for the daemon with
-     *      the given name and subname
+     *     the given name and subname
      */
     static function getLockFileName($name, $subname = "")
     {
@@ -315,9 +317,9 @@ class CrawlDaemon implements CrawlConstants
      * Used to return a string name for a given daemon instance
      *
      * @param string $name the main name of this daemon such as queue_server
-     *      or fetcher.
+     *     or fetcher.
      * @param string $subname the instance name if it is possible for more
-     *      than one copy of the daemon to be running at the same time
+     *     than one copy of the daemon to be running at the same time
      *
      * @return string a single name that combines the name and subname
      */

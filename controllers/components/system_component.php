@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -47,14 +47,14 @@ class SystemComponent extends Component
 {
     /**
      * Handles admin request related to the managing the machines which perform
-     *  crawls
+     * crawls
      *
      * With this activity an admin can add/delete machines to manage. For each
      * managed machine, the admin can stop and start fetchers/queue_servers
      * as well as look at their log files
      *
      * @return array $data MACHINES, their MACHINE_NAMES, data for
-     *      FETCHER_NUMBERS drop-down
+     *     FETCHER_NUMBERS drop-down
      */
     function manageMachines()
     {
@@ -325,9 +325,9 @@ class SystemComponent extends Component
      * statistics about a locale as well as edit the string for that locale
      *
      * @return array $data info about current locales, statistics for each
-     *      locale as well as potentially the currently set string of a
-     *      locale and any messages about the success or failure of a
-     *      sub activity.
+     *     locale as well as potentially the currently set string of a
+     *     locale and any messages about the success or failure of a
+     *     sub activity.
      */
     function manageLocales()
     {
@@ -487,11 +487,11 @@ class SystemComponent extends Component
         return $data;
     }
     /**
-     *  Handles admin panel requests for mail, database, tor, proxy server
-     *  settings
+     * Handles admin panel requests for mail, database, tor, proxy server
+     * settings
      *
-     *  @return array $data data for the view concerning the current settings
-     *      so they can be displayed
+     * @return array $data data for the view concerning the current settings
+     *     so they can be displayed
      */
     function serverSettings()
     {
@@ -719,7 +719,7 @@ EOD;
      * test info, as well as which machine acts as the queue server.
      *
      * @return array $data fields for available language, dbms, etc as well as
-     *      results of processing sub activity if any
+     *     results of processing sub activity if any
      */
     function configure()
     {
@@ -1000,7 +1000,7 @@ EOD;
      * Yioop! can run.
      *
      * @return string a message indicatign which required and optional
-     *      components are missing; or "Passed" if nothing missing.
+     *     components are missing; or "Passed" if nothing missing.
      */
      function systemCheck()
      {

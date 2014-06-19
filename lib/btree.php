@@ -1,27 +1,27 @@
 <?php
 
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -43,8 +43,8 @@ define('MIN_DEGREE', 501);
  * by T.H. Cormen, C.E. Leiserson, R.L. Rivest, and C. Stein. Second
  * Edition, 2001, The MIT Press
  *
- *  @author Akshat Kukreti
- *  @package seek_quarry
+ * @author Akshat Kukreti
+ * @package seek_quarry
  */
 class BTree
 {
@@ -77,6 +77,7 @@ class BTree
      * Creates/Loads B-Tree having specified directory and minimum_degree. The
      * default minimum_degree is 501.
      * @param string $dir is the directory for storing the B-Tree files
+     * @param int $min_degree minimum degree of a B-tree node
      */
     function __construct($dir, $min_degree = MIN_DEGREE)
     {
@@ -281,8 +282,9 @@ class BTree
     /**
      * Splits a full node into two child node. The median key-value pair is
      * added to the parent node of the node being split.
+     *
      * @param object $parent is the parent node
-     * @paran int $i is the link to child node
+     * @param int $i is the link to child node
      * @param object $child is the child node
      */
     function bTreeSplitChild($parent, $i, $child)
@@ -431,8 +433,8 @@ class BTree
     }
     /**
      * Deletes key-value pair from a leaf node in a B-Tree
-     * @param object $node is the leaf node containing the key-value pair
-     * @param int $key is the key to be deleted
+     * @param object& $node is the leaf node containing the key-value pair
+     * @param int $pos in node to delete
      */
     function deleteFromLeaf(&$node, $pos)
     {
@@ -441,7 +443,7 @@ class BTree
             $node->count -= 1;
             $this->writeNode($node);
         } else {
-            for($i = $pos + 1;$i < $node->count;$i++) {
+            for($i = $pos + 1; $i < $node->count; $i++) {
                 $node->keys[$i - 1] = $node->keys[$i];
             }
             $node->keys = array_slice($node->keys, 0, $node->count - 1);
@@ -455,8 +457,8 @@ class BTree
     }
     /**
      * Deletes key-value pair from a non-leaf node in a B-Tree
-     * @param object $node is the non-leaf node containing the key-value pair
-     * @param int $key is the key to be deleted
+     * @param object& $node is the non-leaf node containing the key-value pair
+     * @param int $pos link position in node to delete
      */
     function deleteFromNonLeaf(&$node, $pos)
     {
@@ -528,7 +530,7 @@ class BTree
      * Otherwise, the node is adjusted using one of its sibling nodes and the
      * parent node so that the resultant node has $min_degree keys.
      * @param object $parent is the parent node
-     * @param int pos is the link to the root of the sub-tree
+     * @param int $pos is the link to the root of the sub-tree
      * @return object $child is the child node to which the recursion will
      * descend
      */
@@ -630,10 +632,11 @@ class BTree
      * Gives a child node an extra key by moving a key from the parent to the
      * child node, and by moving a key from the child's right sibling to the
      * parent node
-     * @param object $parent is the parent node
-     * @param object $child is the child node
-     * @param object $pred is the $child's left sibling node
-     * @param $pos is the link from $parent to $child
+     * @param object& $parent is the parent node
+     * @param object& $child is the child node
+     * @param object& $pred is the $child's left sibling node
+     * @param object& $next is the $child's right sibling node
+     * @param int $pos is the link from $parent to $child
      */
     function adjustChildUsingRightSiblingAndParent(&$parent, &$child, &$next,
         $pos)

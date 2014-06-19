@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -32,7 +32,7 @@
  */
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 /**
- *  Load base helper class if needed
+ * Load base helper class if needed
  */
 require_once BASE_DIR."/views/helpers/helper.php";
 /**
@@ -46,16 +46,16 @@ class FeedsHelper extends Helper implements CrawlConstants
 {
 
     /**
-     *  Takes page summaries for RSS pages and the current query
-     *  and draws list of news links and a link to the news link subsearch
-     *  page if applicable.
+     * Takes page summaries for RSS pages and the current query
+     * and draws list of news links and a link to the news link subsearch
+     * page if applicable.
      *
-     *  @param array $feed_pages page data from news feeds
-     *  @param string $base_query the  query_string prefix
-     *  @param string $query the current search query
-     *  @param string $subsearch name of subsearch page this image group on
-     *  @param boolean $open_in_tabs whether new links should be opened in
-     *     tabs
+     * @param array $feed_pages page data from news feeds
+     * @param string $base_query the  query_string prefix
+     * @param string $query the current search query
+     * @param string $subsearch name of subsearch page this image group on
+     * @param boolean $open_in_tabs whether new links should be opened in
+     *    tabs
      */
     function render($feed_pages, $base_query, $query, $subsearch,
         $open_in_tabs = false)
@@ -138,12 +138,12 @@ class FeedsHelper extends Helper implements CrawlConstants
         <?php
     }
     /**
-     *  Write as an string in the current locale the difference between the
-     *  publication date of a post and the current time
+     * Write as an string in the current locale the difference between the
+     * publication date of a post and the current time
      *
-     *  @param int $time timestamp for current time
-     *  @param int $pub_date timestamp for feed_item publication
-     *  @return string in the current locale the time difference
+     * @param int $time timestamp for current time
+     * @param int $pub_date timestamp for feed_item publication
+     * @return string in the current locale the time difference
      */
     function getPubdateString($time, $pub_date)
     {

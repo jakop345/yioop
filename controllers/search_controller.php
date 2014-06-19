@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -172,18 +172,18 @@ class SearchController extends Controller implements CrawlConstants
         $this->displayView($view, $data);
     }
     /**
-     *  Determines how this query is being run and return variables for the view
+     * Determines how this query is being run and return variables for the view
      *
-     *  A query might be run as a web-based where HTML is expected as the
-     *  output, an RSS query, an API query, or as a serial query from a
-     *  name_server or mirror instance back to one of the other queue servers
-     *  in a Yioop installation. A query might also request different numbers
-     *  of pages back beginning at different starting points in the result.
+     * A query might be run as a web-based where HTML is expected as the
+     * output, an RSS query, an API query, or as a serial query from a
+     * name_server or mirror instance back to one of the other queue servers
+     * in a Yioop installation. A query might also request different numbers
+     * of pages back beginning at different starting points in the result.
      *
-     *  @return array consisting of (view to be used to render results,
-     *      flag for whether html results should be used, int code for what
-     *      kind of group of similar urls should be done on the results,
-     *      number of search results to return, start from which result)
+     * @return array consisting of (view to be used to render results,
+     *     flag for whether html results should be used, int code for what
+     *     kind of group of similar urls should be done on the results,
+     *     number of search results to return, start from which result)
      */
     function initializeResponseFormat()
     {
@@ -217,14 +217,14 @@ class SearchController extends Controller implements CrawlConstants
         return array($view, $web_flag, $raw, $results_per_page, $limit);
     }
     /**
-     *  Determines if query results are using a subsearch, and if so
-     *  initializes them, also it sets up list of subsearches to draw
-     *  at top of screen.
+     * Determines if query results are using a subsearch, and if so
+     * initializes them, also it sets up list of subsearches to draw
+     * at top of screen.
      *
-     *  @return array (subsearches, no_query) where subsearches is itself
-     *      an array of data about each subsearch to draw, and no_query
-     *      is a bool flag used in the case of a news subsearch when no query
-     *      was entered by the user but still want to display news
+     * @return array (subsearches, no_query) where subsearches is itself
+     *     an array of data about each subsearch to draw, and no_query
+     *     is a bool flag used in the case of a news subsearch when no query
+     *     was entered by the user but still want to display news
      */
     function initializeSubsearches()
     {
@@ -264,18 +264,18 @@ class SearchController extends Controller implements CrawlConstants
         return array($subsearches, $no_query);
     }
     /**
-     *  Determines the kind of user session that this search request is for
+     * Determines the kind of user session that this search request is for
      *
-     *  This function is called by @see processRequest(). The user session
-     *  might be one without a login, one with a login so need to validate
-     *  against to prevent CSRF attacks, just after someone logged out, or
-     *  a bot session (googlebot, etc) so remove the query request
+     * This function is called by @see processRequest(). The user session
+     * might be one without a login, one with a login so need to validate
+     * against to prevent CSRF attacks, just after someone logged out, or
+     * a bot session (googlebot, etc) so remove the query request
      *
-     *  @param array &$data that will eventually be sent to the view. We might
-     *      update with error messages
-     *  @return array consisting of (query based on user info, whether
-     *      if a cache request highlighting should be userd, what activity
-     *      user wants, any arguments to this activity)
+     * @param array& $data that will eventually be sent to the view. We might
+     *     update with error messages
+     * @return array consisting of (query based on user info, whether
+     *     if a cache request highlighting should be userd, what activity
+     *     user wants, any arguments to this activity)
      *
      */
     function initializeUserAndDefaultActivity(&$data)
@@ -343,21 +343,21 @@ class SearchController extends Controller implements CrawlConstants
         return array($query, $activity, $arg);
     }
     /**
-     *  Determines which crawl or mix timestamp should be in use for this
-     *  query. It also determines info and returns associated with this
-     *  timestamp.
+     * Determines which crawl or mix timestamp should be in use for this
+     * query. It also determines info and returns associated with this
+     * timestamp.
      *
-     *  @param bool $web_flag whether this is a web based query or one from
-     *      the search API
-     *  @param int  and so should validate against list of known crawls or an
-     *      internal (say network) query that doesn't require validation
-     *      (faster without).
-     *  @param array &$data that will eventually be sent to the view. We set
-     *      the 'its' (index_time_stamp) field here
-     *  @return array consisting of index timestamp of crawl or mix in use,
-     *      $index_info an array of info about that index, and $save_timestamp
-     *      timestamp of last savepoint, used if this query is being is the
-     *      query for a crawl mix archive crawl.
+     * @param bool $web_flag whether this is a web based query or one from
+     *     the search API
+     * @param int $raw and so should validate against list of known crawls or an
+     *     internal (say network) query that doesn't require validation
+     *     (faster without).
+     * @param array& $data that will eventually be sent to the view. We set
+     *     the 'its' (index_time_stamp) field here
+     * @return array consisting of index timestamp of crawl or mix in use,
+     *     $index_info an array of info about that index, and $save_timestamp
+     *     timestamp of last savepoint, used if this query is being is the
+     *     query for a crawl mix archive crawl.
      */
     function initializeIndexInfo($web_flag, $raw, &$data)
     {
@@ -467,18 +467,18 @@ class SearchController extends Controller implements CrawlConstants
         return ($query_okay) ? $query : "";
     }
     /**
-     *  Prepares the array $data so the SearchView can draw search results
+     * Prepares the array $data so the SearchView can draw search results
      *
-     *  @param array $index_info an array of info about that index in use
-     *  @param bool $no_query true in the case of a news subsearch when no query
-     *      was entered by the user but still want to display news
-     *  @param int $raw $raw what kind of grouping of identical results should
-     *      be done (0 is default, 1 and higher used for internal queries)
-     *  @param string $view name of view class search results are for
-     *  @param array $subsearches an array of data about each subsearch to draw
-     *      to the view
-     *  @param array &$data that will eventually be sent to the view for
-     *      rendering. This method adds fields to the array
+     * @param array $index_info an array of info about that index in use
+     * @param bool $no_query true in the case of a news subsearch when no query
+     *     was entered by the user but still want to display news
+     * @param int $raw $raw what kind of grouping of identical results should
+     *     be done (0 is default, 1 and higher used for internal queries)
+     * @param string $view name of view class search results are for
+     * @param array $subsearches an array of data about each subsearch to draw
+     *     to the view
+     * @param array& $data that will eventually be sent to the view for
+     *     rendering. This method adds fields to the array
      */
     function addSearchViewData($index_info, $no_query, $raw, $view,
         $subsearches, &$data)
@@ -518,8 +518,8 @@ class SearchController extends Controller implements CrawlConstants
         /*  Only set up spell correction if single conjunctive query without
             without meta words
          */
-        if(isset($data['QUERY']) && 
-            !preg_match('/(\%7C|\%3A)/u', $data['QUERY'])) {
+        if(isset($data['QUERY']) &&
+            !preg_match('/(\%7C|\%3A|%26quot%3B)/u', $data['QUERY'])) {
             $data['INCLUDE_SCRIPTS'] = array("suggest");
         }
         if(!isset($data['SCRIPT'])) {
@@ -579,34 +579,34 @@ class SearchController extends Controller implements CrawlConstants
      * Searches the database for the most relevant pages for the supplied search
      * terms. Renders the results to the HTML page.
      *
-     * @param array &$data an array of view data that will be updated to include
-     *      at most results_per_page many search results
+     * @param array& $data an array of view data that will be updated to include
+     *     at most results_per_page many search results
      * @param string $query a string containing the words to search on
      * @param string $activity besides a straight search for words query,
-     *      one might have other searches, such as a search for related pages.
-     *      this argument says what kind of search to do.
+     *     one might have other searches, such as a search for related pages.
+     *     this argument says what kind of search to do.
      * @param string $arg for a search other than a straight word query this
-     *      argument provides auxiliary information on how to conduct the
-     *      search. For instance on a related web page search, it might provide
-     *      the url of the site with which to perform the related search.
+     *     argument provides auxiliary information on how to conduct the
+     *     search. For instance on a related web page search, it might provide
+     *     the url of the site with which to perform the related search.
      * @param int $results_per_page the maixmum number of search results
-     *      that can occur on a page
+     *     that can occur on a page
      * @param int $limit the first page of all the pages with the query terms
-     *      to return. For instance, if 10 then the tenth highest ranking page
-     *      for those query terms will be return, then the eleventh, etc.
+     *     to return. For instance, if 10 then the tenth highest ranking page
+     *     for those query terms will be return, then the eleventh, etc.
      * @param int $index_name the timestamp of an index to use, if 0 then
-     *      default used
+     *     default used
      * @param int $raw ($raw == 0) normal grouping, $raw > 0
-     *      no grouping done on data. If $raw == 1 no summary returned (used
-     *      with f=serial, end user probably does not want)
-     *      In this case, will get offset, generation, etc so could later lookup
+     *     no grouping done on data. If $raw == 1 no summary returned (used
+     *     with f=serial, end user probably does not want)
+     *     In this case, will get offset, generation, etc so could later lookup
      * @param mixed $save_timestamp if this timestamp is nonzero, then save
-     *      iterate position, so can resume on future queries that make
-     *      use of the timestamp. $save_time_stamp may also be in the format
-     *      of string timestamp-query_part to handle networked queries involving
-     *      presentations
+     *     iterate position, so can resume on future queries that make
+     *     use of the timestamp. $save_time_stamp may also be in the format
+     *     of string timestamp-query_part to handle networked queries involving
+     *     presentations
      * @param bool $limit_news if true the number of media:news items to
-     *      allow in search results is limited to WordIterator::LIMIT_NEWS_COUNT
+     *     allow in search results is limited to WordIterator::LIMIT_NEWS_COUNT
      */
     function processQuery(&$data, $query, $activity, $arg, $results_per_page,
         $limit = 0, $index_name = 0, $raw = 0, $save_timestamp = 0,
@@ -737,18 +737,18 @@ class SearchController extends Controller implements CrawlConstants
         $data['RESULTS_PER_PAGE'] = $results_per_page;
     }
     /**
-     *  Extracts from the query string any control words:
-     *  mix:, m:, raw:, no: and returns an array consisting
-     *  of the query with these words removed, and then variables
-     *  for their values.
+     * Extracts from the query string any control words:
+     * mix:, m:, raw:, no: and returns an array consisting
+     * of the query with these words removed, and then variables
+     * for their values.
      *
-     *  @param string $query original query string
-     *  @param bool $raw the $_REQUEST['raw'] value
-     *  @param bool if the current index name is that of a crawl mix
-     *  @param string $index_name timestamp of current mix or index
+     * @param string $query original query string
+     * @param bool $raw the $_REQUEST['raw'] value
+     * @param bool $is_mix if the current index name is that of a crawl mix
+     * @param string $index_name timestamp of current mix or index
      *
-     *  @return array ($query, $raw, $use_network,
-     *      $use_cache_if_possible, $guess_semantics)
+     * @return array ($query, $raw, $use_network,
+     *     $use_cache_if_possible, $guess_semantics)
      */
     function calculateControlWords($query, $raw, $is_mix, $index_name)
     {
@@ -818,7 +818,7 @@ class SearchController extends Controller implements CrawlConstants
      * before
      *
      * @param $pages an array of search result pages to group those pages
-     *      with thumbs within
+     *     with thumbs within
      * @return array $pages after the grouping has been done
      */
     function makeMediaGroups($pages)
@@ -854,8 +854,8 @@ class SearchController extends Controller implements CrawlConstants
      *
      * @param string $crawl_item a page summary
      * @param int $num number of key phrase to return
-     * @param int $index_name the timestamp of an index to use, if 0 then
-     *      default used
+     * @param int $crawl_time the timestamp of an index to use, if 0 then
+     *     default used
      * @return array  an array of most selective key phrases
      */
     function getTopPhrases($crawl_item, $num, $crawl_time = 0)
@@ -927,12 +927,12 @@ class SearchController extends Controller implements CrawlConstants
         return array($out_query, $activity, $arg);
     }
     /**
-     *  Used in rendering a cached web page to highlight the search terms.
+     * Used in rendering a cached web page to highlight the search terms.
      *
-     *  @param object $node DOM object to mark html elements of
-     *  @param array $words an array of words to be highlighted
-     *  @param object $dom a DOM object for the whole document
-     *  @return object the node modified to now have highlighting
+     * @param object $node DOM object to mark html elements of
+     * @param array $words an array of words to be highlighted
+     * @param object $dom a DOM object for the whole document
+     * @return object the node modified to now have highlighting
      */
     function markChildren($node, $words, $dom)
     {
@@ -1032,18 +1032,18 @@ class SearchController extends Controller implements CrawlConstants
      * associative array of query results
      *
      * @param string $query this can be any query string that could be
-     *      entered into the search bar on Yioop! (other than related: and
-     *      cache: queries)
+     *     entered into the search bar on Yioop! (other than related: and
+     *     cache: queries)
      * @param int $results_per_page number of results to return
      * @param int $limit first result to return from the ordered query results
      * @param int $grouping ($grouping == 0) normal grouping of links
-     *      with associated document, ($grouping > 0)
-     *      no grouping done on data
+     *     with associated document, ($grouping > 0)
+     *     no grouping done on data
      * @param int $save_timestamp if this timestamp is nonzero, then save
-     *      iterate position, so can resume on future queries that make
-     *      use of the timestamp
+     *     iterate position, so can resume on future queries that make
+     *     use of the timestamp
      * @param bool $limit_news if true the number of media:news items to
-     *      allow in search results is limited to WordIterator::LIMIT_NEWS_COUNT
+     *     allow in search results is limited to WordIterator::LIMIT_NEWS_COUNT
      *
      * @return array associative array of results for the query performed
      */
@@ -1076,14 +1076,15 @@ class SearchController extends Controller implements CrawlConstants
      * @param string $url to find related documents for
      * @param int $results_per_page number of results to return
      * @param int $limit first result to return from the ordered query results
+     * @param string $crawl_time timestamp of crawl to look for related request
      * @param int $grouping ($grouping == 0) normal grouping of links
-     *      with associated document, ($grouping > 0)
-     *      no grouping done on data
+     *     with associated document, ($grouping > 0)
+     *     no grouping done on data
      * @param int $save_timestamp if this timestamp is nonzero, then save
-     *      iterate position, so can resume on future queries that make
-     *      use of the timestamp
+     *     iterate position, so can resume on future queries that make
+     *     use of the timestamp
      * @param bool $limit_news if true the number of media:news items to
-     *      allow in search results is limited to WordIterator::LIMIT_NEWS_COUNT
+     *     allow in search results is limited to WordIterator::LIMIT_NEWS_COUNT
      *
      * @return array associative array of results for the query performed
      */
@@ -1104,10 +1105,10 @@ class SearchController extends Controller implements CrawlConstants
      *
      * @param string $url to get cached page for
      * @param array $ui_flags array of  ui features which
-     *      should be added to the cache page. For example, "highlight"
-     *      would way search terms should be highlighted, "history"
-     *      says add history navigation for all copies of this cache page in
-     *      yioop system.
+     *     should be added to the cache page. For example, "highlight"
+     *     would way search terms should be highlighted, "history"
+     *     says add history navigation for all copies of this cache page in
+     *     yioop system.
      * @param string $terms space separated list of search terms
      * @param string $crawl_time timestamp of crawl to look for cached page in
      * @return string with contents of cached page
@@ -1129,14 +1130,15 @@ class SearchController extends Controller implements CrawlConstants
      *
      * @param string $url the url of the page to find the cached version of
      * @param array $ui_flags array of  ui features which
-     *      should be added to the cache page. For example, "highlight"
-     *      would say search terms should be highlighted, "history"
-     *      says add history navigation for all copies of this cache page in
-     *      yioop system. "summaries" says add a toggle headers and extracted
-     *      summaries link. "cache_link_referrer" says a link on a cache page
-     *      referred us to the current cache request
+     *     should be added to the cache page. For example, "highlight"
+     *     would say search terms should be highlighted, "history"
+     *     says add history navigation for all copies of this cache page in
+     *     yioop system. "summaries" says add a toggle headers and extracted
+     *     summaries link. "cache_link_referrer" says a link on a cache page
+     *     referred us to the current cache request
+     * @param string $terms from orginal query responsible for cache request
      * @param int $crawl_time the timestamp of the crawl to look up the cached
-     *      page in
+     *     page in
      */
    function cacheRequestAndOutput($url, $ui_flags = array(), $terms ="",
         $crawl_time = 0)
@@ -1317,14 +1319,14 @@ class SearchController extends Controller implements CrawlConstants
         echo $newDoc;
     }
     /**
-     *  Makes an HTML web page for an image cache item
+     * Makes an HTML web page for an image cache item
      *
-     *  @param string $url original url of the image
-     *  @param array $cache_item details about the image item
-     *  @param string $cache_file string with image
-     *  @param $queue_servers machines used by yioop for the current index
-     *      cache item is from. Used to find out urls on which image occurred
-     *  @return string an HTML page with the image embedded as a data url
+     * @param string $url original url of the image
+     * @param array $cache_item details about the image item
+     * @param string $cache_file string with image
+     * @param $queue_servers machines used by yioop for the current index
+     *     cache item is from. Used to find out urls on which image occurred
+     * @return string an HTML page with the image embedded as a data url
      */
     function imageCachePage($url, $cache_item, $cache_file, $queue_servers)
     {
@@ -1350,7 +1352,7 @@ class SearchController extends Controller implements CrawlConstants
      * for output in a cache page
      *
      * @param array $crawl_item summary information of a web page (title,
-     *      description, etc)
+     *     description, etc)
      * @return string suitable string formatting of item
      */
     function crawlItemSummary($crawl_item)
@@ -1391,16 +1393,16 @@ class SearchController extends Controller implements CrawlConstants
      * @param string $cache_file contains current web page before formatting
      * @param string $url that cache web page was originally from
      * @param string $summary_string summary data that was extracted from the
-     *      web page to be put in the actually inverted index
+     *     web page to be put in the actually inverted index
      * @param int $crawl_time timestamp of crawl cache page was from
      * @param array $all_crawl_times timestamps of all crawl times currently
-     *      in Yioop system
+     *     in Yioop system
      * @param string $terms from orginal query responsible for cache request
      * @param array $ui_flags array of  ui features which
-     *      should be added to the cache page. For example, "highlight"
-     *      would way search terms should be highlighted, "history"
-     *      says add history navigation for all copies of this cache page in
-     *      yioop system.
+     *     should be added to the cache page. For example, "highlight"
+     *     would way search terms should be highlighted, "history"
+     *     says add history navigation for all copies of this cache page in
+     *     yioop system.
      * return string of formatted cached page
      */
     function formatCachePage($cache_item, $cache_file, $url,
@@ -1537,13 +1539,13 @@ class SearchController extends Controller implements CrawlConstants
         return $new_doc;
     }
     /**
-     *  Function used to add links for keyword searches in keyword_links
-     *  array of $cache_item to the text of the $web_page we are going to
-     *  display the cache of as part of a pache page request
+     * Function used to add links for keyword searches in keyword_links
+     * array of $cache_item to the text of the $web_page we are going to
+     * display the cache of as part of a pache page request
      *
-     *  @param string $web_page to add links to
-     *  @param array $cache_item original cache item web page generated from
-     *  @return string modified web page
+     * @param string $web_page to add links to
+     * @param array $cache_item original cache item web page generated from
+     * @return string modified web page
      */
     function addKeywordLinks($web_page, &$cache_item)
     {
@@ -1559,11 +1561,11 @@ class SearchController extends Controller implements CrawlConstants
         return $web_page;
     }
     /**
-     *  Creates the toggle link and hidden div for extracted header and
-     *  summary element on cache pages
+     * Creates the toggle link and hidden div for extracted header and
+     * summary element on cache pages
      *
      * @param DOMDocument $dom used to create new nodes to add to body object
-     *      for page
+     *     for page
      * @param string $text_align whether rtl or ltr language
      * @param DOMElement $body represent body of cached page
      * @param string $summary_string header and summary that were extraced
@@ -1625,15 +1627,15 @@ class SearchController extends Controller implements CrawlConstants
         return $divNode;
     }
     /**
-     *  Get crawl items based on queue server setting.
+     * Get crawl items based on queue server setting.
      *
-     *  @param string $url is the URL of the cached page
-     *  @param array $crawl_times is an array storing crawl times for all
-     *      indexes
-     *  @param array $queue_servers is an array containing URLs for queue
-     *      servers
-     *  @return array($all_crawl_times, $all_crawl_items) is an array containing
-     *      an array of crawl times and an array of their respective crawl items
+     * @param string $url is the URL of the cached page
+     * @param array $crawl_times is an array storing crawl times for all
+     *     indexes
+     * @param array $queue_servers is an array containing URLs for queue
+     *     servers
+     * @return array($all_crawl_times, $all_crawl_items) is an array containing
+     *     an array of crawl times and an array of their respective crawl items
      */
     function getCrawlItems($url, $crawl_times, $queue_servers)
     {
@@ -1654,19 +1656,19 @@ class SearchController extends Controller implements CrawlConstants
         return array($all_crawl_times, $all_crawl_items);
     }
     /**
-     *  User Interface for history feature
+     * User Interface for history feature
      *
-     *  @param long $crawl_time is the crawl time
-     *  @param array $all_crawl_times is an array storing all crawl time
-     *  @param DOMElement $divNode is the section that contains the History UI
-     *  @param DOMDocument $dom is the DOM of the cached page
-     *  @param string $terms is a string containing query terms
-     *  @param boolean $hist_ui_open is a flag to check if History UI should be
-     *      open by default
-     *  @param string $url is the URL of the page
+     * @param long $crawl_time is the crawl time
+     * @param array $all_crawl_times is an array storing all crawl time
+     * @param DOMElement $divNode is the section that contains the History UI
+     * @param DOMDocument $dom is the DOM of the cached page
+     * @param string $terms is a string containing query terms
+     * @param boolean $hist_ui_open is a flag to check if History UI should be
+     *     open by default
+     * @param string $url is the URL of the page
      *
-     *  @return DOMElement the section containing the options for
-     *      selecting year and month
+     * @return DOMElement the section containing the options for
+     *     selecting year and month
      */
     function historyUI($crawl_time, $all_crawl_times, $divNode, $dom, $terms,
         $hist_ui_open, $url)
@@ -1695,7 +1697,7 @@ class SearchController extends Controller implements CrawlConstants
     /**
      * The history toggle displays the year and month associated with
      * the timestamp at which the page was cached.
-     * @param array months is an array storing months
+     * @param array $months used to store month names for which we have a cache
      * @param DOMElement $divNode is the section that contains the History UI
      * @param DOMDocument $dom is the DOM of the cached page
      */
@@ -1776,9 +1778,9 @@ class SearchController extends Controller implements CrawlConstants
      * months
      * @param DOMDocument $dom is the DOM for the cached page
      * @param string $url is the URL for the cached page
-     * @param array years is an array storing years associated with all indexes
+     * @param array $years is an array storing years associated with all indexes
      * @param boolean $hist_ui_open checks if the History UI state should be
-     *      open
+     *     open
      * @param string $terms is a string containing the query terms
      * @param long $crawl_time is the crawl time for the cached page
      * @return DOMElement $d1 is the section containing the options for
@@ -1851,8 +1853,8 @@ class SearchController extends Controller implements CrawlConstants
     }
     /**
      * Display links based on selected year and month in History UI
-     * @param array years is an array storing years associated with all indexes
-     * @param array months is an array storing months
+     * @param array $years is an array storing years associated with all indexes
+     * @param array $months is an array storing months
      * @param string $current_year is the year associated with the timestamp
      * of the cached page
      * @param string $current_month is the month associated with the timestamp
@@ -1921,7 +1923,7 @@ class SearchController extends Controller implements CrawlConstants
      * libraries used to display cache pages
      *
      * @param DOMDocument $dom used to create new nodes
-     * @param DomElement &$node what to add script node to
+     * @param DomElement& $node what to add script node to
      */
     function addCacheJavascriptTags($dom, &$node)
     {

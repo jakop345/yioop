@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -45,12 +45,12 @@ require_once BASE_DIR."/lib/crawl_constants.php";
 class WikiElement extends Element implements CrawlConstants
 {
     /**
-     *  Draw a wiki page for group, or, depending on $data['MODE'] a listing
-     *  of all pages for a group, or the history of revisions of a given page
-     *  or the edit page form
+     * Draw a wiki page for group, or, depending on $data['MODE'] a listing
+     * of all pages for a group, or the history of revisions of a given page
+     * or the edit page form
      *
      * @param array $data fields contain data about the page being
-     *  displayeed or edited, or the list of pages being displayed.
+     * displayeed or edited, or the list of pages being displayed.
      */
     function render($data)
     {
@@ -154,7 +154,7 @@ class WikiElement extends Element implements CrawlConstants
      *
      * @param array $data fields PAGE used for page contents
      * @param bool $can_edit whether the current user has permissions to
-     *      edit or create this page
+     *     edit or create this page
      * @param bool $logged_in whethe current user is logged in or not
      */
     function renderReadPage($data, $can_edit, $logged_in)
@@ -200,7 +200,7 @@ class WikiElement extends Element implements CrawlConstants
      * Used to drawn the form that let's someone edit a wiki page
      *
      * @param array $data fields contain data about the page being
-     *  edited. In particular, PAGE contains the raw page data
+     * edited. In particular, PAGE contains the raw page data
      */
     function renderEditPageForm($data)
     {
@@ -268,9 +268,9 @@ class WikiElement extends Element implements CrawlConstants
      * draws a search form and can be used to create pages
      *
      * @param array $data fields for the current controller, CSRF_TOKEN
-     *      ect needed to render the search for and paging queries
+     *     ect needed to render the search for and paging queries
      * @param bool $can_edit whether the current user has permissions to
-     *      edit or create this page
+     *     edit or create this page
      * @param bool $logged_in whethe current user is logged in or not
      */
     function renderPages($data, $can_edit, $logged_in)

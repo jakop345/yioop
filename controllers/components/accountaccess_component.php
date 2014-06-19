@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -202,7 +202,7 @@ class AccountaccessComponent extends Component
      * deleted and allows roles to be added to/deleted from a user
      *
      * @return array $data infomation about users of the system, roles, etc.
-     *      as well as status messages on performing a given sub activity
+     *     as well as status messages on performing a given sub activity
      */
     function manageUsers()
     {
@@ -558,13 +558,13 @@ class AccountaccessComponent extends Component
         return $data;
     }
     /**
-     *  Uses $_REQUEST and $user_id to look up all the roles that a user
-     *  has subject to $_REQUEST['role_limit'] and $_REQUEST['role_filter'].
-     *  Information about these roles is added as fields to
-     *  $data[NUM_USER_ROLES'] and $data['USER_ROLES']
+     * Uses $_REQUEST and $user_id to look up all the roles that a user
+     * has subject to $_REQUEST['role_limit'] and $_REQUEST['role_filter'].
+     * Information about these roles is added as fields to
+     * $data[NUM_USER_ROLES'] and $data['USER_ROLES']
      *
-     *  @param array &$data data for the manageUsers view.
-     *  @param int $user_id user to look up roles for
+     * @param array& $data data for the manageUsers view.
+     * @param int $user_id user to look up roles for
      */
     function getUserRolesData(&$data, $user_id)
     {
@@ -599,13 +599,13 @@ class AccountaccessComponent extends Component
             $role_limit);
     }
     /**
-     *  Uses $_REQUEST and $user_id to look up all the groups that a user
-     *  belongs to subject to $_REQUEST['group_limit'] and
-     *  $_REQUEST['group_filter']. Information about these roles is added as
-     *  fields to $data[NUM_USER_GROUPS'] and $data['USER_GROUPS']
+     * Uses $_REQUEST and $user_id to look up all the groups that a user
+     * belongs to subject to $_REQUEST['group_limit'] and
+     * $_REQUEST['group_filter']. Information about these roles is added as
+     * fields to $data[NUM_USER_GROUPS'] and $data['USER_GROUPS']
      *
-     *  @param array &$data data for the manageUsers view.
-     *  @param int $user_id user to look up roles for
+     * @param array& $data data for the manageUsers view.
+     * @param int $user_id user to look up roles for
      */
     function getUserGroupsData(&$data, $user_id)
     {
@@ -646,7 +646,7 @@ class AccountaccessComponent extends Component
      * deleted and allows activities to be added to/deleted from a role
      *
      * @return array $data information about roles in the system, activities,
-     *      etc. as well as status messages on performing a given sub activity
+     *     etc. as well as status messages on performing a given sub activity
      *
      */
     function manageRoles()

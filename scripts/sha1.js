@@ -1,25 +1,25 @@
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -30,10 +30,10 @@
  * @filesource
  */
 /*
- *  Calculates the sha1 of the given String.
+ * Calculates the sha1 of the given String.
  *
- *  @param String input string for the function
- *  @return String sha1 of the input string
+ * @param String input string for the function
+ * @return String sha1 of the input string
  */
 function generateSha1(str)
 {
@@ -85,10 +85,10 @@ function generateSha1(str)
     return bin2hex(Array(a, b, c, d, e));
 }
 /*
- *  Converts a binary array into a hexadecimal value
+ * Converts a binary array into a hexadecimal value
  *
- *  @param array binarray array of a 5 binary values
- *  @return String hexadecimal
+ * @param array binarray array of a 5 binary values
+ * @return String hexadecimal
  */
 function bin2hex(binarray)
 {
@@ -103,13 +103,13 @@ function bin2hex(binarray)
     return str;
 }
 /*
- *  Computes sha1 f values based on iteration
+ * Computes sha1 f values based on iteration
  *
- *  @param int t value of iteration
- *  @param int b constant value
- *  @param int c constant value
- *  @param int d constant value
- *  @return int result of a xor value on constants
+ * @param int t value of iteration
+ * @param int b constant value
+ * @param int c constant value
+ * @param int d constant value
+ * @return int result of a xor value on constants
  */
 function hashOperationByIteration(t, b, c, d)
 {
@@ -125,10 +125,10 @@ function hashOperationByIteration(t, b, c, d)
     return b^c^d;
 }
 /*
- *  Finds a constant based on the iteration
+ * Finds a constant based on the iteration
  *
- *  @param int t value of iteration
- *  @return int constant value
+ * @param int t value of iteration
+ * @return int constant value
  */
 function constantForIteration(t)
 {
@@ -143,11 +143,11 @@ function constantForIteration(t)
     }
 }
 /*
- *  Add integers, wrapping at 2^32
+ * Add integers, wrapping at 2^32
  *
- *  @param int x first operand of the add operation
- *  @param int y second operand of the add operation
- *  @return int result of the add operation
+ * @param int x first operand of the add operation
+ * @param int y second operand of the add operation
+ * @return int result of the add operation
  */
 function safeAdd(x, y)
 {
@@ -156,22 +156,22 @@ function safeAdd(x, y)
     return (msw << 16) | (lsw & 0xFFFF);
 }
 /*
- *  Bitwise rotate a 32-bit number
+ * Bitwise rotate a 32-bit number
  *
- *  @param int num number on which rotation operation is performed
- *  @param int count define a number of times the shift opeation should perform
- *  @return int result of the rotate operation
+ * @param int num number on which rotation operation is performed
+ * @param int count define a number of times the shift opeation should perform
+ * @return int result of the rotate operation
  */
 function rotate(num, cnt)
 {
     return (num << cnt) | zeroFill(num, 32 - cnt);
 }
 /*
- *  Used for zero padding an the input number if a number is not 32 bit
+ * Used for zero padding an the input number if a number is not 32 bit
  *
- *  @param int a input number
- *  @param int b to define how many leading zero should be added
- *  @return int 32 bit number
+ * @param int a input number
+ * @param int b to define how many leading zero should be added
+ * @return int 32 bit number
  */
 function zeroFill(a, b)
 {
@@ -190,10 +190,10 @@ function zeroFill(a, b)
     return bin2dec(bin);
 }
 /*
- *  Converts decimal number to binary string
+ * Converts decimal number to binary string
  *
- *  @param int number input number
- *  @return string binary number
+ * @param int number input number
+ * @return string binary number
  */
 function dec2bin(number)
 {
@@ -203,10 +203,10 @@ function dec2bin(number)
     return parseInt(number, 10).toString(2);
 }
 /*
- *  Converts binary string to decimal number
+ * Converts binary string to decimal number
  *
- *  @param string binary string input string
- *  @return int decimal number
+ * @param string binary string input string
+ * @return int decimal number
  */
 function bin2dec(binary_string)
 {

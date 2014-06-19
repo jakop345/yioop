@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Tarun Ramaswamy tarun.pepira@gmail.com
  * @package seek_quarry
@@ -56,14 +56,14 @@ require_once BASE_DIR."/lib/url_parser.php";
 class XlsxProcessor extends TextProcessor
 {
     /**
-     *  Used to extract the title, description and links from
-     *  a xlsx file.
+     * Used to extract the title, description and links from
+     * a xlsx file.
      *
-     *  @param string $page contents of xlsx file in zip format
-     *  @param string $url the url where the page contents came from,
-     *     used to canonicalize relative links
+     * @param string $page contents of xlsx file in zip format
+     * @param string $url the url where the page contents came from,
+     *    used to canonicalize relative links
      *
-     *  @return array  a summary of the contents of the page
+     * @return array  a summary of the contents of the page
      *
      */
     function process($page, $url)
@@ -127,9 +127,9 @@ class XlsxProcessor extends TextProcessor
      * Return a document object based on a string containing the contents of
      * a xml file
      *
-     *  @param string $page   xml document
+     * @param string $page   xml document
      *
-     *  @return object  document object
+     * @return object  document object
      */
     static function dom($page)
     {
@@ -140,10 +140,10 @@ class XlsxProcessor extends TextProcessor
         return $dom;
     }
     /**
-     *  Returns title of a xlsx file from each worksheet
+     * Returns title of a xlsx file from each worksheet
      *
-     *  @param object $dom   a document object to extract a title from.
-     *  @return string  a title of the xlsx file
+     * @param object $dom   a document object to extract a title from.
+     * @return string  a title of the xlsx file
      *
      */
     static function title($dom)
@@ -157,10 +157,10 @@ class XlsxProcessor extends TextProcessor
         return $title;
      }
     /**
-     *  Returns the count of worksheets in the xlsx file
+     * Returns the count of worksheets in the xlsx file
      *
-     *  @param object $dom   a document object to extract a title from.
-     *  @return integer  number of worksheets in the xlsx file
+     * @param object $dom   a document object to extract a title from.
+     * @return integer  number of worksheets in the xlsx file
      *
      */
     static function sheetCount($dom)

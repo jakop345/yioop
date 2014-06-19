@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -82,7 +82,7 @@ class StringArray extends PersistentStructure
      * @param int $num_values the number of items the StringArray will store
      * @param int $data_size the size in bytes of a single item
      * @param int $save_frequency how often the StringArray should be stored to
-     *      disk
+     *     disk
      */
     function __construct($fname, $num_values, $data_size,
         $save_frequency = self::DEFAULT_SAVE_FREQUENCY)
@@ -94,10 +94,10 @@ class StringArray extends PersistentStructure
         parent::__construct($fname, $save_frequency);
     }
     /**
-     *  Load a StringArray from a file
+     * Load a StringArray from a file
      *
-     *  @param string the name of the file to load the StringArray from
-     *  @return object the PersistentStructure loaded
+     * @param string $fname the name of the file to load the StringArray from
+     * @return object the PersistentStructure loaded
      */
     static function load($fname)
     {
@@ -111,7 +111,7 @@ class StringArray extends PersistentStructure
         return $object;
     }
     /**
-     *  Save the StringArray to its filename
+     * Save the StringArray to its filename
      */
     function save()
     {
@@ -125,10 +125,10 @@ class StringArray extends PersistentStructure
         fclose($fh);
     }
     /**
-     *  Looks up the ith item in the StringArray
+     * Looks up the ith item in the StringArray
      *
-     *  @param int $i array index of item to look up
-     *  @return string the looked-up item of length $this->data_size
+     * @param int $i array index of item to look up
+     * @return string the looked-up item of length $this->data_size
      */
     function get($i)
     {
@@ -140,7 +140,7 @@ class StringArray extends PersistentStructure
      *
      * @param int $i array index of where to store data
      * @param string $data at least $this->data_size many bytes of data to
-     *      store
+     *     store
      */
     function put($i, $data)
     {

@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Mangesh Dahale mangeshadahale@gmail.com
  * @package seek_quarry
@@ -50,9 +50,9 @@ foreach(glob(LOCALE_DIR."/*/resources/tokenizer.php") as $filename) {
     require_once $filename;
 }
 /**
- *  Class which may be used by TextProcessors to get a summary for a text
- *  document that may later be used for indexing. It does this by doing
- *  centroid-based clustering. It also generates a word cloud for a document
+ * Class which may be used by TextProcessors to get a summary for a text
+ * document that may later be used for indexing. It does this by doing
+ * centroid-based clustering. It also generates a word cloud for a document
  */
 class CentroidSummarizer
 {
@@ -68,13 +68,13 @@ class CentroidSummarizer
      */
     const LONG_SENTENCE_THRESHOLD = 200;
     /**
-     *  Generates a centroid with which every sentence is ranked with cosine
-     *  ranking method and also generates a word cloud.
-     *  @param string $doc complete raw page to generate the summary from.
-     *  @param string $lang language of the page to decide which stop words to
-     *      call proper tokenizer.php of the specified language.
+     * Generates a centroid with which every sentence is ranked with cosine
+     * ranking method and also generates a word cloud.
+     * @param string $doc complete raw page to generate the summary from.
+     * @param string $lang language of the page to decide which stop words to
+     *     call proper tokenizer.php of the specified language.
      *
-     *  @return array array of summary and word cloud
+     * @return array array of summary and word cloud
      */
     static function getCentroidSummary($doc, $lang)
     {
@@ -196,13 +196,13 @@ class CentroidSummarizer
         return array($summary, $word_cloud);
     }
     /**
-     *  Calculates how many sentences to put in the summary to match the
-     *  MAX_DESCRIPTION_LEN.
-     *  @param string $doc complete raw page to generate the summary from.
-     *  @param string $lang language of the page to decide which stop words to
-     *      call proper tokenizer.php of the specified language.
+     * Calculates how many sentences to put in the summary to match the
+     * MAX_DESCRIPTION_LEN.
      *
-     *  @return array array of summary and word cloud
+     * @param array $sentences sentences in doc in their original order
+     * @param array $sim associative array of sentence-number-in-doc =>
+     *      similarity score to centroid (sorted from highest to lowest score).
+     * @return int number of sentences
      */
     static function summarySentenceCount($sentences, $sim)
     {
@@ -218,10 +218,10 @@ class CentroidSummarizer
         return $top;
     }
     /**
-     *  Breaks any content into sentences by splitting it on spaces or carriage
-     *    returns
-     *  @param string $content complete page.
-     *  @return array array of sentences from that content.
+     * Breaks any content into sentences by splitting it on spaces or carriage
+     *   returns
+     * @param string $content complete page.
+     * @return array array of sentences from that content.
      */
     static function getSentences($content)
     {
@@ -251,10 +251,10 @@ class CentroidSummarizer
         return $out;
     }
     /**
-     *  Formats the sentences to remove all characters except words,
-     *    digits and spaces
-     *  @param string $sent complete page.
-     *  @return string formatted sentences.
+     * Formats the sentences to remove all characters except words,
+     *   digits and spaces
+     * @param string $sent complete page.
+     * @return string formatted sentences.
      */
     static function formatSentence($sent)
     {
@@ -263,12 +263,12 @@ class CentroidSummarizer
         return $sent;
     }
     /**
-     *  Formats the document to remove carriage returns, hyphens and digits
-     *  as we will not be using digits in word cloud.
-     *  The formatted document generated by this function is only used to
-     *  compute centroid.
-     *  @param string $content formatted page.
-     *  @return string formatted document.
+     * Formats the document to remove carriage returns, hyphens and digits
+     * as we will not be using digits in word cloud.
+     * The formatted document generated by this function is only used to
+     * compute centroid.
+     * @param string $content formatted page.
+     * @return string formatted document.
      */
     static function formatDoc($content)
     {
@@ -277,10 +277,10 @@ class CentroidSummarizer
         return $content;
     }
     /**
-     *  This function does an additional processing on the page
-     *  such as removing all the tags from the page
-     *  @param string $page complete page.
-     *  @return string processed page.
+     * This function does an additional processing on the page
+     * such as removing all the tags from the page
+     * @param string $page complete page.
+     * @return string processed page.
      */
     static function pageProcessing($page)
     {

@@ -1,25 +1,25 @@
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -30,9 +30,9 @@
  * @filesource
  */
 /*
- *  Display a two second message in the message div at the top of the web page
+ * Display a two second message in the message div at the top of the web page
  *
- *  @param String msg  string to display
+ * @param String msg  string to display
  */
 function doMessage(msg)
 {
@@ -41,8 +41,8 @@ function doMessage(msg)
     msg_timer = setInterval("undoMessage()", 2000);
 }
 /*
- *  Undisplays the message display in the message div and clears associated
- *  message display timer
+ * Undisplays the message display in the message div and clears associated
+ * message display timer
  */
 function undoMessage()
 {
@@ -51,9 +51,9 @@ function undoMessage()
     clearInterval(msg_timer);
 }
 /*
- *  Function to set up a request object even in  older IE's
+ * Function to set up a request object even in  older IE's
  *
- *  @return Object the request object
+ * @return Object the request object
  */
 function makeRequest()
 {
@@ -73,11 +73,11 @@ function makeRequest()
     return request;
 }
 /*
- *  Make an AJAX request for a url and put the results as inner HTML of a tag
- *  If the response is the empty string then the tag is not replaced
+ * Make an AJAX request for a url and put the results as inner HTML of a tag
+ * If the response is the empty string then the tag is not replaced
  *
- *  @param Object tag  a DOM element to put the results of the AJAX request
- *  @param String url  web page to fetch using AJAX
+ * @param Object tag  a DOM element to put the results of the AJAX request
+ * @param String url  web page to fetch using AJAX
  */
 function getPage(tag, url)
 {
@@ -96,9 +96,9 @@ function getPage(tag, url)
     }
 }
 /*
- *  Returns the position of the caret within anode
+ * Returns the position of the caret within anode
  *
- *  @param String input type element
+ * @param String input type element
  */
 function caret(node)
 {
@@ -121,39 +121,39 @@ function caret(node)
     return len;
 }
 /*
- *  Shorthand for document.createElement()
+ * Shorthand for document.createElement()
  *
- *  @param String name tag name of element desired
- *  @return Element the create element
+ * @param String name tag name of element desired
+ * @return Element the create element
  */
 function ce(name)
 {
     return document.createElement(name);
 }
 /*
- *  Shorthand for document.getElementById()
+ * Shorthand for document.getElementById()
  *
- *  @param String id  the id of the DOM element one wants
+ * @param String id  the id of the DOM element one wants
  */
 function elt(id)
 {
     return document.getElementById(id);
 }
 /*
- *  Shorthand for document.getElementsByTagName()
+ * Shorthand for document.getElementsByTagName()
  *
- *  @param String name the name of the DOM element one wants
+ * @param String name the name of the DOM element one wants
  */
 function tag(name)
 {
     return document.getElementsByTagName(name);
 }
 /*
- *  Sets whether an elt is styled as display:none or block
+ * Sets whether an elt is styled as display:none or block
  *
- *  @param String id  the id of the DOM element one wants
- *  @param mixed value  true means display block; false display none;
- *      anything else will display that value
+ * @param String id  the id of the DOM element one wants
+ * @param mixed value  true means display block; false display none;
+ *     anything else will display that value
  */
 function setDisplay(id, value)
 {
@@ -168,7 +168,7 @@ function setDisplay(id, value)
 }
 /*
  * Toggles an element between display:none and display block
- *  @param String id  the id of the DOM element one wants
+ * @param String id  the id of the DOM element one wants
  */
 function toggleDisplay(id)
 {

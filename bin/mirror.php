@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -61,21 +61,21 @@ require_once BASE_DIR."/lib/fetch_url.php";
 /** Loads common constants for web crawling*/
 require_once BASE_DIR."/lib/crawl_constants.php";
 /*
- *  We'll set up multi-byte string handling to use UTF-8
+ * We'll set up multi-byte string handling to use UTF-8
  */
 mb_internal_encoding("UTF-8");
 mb_regex_encoding("UTF-8");
 /**
  * This class is responsible for syncing crawl archives between machines using
- *  the SeekQuarry/Yioop search engine
+ * the SeekQuarry/Yioop search engine
  *
  * Mirror periodically queries the queue server asking for a list of files that
  * have changed in its parent since the last sync time. It then proceeds to
  * download them.
  *
- *  @author Chris Pollett
- *  @package seek_quarry
- *  @see buildMiniInvertedIndex()
+ * @author Chris Pollett
+ * @package seek_quarry
+ * @see buildMiniInvertedIndex()
  */
 class Mirror implements CrawlConstants
 {
@@ -149,9 +149,9 @@ class Mirror implements CrawlConstants
         $this->sync_dir = CRAWL_DIR."/cache";
     }
     /**
-     *  This is the function that should be called to get the mirror to start
-     *  syncing. Calls init to handle the command line arguments then enters
-     *  the syncer's main loop
+     * This is the function that should be called to get the mirror to start
+     * syncing. Calls init to handle the command line arguments then enters
+     * the syncer's main loop
      */
     function start()
     {
@@ -199,8 +199,8 @@ class Mirror implements CrawlConstants
      * from the web app of the machine we are mirroring with.
      *
      * @return mixed array or bool. Returns false if weren't succesful in
-     *      contacting web app, otherwise, returns an array with a status
-     *      and potentially a list of files ot sync
+     *     contacting web app, otherwise, returns an array with a status
+     *     and potentially a list of files ot sync
      */
     function checkScheduler()
     {
@@ -248,8 +248,8 @@ class Mirror implements CrawlConstants
         return $info;
     }
     /**
-     *  Downloads the next file from the schedule of files to download received
-     *  from the web app.
+     * Downloads the next file from the schedule of files to download received
+     * from the web app.
      */
     function copyNextSyncFile()
     {
@@ -309,7 +309,7 @@ class Mirror implements CrawlConstants
     }
 }
 /*
- *  Instantiate and runs the Mirror program
+ * Instantiate and runs the Mirror program
  */
 $syncer =  new Mirror(NAME_SERVER);
 $syncer->start();

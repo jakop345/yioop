@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -58,7 +58,7 @@ define("NO_CACHE", true);
 require_once BASE_DIR."/models/datasources/".DBMS."_manager.php";
 
 /** caches of web pages are stored in a
- *  web archive bundle, so we load in its definition
+ * web archive bundle, so we load in its definition
  */
 require_once BASE_DIR."/lib/web_archive_bundle.php";
 
@@ -114,7 +114,7 @@ require_once BASE_DIR."/lib/index_shard.php";
 require_once BASE_DIR."/lib/fetch_git_repository_urls.php";
 
 /*
- *  We'll set up multi-byte string handling to use UTF-8
+ * We'll set up multi-byte string handling to use UTF-8
  */
 mb_internal_encoding("UTF-8");
 mb_regex_encoding("UTF-8");
@@ -139,9 +139,9 @@ mb_regex_encoding("UTF-8");
  * each word document pair several scores. More information on these scores can
  * be found in the documentation for {@link buildMiniInvertedIndex()}
  *
- *  @author Chris Pollett
- *  @package seek_quarry
- *  @see buildMiniInvertedIndex()
+ * @author Chris Pollett
+ * @package seek_quarry
+ * @see buildMiniInvertedIndex()
  */
 class Fetcher implements CrawlConstants
 {
@@ -538,9 +538,9 @@ class Fetcher implements CrawlConstants
         $this->summarizer_option = self::BASIC_SUMMARIZER;
     }
     /**
-     *  This is the function that should be called to get the fetcher to start
-     *  fetching. Calls init to handle the command-line arguments then enters
-     *  the fetcher's main loop
+     * This is the function that should be called to get the fetcher to start
+     * fetching. Calls init to handle the command-line arguments then enters
+     * the fetcher's main loop
      */
     function start()
     {
@@ -711,7 +711,7 @@ class Fetcher implements CrawlConstants
      * possible, pages that did not successfully get downloaded.
      *
      * @return array an associative array of web pages and meta data
-     *  fetched from the internet
+     * fetched from the internet
      */
     function downloadPagesWebCrawl()
     {
@@ -801,7 +801,7 @@ class Fetcher implements CrawlConstants
      * being recrawled.
      *
      * @return array an associative array of web pages and meta data from
-     *      the archive bundle being iterated over
+     *     the archive bundle being iterated over
      */
     function downloadPagesArchiveCrawl()
     {
@@ -839,7 +839,7 @@ class Fetcher implements CrawlConstants
      * Deletes any crawl web archive bundles not in the provided array of crawls
      *
      * @param array $still_active_crawls those crawls which should not
-     *  be deleted, so all others will be deleted
+     * be deleted, so all others will be deleted
      * @see loop()
      */
     function deleteOldCrawls(&$still_active_crawls)
@@ -1036,9 +1036,9 @@ class Fetcher implements CrawlConstants
      * the queue_server.
      *
      * @return mixed array or bool. If we are doing
-     *      a web crawl and we still have pages to crawl then true, if the
-     *      scheduler page fails to download then false, otherwise, returns
-     *      an array of info from the scheduler.
+     *     a web crawl and we still have pages to crawl then true, if the
+     *     scheduler page fails to download then false, otherwise, returns
+     *     an array of info from the scheduler.
      */
     function checkScheduler()
     {
@@ -1116,11 +1116,11 @@ class Fetcher implements CrawlConstants
         return $info;
     }
     /**
-     *  During an archive crawl this method is used to get from the name server
-     *  a collection of pages to process. The fetcher will later process these
-     *  and send summaries to various queue_servers.
+     * During an archive crawl this method is used to get from the name server
+     * a collection of pages to process. The fetcher will later process these
+     * and send summaries to various queue_servers.
      *
-     *  @return array containing archive page data
+     * @return array containing archive page data
      */
     function checkArchiveScheduler()
     {
@@ -1241,7 +1241,7 @@ class Fetcher implements CrawlConstants
      * any fetcher data we have to it.
      *
      * @param bool $at_least_once whether to send to at least one fetcher or
-     *      to only send if memory is above threshold
+     *     to only send if memory is above threshold
      */
     function selectCurrentServerAndUpdateIfNeeded($at_least_once)
     {
@@ -1271,8 +1271,8 @@ class Fetcher implements CrawlConstants
      * Sets parameters for fetching based on provided info struct
      * ($info typically would come from the queue server)
      *
-     * @param array &$info struct with info about the kind of crawl, timestamp
-     *  of index, crawl order, etc.
+     * @param array& $info struct with info about the kind of crawl, timestamp
+     * of index, crawl order, etc.
      */
     function setCrawlParamsFromArray(&$info)
     {
@@ -1509,9 +1509,9 @@ class Fetcher implements CrawlConstants
      * for which no content was downloaded so that they can be scheduled
      * to be crawled again.
      *
-     * @param array &$site_pages pages to sort
+     * @param array& $site_pages pages to sort
      * @return an array conisting of two array downloaded pages and
-     *  not downloaded pages.
+     * not downloaded pages.
      */
     function reschedulePages(&$site_pages)
     {
@@ -1880,9 +1880,11 @@ class Fetcher implements CrawlConstants
      * Then a crude estimate of the informaation contained in the links test:
      * strlen(gzip(text)) is used to extract the best remaining links.
      *
-     * @param array &$doc_info a string with a CrawlConstants::LINKS subarray
-     *  This subarray in turn contains url => text pairs.
+     * @param array& $doc_info a string with a CrawlConstants::LINKS subarray
+     * This subarray in turn contains url => text pairs.
      * @param string $field field for links default is CrawlConstants::LINKS
+     * @param int $member_cache_time says how long allowed and disallowed url
+     *      info should be caches by urlMemberSiteArray
      */
     function pruneLinks(&$doc_info, $field = CrawlConstants::LINKS,
         $member_cache_time = 0)
@@ -1919,10 +1921,10 @@ class Fetcher implements CrawlConstants
      * Copies fields from the array of site data to the $i indexed
      * element of the $summarized_site_pages and $stored_site_pages array
      *
-     * @param int &$i index to copy to
-     * @param array &$site web page info to copy
-     * @param array &$summarized_site_pages array of summaries of web pages
-     * @param array &$stored_site_pages array of cache info of web pages
+     * @param int& $i index to copy to
+     * @param array& $site web page info to copy
+     * @param array& $summarized_site_pages array of summaries of web pages
+     * @param array& $stored_site_pages array of cache info of web pages
      */
     function copySiteFields(&$i, &$site,
         &$summarized_site_pages, &$stored_site_pages)
@@ -1955,11 +1957,11 @@ class Fetcher implements CrawlConstants
      * documents to the summaried_size_pages and stored_site_pages
      * arrays constructed during the execution of processFetchPages()
      *
-     * @param int &$i index to begin adding subdocs at
-     * @param array &$site web page that subdocs were from and from
-     *      which some subdoc summary info is copied
-     * @param array &$summarized_site_pages array of summaries of web pages
-     * @param array &$stored_site_pages array of cache info of web pages
+     * @param int& $i index to begin adding subdocs at
+     * @param array& $site web page that subdocs were from and from
+     *     which some subdoc summary info is copied
+     * @param array& $summarized_site_pages array of summaries of web pages
+     * @param array& $stored_site_pages array of cache info of web pages
      */
     function processSubdocs(&$i, &$site,
         &$summarized_site_pages, &$stored_site_pages)
@@ -2010,7 +2012,7 @@ class Fetcher implements CrawlConstants
      *
      * @param array $sites site data to use for the update
      * @param bool $force_send whether to force send data back to queue_server
-     *      or rely on usual thresholds before sending
+     *     or rely on usual thresholds before sending
      */
     function updateFoundSites($sites, $force_send = false)
     {
@@ -2110,9 +2112,9 @@ class Fetcher implements CrawlConstants
      * @param array $link_urls an array of urls to be crawled
      * @param int $old_weight the weight of the web page the links came from
      * @param string $site_hash a hash of the web_page on which the link was
-     *      found, for use in deduplication
+     *     found, for use in deduplication
      * @param string $old_url url of page where links came from
-     * @param bool whether the links are coming from a sitemap
+     * @param bool $from_sitemap whether the links are coming from a sitemap
      */
     function addToCrawlSites($link_urls, $old_weight, $site_hash, $old_url,
         $from_sitemap = false)
@@ -2167,16 +2169,16 @@ class Fetcher implements CrawlConstants
         }
     }
     /**
-     *  Returns the number of links in the array $links which
-     *  which share the same company level domain (cld) as $url
-     *  For www.yahoo.com the cld is yahoo.com, for
-     *  www.theregister.co.uk it is theregister.co.uk. It is
-     *  similar for organizations.
+     * Returns the number of links in the array $links which
+     * which share the same company level domain (cld) as $url
+     * For www.yahoo.com the cld is yahoo.com, for
+     * www.theregister.co.uk it is theregister.co.uk. It is
+     * similar for organizations.
      *
-     *  @param string $url the url to compare against $links
-     *  @param array $links an array of urls
-     *  @return int the number of times $url shares the cld with a
-     *      link in $links
+     * @param string $url the url to compare against $links
+     * @param array $links an array of urls
+     * @return int the number of times $url shares the cld with a
+     *     link in $links
      */
     function countCompanyLevelDomainsInCommon($url, $links)
     {
@@ -2193,12 +2195,12 @@ class Fetcher implements CrawlConstants
     /**
      * Calculates the company level domain for the given url
      *
-     *  For www.yahoo.com the cld is yahoo.com, for
-     *  www.theregister.co.uk it is theregister.co.uk. It is
-     *  similar for organizations.
+     * For www.yahoo.com the cld is yahoo.com, for
+     * www.theregister.co.uk it is theregister.co.uk. It is
+     * similar for organizations.
      *
-     *  @param string $url url to determine cld for
-     *  @return string the cld of $url
+     * @param string $url url to determine cld for
+     * @return string the cld of $url
      */
     function getCompanyLevelDomain($url)
     {
@@ -2416,8 +2418,8 @@ class Fetcher implements CrawlConstants
      *
      * @param string $queue_server url of the current queue server
      * @param array $byte_counts has four fields: TOTAL, ROBOT, SCHEDULE,
-     *      INDEX. These give the number of bytes overall for the
-     *      'data' field of $post_data and for each of these components.
+     *     INDEX. These give the number of bytes overall for the
+     *     'data' field of $post_data and for each of these components.
      * @param array $post_data data to be uploaded to the queue server web app
      */
     function uploadCrawlData($queue_server, $byte_counts, &$post_data)
@@ -2754,7 +2756,7 @@ class Fetcher implements CrawlConstants
     }
 }
 /*
- *  Instantiate and runs the Fetcher
+ * Instantiate and runs the Fetcher
  */
 $fetcher =  new Fetcher();
 $fetcher->start();

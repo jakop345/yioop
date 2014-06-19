@@ -1,25 +1,25 @@
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Eswara Rajesh Pinapala (edited Chris Pollett)
  * @package seek_quarry
@@ -62,8 +62,8 @@ var editor_all_buttons = [];
  */
 var editor_buttons = [];
 /**
- *  Object that buffers selection information.
- *  @var Object
+ * Object that buffers selection information.
+ * @var Object
  */
 var editor_buffer = {};
 /**
@@ -336,7 +336,7 @@ function setCaretPosition(text_field, pos)
  *
  * @param String name identifier of the wiki task to be performed
  * @param String id indentifer of the textarea to add wiki code for the given
- *      task
+ *     task
  */
 function wikifySelection(name, id)
 {
@@ -493,9 +493,9 @@ function addWikiSearch(id)
 }
 
 /**
- *  Gets the size of the search widget to load.
+ * Gets the size of the search widget to load.
  *
- *  @param String id identifier of the textarea to put search form on
+ * @param String id identifier of the textarea to put search form on
  */
 function useInputForSearch(id)
 {
@@ -680,11 +680,11 @@ function createTableForm(id)
 
 /**
  * Creates an HTMLFormElement with two text fields to get the URL and text of
- *  a link
+ * a link
  * @param String id identifier of the text area that we want to add a wiki link
- *      to
+ *     to
  * @return HTMLFormElement containing form that we will use to get info from
- *      the user so that we can later add a wiki link
+ *     the user so that we can later add a wiki link
  */
 function createHyperlinkForm(id)
 {

@@ -1,29 +1,29 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Sandhya Vissapragada, Chris Pollett (separated out this
- *      code into a separate file and cleaned up)
+ *     code into a separate file and cleaned up)
  * @package seek_quarry
  * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
@@ -35,7 +35,7 @@
  * from a dictionary in a succinct way
  *
  * @author Sandhya Vissapragada, Chris Pollett (rewrite +
- *      documentation, multi-byte support)
+ *     documentation, multi-byte support)
  *
  * @package seek_quarry
  * @subpackage library
@@ -131,6 +131,7 @@ class Trie
      * Returns all the terms in the trie beneath the provided term prefix
      *
      * @param string $prefix of term to look up
+     * @param int $max_results maximum number of strings to return
      * @return array $terms under $prefix
      */
     function getValues($prefix, $max_results)
@@ -145,7 +146,7 @@ class Trie
      * and returns the array of the result.
      *
      * @param array $trie_array a nested array representing a trie to look
-     *      up suffixes in
+     *     up suffixes in
      * @param string $prefix to prepend to each found suffix
      * @param int $max_results maximum number of strings to return
      * @param int $count which suffix in trie_array to start with

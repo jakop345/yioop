@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -65,22 +65,41 @@ class CrawlModel extends ParallelModel implements CrawlConstants
      */
     var $suggest_url_file;
     /**
-     *  {@inheritDoc}
+     * {@inheritDoc}
+     *
+     * @param string $db_name the name of the database for the search engine
+     * @param bool $connect whether to connect to the database by default
+     *     after making the datasource class
      */
     function __construct($db_name = DB_NAME, $connect = true)
     {
         $this->suggest_url_file = WORK_DIRECTORY."/data/suggest_url.txt";
         parent::__construct($db_name, $connect);
     }
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     *
+     * @param mixed $args any additional arguments which should be used to
+     *     determine these tables (in this case none)
+     * @return string a comma separated list of tables suitable for a SQL
+     *     query
+     */
     function fromCallback($args)
     {
         return "CRAWL_MIXES";
     }
-    /** {@inheritDoc} */
-    function rowCallback($row, $with_components)
+    /**
+     * {@inheritDoc}
+     *
+     * @param array $row row as retrieved from database query
+     * @param mixed $args additional arguments that might be used by this 
+     *      callback. In this case, should be a boolean flag that says whether
+     *      or not to add information about the components of the crawl mix
+     * @return array $row after callback manipulation
+     */
+    function rowCallback($row, $args)
     {
-        if($with_components) {
+        if($args) {
             $mix = $this->getCrawlMix($row['TIMESTAMP'], true);
             $row['FRAGMENTS'] = $mix['FRAGMENTS'];
         }
@@ -97,17 +116,17 @@ class CrawlModel extends ParallelModel implements CrawlConstants
      * and get the results back.
      *
      * @param string $machine the ip address of domain name of the machine the
-     *      cached page lives on
+     *     cached page lives on
      * @param string $machine_uri the path from document root on $machine where
-     *      the yioop scripts live
+     *     the yioop scripts live
      * @param int $partition the partition in the WebArchiveBundle the page is
-     *       in
+     *      in
      * @param int $offset the offset in bytes into the WebArchive partition in
-     *      the WebArchiveBundle at which the cached page lives.
+     *     the WebArchiveBundle at which the cached page lives.
      * @param string $crawl_time the timestamp of the crawl the cache page is
-     *      from
+     *     from
      * @param int $instance_num which fetcher instance for the particular
-     *      fetcher crawled the page (if more than one), false otherwise
+     *     fetcher crawled the page (if more than one), false otherwise
      * @return array page data of the cached page
      */
     function getCacheFile($machine, $machine_uri, $partition,
@@ -155,8 +174,8 @@ class CrawlModel extends ParallelModel implements CrawlConstants
      * Sets the IndexArchive that will be used for search results
      *
      * @param $timestamp  the timestamp of the index archive. The timestamp is
-     * when the crawl was started. Currently, the timestamp appears as substring
-     * of the index archives directory name
+     *      when the crawl was started. Currently, the timestamp appears as 
+     *      substring of the index archives directory name
      */
     function setCurrentIndexDatabaseName($timestamp)
     {
@@ -170,13 +189,13 @@ class CrawlModel extends ParallelModel implements CrawlConstants
      * more recent than timestamp. The file which have
      * in their path or name a string in the $excludes array will be exclude
      *
-     * @param string a directory to traverse
+     * @param string $dir a directory to traverse
      * @param int $timestamp used to check modified times against
      * @param array $excludes an array of path substrings tot exclude
      * @return array of file structs consisting of name, modified time and
-     *      size.
+     *     size.
      */
-    function getDeltaFileInfo($dir, $timestamp = 0, $excludes)
+    function getDeltaFileInfo($dir, $timestamp, $excludes)
     {
         $dir_path_len = strlen($dir) + 1;
         $files = $this->db->fileInfoRecursive($dir, true);
@@ -203,9 +222,10 @@ class CrawlModel extends ParallelModel implements CrawlConstants
     /**
      * Gets a list of all mixes of available crawls
      *
+     * @param int $user_id user that we are getting a list of mixes for
      * @param bool $with_components if false then don't load the factors
-     *      that make up the crawl mix, just load the name of the mixes
-     *      and their timestamps; otherwise, if true loads everything
+     *     that make up the crawl mix, just load the name of the mixes
+     *     and their timestamps; otherwise, if true loads everything
      * @return array list of available crawls
      */
     function getMixList($user_id, $with_components = false)
@@ -227,9 +247,9 @@ class CrawlModel extends ParallelModel implements CrawlConstants
      *
      * @param string $timestamp of the requested crawl mix
      * @param bool $just_components says whether to find the mix name or
-     *      just the components array.
+     *     just the components array.
      * @return array the crawls and their weights that make up the
-     *      requested crawl mix.
+     *     requested crawl mix.
      */
     function getCrawlMix($timestamp, $just_components = false)
     {
@@ -288,7 +308,7 @@ class CrawlModel extends ParallelModel implements CrawlConstants
     /**
      * Returns whether the supplied timestamp corresponds to a crawl mix
      *
-     * @param string timestamp of the requested crawl mix
+     * @param string $timestamp of the requested crawl mix
      *
      * @return bool true if it does; false otherwise
      */
@@ -359,9 +379,10 @@ class CrawlModel extends ParallelModel implements CrawlConstants
         }
     }
     /**
-     * Stores in DB the supplied crawl mix object
+     * Deletes from the DB the crawl mix ans its associated components and
+     * fragments
      *
-     * @param array $mix an associative array repreenting the crawl mix object
+     * @param int $timestamp of the mix to delete
      */
     function deleteCrawlMix($timestamp)
     {
@@ -392,12 +413,12 @@ class CrawlModel extends ParallelModel implements CrawlConstants
         }
     }
     /**
-     *  Returns the initial sites that a new crawl will start with along with
-     *  crawl parameters such as crawl order, allowed and disallowed crawl sites
-     *  @param bool $use_default whether or not to use the Yioop! default
-     *      crawl.ini file rather than the one created by the user.
-     *  @return array  the first sites to crawl during the next crawl
-     *      restrict_by_url, allowed, disallowed_sites
+     * Returns the initial sites that a new crawl will start with along with
+     * crawl parameters such as crawl order, allowed and disallowed crawl sites
+     * @param bool $use_default whether or not to use the Yioop! default
+     *     crawl.ini file rather than the one created by the user.
+     * @return array  the first sites to crawl during the next crawl
+     *     restrict_by_url, allowed, disallowed_sites
      */
     function getSeedInfo($use_default = false)
     {
@@ -416,7 +437,7 @@ class CrawlModel extends ParallelModel implements CrawlConstants
      *
      * @param array $info an array containing information about the crawl
      */
-    function setSeedInfo($info, $name="")
+    function setSeedInfo($info)
     {
         if(!isset($info['general']['crawl_index'])) {
             $info['general']['crawl_index']='12345678';
@@ -539,9 +560,9 @@ EOT;
      * Returns the crawl parameters that were used during a given crawl
      *
      * @param string $timestamp timestamp of the crawl to load the crawl
-     *      parameters of
+     *     parameters of
      * @return array  the first sites to crawl during the next crawl
-     *      restrict_by_url, allowed, disallowed_sites
+     *     restrict_by_url, allowed, disallowed_sites
      * @param array $machine_urls an array of urls of yioop queue servers
      *
      */
@@ -673,10 +694,10 @@ EOT;
         }
     }
     /**
-     *  Returns an array of urls which were stored via the suggest-a-url
-     *  form in suggest_view.php
+     * Returns an array of urls which were stored via the suggest-a-url
+     * form in suggest_view.php
      *
-     *  @return array urls that have been suggested
+     * @return array urls that have been suggested
      */
     function getSuggestSites()
     {
@@ -689,13 +710,13 @@ EOT;
         return $urls;
     }
     /**
-     *  Add new distinct urls to those already saved in the suggest_url_file
-     *  If the supplied url is not new or the file size
-     *  exceeds MAX_SUGGEST_URL_FILE_SIZE then it is not added.
+     * Add new distinct urls to those already saved in the suggest_url_file
+     * If the supplied url is not new or the file size
+     * exceeds MAX_SUGGEST_URL_FILE_SIZE then it is not added.
      *
-     *  @param string $url to add
-     *  @return string true if the url was added or already existed
-     *      in the file; false otherwise
+     * @param string $url to add
+     * @return string true if the url was added or already existed
+     *     in the file; false otherwise
      */
     function appendSuggestSites($url)
     {
@@ -725,7 +746,7 @@ EOT;
         return false;
     }
     /**
-     *  Resets the suggest_url_file to be the empty file
+     * Resets the suggest_url_file to be the empty file
      */
     function clearSuggestSites()
     {
@@ -872,6 +893,10 @@ EOT;
     /**
      * Used to send a message to the queue_servers to start a crawl
      *
+     * @param array $crawl_params has info like the time of the crawl,
+     *      whether starting a new crawl or resuming an old one, etc.
+     * @param array $seed_info what urls to crawl, etc as from the crawl.ini
+     *      file
      * @param array $machine_urls an array of urls of yioop queue servers
      */
     function sendStartCrawlMessage($crawl_params, $seed_info = NULL,
@@ -928,16 +953,16 @@ EOT;
      * Gets a list of all index archives of crawls that have been conducted
      *
      * @param bool $return_arc_bundles whether index bundles used for indexing
-     *      arc or other archive bundles should be included in the lsit
+     *     arc or other archive bundles should be included in the lsit
      * @param bool $return_recrawls whether index archive bundles generated as
-     *      a result of recrawling should be included in the result
+     *     a result of recrawling should be included in the result
      * @param array $machine_urls an array of urls of yioop queue servers
      * @param bool $cache whether to try to get/set the data to a cache file
      *
      * @return array available IndexArchiveBundle directories and
-     *      their meta information this meta information includes the time of
-     *      the crawl, its description, the number of pages downloaded, and the
-     *      number of partitions used in storing the inverted index
+     *     their meta information this meta information includes the time of
+     *     the crawl, its description, the number of pages downloaded, and the
+     *     number of partitions used in storing the inverted index
      */
     function getCrawlList($return_arc_bundles = false, $return_recrawls = false,
         $machine_urls = NULL, $cache = false)
@@ -1044,7 +1069,7 @@ EOT;
      * used to integrate the crawl lists received by the different machines
      *
      * @param array $list_strings serialized crawl list data from different
-     *  queue_servers
+     * queue_servers
      * @param string $data_field field of $list_strings to use for data
      * @return array list of crawls and their meta data
      */
@@ -1089,7 +1114,7 @@ EOT;
      * stop the crawl.
      *
      * @param array $list_strings serialized crawl list data from different
-     *   queue_servers
+     *  queue_servers
      * @param array $machine_urls an array of urls of yioop queue servers
      * @return bool whether the current crawl is stalled or not
      */
@@ -1124,13 +1149,13 @@ EOT;
      * machines
      *
      * @param array $stall_statuses contains web encoded serialized data one
-     *  one field of which has the boolean data concerning stalled statis
+     * one field of which has the boolean data concerning stalled statis
      *
      * @param string $data_field field of $stall_statuses to use for data
-     *      if NULL then each element of $stall_statuses is a wen encoded
-     *      serialized boolean
+     *     if NULL then each element of $stall_statuses is a wen encoded
+     *     serialized boolean
      * @return bool true if no queue_server has heard from one
-     *      fetcher within the time out period
+     *     fetcher within the time out period
      */
     function aggregateStalled($stall_statuses, $data_field = NULL)
     {
@@ -1155,13 +1180,13 @@ EOT;
         return $result;
     }
     /**
-     *  Returns data about current crawl such as DESCRIPTION, TIMESTAMP,
-     *  peak memory of various processes, most recent fetcher, most recent
-     *  urls, urls seen, urls visited, etc.
+     * Returns data about current crawl such as DESCRIPTION, TIMESTAMP,
+     * peak memory of various processes, most recent fetcher, most recent
+     * urls, urls seen, urls visited, etc.
      *
-     *  @param array $machine_urls an array of urls of yioop queue servers
-     *      on which the crawl is being conducted
-     *  @return array associative array of the said data
+     * @param array $machine_urls an array of urls of yioop queue servers
+     *     on which the crawl is being conducted
+     * @return array associative array of the said data
      */
     function crawlStatus($machine_urls = NULL)
     {
@@ -1220,8 +1245,8 @@ EOT;
      * @param array $status_strings
      * @param string $data_field field of $status_strings to use for data
      * @return array associative array of DESCRIPTION, TIMESTAMP,
-     *  peak memory of various processes, most recent fetcher, most recent
-     *  urls, urls seen, urls visited, etc.
+     * peak memory of various processes, most recent fetcher, most recent
+     * urls, urls seen, urls visited, etc.
      */
     function aggregateStatuses($status_strings, $data_field = NULL)
     {
@@ -1287,14 +1312,14 @@ EOT;
         return $status;
     }
     /**
-     *  This method is used to reduce the number of network requests
-     *  needed by the crawlStatus method of admin_controller. It returns
-     *  an array containing the results of the @see crawlStalled
-     *  @see crawlStatus and @see getCrawlList methods
+     * This method is used to reduce the number of network requests
+     * needed by the crawlStatus method of admin_controller. It returns
+     * an array containing the results of the @see crawlStalled
+     * @see crawlStatus and @see getCrawlList methods
      *
-     *  @param array $machine_urls an array of urls of yioop queue servers
-     *  @return array containing three components one for each of the three
-     *      kinds of results listed above
+     * @param array $machine_urls an array of urls of yioop queue servers
+     * @return array containing three components one for each of the three
+     *     kinds of results listed above
      */
     function combinedCrawlInfo($machine_urls = NULL)
     {
@@ -1318,13 +1343,13 @@ EOT;
         return $combined;
     }
     /**
-     *  Add the provided urls to the schedule directory of URLs that will
-     *  be crawled
+     * Add the provided urls to the schedule directory of URLs that will
+     * be crawled
      *
-     *  @param string $timestamp Unix timestamp of crawl to add to schedule of
-     *  @param array $inject_urls urls to be added to the schedule of
-     *      the active crawl
-     *  @param array $machine_urls an array of urls of yioop queue servers
+     * @param string $timestamp Unix timestamp of crawl to add to schedule of
+     * @param array $inject_urls urls to be added to the schedule of
+     *     the active crawl
+     * @param array $machine_urls an array of urls of yioop queue servers
      */
     function injectUrlsCurrentCrawl($timestamp, $inject_urls,
         $machine_urls = NULL)
@@ -1373,12 +1398,12 @@ EOT;
         return false;
     }
     /**
-     *  Computes for each word in an array of words a count of the total number
-     *  of times it occurs in this crawl model's default index.
+     * Computes for each word in an array of words a count of the total number
+     * of times it occurs in this crawl model's default index.
      *
-     *  @param array $words words to find the counts for
-     *  @param array $machine_urls machines to invoke this command on
-     *  @return array associative array of word => counts
+     * @param array $words words to find the counts for
+     * @param array $machine_urls machines to invoke this command on
+     * @return array associative array of word => counts
      */
      function countWords($words, $machine_urls = NULL)
      {

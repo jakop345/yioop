@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -114,7 +114,7 @@ class SuffixTree
      */
     var $tree;
     /**
-     *  Upper bound on the length of any path in the tree
+     * Upper bound on the length of any path in the tree
      */
     const INFTY = 2000000000;
     /**
@@ -129,9 +129,9 @@ class SuffixTree
         $this->buildTree();
     }
     /**
-     *  Builds the complete suffix tree for the text currently stored in
-     *  $this->text. If you change this text and call this method again,
-     *  it build a new tree based on the new text. Uses Ukkonen
+     * Builds the complete suffix tree for the text currently stored in
+     * $this->text. If you change this text and call this method again,
+     * it build a new tree based on the new text. Uses Ukkonen
      */
     function buildTree()
     {
@@ -159,6 +159,8 @@ class SuffixTree
      * purposes of building the suffix tree, and "next" is an array of
      * next children in the tree.
      *
+     * @param int $start what to use as the start value mentioned above
+     * @param int $end what to use as the start value mentioned above
      */
     function makeNode($start, $end = self::INFTY)
     {
@@ -174,7 +176,7 @@ class SuffixTree
      * The number of elements out of $this->text that this node is currently
      * responsible for
      *
-     * @param array &$node the node to compute the length of
+     * @param array& $node the node to compute the length of
      */
     function edgeLength(&$node)
     {
@@ -189,9 +191,9 @@ class SuffixTree
      * $this->need_sym_link node's "sym_link" field to $index which is supposed
      * be the index of the second created node.
      *
-     *  @param int $index the index of the a created node in a given step.
-     *      ($this->need_sym_link will be greater than 0 if it is the second
-     *      created node of the step)
+     * @param int $index the index of the a created node in a given step.
+     *     ($this->need_sym_link will be greater than 0 if it is the second
+     *     created node of the step)
      */
     function addSuffixLink($index)
     {
@@ -203,9 +205,9 @@ class SuffixTree
     /**
      * Used to set the active point to the node given by $index
      *
-     *  @param int $index which node to use for setting
-     *  @return if the current active edge is longer than $index's edge length
-     *      then don't update and return false; otherwise, return true
+     * @param int $index which node to use for setting
+     * @return if the current active edge is longer than $index's edge length
+     *     then don't update and return false; otherwise, return true
      */
     function walkDown($index)
     {
@@ -285,9 +287,9 @@ class SuffixTree
      * @param int $index a node in the suffix tree
      * @param string $path from root to current node
      * @param int $len number of nodes from root to current node in suffix tree
-     * @param array &$maximal assoc array of phrase => (cond_max => pos of
-     *      conditional maximal subphrase, [0] => pos_1st_occurrence of phrase,
-     *      [1]=>pos_2nd_occurrence of phrase, etc)
+     * @param array& $maximal assoc array of phrase => (cond_max => pos of
+     *     conditional maximal subphrase, [0] => pos_1st_occurrence of phrase,
+     *     [1]=>pos_2nd_occurrence of phrase, etc)
      */
     function outputMaximal($index, $path, $len, &$maximal)
     {

@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014 Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014 Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -70,8 +70,8 @@ class DisjointIterator extends IndexBundleIterator
     /**
      * Creates an disjoint union iterator with the given parameters.
      *
-     * @param object $index_bundle_iterator to use as a source of documents
-     *      to iterate over
+     * @param object $index_bundle_iterators to use as a source of documents
+     *     to iterate over
      */
     function __construct($index_bundle_iterators)
     {
@@ -120,7 +120,7 @@ class DisjointIterator extends IndexBundleIterator
      * iterator and generation
      * @param int $generation the generation the posting offset is for
      * @param int $posting_offset an offset into word_docs to compute the
-     *      relevance of
+     *     relevance of
      * @return float a relevancy score based on BM25F.
      */
     function computeRelevance($generation, $posting_offset)
@@ -156,7 +156,7 @@ class DisjointIterator extends IndexBundleIterator
      * would be return by this iterator
      *
      * @return mixed an array with the desired document offset
-     *  and generation; -1 on fail
+     * and generation; -1 on fail
      */
     function currentGenDocOffsetWithWord() {
         if($this->num_iterators <= 0) {
@@ -195,9 +195,9 @@ class DisjointIterator extends IndexBundleIterator
     /**
      * Forwards the iterator one group of docs
      * @param array $gen_doc_offset a generation, doc_offset pair. If set,
-     *      the must be of greater than or equal generation, and if equal the
-     *      next block must all have $doc_offsets larger than or equal to
-     *      this value
+     *     the must be of greater than or equal generation, and if equal the
+     *     next block must all have $doc_offsets larger than or equal to
+     *     this value
      */
     function advance($gen_doc_offset = NULL)
     {
@@ -254,7 +254,7 @@ class DisjointIterator extends IndexBundleIterator
      * method results in a user defined error
      *
      * @param int $num the maximum number of results that can be returned by
-     *      a block
+     *     a block
      */
      function setResultsPerBlock($num) {
         if($num != 1) {

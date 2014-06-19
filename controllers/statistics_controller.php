@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -39,11 +39,11 @@ require_once BASE_DIR."/lib/crawl_constants.php";
 require_once BASE_DIR."/lib/url_parser.php";
 define("NO_FEEDS", true);
 /**
- *  Responsible for handling requests about global crawl statistics for
- *  a web crawl. These statistics include: httpd code distribution,
- *  filetype distribution, num hosts, language distribution,
- *  os distribution, server distribution, site distribution, file size
- *  distribution, download time distribution, etc
+ * Responsible for handling requests about global crawl statistics for
+ * a web crawl. These statistics include: httpd code distribution,
+ * filetype distribution, num hosts, language distribution,
+ * os distribution, server distribution, site distribution, file size
+ * distribution, download time distribution, etc
  *
  * @author Chris Pollett
  * @package seek_quarry
@@ -173,16 +173,16 @@ class StatisticsController extends Controller implements CrawlConstants
         $this->displayView($view, $data);
     }
     /**
-     *  Runs the queries necessary to determine httpd code distribution,
-     *  filetype distribution, num hosts, language distribution,
-     *  os distribution, server distribution, site distribution, file size
-     *  distribution, download time distribution, etc for the web crawl
-     *  set in $this->index_time_stamp. If these queries take to long it
-     *  saves partial results and returns with the field $data["UNFINISHED"]
-     *  set to true.
+     * Runs the queries necessary to determine httpd code distribution,
+     * filetype distribution, num hosts, language distribution,
+     * os distribution, server distribution, site distribution, file size
+     * distribution, download time distribution, etc for the web crawl
+     * set in $this->index_time_stamp. If these queries take to long it
+     * saves partial results and returns with the field $data["UNFINISHED"]
+     * set to true.
      *
-     *  @param array &$data associative array which receive all the statistics
-     *      data collected.
+     * @param array& $data associative array which receive all the statistics
+     *     data collected.
      */
     function computeStatistics(&$data)
     {
@@ -346,6 +346,7 @@ class StatisticsController extends Controller implements CrawlConstants
      * across queue servers). Returns the count of the number of results that
      * would be returned by that query.
      *
+     * @param string $query to use and count the results of
      * @return int number of results that would be returned by the given query
      */
     function countQuery($query)

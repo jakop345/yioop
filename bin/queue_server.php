@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -86,7 +86,7 @@ foreach(glob(APP_DIR."/lib/indexing_plugins/*_plugin.php") as $filename) {
     require_once $filename;
 }
 /*
- *  We'll set up multi-byte string handling to use UTF-8
+ * We'll set up multi-byte string handling to use UTF-8
  */
 mb_internal_encoding("UTF-8");
 mb_regex_encoding("UTF-8");
@@ -298,19 +298,19 @@ class QueueServer implements CrawlConstants, Join
      */
     var $hourly_crawl_data;
     /**
-     *  Used to say what kind of queue_server this is (one of BOTH, INDEXER,
-     *  SCHEDULER)
-     *  @var mixed
+     * Used to say what kind of queue_server this is (one of BOTH, INDEXER,
+     * SCHEDULER)
+     * @var mixed
      */
     var $server_type;
     /**
-     *  String used to describe this kind of queue server (Indexer, Scheduler,
-     *  etc. in the log files.
-     *  @var mixed
+     * String used to describe this kind of queue server (Indexer, Scheduler,
+     * etc. in the log files.
+     * @var mixed
      */
     var $server_name;
     /**
-     *  Creates a Queue Server Daemon
+     * Creates a Queue Server Daemon
      */
     function __construct()
     {
@@ -445,11 +445,11 @@ class QueueServer implements CrawlConstants, Join
      * robot file processing is done.
      *
      * @param bool $blocking this method might be called by the indexer
-     *      subcomponent when a merge tier phase is ongoing to allow for
-     *      other processing to occur. If so, we don't want a regress
-     *      where the indexer calls this code calls the indexer etc. If
-     *      the blocking flag is set then the indexer subcomponent won't
-     *      be called
+     *     subcomponent when a merge tier phase is ongoing to allow for
+     *     other processing to occur. If so, we don't want a regress
+     *     where the indexer calls this code calls the indexer etc. If
+     *     the blocking flag is set then the indexer subcomponent won't
+     *     be called
      */
     function processCrawlData($blocking = false)
     {
@@ -647,9 +647,9 @@ class QueueServer implements CrawlConstants, Join
      * when QueueServer is run using command-line argument
      *
      * @param array $info associative array with info about current state of
-     *      queue_server
+     *     queue_server
      * @return array an updates version $info reflecting changes that occurred
-     *      during the handling of the admin messages files.
+     *     during the handling of the admin messages files.
      */
     function handleAdminMessages($info)
     {
@@ -807,7 +807,7 @@ class QueueServer implements CrawlConstants, Join
      * crawl.
      *
      * @param string $message to write into crawl_status.txt this will show
-     *      up in the web crawl status element.
+     *     up in the web crawl status element.
      */
     function writeAdminMessage($message)
     {
@@ -830,8 +830,8 @@ class QueueServer implements CrawlConstants, Join
      * time.
      *
      * @param bool $for_reschedule if the call was to reschedule the urls
-     *      to be crawled at a later time as opposed to being used to
-     *      save the urls because the crawl is being halted.
+     *     to be crawled at a later time as opposed to being used to
+     *     save the urls because the crawl is being halted.
      */
     function dumpQueueToSchedules($for_reschedule = false)
     {
@@ -1326,13 +1326,13 @@ class QueueServer implements CrawlConstants, Join
      *
      * @param string $base_dir directory for of schedules
      * @param string $callback_method what method should be called to handle
-     *      a schedule
+     *     a schedule
      * @param boolean $blocking this method might be called by the indexer
-     *      subcomponent when a merge tier phase is ongoing to allow for
-     *      other processing to occur. If so, we don't want a regress
-     *      where the indexer calls this code calls the indexer etc. If
-     *      the blocking flag is set then the indexer subcomponent won't
-     *      be called
+     *     subcomponent when a merge tier phase is ongoing to allow for
+     *     other processing to occur. If so, we don't want a regress
+     *     where the indexer calls this code calls the indexer etc. If
+     *     the blocking flag is set then the indexer subcomponent won't
+     *     be called
      */
     function processDataFile($base_dir, $callback_method, $blocking = false)
     {
@@ -1388,11 +1388,11 @@ class QueueServer implements CrawlConstants, Join
      * index archive data from fetchers then calls the function
      * processDataFile to process the oldest file found
      * @param bool $blocking this method might be called by the indexer
-     *      subcomponent when a merge tier phase is ongoing to allow for
-     *      other processing to occur. If so, we don't want a regress
-     *      where the indexer calls this code calls the indexer etc. If
-     *      the blocking flag is set then the indexer subcomponent won't
-     *      be called
+     *     subcomponent when a merge tier phase is ongoing to allow for
+     *     other processing to occur. If so, we don't want a regress
+     *     where the indexer calls this code calls the indexer etc. If
+     *     the blocking flag is set then the indexer subcomponent won't
+     *     be called
      */
     function processIndexData($blocking)
     {
@@ -1406,13 +1406,13 @@ class QueueServer implements CrawlConstants, Join
      * Adds the summary and index data in $file to summary bundle and word index
      *
      * @param string $file containing web pages summaries and a mini-inverted
-     *      index for their content
+     *     index for their content
      * @param bool $blocking this method might be called by the indexer
-     *      subcomponent when a merge tier phase is ongoing to allow for
-     *      other processing to occur. If so, we don't want a regress
-     *      where the indexer calls this code calls the indexer etc. If
-     *      the blocking flag is set then the indexer subcomponent won't
-     *      be called
+     *     subcomponent when a merge tier phase is ongoing to allow for
+     *     other processing to occur. If so, we don't want a regress
+     *     where the indexer calls this code calls the indexer etc. If
+     *     the blocking flag is set then the indexer subcomponent won't
+     *     be called
      */
     function processIndexArchive($file, $blocking)
     {
@@ -1594,7 +1594,7 @@ class QueueServer implements CrawlConstants, Join
      * robot filter and setting the delay in the delay filter of
      * crawled delayed hosts
      * @param string $file file to read of robot data, is removed after
-     *      processing
+     *     processing
      */
     function processRobotArchive($file)
     {
@@ -1925,7 +1925,7 @@ class QueueServer implements CrawlConstants, Join
     /**
      * Removes the already seen urls from the supplied array
      *
-     * @param array &$sites url data to check if seen
+     * @param array& $sites url data to check if seen
      */
     function deleteSeenUrls(&$sites)
     {
@@ -2299,7 +2299,7 @@ class QueueServer implements CrawlConstants, Join
      * This function is used to schedule slots for crawl-delayed host.
      *
      * @param int $index location to begin searching for an empty slot
-     * @param array &$arr list of slots to look in
+     * @param array& $arr list of slots to look in
      * @return int index of first available slot
      */
     function getEarliestSlot($index, &$arr)
@@ -2380,7 +2380,7 @@ class QueueServer implements CrawlConstants, Join
 }
 if(!defined("UNIT_TEST_MODE")) {
     /*
-     *  Instantiate and runs the QueueSever
+     * Instantiate and runs the QueueSever
      */
     $queue_server =  new QueueServer($INDEXED_FILE_TYPES);
     $queue_server->start();

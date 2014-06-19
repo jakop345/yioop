@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -52,7 +52,7 @@ class SigninModel extends Model
      * @param string $username the username to check
      * @param string $password the password to check
      * @return bool  where the password is that of the given user
-     *      (or at least hashes to the same thing)
+     *     (or at least hashes to the same thing)
      */
     function checkValidSignin($username, $password)
     {
@@ -124,7 +124,7 @@ class SigninModel extends Model
      * @param string $username the username to check
      * @param string $email the email to check
      * @return bool  where the email is that of the given user
-     *      (or at least hashes to the same thing)
+     *     (or at least hashes to the same thing)
      */
     function checkValidEmail($username, $email)
     {
@@ -141,10 +141,10 @@ class SigninModel extends Model
         return ($username == $row['USER_NAME'] && $email == $row['EMAIL']) ;
     }
     /**
-     *  Get the user_name associated with a given userid
+     * Get the user_name associated with a given userid
      *
-     *  @param string $user_id the userid to look up
-     *  @return string the corresponding username
+     * @param string $user_id the userid to look up
+     * @return string the corresponding username
      */
    function getUserName($user_id)
    {
@@ -157,27 +157,27 @@ class SigninModel extends Model
         return $username;
    }
      /**
-     *  Get the email associated with a given user_id
+     * Get the email associated with a given user_id
      *
-     *  @param string $user_id the userid to look up
-     *  @return string the corresponding email
+     * @param string $user_id the userid to look up
+     * @return string the corresponding email
      */
-   function getEmail($user_id, $limit = 1)
+   function getEmail($user_id)
    {
         $db = $this->db;
         $sql = "SELECT EMAIL FROM USERS WHERE
-            USER_ID = ?  " . $db->limitOffset($limit);
+            USER_ID = ?  " . $db->limitOffset(1);
         $result = $db->execute($sql, array($user_id));
         $row = $db->fetchArray($result);
         $email = $row['EMAIL'];
         return $email;
    }
     /**
-     *  Changes the email of a given user
+     * Changes the email of a given user
      *
-     *  @param string $username username of user to change email of
-     *  @param string $email new email for user
-     *  @return bool update successful or not.
+     * @param string $username username of user to change email of
+     * @param string $email new email for user
+     * @return bool update successful or not.
      */
 
     function changeEmail($username, $email)
@@ -187,11 +187,11 @@ class SigninModel extends Model
         return $result != false;
     }
     /**
-     *  Changes the password of a given user
+     * Changes the password of a given user
      *
-     *  @param string $username username of user to change password of
-     *  @param string $password new password for user
-     *  @return bool update successful or not.
+     * @param string $username username of user to change password of
+     * @param string $password new password for user
+     * @return bool update successful or not.
      */
     function changePassword($username, $password)
     {
@@ -201,11 +201,11 @@ class SigninModel extends Model
         return $result != false;
     }
     /**
-     *  Changes the password of a given user in case of ZKP authentication
+     * Changes the password of a given user in case of ZKP authentication
      *
-     *  @param string $username username of user to change password of
-     *  @param string $password new password for user
-     *  @return bool update successful or not.
+     * @param string $username username of user to change password of
+     * @param string $password new password for user
+     * @return bool update successful or not.
      */
     function changePasswordZKP($username, $password)
     {

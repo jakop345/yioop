@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -94,7 +94,6 @@ class ClassifierController extends Controller implements CrawlConstants
         if (isset($_REQUEST['index'])) {
             $index = $this->clean($_REQUEST['index'], 'int');
             if (intval($index) == 1) {
-                // TODO Fail in case that there's no current index
                 $index = $this->model("crawl")->getCurrentIndexDatabaseName();
             }
             $source_type = $this->clean($_REQUEST['type'], 'string');
@@ -220,12 +219,12 @@ class ClassifierController extends Controller implements CrawlConstants
      * on.
      *
      * @param string $label class label of the classifier the new crawl mix
-     *  will be associated with
+     * will be associated with
      * @param int $crawl_time timestamp of the index to be iterated over
      * @param string $keywords an optional query used to restrict the pages
-     *  retrieved by the crawl mix
+     * retrieved by the crawl mix
      * @return object A MixArchiveBundleIterator instance that will iterate
-     *  over the pages of the requested index
+     * over the pages of the requested index
      */
     function buildClassifierCrawlMix($label, $crawl_time, $keywords)
     {
@@ -262,9 +261,9 @@ class ClassifierController extends Controller implements CrawlConstants
      * previous one left off.
      *
      * @param string $label class label of the classifier this crawl mix is
-     *  associated with
+     * associated with
      * @return object new MixArchiveBundleIterator instance that picks up where
-     *  the previous one left off
+     * the previous one left off
      */
     function retrieveClassifierCrawlMix($label)
     {
@@ -278,13 +277,13 @@ class ClassifierController extends Controller implements CrawlConstants
      *
      * @param array $page original page summary array
      * @param float $score classification score (estimated by the Naive Bayes
-     *  text classification algorithm) for $page
+     * text classification algorithm) for $page
      * @param float $disagreement disagreement score computed for $page
      * @param int $crawl_time index the page came from
      * @param string $keywords query supplied to the crawl mix used to find
-     *  $page
+     * $page
      * @return array reduced page summary structure containing only the
-     *  information that the client needs to display a summary of the page
+     * information that the client needs to display a summary of the page
      */
     function prepareUnlabelledDocument($page, $score, $disagreement,
         $crawl_time, $keywords)

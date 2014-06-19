@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -32,7 +32,7 @@
  */
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 /**
- *  Loads base datasource class if necessary
+ * Loads base datasource class if necessary
  */
 require_once BASE_DIR."/models/datasources/pdo_manager.php";
 /**
@@ -57,11 +57,22 @@ require_once BASE_DIR."/models/datasources/pdo_manager.php";
 class MysqlManager extends PdoManager
 {
     /** Used when to quote column names of db names that contain a
-     *  a keyword or special character
-     *  @var string
+     * a keyword or special character
+     * @var string
      */
     var $special_quote = "`";
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     *
+     * @param string $db_host the hostname of where the database is located
+     *     (not used in all dbms's)
+     * @param string $db_user the user to connect as
+     * @param string $db_password the password of the user to connect as
+     * @param string $db_name the name of the database on host we are
+     * connecting to
+     * @return mixed return false if not successful and some kind of
+     *     connection object/identifier otherwise
+     */
     function connect($db_host = DB_HOST, $db_user = DB_USER,
         $db_password = DB_PASSWORD, $db_name = DB_NAME)
     {

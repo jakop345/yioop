@@ -1,32 +1,32 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  @author Chris Pollett chris@pollett.org
- *  @package seek_quarry
- *  @subpackage locale
- *  @license http://www.gnu.org/licenses/ GPL3
- *  @link http://www.seekquarry.com/
- *  @copyright 2009 - 2014
- *  @filesource
+ * @author Chris Pollett chris@pollett.org
+ * @package seek_quarry
+ * @subpackage locale
+ * @license http://www.gnu.org/licenses/ GPL3
+ * @link http://www.seekquarry.com/
+ * @copyright 2009 - 2014
+ * @filesource
  */
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 /* If you would like to use wordnet for thesaurus reordering of query results
@@ -91,10 +91,10 @@ class EnTokenizer
      */
     static $j;
     /**
-     *  The constructor for a tokenizer can be used to say that a thesaurus
-     *  for final query reordering is present. For english we do this if
-     *  the WORDNET_EXEC variable is set. In which case we use WordNet for
-     *  our reordering
+     * The constructor for a tokenizer can be used to say that a thesaurus
+     * for final query reordering is present. For english we do this if
+     * the WORDNET_EXEC variable is set. In which case we use WordNet for
+     * our reordering
      */
     function __construct()
     {
@@ -103,13 +103,13 @@ class EnTokenizer
         }
     }
     /**
-     *  Stub function which could be used for a word segmenter.
-     *  Such a segmenter on input thisisabunchofwords would output
-     *  this is a bunch of words
+     * Stub function which could be used for a word segmenter.
+     * Such a segmenter on input thisisabunchofwords would output
+     * this is a bunch of words
      *
-     *  @param string $pre_segment  before segmentation
-     *  @return string should return string with words separated by space
-     *      in this case does nothing
+     * @param string $pre_segment  before segmentation
+     * @return string should return string with words separated by space
+     *     in this case does nothing
      */
     static function segment($pre_segment)
     {
@@ -120,12 +120,12 @@ class EnTokenizer
      *
      * @param string $term term to find related thesaurus terms
      * @param string $word_type is the type of word such as "NN" (noun), 
-     *      "VB" (verb), "AJ" (adjective), or "AV" (adverb) 
-     *      (all other types will be ignored)
+     *     "VB" (verb), "AJ" (adjective), or "AV" (adverb) 
+     *     (all other types will be ignored)
      * @param string $whole_query the original query $term came from
      * @return array a sequence of
-     *      (score => array of thesaurus terms) associations. The score 
-     *      representing one word sense of term
+     *     (score => array of thesaurus terms) associations. The score 
+     *     representing one word sense of term
      */
     static function scoredThesaurusMatches($term, $word_type,
         $whole_query)
@@ -175,7 +175,7 @@ class EnTokenizer
                 $score[$j] = PhraseParser::getCosineRank($query_parts,
                     $example_sentence_parts);
                 /*  If Cosine similarity is zero then go for
-                 *  intersection similarity ranking
+                 * intersection similarity ranking
                  */
                 if($score[$j] == 0) {
                     $score[$j] = PhraseParser::getIntersection($query_parts,
@@ -357,7 +357,7 @@ class EnTokenizer
      *
      * @param string $phrase text to add parts speech tags to
      * @return string $tagged_phrase phrase where each term has ~part_of_speech
-     *      appended
+     *     appended
      */
     static function tagPartsOfSpeechPhrase($phrase)
     {
@@ -395,13 +395,13 @@ class EnTokenizer
      * m() measures the number of consonant sequences between 0 and j. if c is
      * a consonant sequence and v a vowel sequence, and [.] indicates arbitrary
      * presence,
-     *  <pre>
-     *    [c][v]       gives 0
-     *    [c]vc[v]     gives 1
-     *    [c]vcvc[v]   gives 2
-     *    [c]vcvcvc[v] gives 3
-     *    ....
-     *  </pre>
+     * <pre>
+     *   [c][v]       gives 0
+     *   [c]vc[v]     gives 1
+     *   [c]vcvc[v]   gives 2
+     *   [c]vcvcvc[v] gives 3
+     *   ....
+     * </pre>
      */
     private static function m()
     {
@@ -446,6 +446,7 @@ class EnTokenizer
     /**
      * Checks if $j,($j-1) contain a double consonant.
      *
+     * @param int $j position to check in buffer for double consonant
      * @return bool if it does or not
      */
     private static function doublec($j)
@@ -460,9 +461,10 @@ class EnTokenizer
      * not w,x or y. this is used when trying to restore an e at the end of a
      * short word. e.g.
      *<pre>
-     *    cav(e), lov(e), hop(e), crim(e), but
-     *    snow, box, tray.
+     *   cav(e), lov(e), hop(e), crim(e), but
+     *   snow, box, tray.
      *</pre>
+     * @param int $i position to check in buffer for consonant-vowel-consonant
      * @return bool whether the letters at indices have the given form
      */
     private static function cvc($i)
@@ -517,23 +519,23 @@ class EnTokenizer
 
     /** step1ab() gets rid of plurals and -ed or -ing. e.g.
      * <pre>
-     *     caresses  ->  caress
-     *     ponies    ->  poni
-     *     ties      ->  ti
-     *     caress    ->  caress
-     *     cats      ->  cat
+     *    caresses  ->  caress
+     *    ponies    ->  poni
+     *    ties      ->  ti
+     *    caress    ->  caress
+     *    cats      ->  cat
      *
-     *     feed      ->  feed
-     *     agreed    ->  agree
-     *     disabled  ->  disable
+     *    feed      ->  feed
+     *    agreed    ->  agree
+     *    disabled  ->  disable
      *
-     *     matting   ->  mat
-     *     mating    ->  mate
-     *     meeting   ->  meet
-     *     milling   ->  mill
-     *     messing   ->  mess
+     *    matting   ->  mat
+     *    mating    ->  mate
+     *    meeting   ->  meet
+     *    milling   ->  mill
+     *    messing   ->  mess
      *
-     *     meetings  ->  meet
+     *    meetings  ->  meet
      * </pre>
      */
     private static function step1ab()
@@ -708,7 +710,7 @@ class EnTokenizer
         if (self::m() > 1) self::$k = self::$j;
     }
     /** step5() removes a final -e if m() > 1, and changes -ll to -l if
-     *  m() > 1.
+     * m() > 1.
      */
     private static function step5()
     {
@@ -723,13 +725,13 @@ class EnTokenizer
     }
     //private methods for part of speech taggin
     /**
-     *  Split input text into terms and output an array with one element
-     *  per term, that element consisting of array with the term token 
-     *  and the part of speech tag.
+     * Split input text into terms and output an array with one element
+     * per term, that element consisting of array with the term token 
+     * and the part of speech tag.
      *
-     *  @param string $text string to tag and tokenize
-     *  @return array of pairs of the form( "token" => token_for_term,
-     *      "tag"=> part_of_speech_tag_for_term) for one each token in $text
+     * @param string $text string to tag and tokenize
+     * @return array of pairs of the form( "token" => token_for_term,
+     *     "tag"=> part_of_speech_tag_for_term) for one each token in $text
      */
     private static function tagTokenizePartOfSpeech($text)
     {

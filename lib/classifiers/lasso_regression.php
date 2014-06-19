@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -192,7 +192,7 @@ class LassoRegression extends ClassifierAlgorithm
      * examples of the target class.
      *
      * @param array $x feature vector represented by an associative array
-     *  mapping features to their weights
+     * mapping features to their weights
      */
     function classify($x)
     {
@@ -208,14 +208,14 @@ class LassoRegression extends ClassifierAlgorithm
      * returns it as a pair <numerator, denominator>.
      *
      * @param object $Xj iterator over the non-zero entries in column j of the
-     *  data
+     * data
      * @param array $y labels corresponding to entries in $Xj; each label is 1
-     *  if example i has the target label, and -1 otherwise
+     * if example i has the target label, and -1 otherwise
      * @param array $r cached dot products of the beta vector and feature
-     *  weights for each example i
+     * weights for each example i
      * @param float $d trust region for feature j
      * @return array two-element array containing the numerator and denominator
-     *  of the likelihood
+     * of the likelihood
      */
     function computeApproxLikelihood($Xj, $y, $r, $d)
     {
@@ -243,12 +243,12 @@ class LassoRegression extends ClassifierAlgorithm
      * much a given optimization step improved the likelihood of the data set.
      *
      * @param array $r cached dot products of the beta vector and feature
-     *  weights for each example i
+     * weights for each example i
      * @param array $y labels for each example
      * @param array $beta beta vector of feature weights (used to
-     *  penalize large weights)
+     * penalize large weights)
      * @return float value proportional to the likelihood of the data,
-     *  penalized by the magnitude of the beta vector
+     * penalized by the magnitude of the beta vector
      */
     function score($r, $y, $beta)
     {
@@ -261,7 +261,7 @@ class LassoRegression extends ClassifierAlgorithm
      * Estimates the lambda parameter from the dataset.
      *
      * @param object $invX inverted X matrix for dataset (essentially a posting
-     *  list of features in X)
+     * list of features in X)
      * @return float lambda estimate
      */
     function estimateLambdaNorm($invX)

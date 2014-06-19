@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * Tool used to help coding with Yioop. Has commands to update copyright info,
  * clean trailing spaces, find long lines, and do global file searches and
@@ -56,7 +56,7 @@ require_once BASE_DIR.'/models/model.php';
 /** Used to get @see readInput() */
 require_once BASE_DIR.'/lib/utility.php';
 /*
- *  We'll set up multi-byte string handling to use UTF-8
+ * We'll set up multi-byte string handling to use UTF-8
  */
 mb_internal_encoding("UTF-8");
 mb_regex_encoding("UTF-8");
@@ -122,7 +122,7 @@ EOD;
  *
  * @param array $args $args[0] contains path to sub-folder/file
  * @return bool $no_instructions false if should output code_tool.php
- *      instructions
+ *     instructions
  */
 function clean($args)
 {
@@ -143,7 +143,7 @@ function clean($args)
  *
  * @param array $args $args[0] contains path to sub-folder/file
  * @return bool $no_instructions false if should output code_tool.php
- *      instructions
+ *     instructions
  */
 function copyright($args)
 {
@@ -166,7 +166,7 @@ function copyright($args)
  *
  * @param array $args $args[0] contains path to sub-folder/file
  * @return bool $no_instructions false if should output code_tool.php
- *      instructions
+ *     instructions
  */
 function longlines($args)
 {
@@ -186,15 +186,15 @@ function longlines($args)
  * sub-folder/file
  *
  * @param array $args $args[0] contains path to sub-folder/file,
- *      $args[1] contains the regex searching for, $args[2] contains
- *      what it should be replaced with, $args[3] (defaults to effect)
- *      controls the mode of operation. One of "effect", "change", or
- *      "interactive". effect shows line number and lines matching pattern,
- *      but commits no changes; interactive for each match, prompts user
- *      if should do the change, change does a global search and replace
- *      without output
+ *     $args[1] contains the regex searching for, $args[2] contains
+ *     what it should be replaced with, $args[3] (defaults to effect)
+ *     controls the mode of operation. One of "effect", "change", or
+ *     "interactive". effect shows line number and lines matching pattern,
+ *     but commits no changes; interactive for each match, prompts user
+ *     if should do the change, change does a global search and replace
+ *     without output
  * @return bool $no_instructions false if should output code_tool.php
- *      instructions
+ *     instructions
  */
 function replace($args)
 {
@@ -220,9 +220,9 @@ function replace($args)
  * Performs a search for given pattern in files in supplied sub-folder/file
  *
  * @param array $args $args[0] contains path to sub-folder/file,
- *      $args[1] contains the regex searching for
+ *     $args[1] contains the regex searching for
  * @return bool $no_instructions false if should output code_tool.php
- *      instructions
+ *     instructions
  */
 function search($args)
 {
@@ -248,6 +248,8 @@ function search($args)
  * of the form 2009 - \d\d\d\d to the supplied copyright year
  *
  * @param string $filename name of file to check for copyright lines and updated
+ * @param mixed $set_year if false then set the end of the copyright period
+ *  to the current year, otherwise, if an int sets it to the value of the int
  */
 function changeCopyrightFile($filename, $set_year = false)
 {
@@ -314,12 +316,12 @@ function cleanLinesFile($filename)
 /**
  * Callback function applied to each file in the directory being traversed
  * by @see search(). Searches $filename matching $pattern and outputs line
- *      numbers and lines
+ *     numbers and lines
  *
  * @param string $filename name of file to search in
  * @param mixed $set_pattern if not false, then sets $set_pattern in $pattern to
- *      initialize the callback on subsequent calls. $pattern here is the
- *      search pattern
+ *     initialize the callback on subsequent calls. $pattern here is the
+ *     search pattern
  */
 function searchFile($filename, $set_pattern = false)
 {
@@ -352,17 +354,17 @@ function searchFile($filename, $set_pattern = false)
 /**
  * Callback function applied to each file in the directory being traversed
  * by @see replace(). Searches $filename matching $pattern. Depending
- *      on $mode ($arg[2] as described in replace()), it outputs and
- *      replaces with $replace
+ *     on $mode ($arg[2] as described in replace()), it outputs and
+ *     replaces with $replace
  *
  * @param string $filename name of file to search and replace in
  * @param mixed $set_pattern if not false, then sets $set_pattern in $pattern to
- *      initialize the callback on subsequent calls. $pattern here is the
- *      search pattern
+ *     initialize the callback on subsequent calls. $pattern here is the
+ *     search pattern
  * @param mixed $set_replace if not false, then sets $set_replace in $replace to
- *      initialize the callback on subsequent calls.
+ *     initialize the callback on subsequent calls.
  * @param mixed $set_mode if not false, then sets $set_mode in $mode to
- *      initialize the callback on subsequent calls.
+ *     initialize the callback on subsequent calls.
  */
 function replaceFile($filename, $set_pattern = false,
     $set_replace = false, $set_mode = false)
@@ -429,7 +431,7 @@ function replaceFile($filename, $set_pattern = false,
  *
  * @param string $path to apply map $callback to
  * @param string $callback function name to call with filename of each file
- *      in path
+ *     in path
  */
 function mapPath($path, $callback)
 {

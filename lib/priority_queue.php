@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -32,7 +32,7 @@
  */
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 /**
- *  Load in base class
+ * Load in base class
  */
 require_once "string_array.php";
 /**
@@ -99,10 +99,10 @@ class PriorityQueue extends StringArray implements CrawlConstants
      * @param int $num_values number of values the queue can hold
      * @param int $value_size the size in a bytes of a value
      * @param string $min_or_max whether this priority queue return least or
-     *  most weight values when polled
+     * most weight values when polled
      * @param object $notifier object to call when a value changes in the queue
      * @param int $save_frequency how often the data in the queue should be
-     *      save to disk. (It's default location is RAM)
+     *     save to disk. (It's default location is RAM)
      */
     function __construct($fname, $num_values, $value_size,
         $min_or_max, $notifier = NULL,
@@ -121,7 +121,7 @@ class PriorityQueue extends StringArray implements CrawlConstants
      *
      * @param int $i location to return data from
      * @return mixed array data if the value of $i is between 1 and count, false
-     *      otherwise
+     *     otherwise
      */
     function peek($i = 1)
     {
@@ -141,7 +141,7 @@ class PriorityQueue extends StringArray implements CrawlConstants
      *
      * @param int $i element to get out of the queue
      * @return mixed array data if the value of $i is between 1 and count, false
-     *      otherwise
+     *     otherwise
      */
     function poll($i = 1)
     {
@@ -163,7 +163,7 @@ class PriorityQueue extends StringArray implements CrawlConstants
      * @param string $data what to insert into the queue
      * @param float $weight how much the new data should be weighted
      * @return mixed index location in queue where item was stored if
-     *      successful, otherwise false.
+     *     successful, otherwise false.
      */
     function insert($data, $weight)
     {
@@ -239,7 +239,7 @@ class PriorityQueue extends StringArray implements CrawlConstants
      * gummed up because all of the weights stored in it are too small.
      *
      * @param int $new_total what the new sum of weights of elements in the
-     *      queue will be after normalization
+     *     queue will be after normalization
      */
     function normalize($new_total = NUM_URLS_QUEUE_RAM)
     {
@@ -345,7 +345,7 @@ class PriorityQueue extends StringArray implements CrawlConstants
      *
      * @param int $i element to get
      * @return array value stored in queue together with its weight as a two
-     *      element array
+     *     element array
      */
     function getRow($i)
     {
@@ -365,7 +365,7 @@ class PriorityQueue extends StringArray implements CrawlConstants
      *
      * @param int $i location to add data
      * @param array $row data to add (a two element array in the form
-     *      key, float value).
+     *     key, float value).
      */
     function putRow($i, $row)
     {

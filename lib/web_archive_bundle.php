@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -100,12 +100,15 @@ class WebArchiveBundle
      * characteristics
      *
      * @param string $dir_name folder name of the bundle
+     * @param bool $read_only_archive whether to open archive in a read only
+     *      mode suitable for obtaining search results to open it in a read
+     *      write mode as used during a crawl
      * @param int $num_docs_per_partition number of documents before the
-     *      web archive is changed
+     *     web archive is changed
      * @param string $description a short text name/description of this
-     *      WebArchiveBundle
+     *     WebArchiveBundle
      * @param string $compressor the Compressor object used to
-     *      compress/uncompress data stored in the bundle
+     *     compress/uncompress data stored in the bundle
      */
     function __construct($dir_name, $read_only_archive = true,
         $num_docs_per_partition = NUM_DOCS_PER_GENERATION, $description = NULL,
@@ -171,7 +174,7 @@ class WebArchiveBundle
      * the resulting offsets given by $offset_field.
      *
      * @param string $offset_field field used to record offsets after storing
-     * @param array &$pages data to store
+     * @param array& $pages data to store
      * @return int the write_partition the pages were stored in
      */
     function addPages($offset_field, &$pages)
@@ -198,6 +201,8 @@ class WebArchiveBundle
     /**
      * Advances the index of the write partition by one and creates the
      * corresponding web archive.
+     *
+     * @param int $i the number of the current write partition
      */
     function setWritePartition($i)
     {
@@ -234,9 +239,9 @@ class WebArchiveBundle
      * this bundle.
      *
      * @param int $index the number of the partition within this bundle to
-     *      return
+     *     return
      * @param bool $fast_construct should the constructor of the WebArchive
-     *      avoid reading in its info block.
+     *     avoid reading in its info block.
      * @return object the WebArchive file which was requested
      */
     function getPartition($index, $fast_construct = true)
@@ -306,10 +311,10 @@ class WebArchiveBundle
      * file
      *
      * @param string $dir_name folder name of the WebArchiveBundle to get info
-     *  for
+     * for
      * @return array containing the name (description) of the WebArchiveBundle,
-     *      the number of items stored in it, and the number of WebArchive
-     *      file partitions it uses.
+     *     the number of items stored in it, and the number of WebArchive
+     *     file partitions it uses.
      */
     static function getArchiveInfo($dir_name)
     {

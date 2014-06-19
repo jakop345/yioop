@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -85,10 +85,10 @@ abstract class Controller
      */
     var $component_activities = array();
     /**
-     *  Associative array of activity => component activity is on, used
-     *  by @see Controller::call method to actually invoke a given activity
-     *  on a given component
-     *  @var array
+     * Associative array of activity => component activity is on, used
+     * by @see Controller::call method to actually invoke a given activity
+     * on a given component
+     * @var array
      */
     var $activity_component = array();
     /**
@@ -96,6 +96,12 @@ abstract class Controller
      * @var array
      */
     var $indexing_plugins = array();
+    /**
+     * Sets up component activities, instance array, and plugins.
+     *
+     * @param array $indexing_plugins which post processing indexing plugins
+     *      are available
+     */
     function __construct($indexing_plugins = array())
     {
         global $INDEXED_FILE_TYPES, $COMPONENT_ACTIVITIES;
@@ -112,7 +118,7 @@ abstract class Controller
         $this->view_instances = array();
     }
     /**
-     *  This function should be overriden to web handle requests
+     * This function should be overriden to web handle requests
      */
     public abstract function processRequest();
     /**
@@ -198,12 +204,12 @@ abstract class Controller
         return $this->view_instances[$view];
     }
     /**
-     *  Send the provided view to output, drawing it with the given
-     *  data variable, using the current locale for translation, and
-     *  writing mode
+     * Send the provided view to output, drawing it with the given
+     * data variable, using the current locale for translation, and
+     * writing mode
      *
-     *  @param string $view   the name of the view to draw
-     *  @param array $data   an array of values to use in drawing the view
+     * @param string $view   the name of the view to draw
+     * @param array $data   an array of values to use in drawing the view
      */
     function displayView($view, $data)
     {
@@ -251,38 +257,38 @@ abstract class Controller
         $this->view($view)->render($data);
     }
     /**
-     *  When an activity involves displaying tabular data (such as rows of
-     *  users, groups, etc), this method might be called to set up $data
-     *  fields for next, prev, and page links, it also makes the call to the
-     *  model to get the row data sorted and restricted as desired. For some
-     *  data sources, rather than directly make a call to the model to get the
-     *  data it might be passed directly to this method.
+     * When an activity involves displaying tabular data (such as rows of
+     * users, groups, etc), this method might be called to set up $data
+     * fields for next, prev, and page links, it also makes the call to the
+     * model to get the row data sorted and restricted as desired. For some
+     * data sources, rather than directly make a call to the model to get the
+     * data it might be passed directly to this method.
      *
-     *  @param array &$data used to send data to the view will be updated by
-     *      this method with row and paging data
-     *  @param mixed $field_or_model if an object, this is assumed to be a model
-     *      and so the getRows method of this model is called to get row data,
-     *      sorted and restricted according to $search_array; if a string
-     *      then the row data is assumed to be in $data[$field_or_model] and
-     *      pagingLogic itself does the sorting and restricting.
-     *  @param string $output_field output rows for the view will be stored in
-     *      $data[$output_field]
-     *  @param int $default_show if not specified by $_REQUEST, then this will
-     *      be used to determine the maximum number of rows that will be
-     *      written to $data[$output_field]
-     *  @param array $search_array used to sort and restrict in
-     *      the getRows call or the data from $data[$field_or_model].
-     *      Each element of this is a quadruple name of a field, what comparison
-     *      to perform, a value to check, and an order (ascending/descending)
-     *      to sort by
-     *  @param string $var_prefix if there are multiple uses of pagingLogic
-     *      presented on the same view then $var_prefix can be prepended to
-     *      to the $data field variables like num_show, start_row, end_row
-     *      to distinguish between them
-     *  @param array $args additional arguments that are passed to getRows and
-     *      in turn to selectCallback, fromCallback, and whereCallback that
-     *      might provide user_id, etc to further control which rows are
-     *      returned
+     * @param array& $data used to send data to the view will be updated by
+     *     this method with row and paging data
+     * @param mixed $field_or_model if an object, this is assumed to be a model
+     *     and so the getRows method of this model is called to get row data,
+     *     sorted and restricted according to $search_array; if a string
+     *     then the row data is assumed to be in $data[$field_or_model] and
+     *     pagingLogic itself does the sorting and restricting.
+     * @param string $output_field output rows for the view will be stored in
+     *     $data[$output_field]
+     * @param int $default_show if not specified by $_REQUEST, then this will
+     *     be used to determine the maximum number of rows that will be
+     *     written to $data[$output_field]
+     * @param array $search_array used to sort and restrict in
+     *     the getRows call or the data from $data[$field_or_model].
+     *     Each element of this is a quadruple name of a field, what comparison
+     *     to perform, a value to check, and an order (ascending/descending)
+     *     to sort by
+     * @param string $var_prefix if there are multiple uses of pagingLogic
+     *     presented on the same view then $var_prefix can be prepended to
+     *     to the $data field variables like num_show, start_row, end_row
+     *     to distinguish between them
+     * @param array $args additional arguments that are passed to getRows and
+     *     in turn to selectCallback, fromCallback, and whereCallback that
+     *     might provide user_id, etc to further control which rows are
+     *     returned
      */
      function pagingLogic(&$data, $field_or_model, $output_field,
         $default_show, $search_array = array(), $var_prefix = "", $args = NULL)
@@ -387,8 +393,8 @@ abstract class Controller
         $data[$d['NUM_TOTAL']] = $num_rows;
      }
     /**
-     *  Used to invoke an activity method of the current controller or one
-     *  its components
+     * Used to invoke an activity method of the current controller or one
+     * its components
      *
      * @param $activity method to invoke
      */
@@ -438,13 +444,13 @@ abstract class Controller
         return $token_okay;
     }
     /**
-     *  Checks if the timestamp in $_REQUEST[$token_name] 
-     *  matches the timestamp of the last CSRF token accessed by this user.
-     *  This is to avoid accidental replays of postings etc if the back button
-     *  used.
+     * Checks if the timestamp in $_REQUEST[$token_name] 
+     * matches the timestamp of the last CSRF token accessed by this user.
+     * This is to avoid accidental replays of postings etc if the back button
+     * used.
      *
-     *  @param string $token_name name of a $_REQUEST field used to hold a
-     *      CSRF_TOKEN
+     * @param string $token_name name of a $_REQUEST field used to hold a
+     *     CSRF_TOKEN
      */
      function checkCSRFTime($token_name)
      {
@@ -464,8 +470,8 @@ abstract class Controller
      * @param mixed $value tainted data
      * @param string $type type of data in value: one of int, hash, or string
      * @param mixed $default if $value is not set default value is returned,
-     *      this isn't used much since if the error_reporting is E_ALL
-     *      or -1 you would still get a Notice.
+     *     this isn't used much since if the error_reporting is E_ALL
+     *     or -1 you would still get a Notice.
      * @return string the clean input matching the type provided
      */
     function clean($value, $type, $default = NULL)
@@ -543,7 +549,7 @@ abstract class Controller
      *
      * @param array $arr the array of lines to be process
      * @param string $endline_string what string should be used to indicate
-     *      the end of a line
+     *     the end of a line
      * @param bool $clean whether to clean each line
      * @return string a concatenated string of cleaned lines
      */
@@ -569,8 +575,8 @@ abstract class Controller
      *
      * @param string $str contains the url data
      * @param string $line_type does additional cleaning depending on the type
-     *      of the lines. For instance, if is "url" then a line not beginning
-     *      with a url scheme will have http:// prepended.
+     *     of the lines. For instance, if is "url" then a line not beginning
+     *     with a url scheme will have http:// prepended.
      * @return $lines an array of clean lines
      */
     function convertStringCleanArray($str, $line_type="url")

@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * Used to set the configuration settings of the SeekQuarry project.
  *
@@ -35,7 +35,7 @@
 if(!defined('BASE_DIR') ||
     defined('PROFILE_FILE_NAME')) {echo "BAD REQUEST"; exit();}
 /** Version number for upgrade function
- *  @var int
+ * @var int
  */
 define('YIOOP_VERSION', 20);
 /*
@@ -72,8 +72,8 @@ if(!defined('TIME_ZONE')) {
 }
 /**
  * @global array which activities are in which Component classes (use this
- *      array so don't have to instantiate classes to find out. Keys are
- *      names of components, values are the activities in that component.
+ *     array so don't have to instantiate classes to find out. Keys are
+ *     names of components, values are the activities in that component.
  */
 $COMPONENT_ACTIVITIES = array(
     "accountaccess" => array("signin", "manageAccount", "manageUsers",
@@ -114,7 +114,7 @@ define('APP_DIR', WORK_DIRECTORY."/app");
 */
 define('PREP_DIR', WORK_DIRECTORY."/prepare");
 /** Locale dir to use in case LOCALE_DIR does not exist yet or is
- *  missing some file
+ * missing some file
  */
 define('FALLBACK_LOCALE_DIR', BASE_DIR."/locale");
 /** name of the cookie used to manage the session
@@ -133,7 +133,7 @@ define('NORMAL_AUTHENTICATION', 1);
 /** Authentication Mode Possibility*/
 define('ZKP_AUTHENTICATION', 2);
 /** If ZKP Authentication via Fiat Shamir Protocol used how many iterations
- *  to do
+ * to do
  */
 define('FIAT_SHAMIR_ITERATIONS', 20);
 if(file_exists(WORK_DIRECTORY.PROFILE_FILE_NAME)) {
@@ -292,7 +292,7 @@ define('MAX_WAITING_HOSTS', 250);
 /** Minimum weight in priority queue before rebuilt */
 define('MIN_QUEUE_WEIGHT', 1/100000);
 /**  largest sized object allowed in a web archive (used to sanity check
- *   reading data out of a web archive)
+ *  reading data out of a web archive)
  */
 define('MAX_ARCHIVE_OBJECT_SIZE', 100000000);
 /** Treat earlier timestamps as being an indexes of format version 0 */
@@ -311,18 +311,18 @@ if(strstr(PHP_OS, "WIN")) {
     $memory = 1024 * intval($data[1]);
 }
 /**
- *  Factor to multiply sizes of Yioop data structures with in low ram memory
- *  setting (2GB)
+ * Factor to multiply sizes of Yioop data structures with in low ram memory
+ * setting (2GB)
  */
 define('MEMORY_LOW', 1);
 /**
- *  Factor to multiply sizes of Yioop data structures with if have more than
+ * Factor to multiply sizes of Yioop data structures with if have more than
  * (2GB)
  */
 define('MEMORY_STANDARD', 4);
 if($memory < 2200000000) {
     /**
-     *  Based on system memory, either the low or high memory factor
+     * Based on system memory, either the low or high memory factor
      */
     define('MEMORY_PROFILE', MEMORY_LOW);
 } else {
@@ -358,14 +358,14 @@ define('MAX_LINKS_PER_SITEMAP', MEMORY_PROFILE * 80);
 /**  maximum number of words from links to consider on any given page */
 define('MAX_LINKS_WORD_TEXT', 100);
 /**  maximum length of urls to try to queue, this is important for
- *   memory when creating schedule, since the amount of memory is
- *   going to be greater than the product MAX_URL_LENGTH*MAX_FETCH_SIZE
- *   text_processors need to promise to implement this check or rely
- *   on the base class which does implement it in extractHttpHttpsUrls
+ *  memory when creating schedule, since the amount of memory is
+ *  going to be greater than the product MAX_URL_LENGTH*MAX_FETCH_SIZE
+ *  text_processors need to promise to implement this check or rely
+ *  on the base class which does implement it in extractHttpHttpsUrls
  */
 define('MAX_URL_LENGTH', 512);
 /** request this many bytes out of a page -- this is the default value to
- *  use if the user doesn't set this value in the page options GUI
+ * use if the user doesn't set this value in the page options GUI
  */
 define('PAGE_RANGE_REQUEST', 50000);
 /**
@@ -374,10 +374,10 @@ define('PAGE_RANGE_REQUEST', 50000);
  */
 define('MAX_DESCRIPTION_LEN', 2000);
 /**
- *  Allow pages to be recrawled after this many days -- this is the
- *  default value to use if the user doesn't set this value in the page options
- *  GUI. What this controls is how often the page url filter is deleted.
- *  A nonpositive value means the filter will never be deleted.
+ * Allow pages to be recrawled after this many days -- this is the
+ * default value to use if the user doesn't set this value in the page options
+ * GUI. What this controls is how often the page url filter is deleted.
+ * A nonpositive value means the filter will never be deleted.
  */
 define('PAGE_RECRAWL_FREQUENCY', -1);
 /** number of multi curl page requests in one go */
@@ -393,13 +393,13 @@ define('SINGLE_PAGE_TIMEOUT', 60);
  */
 define('LOG_TIMEOUT', 30);
 /**
- *  Maximum time a crawl daemon process can go before calling
- *  @see CrawlDaemon::processHandler
+ * Maximum time a crawl daemon process can go before calling
+ * @see CrawlDaemon::processHandler
  */
 define('PROCESS_TIMEOUT', 240);
 /**
- *  Number of error page 400 or greater seen from a host before crawl-delay
- *  host and dump remainder from current schedule
+ * Number of error page 400 or greater seen from a host before crawl-delay
+ * host and dump remainder from current schedule
  */
 define('DOWNLOAD_ERROR_THRESHOLD', 50);
 /** Crawl-delay to set in the event that DOWNLOAD_ERROR_THRESHOLD exceeded*/
@@ -414,7 +414,7 @@ define('NORMALIZE_FREQUENCY', 10000);
 $INDEXED_FILE_TYPES = array("unknown");
 /**
  * @global array filetypes which should be considered images. This
- *      array is populated in the individual lib/processors page processors
+ *     array is populated in the individual lib/processors page processors
  */
 $IMAGE_TYPES = array();
 /**
@@ -425,7 +425,7 @@ $IMAGE_TYPES = array();
 $PAGE_PROCESSORS = array();
 /**
  * @global array of indexing plugins, array itself is populated in the plugins
- *      after the plugin checks if it can run.
+ *     after the plugin checks if it can run.
  */
 $INDEXING_PLUGINS = array();
 /** get any indexing plugins */
@@ -538,7 +538,7 @@ define ('MIN_QUERY_CACHE_TIME', 3600); //one hour
  */
 define ('DEFAULT_ADMIN_PAGING_NUM', 50);
 /** Maximum number of bytes that the file that the suggest-a-url form
- *  send data to can be.
+ * send data to can be.
  */
 define ('MAX_SUGGEST_URL_FILE_SIZE', 100000);
 /** Maximum number of a user can suggest to the suggest-a-url form in one day
@@ -549,8 +549,8 @@ define ('MAX_SUGGEST_URLS_ONE_DAY', 10);
  */
 define('MAX_MIX_FRAGMENTS', 10);
 /**
- *  Length after which to truncate names for users/groups/roles when
- *  they are displayed (not in DB)
+ * Length after which to truncate names for users/groups/roles when
+ * they are displayed (not in DB)
  */
 define ('NAME_TRUNCATE_LEN', 7);
 /** ID of the root user */
@@ -566,8 +566,8 @@ define('PUBLIC_USER_ID', 2);
 /** USER STATUS value used for a user who can log in and perform activities */
 define('ACTIVE_STATUS', 1);
 /**
- *  USER STATUS value used for a user whose account is created, but which
- *  still needs to undergo admin or email verification/activation
+ * USER STATUS value used for a user whose account is created, but which
+ * still needs to undergo admin or email verification/activation
  */
 define('INACTIVE_STATUS', 2);
 /**
@@ -576,62 +576,62 @@ define('INACTIVE_STATUS', 2);
  */
 define('BANNED_STATUS', 3);
 /** Group status used to indicate a user that has been invited to join
- *  a group but who has not yet accepted
+ * a group but who has not yet accepted
  */
 define('INVITED_STATUS', 4);
 /**
- *  Group registration type that only allows people to join a group by
- *  invitation
+ * Group registration type that only allows people to join a group by
+ * invitation
  */
 define('NO_JOIN', 1);
 /**
- *  Group registration type that only allows people to request a membership
- *  in a group from the group's owner
+ * Group registration type that only allows people to request a membership
+ * in a group from the group's owner
  */
 define('REQUEST_JOIN', 2);
 /**
- *  Group registration type that only allows anyone to obtain membership
- *  in the group
+ * Group registration type that only allows anyone to obtain membership
+ * in the group
  */
 define('PUBLIC_JOIN', 3);
 /**
- *   Group access code signifying only the group owner can
- *   read items posted to the group or post new items
+ *  Group access code signifying only the group owner can
+ *  read items posted to the group or post new items
  */
 define('GROUP_PRIVATE', 1);
 /**
- *   Group access code signifying members of the group can
- *   read items posted to the group but only the owner can post
- *    new items
+ *  Group access code signifying members of the group can
+ *  read items posted to the group but only the owner can post
+ *   new items
  */
 define('GROUP_READ', 2);
 /**
- *   Group access code signifying members of the group can
- *   read items posted to the group but only the owner can post
- *    new items
+ *  Group access code signifying members of the group can
+ *  read items posted to the group but only the owner can post
+ *   new items
  */
 define('GROUP_READ_COMMENT', 3);
 /**
- *   Group access code signifying members of the group can both
- *   read items posted to the group as well as post new items
+ *  Group access code signifying members of the group can both
+ *  read items posted to the group as well as post new items
  */
 define('GROUP_READ_WRITE', 4);
 /**
- *  Indicates a group where people can't up and down vote threads
+ * Indicates a group where people can't up and down vote threads
  */
 define("NON_VOTING_GROUP", 0);
 /**
- *  Indicates a group where people can up and down vote threads
+ * Indicates a group where people can up and down vote threads
  */
 define("VOTING_GROUP", 1);
 /**
- *   Typical posts to a group feed are on user created threads and
- *   so are of this type
+ *  Typical posts to a group feed are on user created threads and
+ *  so are of this type
  */
 define('STANDARD_GROUP_ITEM', 0);
 /**
- *   Indicates the thread was created to go alongside the creation of a wiki
- *   page so that people can discuss the pages contents
+ *  Indicates the thread was created to go alongside the creation of a wiki
+ *  page so that people can discuss the pages contents
  */
 define('WIKI_GROUP_ITEM', 1);
 /**

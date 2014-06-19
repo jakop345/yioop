@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -63,9 +63,9 @@ class FetchController extends Controller implements CrawlConstants
     var $activities = array("schedule", "archiveSchedule", "update",
         "crawlTime");
     /**
-     *  Number of seconds that must elapse after last call before doing
-     *  cron activities (mainly check liveness of fetchers which should be
-     *  alive)
+     * Number of seconds that must elapse after last call before doing
+     * cron activities (mainly check liveness of fetchers which should be
+     * alive)
      */
     const CRON_INTERVAL = 300;
     /**
@@ -242,7 +242,7 @@ class FetchController extends Controller implements CrawlConstants
     /**
      * Checks if the queue server crawl needs to be restarted
      * @param string $crawl_type if it does use restart the crawl as a crawl
-     *      of this type. For example, self::WEB_CRAWL or self::ARCHIVE_CRAWL
+     *     of this type. For example, self::WEB_CRAWL or self::ARCHIVE_CRAWL
      */
     function checkRestart($crawl_type)
     {
@@ -395,11 +395,11 @@ class FetchController extends Controller implements CrawlConstants
      * deleted.
      *
      * @param string $filename name of temp file used to upload big string.
-     *      If uploaded data was small enough to be uploaded in one go, then
-     *      this should be "" -- the variable $_REQUEST["part"] will be used
-     *      instead
+     *     If uploaded data was small enough to be uploaded in one go, then
+     *     this should be "" -- the variable $_REQUEST["part"] will be used
+     *     instead
      * @return string $logging diagnostic info to be sent to fetcher about
-     *      what was done
+     *     what was done
      */
     function handleUploadedData($filename = "")
     {
@@ -460,8 +460,8 @@ class FetchController extends Controller implements CrawlConstants
      * $time to a subfolder $day of a folder $dir
      *
      * @param string $schedule_name the name of the kind of schedule being saved
-     * @param string &$data_string encoded, compressed, serialized data the
-     *      schedule is to contain
+     * @param string& $data_string encoded, compressed, serialized data the
+     *     schedule is to contain
      */
     function addScheduleToScheduleDirectory($schedule_name, &$data_string)
     {
@@ -579,9 +579,9 @@ class FetchController extends Controller implements CrawlConstants
         $this->displayView($view, $data);
     }
     /**
-     *  Used to do periodic maintenance tasks for the Name Server.
-     *  For now, just checks if any fetchers which the user turned on
-     *  have crashed and if so restarts them
+     * Used to do periodic maintenance tasks for the Name Server.
+     * For now, just checks if any fetchers which the user turned on
+     * have crashed and if so restarts them
      */
     function doCronTasks()
     {

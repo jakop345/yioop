@@ -1,26 +1,26 @@
 <?php
 /**
- *  SeekQuarry/Yioop --
- *  Open Source Pure PHP Search Engine, Crawler, and Indexer
+ * SeekQuarry/Yioop --
+ * Open Source Pure PHP Search Engine, Crawler, and Indexer
  *
- *  Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
+ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
  *
- *  LICENSE:
+ * LICENSE:
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  END LICENSE
+ * END LICENSE
  *
  * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
@@ -50,9 +50,9 @@ class StaticController extends Controller
      */
     var $activities = array("showPage");
     /**
-     *  This is the main entry point for handling people arriving to view
-     *  a static page. It determines which page to draw and class the view
-     *  to draw it.
+     * This is the main entry point for handling people arriving to view
+     * a static page. It determines which page to draw and class the view
+     * to draw it.
      */
     function processRequest()
     {
@@ -82,7 +82,7 @@ class StaticController extends Controller
      * by the Yioop Web Site
      *
      * @return array $data has title and page contents of the static page to
-     *      display
+     *     display
      */
     function showPage()
     {
@@ -144,11 +144,11 @@ class StaticController extends Controller
         return $data;
     }
     /**
-     *  Used to read in a PUBLIC_GROUP_ID wiki page that will be presented
-     *  to non-logged in visitors to the site.
+     * Used to read in a PUBLIC_GROUP_ID wiki page that will be presented
+     * to non-logged in visitors to the site.
      *
-     *  @param string $page_name name of file less extension to read in
-     *  @return string text of page
+     * @param string $page_name name of file less extension to read in
+     * @return string text of page
      */
     function getPage($page_name)
     {
