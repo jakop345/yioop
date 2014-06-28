@@ -408,6 +408,25 @@ EOT;
             if(!$this->copyTable($table_or_index, $default_dbm, $test_dbm))
                 {return false;}
         }
+        if(stristr($dbinfo["DB_HOST"], "pgsql") !== false) {
+            /* For postgres count initial values of SERIAL sequences 
+               will be screwed up unless do
+             */
+            $auto_tables = array("ACTIVITY" =>"ACTIVITY_ID",
+                "GROUP_ITEM" =>"GROUP_ITEM_ID", "GROUP_PAGE" => "GROUP_PAGE_ID",
+                "GROUPS" => "GROUP_ID", "LOCALE"=> "LOCALE_ID",
+                "ROLE" => "ROLE_ID", "TRANSLATION" => "TRANSLATION_ID",
+                "USERS" => "USER_ID");
+            foreach($auto_tables as $table => $auto_column) {
+                $sql = "SELECT MAX($auto_column) AS NUM FROM $table";
+                $result = $test_dbm->execute($sql);
+                $row = $test_dbm->fetchArray($result);
+                $next = $row['NUM'];
+                $sequence = strtolower("{$table}_{$auto_column}_seq");
+                $sql = "SELECT setval('$sequence', $next)";
+                $test_dbm->execute($sql);
+            }
+        }
         return true;
     }
     /**
