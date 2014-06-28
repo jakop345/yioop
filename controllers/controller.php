@@ -295,11 +295,17 @@ abstract class Controller
      {
         $data_fields = array();
         $r = array();
-        $request_fields = array('num_show', 'start_row', 'end_row');
-        foreach($request_fields as $field) {
+        $request_fields = array('num_show' => DEFAULT_ADMIN_PAGING_NUM, 
+            'start_row' => 0, 'end_row' => DEFAULT_ADMIN_PAGING_NUM);
+        foreach($request_fields as $field => $default) {
             if(isset($_REQUEST[$var_prefix . $field])) {
                 $r[$field] = $_REQUEST[$var_prefix . $field];
+            } else {
+                $r[$field] = $default;
             }
+        }
+        if($r['start_row'] + $r['num_show'] != $r['end_row']) {
+            $r['end_row'] = $r['start_row'] + $r['num_show'];
         }
         $d = array();
         $data_fields = array('NUM_TOTAL', 'NUM_SHOW', 'START_ROW', 'END_ROW',

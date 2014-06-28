@@ -124,7 +124,7 @@ class EnTokenizer
      *     (all other types will be ignored)
      * @param string $whole_query the original query $term came from
      * @return array a sequence of
-     *     (score => array of thesaurus terms) associations. The score 
+     *     (score => array of thesaurus terms) associations. The score
      *     representing one word sense of term
      */
     static function scoredThesaurusMatches($term, $word_type,
@@ -155,7 +155,7 @@ class EnTokenizer
                 $match_word);
             $thesaurus_phrases = preg_split("/\s*\,\s*/",
                 strtolower(rtrim(trim($match_word[0]), "-")));
-            //remove orginal term from thesaurus phrases if present
+            //remove ori ginal term from thesaurus phrases if present
             $m = 0;
             foreach($thesaurus_phrases as $thesaurus_phrase) {
                 $tphrase = trim($thesaurus_phrase);

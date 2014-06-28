@@ -177,6 +177,8 @@ class PagingtableHelper extends Helper
         $end_row = $var_prefix."end_row";
         $num_show = $var_prefix."num_show";
         $class = 'class="table-margin float-opposite"';
+        $target_fragment = (isset($data["TARGET_FRAGMENT"])) ?
+            $data["TARGET_FRAGMENT"] : "";
         $top = false;
         if(isset( $data['NO_FLOAT_TABLE'] ) &&  $data['NO_FLOAT_TABLE'] ){
             $class = "";
@@ -191,7 +193,7 @@ class PagingtableHelper extends Helper
         <div <?php e($class); ?>>
             <?php
             if(isset($data["NO_FORM_TAG"]) && $data["NO_FORM_TAG"]) {
-                e('<form  method="get" action="#" >');
+                e('<form  method="get" action="#'. $target_fragment .'" >');
             }
             $name = isset($data['NAME']) ? $data['NAME'] : "";
             $bound_url = $base_url."&amp;arg=".$data[$d['FORM_TYPE']];
@@ -206,7 +208,8 @@ class PagingtableHelper extends Helper
                 <a href="<?php e($bound_url."&amp;$start_row=".
                     $data[$d['PREV_START']]."&amp;$end_row=".
                     $data[$d['PREV_END']]."&amp;$num_show=".
-                    $data[$d['NUM_SHOW']].$data['PAGING']); ?>">&lt;&lt;</a>
+                    $data[$d['NUM_SHOW']].$data['PAGING'].
+                    '#'.$target_fragment); ?>">&lt;&lt;</a>
                 <?php
             }
             e("<b>".tl('pagingtable_helper_row_range', $data[$d['START_ROW']],
@@ -216,7 +219,8 @@ class PagingtableHelper extends Helper
                 <a href="<?php e($bound_url."&amp;$start_row=".
                     $data[$d['NEXT_START']]."&amp;$end_row=".
                     $data[$d['NEXT_END']]."&amp;$num_show=".
-                    $data[$d['NUM_SHOW']].$data['PAGING']); ?>" >&gt;&gt;</a>
+                    $data[$d['NUM_SHOW']].$data['PAGING'].
+                    '#'.$target_fragment); ?>" >&gt;&gt;</a>
                 <?php
             }
             ?>

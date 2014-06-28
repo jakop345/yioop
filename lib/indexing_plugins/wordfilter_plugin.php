@@ -140,7 +140,7 @@ class WordfilterPlugin extends IndexingPlugin implements CrawlConstants
 ; The condition surfboard#2 requires that the term surfboard occurred
 ; at least twice in the document. If the value after the # is
 ; between 0 and 1, such as in bikini#0.02, then the condition holds
-; if occurences of that term (no stemming) make up 0.02 percent of
+; if occurrences of that term (no stemming) make up 0.02 percent of
 ; the documents total length. Finally, if the condition doesn't
 ; have a # in it, then it is satisfied if that term appears at all.
 ; The first character of a precondition can be a sign + or -. The

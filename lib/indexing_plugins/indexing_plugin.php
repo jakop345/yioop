@@ -114,12 +114,6 @@ require_once BASE_DIR."/models/datasources/".DBMS."_manager.php";
 abstract class IndexingPlugin
 {
     /**
-     * Array of the PageProcessor classes used by this IndexingPlugin
-     * (contructor loads these)
-     * @var array
-     */
-    var $processors = array();
-    /**
      * The IndexArchiveBundle object that this indexing plugin might
      * make changes to in its postProcessing method
      * @var object

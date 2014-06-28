@@ -46,7 +46,7 @@ require_once BASE_DIR."/lib/crawl_constants.php";
  * addMetaWords(field)       ;add the field and field value to the META_WORD
  *                          ;array for the page
  * addKeywordLink(field)     ;split the field on a comma, view this as a search
- *                          ;keywords => link text association, and add this
+ *                          ;keywords => link text association, and add this to
  *                          ;the KEYWORD_LINKS array.
  * setStack(field)           ;set which field value should be used as a stack
  * pushStack(field)          ;add the field value for field to the top of stack
@@ -54,7 +54,7 @@ require_once BASE_DIR."/lib/crawl_constants.php";
  *                          ;field
  * setOutputFolder(dir)      ;if auxiliary output, rather than just to the
  *                          ; a yioop index, is being done, then set the folder
- *                          ; the folder for this output to be dir
+ *                          ; for this output to be dir
  * setOutputFormat(format)   ;format of auxiliary output either CSV or SQL
  *                          ;SQL mean that writeOutput will write an insert
  *                          ;statement

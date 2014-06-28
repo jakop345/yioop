@@ -1442,7 +1442,7 @@ class CrawlComponent extends Component implements CrawlConstants
                     }
                     $source_model->addMediaSource(
                         $r['name'], $r['type'], $r['source_url'],
-                        $r['source_url'], $r['language']);
+                        $r['thumb_url'], $r['language']);
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('crawl_component_media_source_added').
                         "</h1>');";

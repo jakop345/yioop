@@ -117,6 +117,7 @@ class SearchsourcesElement extends Element
         $data['FORM_TYPE'] = "";
         $data['TABLE_TITLE'] = tl('searchsources_element_media_sources');
         $data['NO_FLOAT_TABLE'] = true;
+        $data["NO_FORM_TAG"] = true;
         $data['ACTIVITY'] = 'searchSources';
         $data['VIEW'] = $this->view;
         $data['NO_SEARCH'] = true;
@@ -174,15 +175,17 @@ class SearchsourcesElement extends Element
             <div id='subsearch-section'
                 class='float-opposite'><a href='<?php e($base_url); ?>'><?php
                 e(tl('searchsources_element_addsearch_form')); ?></a></div>
-            <h2><?php e(tl('searchsources_element_edit_subsearch'));?></h2>
+            <h2 id="subsearch-head"><?php 
+                e(tl('searchsources_element_edit_subsearch'));?></h2>
             <?php
         } else {
             ?>
-            <h2><?php e(tl('searchsources_element_add_subsearch'));?></h2>
+            <h2 id="subsearch-head"><?php
+                e(tl('searchsources_element_add_subsearch'));?></h2>
             <?php
         }
         ?>
-        <form id="SearchSourceForm" method="post" action='#'>
+        <form id="SearchSourceForm" method="post" action='#subsearch-head'>
         <input type="hidden" name="c" value="admin" />
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />
@@ -216,9 +219,11 @@ class SearchsourcesElement extends Element
             type="submit"><?php e(tl('searchsources_element_submit'));
             ?></button></td></tr>
         </table>
+        </form>
         <?php
         $data['SUBFORM_TYPE'] = "";
         $data['TABLE_TITLE'] = tl('searchsources_element_subsearches');
+        $data['TARGET_FRAGMENT'] = "subsearch-head";
         $data['NO_FLOAT_TABLE'] = true;
         $data['ACTIVITY'] = 'searchSources';
         $data['VIEW'] = $this->view;
@@ -279,7 +284,6 @@ class SearchsourcesElement extends Element
         <?php
         } ?>
         </table>
-        </form>
         </div>
         <script type= "text/javascript">
         function switchSourceType()

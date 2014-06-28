@@ -22,7 +22,7 @@
  *
  * END LICENSE
  *
- * Test to see for big strings which how long various string concatenation
+ * Test to see for big strings how long various string concatenation
  * operations take.
  *
  * @author Chris Pollett chris@pollett.org
