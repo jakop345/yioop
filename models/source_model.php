@@ -387,6 +387,7 @@ class SourceModel extends Model
             }
             crawlLog("Updating {$feed['NAME']}...");
             $num_added = 0;
+            $num_seen = 0;
             foreach($nodes as $node) {
                 $item = array();
                 foreach($rss_elements as $db_element => $feed_element) {
@@ -405,8 +406,10 @@ class SourceModel extends Model
                 if($did_add) {
                     $num_added++;
                 }
+                $num_seen++;
             }
-            crawlLog("...added $num_added news items.");
+            crawlLog("...added $num_added news items of $num_seen ".
+                "on rss page.");
         }
         return true;
     }
@@ -522,10 +525,12 @@ class SourceModel extends Model
             return true;
         }
         $sql = "INSERT INTO FEED_ITEM VALUES (?, ?, ?, ?, ?, ?)";
-        $result = $db->execute($sql, array($item['guid'], $item['title'],
-            $item['link'], $item['description'], $item['pubDate'],
-            $source_name));
-        if(!$result) return false;
+        $result = $db->execute($sql, array($item['guid'],
+            $item['title'], $item['link'], $item['description'],
+            $item['pubDate'], $source_name));
+        if(!$result) {
+            return false;
+        }
         return true;
     }
     /**

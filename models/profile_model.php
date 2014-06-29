@@ -117,7 +117,7 @@ class ProfileModel extends Model
             "FEED_ITEM" => "CREATE TABLE FEED_ITEM (GUID CHAR(11) PRIMARY KEY,
                 TITLE VARCHAR(512), LINK VARCHAR(256),
                 DESCRIPTION VARCHAR(4096),
-                PUBDATE INT, SOURCE_NAME VARCHAR(16))",
+                PUBDATE INT, SOURCE_NAME VARCHAR(64))",
             "GROUP_ITEM" => "CREATE TABLE GROUP_ITEM (ID $serial PRIMARY KEY
                 $auto_increment, PARENT_ID INTEGER, GROUP_ID INTEGER,
                 USER_ID INTEGER, TITLE VARCHAR(512), DESCRIPTION VARCHAR(".
