@@ -450,22 +450,46 @@ abstract class Controller
         return $token_okay;
     }
     /**
-     * Checks if the timestamp in $_REQUEST[$token_name] 
-     * matches the timestamp of the last CSRF token accessed by this user.
+     * Checks if the timestamp in $_REQUEST[$token_name]
+     * matches the timestamp of the last CSRF token accessed by this user
+     * for the kind of activity for which there might be a conflict.
      * This is to avoid accidental replays of postings etc if the back button
      * used.
      *
      * @param string $token_name name of a $_REQUEST field used to hold a
      *     CSRF_TOKEN
+     * @param string name of current action to check for conflicts
+     * @return bool whether a conflicting action has occurred.
      */
-     function checkCSRFTime($token_name)
+     function checkCSRFTime($token_name, $action = "")
      {
         $token_okay = false;
         if(isset($_REQUEST[$token_name])) {
             $token_parts = explode("|", $_REQUEST[$token_name]);
-            if(isset($token_parts[1]) && isset($_SESSION['OLD_CSRF_TIME']) &&
-                $token_parts[1] == $_SESSION['OLD_CSRF_TIME']) {
-                $token_okay = true;
+            if(isset($token_parts[1])) {
+                $timestamp_to_check = $token_parts[1];
+                if($action == "") {
+                    if(isset($_SESSION['OLD_CSRF_TIME']) &&
+                        $token_parts[1] == $_SESSION['OLD_CSRF_TIME']) {
+                        $token_okay = true;
+                    }
+                } else {
+                    if(!isset($_SESSION['OLD_ACTION_STAMPS'][$action]) ||
+                        (isset($_SESSION['OLD_ACTION_STAMPS'][$action]) &&
+                        $_SESSION['OLD_ACTION_STAMPS'][$action] <=
+                            $timestamp_to_check)) {
+                        $_SESSION['OLD_ACTION_STAMPS'][$action] =
+                            $timestamp_to_check;
+                        $token_okay = true;
+                        $cull_time = time() - 3600;
+                        foreach($_SESSION['OLD_ACTION_STAMPS'] as $act =>
+                            $time) {
+                            if($time < $cull_time) {
+                                unset($_SESSION['OLD_ACTION_STAMPS'][$act]);
+                            }
+                        }
+                    }
+                }
             }
         }
         return $token_okay;

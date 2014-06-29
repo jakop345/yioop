@@ -552,7 +552,7 @@ class SocialComponent extends Component implements CrawlConstants
     function groupFeeds()
     {
         $parent = $this->parent;
-        $controller_name = 
+        $controller_name =
             (get_class($parent) == "AdminController") ? "admin" : "group";
         $data["CONTROLLER"] = $controller_name;
         $other_controller_name = (get_class($parent) == "AdminController")
@@ -600,9 +600,6 @@ class SocialComponent extends Component implements CrawlConstants
             switch($_REQUEST['arg'])
             {
                 case "addcomment":
-                    if(!$parent->checkCSRFTime(CSRF_TOKEN)) {
-                        break;
-                    }
                     if(!isset($_REQUEST['parent_id']) ||
                         !isset($_REQUEST['group_id'])) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
@@ -658,9 +655,6 @@ class SocialComponent extends Component implements CrawlConstants
                         tl('social_component_comment_added'). "</h1>');";
                 break;
                 case "deletepost":
-                    if(!$parent->checkCSRFTime(CSRF_TOKEN)) {
-                        break;
-                    }
                     if(!isset($_REQUEST['post_id'])) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('social_component_delete_error').
@@ -680,9 +674,6 @@ class SocialComponent extends Component implements CrawlConstants
                     }
                 break;
                 case "newthread":
-                    if(!$parent->checkCSRFTime(CSRF_TOKEN)) {
-                        break;
-                    }
                     if(!isset($_REQUEST['group_id'])) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('social_component_comment_error').
@@ -717,9 +708,6 @@ class SocialComponent extends Component implements CrawlConstants
                     $data['REFRESH'] = "feedstatus";
                 break;
                 case "updatepost":
-                    if(!$parent->checkCSRFTime(CSRF_TOKEN)) {
-                        break;
-                    }
                     if(!isset($_REQUEST['post_id'])) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('social_component_comment_error').
@@ -733,6 +721,13 @@ class SocialComponent extends Component implements CrawlConstants
                         break;
                     }
                     $post_id =$parent->clean($_REQUEST['post_id'], "int");
+                    $action = "updatepost" . $post_id;
+                    if(!$parent->checkCSRFTime(CSRF_TOKEN, $action)) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('social_component_post_edited_elsewhere').
+                            "</h1>');";
+                        break;
+                    }
                     $items = $group_model->getGroupItems(0, 1, array(
                         array("post_id", "=", $post_id, "")), $user_id);
                     if(isset($items[0])) {
@@ -885,10 +880,7 @@ class SocialComponent extends Component implements CrawlConstants
         $data['OTHER_PAGING_QUERY'] =
             "?c=$other_controller_name&amp;a=groupFeeds";
         return $data;
-
     }
-
-
     /**
      * Handles requests to reading, editing, viewing history, reverting, etc
      * wiki pages
@@ -997,6 +989,14 @@ class SocialComponent extends Component implements CrawlConstants
                             tl("group_controller_missing_fields").
                             "</h1>')";
                     } else if(!$missing_fields && isset($page)) {
+                        $action = "wikiupdate_".
+                            "group=".$group_id."&page=".$page_name;
+                        if(!$parent->checkCSRFTime(CSRF_TOKEN, $action)) {
+                            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                                tl('social_component_wiki_edited_elsewhere').
+                                "</h1>');";
+                            break;
+                        }
                         $group_model->setPageName($user_id,
                             $group_id, $page_name, $page,
                             $locale_tag, $edit_reason,
@@ -1084,6 +1084,16 @@ class SocialComponent extends Component implements CrawlConstants
                         $page_info = $group_model->getHistoryPage(
                             $page_id, $revert);
                         if($page_info) {
+                            $action = "wikiupdate_".
+                                "group=".$group_id."&page=" .
+                                $page_info["PAGE_NAME"];
+                            if(!$parent->checkCSRFTime(CSRF_TOKEN, $action)) {
+                                $data['SCRIPT'] .=
+                                    "doMessage('<h1 class=\"red\" >".
+                                    tl('social_component_wiki_edited_elsewhere')
+                                    . "</h1>');";
+                                break;
+                            }
                             $group_model->setPageName($user_id,
                                 $group_id, $page_info["PAGE_NAME"], 
                                 $page_info["PAGE"],
@@ -1384,9 +1394,6 @@ class SocialComponent extends Component implements CrawlConstants
                         array('name'));
                 break;
                 case "sharemix":
-                    if(!$parent->checkCSRFTime(CSRF_TOKEN)) {
-                        break;
-                    }
                     if(!isset($_REQUEST['group_name'])) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('social_component_comment_error').
