@@ -644,6 +644,7 @@ class LocaleModel extends Model
                 $cur_path.'/configure.ini');
         }
         $fallback_path = FALLBACK_LOCALE_DIR. '/' . $locale;
+        $fallback_configure = array();
         if(file_exists($fallback_path . '/configure.ini')) {
             $fallback_configure = parse_ini_with_fallback(
                 $fallback_path . '/configure.ini');
