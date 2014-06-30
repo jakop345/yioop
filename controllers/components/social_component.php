@@ -816,6 +816,7 @@ class SocialComponent extends Component implements CrawlConstants
         $recent_found = false;
         $time = time();
         $j = 0;
+        $parser = new WikiParser("", array(), true);
         foreach($group_items as $item) {
             $page = $item;
             $page[self::TITLE] = $page['TITLE'];
@@ -838,8 +839,9 @@ class SocialComponent extends Component implements CrawlConstants
                 $page["NO_EDIT"] = true;
             }
             //end code for sharing crawl mixes
-            $page[self::DESCRIPTION] = $description;
+            $page[self::DESCRIPTION] = $parser->parse($description);
             unset($page['DESCRIPTION']);
+            $page['OLD_DESCRIPTION'] = $description;
             $page[self::SOURCE_NAME] = $page['GROUP_NAME'];
             unset($page['GROUP_NAME']);
             if($item['OWNER_ID'] == $user_id || $user_id == ROOT_ID) {

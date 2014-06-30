@@ -228,8 +228,17 @@ class GroupfeedElement extends Element implements CrawlConstants
             <?php
             $description = isset($page[self::DESCRIPTION]) ?
                 $page[self::DESCRIPTION] : "";?>
-            <div id='description<?php e($page['ID']);?>' ><?php
+            <div id='description<?php e($page['ID']);?>'><?php
                 e($description); ?></div>
+            <?php 
+            if(!isset($page['NO_EDIT']) && isset($page['OLD_DESCRIPTION'])) {
+                ?>
+                <div id='old-description<?php e($page['ID']);?>'
+                    class='none'><?php
+                    e($page['OLD_DESCRIPTION']); ?></div>
+                <?php
+            }
+            ?>
             <div class="float-opposite">
                 <?php if(in_array($page["MEMBER_ACCESS"], $can_comment) &&
                     !isset($data['JUST_THREAD'])){ ?>
@@ -374,7 +383,7 @@ class GroupfeedElement extends Element implements CrawlConstants
         {
             clearInterval(updateId);
             var title = elt('title'+id).innerHTML;
-            var description = elt('description'+id).innerHTML;
+            var description = elt('old-description'+id).innerHTML;
             var tmp = '<div class="update<?php e($clear); ?>"></div>';
             start_elt = elt(id).innerHTML.substr(0, tmp.length)
             if(start_elt != tmp) {

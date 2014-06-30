@@ -48,11 +48,17 @@ require_once BASE_DIR."/lib/processors/text_processor.php";
 class WikiParser implements CrawlConstants
 {
     /**
-     * Escape string to prevent inccoreect nesting of div for some of the
+     * Escape string to prevent incorrect nesting of div for some of the
      * substitutions;
      * @var string
      */
     var $esc=",[}";
+    /**
+     * Whether the parser should be configured only to do minimal substituitions
+     * or all available (minimal might be used for posts in discussion groups)
+     * @var bool
+     */
+    var $minimal;
     /**
      * Used to initialize the arrays of match/replacements used to format
      * wikimedia syntax into HTML (not perfectly since we are only doing
@@ -61,10 +67,14 @@ class WikiParser implements CrawlConstants
      * @param string $base_address base url for link substitutions
      * @param array $add_substitutions additional wiki rule subsitutions in
      *      addition to the default ones that should be used by this wiki parser
+     * @param bool $minimal substitution list is shorter - suitable for
+     *      posting to discussion
      */
-    function __construct($base_address = "", $add_substitutions = array())
+    function __construct($base_address = "", $add_substitutions = array(),
+        $minimal = false)
     {
         $esc = $this->esc;
+        $this->minimal = $minimal;
         //assume substitutions are applied after htmlentities called on string
         $substitutions = array(
             array('/(\A|\n)=\s*([^=]+)\s*=/',
@@ -91,6 +101,13 @@ class WikiParser implements CrawlConstants
             array("/\n*?{{\s*Related articles\s*\|(.+?)\|(.+?)}}/si",
                 "$esc<div class='indent'>\n\n(<a href=\"".
                 $base_address . "$1\">$1?</a>)\n\n$esc</div>"),
+            array('/{{Hatnote\|(.+?)}}/si', "($1)"),
+            array("/{{lang[\||\-](.+?)\|(.+?)}}/si", "$1 &rarr; $2"),
+            array("/{{convert\|(.+?)\|(.+?)\|(.+?)}}/si", "$1$2"),
+            array("/{{IPA-(.+?)\|(.+?)}}/si", "(IPA $2)"),
+            array("/{{dablink\|(.+?)}}/si", "($1)"),
+        );
+        $minimal_substitutions = array(
             array('/\[\[(http[^\s\|\]]+)\|([^\[\]]+?)\]\]/s',
                 "<a href=\"$1\">$2</a>"),
             array('/\[\[([^\[\]]+?)\|([^\[\]]+?)\]\]/s',
@@ -137,13 +154,6 @@ class WikiParser implements CrawlConstants
                 "\n\n$esc<div class='align-left'>\n\n$1\n\n$esc</div>"),
             array('/\n*?{{right\s*\|\s*(.+?)}}/s',
                 "\n\n$esc<div class='align-right'>\n\n$1\n\n$esc</div>"),
-            array('/{{smallcaps\|(.+?)}}/s', "<small>$1</small>"),
-            array('/{{Hatnote\|(.+?)}}/si', "($1)"),
-            array("/{{fraction\|(.+?)\|(.+?)}}/si", "<small>$1/$2</small>"),
-            array("/{{lang[\||\-](.+?)\|(.+?)}}/si", "$1 &rarr; $2"),
-            array("/{{convert\|(.+?)\|(.+?)\|(.+?)}}/si", "$1$2"),
-            array("/{{IPA-(.+?)\|(.+?)}}/si", "(IPA $2)"),
-            array("/{{dablink\|(.+?)}}/si", "($1)"),
             array("/&lt;blockquote&gt;(.+?)&lt;\/blockquote&gt;/s",
                 "$esc<blockquote>\n\n$1\n\n$esc</blockquote>"),
             array("/&lt;pre&gt;(.+?)&lt;\/pre&gt;/s",
@@ -197,9 +207,19 @@ class WikiParser implements CrawlConstants
             array('/(\A|\n)::::\s/', "\n<span class='indent4'>&nbsp;</span>"),
             array('/(\A|\n)(:)+::::\s/',
                 "\n<span class='indent5'>&nbsp;</span>"),
+            array('/{{smallcaps\|(.+?)}}/s', "<small>$1</small>"),
+            array("/{{fraction\|(.+?)\|(.+?)}}/si", "<small>$1/$2</small>"),
             array('/(\A|\n)----/', "$1<hr />"),
             array('/\r/', ""),
         );
+        if($minimal) {
+            $substitutions = array(
+                array('/(\A|\n)=\s*([^=]+)\s*=/',
+                    "\n<h1 id='$2'>$2</h1>"),
+            );
+        }
+        $substitutions = array_merge($substitutions,
+            $minimal_substitutions);
         $this->matches = array();
         $this->replaces = array();
         $this->base_address = $base_address;
@@ -230,8 +250,8 @@ class WikiParser implements CrawlConstants
     {
         $esc = $this->esc;
         $head = "";
-        if($parse_head_vars) {
-        $document_parts = explode("END_HEAD_VARS", $document);
+        if($parse_head_vars && !$this->minimal) {
+            $document_parts = explode("END_HEAD_VARS", $document);
             if(count($document_parts) > 1) {
                 $head = $document_parts[0];
                 $document = $document_parts[1];
@@ -240,8 +260,10 @@ class WikiParser implements CrawlConstants
         $document = preg_replace_callback(
             "/&lt;nowiki&gt;(.+?)&lt;\/nowiki&gt;/s",
             "base64EncodeCallback", $document);
-        $toc = $this->makeTableOfContents($document);
-        list($document, $references) = $this->makeReferences($document);
+        if(!$this->minimal) {
+            $toc = $this->makeTableOfContents($document);
+            list($document, $references) = $this->makeReferences($document);
+        }
         $document = preg_replace_callback('/(\A|\n){\|(.*?)\n\|}/s',
             "makeTableCallback", $document);
         if($handle_big_files) {
@@ -284,8 +306,10 @@ class WikiParser implements CrawlConstants
             }
         }
         $document = str_replace(",[}", "", $document);
-        $document = $this->insertReferences($document, $references);
-        $document = $this->insertTableOfContents($document, $toc);
+        if(!$this->minimal) {
+            $document = $this->insertReferences($document, $references);
+            $document = $this->insertTableOfContents($document, $toc);
+        }
         $document = preg_replace_callback(
             "/&lt;nowiki&gt;(.+?)&lt;\/nowiki&gt;/s",
             "base64DecodeCallback", $document);
