@@ -229,7 +229,7 @@ class ManagegroupsElement extends Element
                                 tl('managegroups_element_join').'</span>');
                         } else {
                             ?><a href="<?php e($add_url . 'name='.
-                                $group['GROUP_NAME'].'&amp;user_id=' .
+                                urlencode($group['GROUP_NAME']).'&amp;user_id='.
                                 $_SESSION['USER_ID']); ?>"><?php
                                 e(tl('managegroups_element_join'));
                             ?></a><?php
