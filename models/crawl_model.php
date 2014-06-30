@@ -57,7 +57,8 @@ class CrawlModel extends ParallelModel implements CrawlConstants
      * Used to map between search crawl mix form variables and database columns
      * @var array
      */
-    var $search_table_column_map = array("name"=>"NAME");
+    var $search_table_column_map = array("name"=>"NAME",
+        "owner_id"=>"OWNER_ID");
 
     /**
      * File to be used to store suggest-a-url form data

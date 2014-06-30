@@ -1393,7 +1393,7 @@ class SocialComponent extends Component implements CrawlConstants
                 case "search":
                     $search_array =
                         $parent->tableSearchRequestHandler($data,
-                        array('name'));
+                            array('name'));
                 break;
                 case "sharemix":
                     if(!isset($_REQUEST['group_name'])) {
@@ -1429,6 +1429,7 @@ class SocialComponent extends Component implements CrawlConstants
                             "</h1>');";
                         break;
                     }
+                    $mix = $crawl_model->getCrawlMix($timestamp);
                     $user_name = $user_model->getUserName($user_id);
                     $title = tl('social_component_share_title',
                         $user_name);
@@ -1441,6 +1442,7 @@ class SocialComponent extends Component implements CrawlConstants
                 break;
             }
         }
+        $search_array[] = array("owner_id", "=", $user_id, "");
         $parent->pagingLogic($data, $crawl_model, "available_mixes",
             DEFAULT_ADMIN_PAGING_NUM, $search_array, "", true);
 
