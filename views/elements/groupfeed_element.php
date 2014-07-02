@@ -115,15 +115,22 @@ class GroupfeedElement extends Element implements CrawlConstants
                         e(tl('groupfeed_element_wiki_thread',
                             $data['WIKI_PAGE_NAME']));
                     } else {
-                        e(tl('groupfeed_element_thread',
-                            $data['PAGES'][0][self::SOURCE_NAME],
-                            $data['SUBTITLE']));
+                        e("<a href='$base_query&just_group_id=".
+                            $data['PAGES'][0]["GROUP_ID"]."'>".
+                            $data['PAGES'][0][self::SOURCE_NAME]. "</a> :".
+                            $data['SUBTITLE']);
+                        if(!MOBILE) {
+                            $group_base_query = ($is_admin) ?
+                                $other_paging_query : $base_query;
+                            e(" [<a href='$group_base_query&f=rss".
+                                "&just_thread=".
+                                $data['JUST_THREAD']."'>RSS</a>]");
+                        }
                     }
                 } else if(isset($data['JUST_GROUP_ID'])){
                     $manage_groups = "?c={$data['CONTROLLER']}&amp;".
                         CSRF_TOKEN."=".$data[CSRF_TOKEN]."&amp;a=manageGroups";
-                    e("<a href='$manage_groups'>".
-                        $data['SUBTITLE']."</a>");
+                    e( $data['SUBTITLE']);
                     e(" [".tl('groupfeed_element_feed')."|".
                         "<a href='?c={$data['CONTROLLER']}&".CSRF_TOKEN."=".
                         $data[CSRF_TOKEN]."&amp;a=wiki&group_id=".
@@ -186,9 +193,10 @@ class GroupfeedElement extends Element implements CrawlConstants
             $subsearch = (isset($data["SUBSEARCH"])) ? $data["SUBSEARCH"] :
                 "";
             if($page["MEMBER_ACCESS"] == GROUP_READ_WRITE &&
+                !isset($data['JUST_GROUP_ID']) &&
                 $page['USER_ID'] != "" && isset($_SESSION['USER_ID']) &&
                 ($page['USER_ID'] == $_SESSION['USER_ID'] ||
-                $_SESSION['USER_ID'] == ROOT_ID) && 
+                $_SESSION['USER_ID'] == ROOT_ID) &&
                 $page['TYPE'] != WIKI_GROUP_ITEM) {
                 ?>
                 <div class="float-opposite" ><?php
@@ -226,21 +234,37 @@ class GroupfeedElement extends Element implements CrawlConstants
                 "&amp;just_user_id=".$page['USER_ID']);?>" ><?php
                 e($page['USER_NAME']); ?></a></p>
             <?php
-            $description = isset($page[self::DESCRIPTION]) ?
-                $page[self::DESCRIPTION] : "";?>
-            <div id='description<?php e($page['ID']);?>'><?php
-                e($description); ?></div>
-            <?php 
-            if(!isset($page['NO_EDIT']) && isset($page['OLD_DESCRIPTION'])) {
-                ?>
-                <div id='old-description<?php e($page['ID']);?>'
-                    class='none'><?php
-                    e($page['OLD_DESCRIPTION']); ?></div>
-                <?php
+            if(!isset($data['JUST_GROUP_ID'])) {
+                $description = isset($page[self::DESCRIPTION]) ?
+                    $page[self::DESCRIPTION] : "";?>
+                <div id='description<?php e($page['ID']);?>'><?php
+                    e($description); ?></div>
+                <?php 
+                if(!isset($page['NO_EDIT']) && isset($page['OLD_DESCRIPTION'])){
+                    ?>
+                    <div id='old-description<?php e($page['ID']);?>'
+                        class='none'><?php
+                        e($page['OLD_DESCRIPTION']); ?></div>
+                    <?php
+                }
+            } else {
+                if(isset($page['LAST_POSTER'])) {?>
+                    <div id='description<?php e($page['ID']);?>'><?php
+                        $recent_date = $this->view->helper("feeds"
+                            )->getPubdateString($time, $page['RECENT_DATE']);
+                        e("<b>".tl('groupfeed_element_last_post_info')."</b> ".
+                            $recent_date." - <a href='".$base_query.
+                            "&amp;just_user_id=".$page['LAST_POSTER_ID']."'>".
+                            $page['LAST_POSTER'] . "</a>");
+                            ?></div>
+                    <?php
+
+                }
             }
             ?>
             <div class="float-opposite">
-                <?php if(in_array($page["MEMBER_ACCESS"], $can_comment) &&
+                <?php if(!isset($data['JUST_GROUP_ID']) &&
+                    in_array($page["MEMBER_ACCESS"], $can_comment) &&
                     !isset($data['JUST_THREAD'])){ ?>
                     <a href='javascript:comment_form(<?php
                     e("{$page['ID']}, {$page['PARENT_ID']}, ".

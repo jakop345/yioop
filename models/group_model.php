@@ -649,14 +649,16 @@ class GroupModel extends Model
             P.USER_ID = GI.USER_ID";
         if($for_group >= 0) {
             $group_by = " GROUP BY GI.PARENT_ID";
-            $order_by = " ORDER BY PUBDATE DESC ";
+            $order_by = " ORDER BY GI.PUBDATE DESC ";
             $select = "SELECT DISTINCT MIN(GI.ID) AS ID,
                 COUNT(GI.ID) AS NUM_POSTS, GI.PARENT_ID AS PARENT_ID,
-                MIN(GI.GROUP_ID) AS GROUP_ID, MIN(GI.TITLE )AS TITLE,
+                MIN(GI.GROUP_ID) AS GROUP_ID, MAX(GI.TITLE) AS TITLE,
                 MAX(GI.DESCRIPTION) AS DESCRIPTION, MAX(GI.PUBDATE) AS PUBDATE,
                 MIN(G.OWNER_ID) AS OWNER_ID,
                 MIN(G.MEMBER_ACCESS) AS MEMBER_ACCESS,
-                MIN(G.GROUP_NAME) AS GROUP_NAME, MIN(P.USER_NAME) AS USER_NAME,
+                MIN(G.GROUP_NAME) AS GROUP_NAME, MAX(P.USER_NAME) AS USER_NAME,
+                MIN(P.USER_NAME) AS LAST_POSTER, MIN(GI.PUBDATE) AS RECENT_DATE,
+                MAX(P.USER_ID) AS LAST_POSTER_ID,
                 MIN(P.USER_ID) AS USER_ID, MIN(GI.TYPE) AS TYPE";
         } else {
             $group_by = "";
