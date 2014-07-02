@@ -649,7 +649,7 @@ class GroupModel extends Model
             P.USER_ID = GI.USER_ID";
         if($for_group >= 0) {
             $group_by = " GROUP BY GI.PARENT_ID";
-            $order_by = " ORDER BY GI.PUBDATE DESC ";
+            $order_by = " ORDER BY PUBDATE DESC ";
             $select = "SELECT DISTINCT MIN(GI.ID) AS ID,
                 COUNT(GI.ID) AS NUM_POSTS, GI.PARENT_ID AS PARENT_ID,
                 MIN(GI.GROUP_ID) AS GROUP_ID, MAX(GI.TITLE) AS TITLE,
