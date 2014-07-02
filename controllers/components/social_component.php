@@ -788,6 +788,8 @@ class SocialComponent extends Component implements CrawlConstants
                 $pages[$group['JOIN_DATE']] = $page;
             }
         }
+        $pub_clause = array('pub_date', "=", "", "DESC");
+        $sort = "krsort";
         if($just_thread) {
             $thread_parent = $group_model->getGroupItem($just_thread);
             if(isset($thread_parent["TYPE"]) &&
@@ -802,12 +804,14 @@ class SocialComponent extends Component implements CrawlConstants
                         $page_info["GROUP_ID"];
                 }
             }
+            $pub_clause = array('pub_date', "=", "", "ASC");
+            $sort = "ksort";
         }
         $search_array = array(
             array("parent_id", "=", $just_thread, ""),
             array("group_id", "=", $just_group_id, ""),
             array("user_id", "=", $just_user_id, ""),
-            array('pub_date', "=", "", "DESC"));
+            $pub_clause);
         $for_group = ($just_group_id) ? $just_group_id : -1;
         $item_count = $group_model->getGroupItemCount($search_array, $user_id,
             $for_group);
@@ -855,7 +859,7 @@ class SocialComponent extends Component implements CrawlConstants
             $pages[$item["PUBDATE"] . "$j"] = $page;
             $j++;
         }
-        krsort($pages);
+        $sort($pages);
         $data['SUBTITLE'] = "";
         if($just_thread != "" && isset($page[self::TITLE])) {
             $title = $page[self::TITLE];
@@ -873,7 +877,7 @@ class SocialComponent extends Component implements CrawlConstants
             $data['ADD_PAGING_QUERY'] = "&amp;just_user_id=$just_user_id";
             $data['JUST_USER_ID'] = $just_user_id;
         }
-        $pages = array_slice($pages, $limit , $results_per_page - 1);
+        $pages = array_slice($pages, $limit , $results_per_page);
         $data['TOTAL_ROWS'] = $item_count + $groups_count;
         $data['LIMIT'] = $limit;
         $data['RESULTS_PER_PAGE'] = $results_per_page;

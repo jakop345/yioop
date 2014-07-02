@@ -165,7 +165,7 @@ class GroupfeedElement extends Element implements CrawlConstants
                             "{$data['PAGES'][0]['PARENT_ID']},".
                             "{$data['PAGES'][0]['GROUP_ID']}"); ?>)'><?php
                         e(tl('groupfeed_element_comment'));?></button>
-                <div id='add-comment'></div>
+                <div></div>
                 </div>
                 <?php
             } else if(isset($data['JUST_GROUP_ID']) &&
@@ -290,8 +290,18 @@ class GroupfeedElement extends Element implements CrawlConstants
             </div>
             <?php
             } //end foreach
-            ?>
-            <?php
+            if(isset($data['JUST_THREAD'])) {
+                ?>
+                <div class='button-group-result'>
+                <button class="button-box" onclick='comment_form(<?php
+                        e("\"add-comment\", ".
+                            "{$data['PAGES'][0]['PARENT_ID']},".
+                            "{$data['PAGES'][0]['GROUP_ID']}"); ?>)'><?php
+                        e(tl('groupfeed_element_comment'));?></button>
+                <div id='add-comment'></div>
+                </div>
+                <?php
+            }
             $this->view->helper("pagination")->render($paging_query,
                 $data['LIMIT'], $data['RESULTS_PER_PAGE'], $data['TOTAL_ROWS']);
             ?>
@@ -357,6 +367,7 @@ class GroupfeedElement extends Element implements CrawlConstants
                     ?></button>' +
                     '<div>&nbsp;</div>'+
                     '</form>';
+                elt('comment-' + id).focus();
             } else {
                 elt(id).innerHTML = "";
             }
