@@ -361,13 +361,17 @@ class GroupfeedElement extends Element implements CrawlConstants
                         e(tl("groupfeed_element_add_comment"));
                     ?></label></b></h2>'+
                     '<textarea class="short-text-area" '+
-                    'id="comment-'+ id +'" name="description" ></textarea>' +
+                    'id="comment-'+ id +'" name="description" '+
+                    'data-buttons="all,!wikibtn-search,!wikibtn-heading" '+
+                    '></textarea>' +
                     '<button class="button-box float-opposite" ' +
                     'type="submit"><?php e(tl("groupfeed_element_save"));
                     ?></button>' +
                     '<div>&nbsp;</div>'+
                     '</form>';
-                elt('comment-' + id).focus();
+                var comment_id = 'comment-' + id;
+                editorize(comment_id);
+                elt(comment_id).focus();
             } else {
                 elt(id).innerHTML = "";
             }
@@ -403,12 +407,15 @@ class GroupfeedElement extends Element implements CrawlConstants
                         e(tl("groupfeed_element_post"));
                     ?></label></b></p>' +
                     '<textarea class="short-text-area" '+
-                    'id="description-'+ id +'" name="description" ></textarea>'+
+                    'id="description-'+ id +'" name="description" '+
+                    'data-buttons="all,!wikibtn-search,!wikibtn-heading" '+
+                    '></textarea>' +
                     '<button class="button-box float-opposite" ' +
                     'type="submit"><?php e(tl("groupfeed_element_save"));
                     ?></button>' +
                     '<div>&nbsp;</div>'+
                     '</form>';
+                editorize('description-'+ id);
             } else {
                 elt(id).innerHTML = "";
             }
@@ -446,13 +453,15 @@ class GroupfeedElement extends Element implements CrawlConstants
                         e(tl("groupfeed_element_post"));
                     ?></label></b></p>' +
                     '<textarea class="short-text-area" '+
-                    'id="description-'+ id +'" name="description" >' +
-                    description + '</textarea>'+
+                    'id="description-'+ id +'" name="description" '+
+                    'data-buttons="all,!wikibtn-search,!wikibtn-heading" '+
+                    '>' + description + '</textarea>'+
                     '<button class="button-box float-opposite" ' +
                     'type="submit"><?php e(tl("groupfeed_element_save"));
                     ?></button>' +
                     '<div>&nbsp;</div>'+
                     '</form>';
+                editorize('description-'+ id);
             } else {
                 elt(id).innerHTML = "";
                 setDisplay('result-'+id, true);

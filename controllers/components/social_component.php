@@ -885,6 +885,7 @@ class SocialComponent extends Component implements CrawlConstants
         $data['PAGING_QUERY'] = "?c=$controller_name&amp;a=groupFeeds";
         $data['OTHER_PAGING_QUERY'] =
             "?c=$other_controller_name&amp;a=groupFeeds";
+        $this->initializeWikiEditor($data, -1);
         return $data;
     }
     /**
@@ -1220,8 +1221,9 @@ class SocialComponent extends Component implements CrawlConstants
      *     view and layout that the wiki editor will be drawn on
      *     This method tacks on to INCLUDE_SCRIPTS to make the layout load
      *     wiki.js.
-     * @param $id if "" then all textareas on page will get editor buttons
-     *     otherwise just the on with $id will. (Can call this method
+     * @param $id if "" then all textareas on page will get editor buttons,
+     *     if -1 then sets up translations, but does not add any button,
+     *     otherwise, jadd buttons to textarea $id will. (Can call this method
      *     multiple times, if want more than one but not all)
      */
     function initializeWikiEditor(&$data, $id = "")
@@ -1270,10 +1272,12 @@ class SocialComponent extends Component implements CrawlConstants
                 'wiki_js_link_url :"'. tl('wiki_js_link_url').'"'.
                 '};';
         }
-        if($id == "") {
-            $data['SCRIPT'] .= "editorizeAll();\n";
-        } else {
-            $data['SCRIPT'] .= "editorize('$id');\n";
+        if($id != -1) {
+            if($id == "") {
+                $data['SCRIPT'] .= "editorizeAll();\n";
+            } else {
+                $data['SCRIPT'] .= "editorize('$id');\n";
+            }
         }
     }
     /**
