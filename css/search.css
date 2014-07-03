@@ -1633,6 +1633,7 @@ div.group-result
     width: 25px;
 }
 
+.micro-pagination ul li a.item:hover,
 .pagination ul li a.item:hover
 {
     background-color: #88F;
@@ -1677,15 +1678,40 @@ div.group-result
     margin-right: 8px;
     padding-top: 1px;
 }
-
 .html-rtl .pagination ul li span.end
 {
     display: block;
     float: right;
     margin-left: 8px;
 }
-
-
+.micro-pagination,
+{
+    display:inline;
+    margin-bottom: 8px;
+    margin-top: 8px;
+}
+.micro-pagination ul,
+.micro-pagination ul li
+{
+    display: inline;
+    font-size: 8pt;
+    margin:0;
+    padding:0;
+    position:relative;
+    top:-1px;
+}
+.micro-pagination ul li a.item
+{
+    border-color: gray;
+    border-style: solid;
+    border-width: 2px;
+    padding: 2px;
+    margin: 2px;
+    height: 12px;
+    text-align: center;
+    text-decoration: none;
+    width: 12px;
+}
 /*
    Styles for video subsearch page
  */

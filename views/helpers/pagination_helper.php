@@ -66,9 +66,15 @@ class PaginationHelper extends Helper
      *     page of search results
      * @param int $total_results the total number of search results for the
      *     current search term
+     * @param bool $micro whether to make a tiny pagination rather than normal
+     *      size (this might be suitable for discussion boards)
      */
-    function render($base_url, $limit, $results_per_page, $total_results)
+    function render($base_url, $limit, $results_per_page, $total_results,
+        $micro = false)
     {
+        if(MOBILE && $micro) {
+            return;
+        }
         $num_earlier_pages = ceil($limit/$results_per_page);
         $total_pages = ceil($total_results/$results_per_page);
 
@@ -83,14 +89,15 @@ class PaginationHelper extends Helper
         } else {
             $last_page = $first_page + self::MAX_PAGES_TO_SHOW;
         }
-
+        $tag = ($micro) ? "span" : "div";
         ?>
 
-            <div class='pagination'>
+            <<?php e($tag);?> class='<?php if($micro){e("micro-");}
+                ?>pagination'>
                 <ul>
                     <?php
-            if(0 < $num_earlier_pages) {
-                $prev_limit = ($num_earlier_pages - 1)*$results_per_page;
+            if(0 < $num_earlier_pages && !$micro) {
+                $prev_limit = ($num_earlier_pages - 1) * $results_per_page;
                 echo "<li><span class='end'>&laquo;".
                     "<a href='$base_url&amp;limit=$prev_limit' rel='nofollow'>".
                     tl('pagination_helper_previous')."</a></span></li>";
@@ -101,9 +108,9 @@ class PaginationHelper extends Helper
                     e("<li><span class='end'>--</span></li>");
                 }
             } else {
-                for($i=$first_page; $i < $last_page; $i++) {
+                for($i = $first_page; $i < $last_page; $i++) {
                      $k = $i+1;
-                     if($i == $num_earlier_pages) {
+                     if($i == $num_earlier_pages && !$micro) {
                         echo "<li><span class='item'>$k</span></li>";
                      } else {
                         $cur_limit = $i * $results_per_page;
@@ -112,7 +119,7 @@ class PaginationHelper extends Helper
                      }
                 }
             }
-            if($num_earlier_pages < $total_pages - 1) {
+            if($num_earlier_pages < $total_pages - 1 && !$micro) {
                 $next_limit = ($num_earlier_pages + 1)*$results_per_page;
                 echo "<li><span class='other end'><a href='$base_url".
                     "&amp;limit=$next_limit' rel='nofollow'>".
@@ -120,7 +127,7 @@ class PaginationHelper extends Helper
             }
             ?>
                 </ul>
-            </div>
+            </<?php e($tag);?>>
         <?php
     }
 }

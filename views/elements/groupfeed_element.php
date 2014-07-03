@@ -220,8 +220,18 @@ class GroupfeedElement extends Element implements CrawlConstants
                 if($open_in_tabs) { ?> target="_blank" <?php }
                 ?>><?php e($page[self::TITLE]); ?></a><?php
                 if(isset($page['NUM_POSTS'])) {
+                    e(" (");
                     e(tl('groupfeed_element_num_posts',
                         $page['NUM_POSTS']));
+                    if(!MOBILE &&
+                        $data['RESULTS_PER_PAGE'] < $page['NUM_POSTS']) {
+                        $thread_query = $base_query . "&amp;just_thread=".
+                            $page['PARENT_ID'];
+                        $this->view->helper("pagination")->render($thread_query,
+                            0, $data['RESULTS_PER_PAGE'], $page['NUM_POSTS'],
+                            true);
+                    }
+                    e(") ");
                 }
                 ?>.
             <a class="gray-link" rel='nofollow' href="<?php e($base_query.
@@ -247,19 +257,16 @@ class GroupfeedElement extends Element implements CrawlConstants
                         e($page['OLD_DESCRIPTION']); ?></div>
                     <?php
                 }
-            } else {
-                if(isset($page['LAST_POSTER'])) {?>
-                    <div id='description<?php e($page['ID']);?>'><?php
-                        $recent_date = $this->view->helper("feeds"
-                            )->getPubdateString($time, $page['RECENT_DATE']);
-                        e("<b>".tl('groupfeed_element_last_post_info')."</b> ".
-                            $recent_date." - <a href='".$base_query.
-                            "&amp;just_user_id=".$page['LAST_POSTER_ID']."'>".
-                            $page['LAST_POSTER'] . "</a>");
-                            ?></div>
-                    <?php
-
-                }
+            } else if(isset($page['LAST_POSTER']) ){ ?>
+                <div id='description<?php e($page['ID']);?>'><?php
+                $recent_date = $this->view->helper("feeds"
+                    )->getPubdateString($time, $page['RECENT_DATE']);
+                e("<b>".tl('groupfeed_element_last_post_info')."</b> ".
+                    $recent_date." - <a href='".$base_query.
+                    "&amp;just_user_id=".$page['LAST_POSTER_ID']."'>".
+                    $page['LAST_POSTER'] . "</a>");
+                    ?></div>
+            <?php
             }
             ?>
             <div class="float-opposite">
