@@ -422,9 +422,10 @@ class SearchView extends View implements CrawlConstants
             </div>
             <?php
             } //end foreach
+            $append_url = (isset($data["ADMIN"]) && $data["ADMIN"]) ?
+                "&amp;".CSRF_TOKEN."=". $data[CSRF_TOKEN] : "";
             $this->helper("pagination")->render(
-                $data['PAGING_QUERY']."&amp;".CSRF_TOKEN."=".
-                    $data[CSRF_TOKEN]."&amp;its=".$data['its'],
+                $data['PAGING_QUERY'].$append_url."&amp;its=".$data['its'],
                 $data['LIMIT'], $data['RESULTS_PER_PAGE'], $data['TOTAL_ROWS']);
             ?>
         </div>
