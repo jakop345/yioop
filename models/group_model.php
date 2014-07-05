@@ -651,7 +651,7 @@ class GroupModel extends Model
             $group_by = " GROUP BY GI.PARENT_ID";
             $order_by = " ORDER BY PUBDATE DESC ";
             $select = "SELECT DISTINCT MIN(GI.ID) AS ID,
-                COUNT(GI.ID) AS NUM_POSTS, GI.PARENT_ID AS PARENT_ID,
+                COUNT(DISTINCT GI.ID) AS NUM_POSTS, GI.PARENT_ID AS PARENT_ID,
                 MIN(GI.GROUP_ID) AS GROUP_ID, MAX(GI.TITLE) AS TITLE,
                 MAX(GI.DESCRIPTION) AS DESCRIPTION, MAX(GI.PUBDATE) AS PUBDATE,
                 MIN(G.OWNER_ID) AS OWNER_ID,
@@ -731,7 +731,7 @@ class GroupModel extends Model
         if($for_group >= 0) {
             $count_col = " COUNT(DISTINCT GI.PARENT_ID) ";
         } else {
-            $count_col = " COUNT(*) ";
+            $count_col = " COUNT(DISTINCT GI.ID) ";
         }
         $sql = "SELECT $count_col AS NUM FROM GROUP_ITEM GI, GROUPS G,
             USER_GROUP UG, USERS P $where";
