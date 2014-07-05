@@ -61,6 +61,9 @@ class WikiView extends View
         $base_query = "?c=group&amp;".CSRF_TOKEN."=".
             $data[CSRF_TOKEN] . "&amp;group_id=".
                 $data["GROUP"]["GROUP_ID"];
+        if(!$logged_in) {
+            $base_query = "?c=group&amp;group_id=". $data["GROUP"]["GROUP_ID"];
+        }
         if(MOBILE) {
             $logo = "resources/m-yioop.png";
         }
@@ -86,10 +89,13 @@ class WikiView extends View
                 ?></span></li>
                 <?php
             } else {
+                $append = "";
+                if($name != 'pages') {
+                    $append = '&amp;page_name='. $data['PAGE_NAME'];
+                }
                 ?>
                 <li class="outer"><a href="<?php e($base_query .
-                    '&amp;arg='.$name.'&amp;a=wiki&amp;page_name='.
-                    $data['PAGE_NAME']); ?>"><?php
+                    '&amp;arg='.$name.'&amp;a=wiki'.$append); ?>"><?php
                     e($translation); ?></a></li>
                 <?php
             }
@@ -101,8 +107,10 @@ class WikiView extends View
             $this->element("signin")->render($data);
         ?>
         </div>
-        <h1 class="group-heading logo"><a href="./?<?php
-            e(CSRF_TOKEN."=".$data[CSRF_TOKEN]); ?>"><img
+        <h1 class="group-heading logo"><a href="./<?php
+            if($logged_in) {
+                e("?".CSRF_TOKEN."=".$data[CSRF_TOKEN]);
+            } ?>"><img
             src="<?php e($logo); ?>" alt="Yioop!" /></a><small> - <?php
             e($data["GROUP"]["GROUP_NAME"].
                 "[<a href='$base_query&amp;a=groupFeeds'>".tl('wiki_view_feed').
@@ -131,13 +139,11 @@ class WikiView extends View
         {
             document.location='?c=search&a=signout';
         }
-
         //schedule logout warnings
         var sec = 1000;
         var minute = 60*sec;
         setTimeout("logoutWarn()", 59 * minute);
         setTimeout("autoLogout()", 60 * minute);
-
         </script>
         <?php
         }
@@ -290,7 +296,7 @@ class WikiView extends View
         <input type="hidden" name="group_id" value="<?php
             e($data['GROUP']['GROUP_ID']); ?>" />
         <input type="text" name="filter" class="extra-wide-field"
-            placeholder="<?php e(tl("wiki_view_filter_or_create")); 
+            placeholder="<?php e(tl("wiki_view_filter_or_create"));
             ?>" value="<?php e($data['FILTER'])?>" />
         <button class="button-box" type="submit"><?php
             e(tl('wiki_element_go')); ?></button>

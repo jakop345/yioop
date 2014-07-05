@@ -49,6 +49,9 @@ class MoreoptionsElement extends Element
      */
     function render($data)
     {
+        $logged_in = (isset($data['ADMIN']) && $data['ADMIN']);
+        $append_url = ($logged_in && isset($data[CSRF_TOKEN]))
+                ? "&amp;".CSRF_TOKEN. "=".$data[CSRF_TOKEN] : "";
         if(SUBSEARCH_LINK) {
             $max_column_num = 10;
             if(MOBILE) {
@@ -92,8 +95,7 @@ class MoreoptionsElement extends Element
                 }
                 $query = ($search["FOLDER_NAME"] == "") ? "?":
                     "?s={$search["FOLDER_NAME"]}";
-                $query .= (isset($data[CSRF_TOKEN])) ? "&amp;".CSRF_TOKEN.
-                    "=".$data[CSRF_TOKEN] : "";
+                $query .= $append_url;
                 e("<li><a href='$query'>".
                     "{$search['SUBSEARCH_NAME']}</a></li>");
                 if($cur_row >= $num_rows) {
@@ -110,14 +112,13 @@ class MoreoptionsElement extends Element
             </table>
             <div class="indent"><?php
                 if($prev_link) {
-                    e("<a href='./?a=more&amp;".CSRF_TOKEN."=".
-                        $data[CSRF_TOKEN].
+                    e("<a href='./?a=more$append_url".
                         "&amp;more_page=".($data['MORE_PAGE'] -1)."'>".
                         tl('moreoptions_element_previous')."</a>");
                 }
                 e($spacer);
                 if($next_link) {
-                    e("<a href='./?a=more&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
+                    e("<a href='./?a=more$append_url".
                         "&amp;more_page=".($data['MORE_PAGE'] + 1)."'>".
                         tl('moreoptions_element_next')."</a>");
                 }
@@ -128,8 +129,8 @@ class MoreoptionsElement extends Element
         <h2 class="reduce-top"><?php
             e(tl('moreoptions_element_my_accounts'))?></h2>
         <table class="reduce-top">
-        <tr><td><ul class='square-list'><li><a href="./?c=settings&amp;<?php
-                e(CSRF_TOKEN."=".$data[CSRF_TOKEN])?>&amp;l=<?php
+        <tr><td><ul class='square-list'><li><a href="./?c=settings<?php
+                e($append_url); ?>&amp;l=<?php
                 e(getLocaleTag());
                 e((isset($data['its'])) ? '&amp;its='.$data['its'] : '');
                 ?>"><?php
@@ -139,24 +140,23 @@ class MoreoptionsElement extends Element
                 <td><ul  class='square-list'>
             <?php
             }
-            if(!isset($data["ADMIN"]) || !$data["ADMIN"]) {
+            if(!$logged_in) {
                 ?><li><a href="./?c=admin"><?php
                     e(tl('signin_element_signin')); ?></a></li><?php
             } else {
-                ?><li><a href="./?c=admin&amp;<?php
-                e(CSRF_TOKEN."=".$data[CSRF_TOKEN])?>"><?php
+                ?><li><a href="./?c=admin<?php e($append_url)?>"><?php
                         e(tl('signin_element_admin')); ?></a></li><?php
             }
             if(!MOBILE) {e('</ul></td>');}
             ?>
 
             <?php
-            if((!isset($data["ADMIN"]) || !$data["ADMIN"]) &&
+            if((!$logged_in) &&
                 in_array(REGISTRATION_TYPE, array('no_activation',
                 'email_registration', 'admin_activation'))) {
                 if(!MOBILE){ e("<td><ul  class='square-list'>"); } ?>
-                <li><a href="./?c=register&amp;a=createAccount&amp;<?php
-                        e(CSRF_TOKEN."=".$data[CSRF_TOKEN])?>&amp;"><?php
+                <li><a href="./?c=register&amp;a=createAccount<?php
+                        e($append_url); ?>"><?php
                         e(tl('signin_view_create_account')); ?></a></li>
                 </ul></td>
                 <?php
@@ -165,14 +165,13 @@ class MoreoptionsElement extends Element
         </tr>
         </table>
         <?php
-        $token_url = "?".CSRF_TOKEN."=".$data[CSRF_TOKEN];
         $tools = array();
         if(in_array(REGISTRATION_TYPE, array('no_activation',
             'email_registration', 'admin_activation'))) {
-            $tools[$token_url . "&amp;c=register&amp;a=suggestUrl"] =
+            $tools["?c=register&amp;a=suggestUrl$append_url"] =
                 tl('moreoptions_element_suggest');
         }
-        $tools[$token_url . "&amp;c=group&amp;a=wiki&amp;arg=pages"] =
+        $tools["?c=group&amp;a=wiki&amp;arg=pages$append_url"] =
             tl('moreoptions_element_wiki_pages');
         if($tools != array()) {
             $max_column_num = 10;

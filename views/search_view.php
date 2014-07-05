@@ -72,6 +72,7 @@ class SearchView extends View implements CrawlConstants
         </div>
         <?php
         }
+        $logged_in = isset($data["ADMIN"]) && $data["ADMIN"];
         $logo = "resources/yioop.png";
         $is_landing = (!isset($data['PAGES']) && !isset($data['MORE']));
         if($is_landing) { ?>
@@ -81,8 +82,9 @@ class SearchView extends View implements CrawlConstants
             $logo = "resources/m-yioop.png";
         }
         ?>
-        <h1 class="logo"><a href="./?<?php
-            e(CSRF_TOKEN."=".$data[CSRF_TOKEN])?>"><img
+        <h1 class="logo"><a href="./<?php if($logged_in) {
+            e("?".CSRF_TOKEN."=".$data[CSRF_TOKEN]);
+            } ?>"><img
             src="<?php e($logo); ?>" alt="<?php e(tl('search_view_title'));
                  ?>"
             /></a>

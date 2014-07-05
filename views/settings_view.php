@@ -55,13 +55,15 @@ class SettingsView extends View
      */
     function renderView($data) {
     $logo = "resources/yioop.png";
+    $logged_in = isset($data['ADMIN']) && $data['ADMIN'];
     if(MOBILE) {
         $logo = "resources/m-yioop.png";
     }
 ?>
 <div class="landing non-search">
-<h1 class="logo"><a href="./?<?php
-    e(CSRF_TOKEN."=".$data[CSRF_TOKEN]); ?>&amp;its=<?php
+<h1 class="logo"><a href="./?<?php if($logged_in) {
+        e(CSRF_TOKEN."=".$data[CSRF_TOKEN]. "&amp;");
+    } ?>its=<?php
     e($data['its'])?>"><img
     src="<?php e($logo); ?>" alt="Yioop!" /></a><span> - <?php
     e(tl('settings_view_settings')); ?></span>

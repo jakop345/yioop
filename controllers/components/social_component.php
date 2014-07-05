@@ -600,8 +600,8 @@ class SocialComponent extends Component implements CrawlConstants
             switch($_REQUEST['arg'])
             {
                 case "addcomment":
-                    if(!isset($_REQUEST['parent_id']) ||
-                        !isset($_REQUEST['group_id'])) {
+                    if(!isset($_REQUEST['parent_id']) || $_REQUEST['parent_id']
+                        ||!isset($_REQUEST['group_id'])||$_REQUEST['group_id']){
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('social_component_comment_error').
                             "</h1>');";
@@ -674,7 +674,7 @@ class SocialComponent extends Component implements CrawlConstants
                     }
                 break;
                 case "newthread":
-                    if(!isset($_REQUEST['group_id'])) {
+                    if(!isset($_REQUEST['group_id']) || !$_REQUEST['group_id']){
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('social_component_comment_error').
                             "</h1>');";
@@ -943,7 +943,7 @@ class SocialComponent extends Component implements CrawlConstants
             }
             $i++;
         }
-        if(isset($_REQUEST['group_id'])) {
+        if(isset($_REQUEST['group_id']) && $_REQUEST['group_id']) {
             $group_id = $parent->clean($_REQUEST['group_id'], "int");
         } else if(isset($page_id)) {
             $page_info = $group_model->getPageInfoByPageId($page_id);
@@ -1160,7 +1160,7 @@ class SocialComponent extends Component implements CrawlConstants
                             $group_model->getPageList(
                             $group_id, $locale_tag, $filter, $limit,
                             $num);
-                        if($data["TOTAL_ROWS"] == 0) {
+                        if($data["TOTAL_ROWS"] == 0 && $filter != "") {
                             $data["MODE"] = "read";
                             $page_name = $filter;
                         }

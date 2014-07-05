@@ -53,13 +53,15 @@ class SigninView extends View
      */
     function renderView($data)
     {
+        $logged_in = isset($data['ADMIN']) && $data['ADMIN'];
         $logo = "resources/yioop.png";
         if(MOBILE) {
             $logo = "resources/m-yioop.png";
         }?>
         <div class="landing non-search">
-        <h1 class="logo"><a href="./?<?php e(CSRF_TOKEN."=".$data[CSRF_TOKEN])
-                ?>"><img src="<?php e($logo); ?>" alt="Yioop!"
+        <h1 class="logo"><a href="./<?php if($logged_in) {
+                e('?'.CSRF_TOKEN."=".$data[CSRF_TOKEN]);
+            }?>"><img src="<?php e($logo); ?>" alt="Yioop!"
                 /></a><span> - <?php e(tl('signin_view_signin')); ?></span></h1>
         <?php if (isset($data['AUTH_ITERATION'])) { ?>
                 <form  method="post" id="zkp-form" action="#"
@@ -111,11 +113,15 @@ class SigninView extends View
                 if(in_array(REGISTRATION_TYPE, array('no_activation',
                     'email_registration', 'admin_activation'))) {
                     ?>
-                    <li><a href="./?c=register&amp;a=recoverPassword&amp;<?php
-                        e(CSRF_TOKEN."=".$data[CSRF_TOKEN])?>&amp;"><?php
+                    <li><a href="./?c=register&amp;a=recoverPassword<?php
+                        if($logged_in) {
+                            e('&amp;'.CSRF_TOKEN."=".$data[CSRF_TOKEN]);
+                        } ?>" ><?php
                         e(tl('signin_view_recover_password')); ?></a></li>
-                    <li><a href="./?c=register&amp;a=createAccount&amp;<?php
-                        e(CSRF_TOKEN."=".$data[CSRF_TOKEN])?>&amp;"><?php
+                    <li><a href="./?c=register&amp;a=createAccount<?php
+                        if($logged_in) {
+                            e('&amp;'.CSRF_TOKEN."=".$data[CSRF_TOKEN]);
+                        }?>"><?php
                         e(tl('signin_view_create_account')); ?></a></li>
                 <?php
                 }

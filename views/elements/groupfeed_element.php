@@ -53,13 +53,13 @@ class GroupfeedElement extends Element implements CrawlConstants
     {
         $is_admin = ($data["CONTROLLER"] == "admin");
         $logged_in = isset($data["ADMIN"]) && $data["ADMIN"];
+        $append_url = ($logged_in) ?"&amp;".CSRF_TOKEN."=".
+            $data[CSRF_TOKEN] : "";
         $arrows = ($is_admin) ? "&lt;&lt;" : "&gt;&gt;";
         $is_status = isset($data['STATUS']);
-        $base_query = $data['PAGING_QUERY']."&amp;".CSRF_TOKEN."=".
-            $data[CSRF_TOKEN];
+        $base_query = $data['PAGING_QUERY'] . $append_url;
         if(isset($data["WIKI_QUERY"])) {
-            $wiki_query = $data["WIKI_QUERY"]."&amp;".CSRF_TOKEN."=".
-            $data[CSRF_TOKEN];
+            $wiki_query = $data["WIKI_QUERY"] . $append_url;
         }
         $paging_query = $base_query;
         $other_paging_query = $data['OTHER_PAGING_QUERY']."&amp;".
@@ -297,7 +297,7 @@ class GroupfeedElement extends Element implements CrawlConstants
             </div>
             <?php
             } //end foreach
-            if(isset($data['JUST_THREAD'])) {
+            if(isset($data['JUST_THREAD']) && $logged_in) {
                 ?>
                 <div class='button-group-result'>
                 <button class="button-box" onclick='comment_form(<?php

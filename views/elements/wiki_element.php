@@ -59,14 +59,20 @@ class WikiElement extends Element implements CrawlConstants
         $is_admin = ($data["CONTROLLER"] == "admin");
         $arrows = ($is_admin) ? "&lt;&lt;" : "&gt;&gt;";
         $other_controller = ($is_admin) ? "group" : "admin";
-        $base_query = "?c={$data['CONTROLLER']}&amp;".CSRF_TOKEN."=".
-            $data[CSRF_TOKEN];
-        $manage_groups = $base_query ."&amp;a=manageGroups";
+        $base_query = "?c={$data['CONTROLLER']}";
+        $csrf_token = "";
+        if($logged_in) {
+            $csrf_token = "&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN];
+            $base_query .= $csrf_token;
+        }
         $base_query .= "&amp;group_id=".$data["GROUP"]["GROUP_ID"];
-        $other_base_query = "?c=$other_controller&amp;".CSRF_TOKEN."=".
-            $data[CSRF_TOKEN]."&amp;a=wiki&amp;group_id=".
+        $other_base_query = "?c=$other_controller&amp;a=wiki&amp;group_id=".
             $data["GROUP"]["GROUP_ID"]."&amp;arg=".$data['MODE']."&amp;".
             "page_name=".$data['PAGE_NAME'];
+        if($logged_in) {
+            $other_base_query .= $csrf_token;
+            $csrf_token = "&".CSRF_TOKEN."=".$data[CSRF_TOKEN];
+        }
         if($is_admin || $logged_in) { ?>
             <div class="float-same admin-collapse">[<a id='arrows-link'
             href="<?php e($other_base_query) ?>" onclick="
@@ -92,9 +98,9 @@ class WikiElement extends Element implements CrawlConstants
         if($is_admin) {
             ?>
             <h2><?php
-            e("<a href='$manage_groups'>{$data['GROUP']['GROUP_NAME']}".
-                "</a> [<a href='?c={$data['CONTROLLER']}&".CSRF_TOKEN."=".
-                $data[CSRF_TOKEN]."&amp;a=groupFeeds&just_group_id=".
+            e($data['GROUP']['GROUP_NAME'].
+                "</a> [<a href='?c={$data['CONTROLLER']}".$csrf_token.
+                "&a=groupFeeds&just_group_id=".
                 $data['GROUP']['GROUP_ID']."'>".tl('groupfeed_element_feed').
                 "</a>|".tl('wiki_view_wiki')."]" ); ?></h2>
             <div class="top-margin"><b>
@@ -117,9 +123,12 @@ class WikiElement extends Element implements CrawlConstants
                     e($bar); ?><span class="gray"><?php e($translation);
                     ?></span><?php
                 } else {
+                    $append = "";
+                    if($name != 'pages') {
+                        $append = '&amp;page_name='. $data['PAGE_NAME'];
+                    }
                     e($bar); ?><a href="<?php e($base_query .
-                        '&amp;arg='.$name.'&amp;a=wiki&amp;page_name='.
-                        $data['PAGE_NAME']); ?>"><?php
+                        '&amp;arg='.$name.'&amp;a=wiki'.$append); ?>"><?php
                         e($translation); ?></a><?php
                 }
                 $bar = "|";
@@ -275,14 +284,14 @@ class WikiElement extends Element implements CrawlConstants
      */
     function renderPages($data, $can_edit, $logged_in)
     {
-        $base_query = "?c={$data['CONTROLLER']}&amp;".CSRF_TOKEN."=".
-            $data[CSRF_TOKEN] . "&amp;group_id=".
-                $data["GROUP"]["GROUP_ID"]."&amp;a=wiki";
+        $append_url = ($logged_in) ?
+            "&amp;".CSRF_TOKEN."=". $data[CSRF_TOKEN] : "";
+        $base_query = "?c={$data['CONTROLLER']}&amp;group_id=".
+                $data["GROUP"]["GROUP_ID"]."&amp;a=wiki$append_url";
         $create_query = $base_query . "&amp;arg=edit&amp;page_name=" .
             $data["FILTER"];
         $base_query .= "&amp;arg=read";
-        $paging_query = "?c={$data['CONTROLLER']}&amp;".CSRF_TOKEN."=".
-            $data[CSRF_TOKEN] . "&amp;group_id=".
+        $paging_query = "?c={$data['CONTROLLER']}$append_url&amp;group_id=".
                 $data["GROUP"]["GROUP_ID"]."&amp;a=wiki&amp;arg=pages";
         e("<h2>".tl("wiki_view_wiki_page_list",
             $data["GROUP"]["GROUP_NAME"]). "</h2>");
@@ -310,19 +319,25 @@ class WikiElement extends Element implements CrawlConstants
         ?>
         <div>&nbsp;</div>
         <?php
-        foreach($data['PAGES'] as $page) {
-            ?>
-            <div class='group-result'>
-            <a href="<?php e($base_query.'&amp;page_name='.
-                $page['TITLE']);?>" ><?php e($page["TITLE"]); ?></a></br />
-            <?php e(strip_tags($page["DESCRIPTION"])."..."); ?>
-            </div>
-            <div>&nbsp;</div>
-            <?php
+        if($data['PAGES'] != array()) {
+            foreach($data['PAGES'] as $page) {
+                ?>
+                <div class='group-result'>
+                <a href="<?php e($base_query.'&amp;page_name='.
+                    $page['TITLE']);?>" ><?php e($page["TITLE"]); ?></a></br />
+                <?php e(strip_tags($page["DESCRIPTION"])."..."); ?>
+                </div>
+                <div>&nbsp;</div>
+                <?php
+            }
+            $this->view->helper("pagination")->render(
+                $paging_query,
+                $data['LIMIT'], $data['RESULTS_PER_PAGE'], $data['TOTAL_ROWS']);
         }
-        $this->view->helper("pagination")->render(
-            $paging_query,
-            $data['LIMIT'], $data['RESULTS_PER_PAGE'], $data['TOTAL_ROWS']);
+        if($data['PAGES'] == array()) {
+            e('<div>'.tl('wiki_view_no_pages', "<b>".getLocaleTag()."</b>").
+                '</div>');
+        }
     }
 
     /**

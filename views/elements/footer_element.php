@@ -49,13 +49,14 @@ class FooterElement extends Element
      */
     function render($data)
     {
-        if(isset($_SERVER["PATH_INFO"])) {
+        $logged_in = isset($data['ADMIN']) && $data['ADMIN'];
+        if(isset($_SERVER["PATH_INFO"]) && $logged_in) {
             $path_info = $_SERVER["PATH_INFO"];
         } else {
             $path_info = ".";
         }
-        $tools = (isset($data[CSRF_TOKEN])) ? "?a=more&amp;".CSRF_TOKEN.
-            "=".$data[CSRF_TOKEN] : "?a=more";
+        $tools = (isset($data[CSRF_TOKEN]) && $logged_in) ?
+            "?a=more&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN] : "?a=more";
             ?>
             <div>
             - <a href="<?php e($path_info); ?>/blog.php"><?php

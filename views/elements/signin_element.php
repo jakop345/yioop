@@ -47,13 +47,16 @@ class SigninElement extends Element
      */
     function render($data)
     {
+        $logged_in = isset($data["ADMIN"]) && $data["ADMIN"];
         ?>
         <div class="user-nav" >
         <ul>
         <?php
         if(WEB_ACCESS) {
             ?>    <li><a href="./?c=settings&amp;<?php
-                e(CSRF_TOKEN."=".$data[CSRF_TOKEN])?>&amp;l=<?php
+                if($logged_in) {
+                    e(CSRF_TOKEN."=".$data[CSRF_TOKEN]."&amp;");
+                } ?>l=<?php
                 e(getLocaleTag());
                 e((isset($data['its'])) ? '&amp;its='.$data['its'] : '');
                 e((isset($data['ACTIVITY_METHOD'])) ? 
@@ -63,12 +66,11 @@ class SigninElement extends Element
                 ?>"><?php
             e(tl('signin_element_settings')); ?></a></li><?php
         }
-        if(SIGNIN_LINK && (!isset($data["ADMIN"]) ||
-            (isset($data["ADMIN"]) && !$data["ADMIN"]))) {
+        if(SIGNIN_LINK && !$logged_in) {
             ?><li><a href="./?c=admin"><?php
                 e(tl('signin_element_signin')); ?></a></li><?php
         }
-        if(isset($data["ADMIN"]) && $data["ADMIN"]) {
+        if($logged_in) {
             ?><li><a href="./?c=admin&amp;<?php
             e(CSRF_TOKEN."=".$data[CSRF_TOKEN])?>"><?php
                     e(tl('signin_element_admin')); ?></a></li><?php

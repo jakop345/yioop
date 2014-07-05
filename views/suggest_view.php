@@ -52,6 +52,9 @@ class SuggestView extends View
      */
     function renderView($data)
     {
+        $logged_in = (isset($data['ADMIN']) && $data['ADMIN']);
+        $append_url = ($logged_in && isset($data[CSRF_TOKEN]))
+                ? CSRF_TOKEN. "=".$data[CSRF_TOKEN] : "";
         $logo = "resources/yioop.png";
         if(MOBILE) {
             $logo = "resources/m-yioop.png";
@@ -64,7 +67,7 @@ class SuggestView extends View
         <div class="landing non-search">
         <div class="small-top">
             <h1 class="logo"><a href="./?<?php
-                e(CSRF_TOKEN."=".$data[CSRF_TOKEN]) ?>"><img
+                e($append_url) ?>"><img
                 src="<?php e($logo); ?>" alt="Yioop!"/></a>
                 <span> - <?php e(tl('suggest_view_suggest_url'));
                 ?></span></h1>

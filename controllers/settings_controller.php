@@ -60,6 +60,7 @@ class SettingsController extends Controller
         $crawl_model = $this->model("crawl");
         if(isset($_SESSION['USER_ID'])) {
             $user = $_SESSION['USER_ID'];
+            $data['ADMIN'] = 1;
         } else {
             $user = $_SERVER['REMOTE_ADDR'];
         }

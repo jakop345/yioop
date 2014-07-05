@@ -54,11 +54,11 @@ class GroupView extends View implements CrawlConstants
      */
     function renderView($data) {
         $logo = "resources/yioop.png";
-        $base_query = $data['PAGING_QUERY']."&amp;".CSRF_TOKEN."=".
-            $data[CSRF_TOKEN];
-        $other_base_query = $data['OTHER_PAGING_QUERY']."&amp;".CSRF_TOKEN."=".
-            $data[CSRF_TOKEN];
         $logged_in = isset($data["ADMIN"]) && $data["ADMIN"];
+        $append_url = ($logged_in) ?"&amp;".CSRF_TOKEN."=".
+            $data[CSRF_TOKEN] : "";
+        $base_query = $data['PAGING_QUERY']."$append_url";
+        $other_base_query = $data['OTHER_PAGING_QUERY']."$append_url";
         if(MOBILE) {
             $logo = "resources/m-yioop.png";
         }
@@ -70,8 +70,10 @@ class GroupView extends View implements CrawlConstants
         </div><?php
         }
         ?>
-        <h1 class="group-heading logo"><a href="./?<?php
-            e(CSRF_TOKEN."=".$data[CSRF_TOKEN]); ?>"><img
+        <h1 class="group-heading logo"><a href="./<?php if($logged_in) {
+                e('?'.CSRF_TOKEN."=".$data[CSRF_TOKEN]);
+            }
+            ?>"><img
             src="<?php e($logo); ?>" alt="Yioop!" /></a><small> - <?php
         if(isset($data['JUST_THREAD'])) {
             if(isset($data['WIKI_PAGE_NAME'])) {

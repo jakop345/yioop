@@ -48,6 +48,7 @@ class SubsearchElement extends Element
     function render($data)
     {
         if(!SUBSEARCH_LINK) { return; }
+        $logged_in = isset($data["ADMIN"]) && $data["ADMIN"];
         if(!isset($data['SUBSEARCH'])) {
             $data['SUBSEARCH'] = "";
         }
@@ -63,9 +64,10 @@ class SubsearchElement extends Element
                 $found = false;
                 foreach($data["SUBSEARCHES"] as $search) {
                     if ($i >= $drop_threshold && ($found || MOBILE)) {
+                        $append_token = ($logged_in) ? "&amp;".CSRF_TOKEN.
+                                "=".$data[CSRF_TOKEN] : "";
                         e("<li class='outer'><a ".
-                            " href='?".CSRF_TOKEN.
-                                "=".$data[CSRF_TOKEN]."&amp;a=more' ><b>".
+                            " href='?a=more$append_token' ><b>".
                             tl('subsearch_element_more').
                             "</b></a>");
                         break;
@@ -83,7 +85,7 @@ class SubsearchElement extends Element
                         $found = true;
                     } else if($i <= $drop_threshold) {
                         $query = "";
-                        if(isset($data[CSRF_TOKEN])) {
+                        if(isset($data[CSRF_TOKEN]) && $logged_in) {
                             $query .= $delim.CSRF_TOKEN.
                                 "=".$data[CSRF_TOKEN].
                                 "&amp;c=search";

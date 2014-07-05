@@ -74,7 +74,18 @@ class StaticController extends Controller
         }
         $data['VIEW'] = $view;
         $data = array_merge($data, $this->call($activity));
+        if(isset($_SESSION['USER_ID'])) {
+            $user = $_SESSION['USER_ID'];
+        } else {
+            $user = $_SERVER['REMOTE_ADDR'];
+        }
         $data[CSRF_TOKEN] = $this->generateCSRFToken($user);
+        if(isset($_SESSION['USER_ID'])) {
+            $user_id = $_SESSION['USER_ID'];
+            $data['ADMIN'] = 1;
+        } else {
+            $user_id = $_SERVER['REMOTE_ADDR'];
+        }
         $this->displayView($view, $data);
     }
     /**
@@ -152,14 +163,15 @@ class StaticController extends Controller
      */
     function getPage($page_name)
     {
+        $group_model = $this->model("group");
         $locale_tag = getLocaleTag();
-        $page_info = $this->model("group")->getPageInfoByName(
+        $page_info = $group_model->getPageInfoByName(
             PUBLIC_GROUP_ID, $page_name, $locale_tag, "read");
         $page_string = isset($page_info["PAGE"]) ? $page_info["PAGE"] : "";
         if(!$page_string && $locale_tag != DEFAULT_LOCALE) {
             //fallback to default locale for translation
             $page_info = $group_model->getPageInfoByName(
-                $group_id, $page_name, DEFAULT_LOCALE, "read");
+                PUBLIC_GROUP_ID, $page_name, DEFAULT_LOCALE, "read");
             $page_string = $page_info["PAGE"];
         }
         return $page_string;

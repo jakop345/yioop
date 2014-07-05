@@ -54,6 +54,9 @@ class StaticView extends View
     function renderView($data)
     {
         $logo = "resources/yioop.png";
+        $logged_in = (isset($data['ADMIN']) && $data['ADMIN']);
+        $append_url = ($logged_in && isset($data[CSRF_TOKEN]))
+                ? CSRF_TOKEN. "=".$data[CSRF_TOKEN] : "";
         if(MOBILE) {
             $logo = "resources/m-yioop.png";
         }
@@ -64,8 +67,7 @@ class StaticView extends View
         }
         ?>
         <div class="non-search center">
-        <h1 class="logo"><a href="<?php e($path_info."/?".
-            CSRF_TOKEN."=".$data[CSRF_TOKEN]);?>"><img
+        <h1 class="logo"><a href="<?php e($path_info."/?".$append_url);?>"><img
             src="<?php e($path_info."/".$logo); ?>"
             alt="<?php e(tl('static_view_title')); ?>" /></a><span><?php
             e($data['subtitle']);?></span></h1>
