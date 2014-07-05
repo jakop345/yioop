@@ -640,28 +640,37 @@ class GroupModel extends Model
         $non_public_status = ($user_id != PUBLIC_GROUP_ID) ?
             " UG.STATUS='".ACTIVE_STATUS."' AND " : "";
         $where .= $add_where. $non_public_where .
-            "GI.USER_ID=P.USER_ID AND
-            GI.GROUP_ID=G.GROUP_ID AND GI.GROUP_ID=UG.GROUP_ID AND ((
+            "GI.GROUP_ID=G.GROUP_ID AND GI.GROUP_ID=UG.GROUP_ID AND ((
             $non_public_status
             G.MEMBER_ACCESS IN ('".GROUP_READ."','".GROUP_READ_COMMENT.
             "','".GROUP_READ_WRITE."'))OR
-            (G.OWNER_ID = UG.USER_ID)) AND
-            P.USER_ID = GI.USER_ID";
+            (G.OWNER_ID = UG.USER_ID))";
         if($for_group >= 0) {
             $group_by = " GROUP BY GI.PARENT_ID";
-            $order_by = " ORDER BY PUBDATE DESC ";
-            $select = "SELECT DISTINCT MIN(GI.ID) AS ID,
+            $order_by = " ORDER BY E.PUBDATE DESC ";
+            $select = "SELECT E.*, I.TITLE AS TITLE, 
+                I.DESCRIPTION AS DESCRIPTION,
+                I.USER_ID AS USER_ID, II.USER_ID AS LAST_POSTER_ID,
+                U.USER_NAME AS USER_NAME, P.USER_NAME AS LAST_POSTER";
+            $sub_select = "SELECT DISTINCT MIN(GI.ID) AS ID,
+                MAX(GI.ID) AS LAST_ID,
                 COUNT(DISTINCT GI.ID) AS NUM_POSTS, GI.PARENT_ID AS PARENT_ID,
-                MIN(GI.GROUP_ID) AS GROUP_ID, MAX(GI.TITLE) AS TITLE,
-                MAX(GI.DESCRIPTION) AS DESCRIPTION, MAX(GI.PUBDATE) AS PUBDATE,
+                MIN(GI.GROUP_ID) AS GROUP_ID, MAX(GI.PUBDATE) AS PUBDATE,
                 MIN(G.OWNER_ID) AS OWNER_ID,
                 MIN(G.MEMBER_ACCESS) AS MEMBER_ACCESS,
-                MIN(G.GROUP_NAME) AS GROUP_NAME, MAX(P.USER_NAME) AS USER_NAME,
-                MIN(P.USER_NAME) AS LAST_POSTER, MIN(GI.PUBDATE) AS RECENT_DATE,
-                MAX(P.USER_ID) AS LAST_POSTER_ID,
-                MIN(P.USER_ID) AS USER_ID, MIN(GI.TYPE) AS TYPE";
+                MIN(G.GROUP_NAME) AS GROUP_NAME,
+                MIN(GI.PUBDATE) AS RECENT_DATE,
+                MIN(GI.TYPE) AS TYPE";
+            $sub_sql = "$sub_select
+                FROM GROUP_ITEM GI, GROUPS G, USER_GROUP UG
+                $where $group_by";
+            $sql = "$select FROM ($sub_sql) E,
+                GROUP_ITEM I, GROUP_ITEM II, USERS U, USERS P
+                WHERE E.ID = I.ID AND E.LAST_ID = II.ID AND
+                I.USER_ID = U.USER_ID AND II.USER_ID = P.USER_ID
+                $order_by $limit";
         } else {
-            $group_by = "";
+            $where .= " AND P.USER_ID = GI.USER_ID";
             $select = "SELECT DISTINCT GI.ID AS ID,
                 GI.PARENT_ID AS PARENT_ID, GI.GROUP_ID AS GROUP_ID,
                 GI.TITLE AS TITLE, GI.DESCRIPTION AS DESCRIPTION,
@@ -669,10 +678,10 @@ class GroupModel extends Model
                 G.MEMBER_ACCESS AS MEMBER_ACCESS,
                 G.GROUP_NAME AS GROUP_NAME, P.USER_NAME AS USER_NAME,
                 P.USER_ID AS USER_ID, GI.TYPE AS TYPE ";
+            $sql = "$select
+                FROM GROUP_ITEM GI, GROUPS G, USER_GROUP UG, USERS P
+                $where $order_by $limit";
         }
-        $sql = "$select
-            FROM GROUP_ITEM GI, GROUPS G, USER_GROUP UG, USERS P
-            $where $group_by $order_by $limit";
         $result = $db->execute($sql);
         $i = 0;
         $read_only = ($user_id == PUBLIC_GROUP_ID);
