@@ -91,7 +91,7 @@ class SubsearchElement extends Element
                         }
                         if(isset($data['QUERY']) &&
                             !isset($data['NO_QUERY'])) {
-                            $query .= "&amp;c=search".
+                            $query .= "{$delim}c=search".
                                 "&amp;q={$data['QUERY']}";
                         }
                         e("<li class='outer'><a href='$source$query'>".
