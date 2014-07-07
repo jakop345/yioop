@@ -1531,10 +1531,11 @@ class QueueServer implements CrawlConstants, Join
                     $visited_urls_count);
                 foreach($seen_sites as $site) {
                     if($site[self::IS_DOC]){ // so not link
-                        $hash = $site[self::HASH_URL].
+                        $site_url = str_replace('|', "%7C", $site[self::URL]);
+                        $host = UrlParser::getHost($site_url);
+                        $hash = crawlHash($site_url, true).
                             $site[self::HASH] .
-                            "d". substr(crawlHash(
-                            UrlParser::getHost($site[self::URL])."/", true), 1);
+                            "d". substr(crawlHash($host."/",true), 1);
                     } else {
                         $hash = $site[self::HASH_URL];
                     }

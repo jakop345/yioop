@@ -164,8 +164,12 @@ class GroupController extends Controller implements CrawlConstants
         }
         $data["its"] = 0;
         $num_pages = count($data["PAGES"]);
-        $base_query = $data['PAGING_QUERY']."&amp;".CSRF_TOKEN."=".
-            $data[CSRF_TOKEN]."&amp;";
+        if(isset($data['ADMIN']) && $data['ADMIN']) {
+            $base_query = $data['PAGING_QUERY']."&amp;".CSRF_TOKEN."=".
+                $data[CSRF_TOKEN]."&amp;";
+        } else {
+            $base_query = $data['PAGING_QUERY']."&amp;";
+        }
         for($i = 0; $i < $num_pages; $i++) {
             $data["PAGES"][$i][self::URL] = BASE_URL. $base_query .
                 "just_thread=". $data["PAGES"][$i]['PARENT_ID'];

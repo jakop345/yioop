@@ -297,7 +297,9 @@ class GroupfeedElement extends Element implements CrawlConstants
             </div>
             <?php
             } //end foreach
+            $data['FRAGMENT'] = "";
             if(isset($data['JUST_THREAD']) && $logged_in) {
+                $data['FRAGMENT'] = '#result-'.$page['ID'];
                 ?>
                 <div class='button-group-result'>
                 <button class="button-box" onclick='comment_form(<?php
@@ -326,25 +328,37 @@ class GroupfeedElement extends Element implements CrawlConstants
      */
     function renderScripts($data)
     {
+        if($data['LIMIT'] + $data['RESULTS_PER_PAGE'] == $data['TOTAL_ROWS']) {
+            $data['LIMIT'] += $data['RESULTS_PER_PAGE'];
+        }
         $paging_query = $data['PAGING_QUERY']."&amp;".CSRF_TOKEN."=".
             $data[CSRF_TOKEN];
         if(isset($data['ADD_PAGING_QUERY'])) {
             $paging_query .= $data['ADD_PAGING_QUERY'];
         }
-        $just_fields = array("JUST_THREAD", "JUST_USER_ID",
-            "JUST_GROUP_ID");
+        $limit_hidden = "";
+        if(isset($data['LIMIT'])) {
+            $paging_query .= "&limit=".$data['LIMIT'];
+        }
+        $num_hidden = "";
+        if(isset($data['RESULTS_PER_PAGE'])) {
+            $paging_query .= "&num=".$data['RESULTS_PER_PAGE'];
+        }
+        $just_fields = array("LIMIT" => "limit", "RESULTS_PER_PAGE" => "num", 
+            "JUST_THREAD" => 'just_thread', "JUST_USER_ID" => "just_user_id",
+            "JUST_GROUP_ID" => "just_group_id");
         $hidden_form = "\n";
-        foreach($just_fields as $field) {
-            $lower_field = strtolower($field);
+        foreach($just_fields as $field => $form_field) {
             if(isset($data[$field])) {
                 $hidden_form .= "'<input type=\"hidden\" ".
-                    "name=\"$lower_field\" value=\"{$data[$field]}\" />' +\n";
+                    "name=\"$form_field\" value=\"{$data[$field]}\" />' +\n";
             }
         }
         ?>
         <script type="text/javascript"><?php
             $clear = (MOBILE) ? " clear" : "";
         ?>
+        var updateId = null;
         function comment_form(id, parent_id, group_id)
         {
             clearInterval(updateId);
@@ -353,7 +367,8 @@ class GroupfeedElement extends Element implements CrawlConstants
             if(start_elt != tmp) {
                 elt(id).innerHTML =
                     tmp +
-                    '<form action="./" >' + <?php e($hidden_form); ?>
+                    '<form action="./<?php e($data['FRAGMENT']);
+                    ?>" >' + <?php e($hidden_form); ?>
                     '<input type="hidden" name="c" value="<?php
                         e($data['CONTROLLER']) ?>" />' +
                     '<input type="hidden" name="a" value="groupFeeds" />' +
@@ -392,7 +407,8 @@ class GroupfeedElement extends Element implements CrawlConstants
             if(start_elt != tmp) {
                 elt(id).innerHTML =
                     tmp +
-                    '<form action="./" >' + <?php e($hidden_form); ?>
+                    '<form action="./<?php e($data['FRAGMENT']);
+                    ?>" >' + <?php e($hidden_form); ?>
                     '<input type="hidden" name="c" value="<?php
                         e($data['CONTROLLER']) ?>" />' +
                     '<input type="hidden" name="a" value="groupFeeds" />' +
@@ -439,7 +455,8 @@ class GroupfeedElement extends Element implements CrawlConstants
                 setDisplay('result-'+id, false);
                 elt(id).innerHTML =
                     tmp +
-                    '<form action="./" >' +
+                    '<form action="./<?php e($data['FRAGMENT']);
+                    ?>" >' + <?php e($hidden_form); ?>
                     '<input type="hidden" name="c" value="<?php
                         e($data['CONTROLLER']) ?>" />' +
                     '<input type="hidden" name="a" value="groupFeeds" />' +
@@ -474,42 +491,36 @@ class GroupfeedElement extends Element implements CrawlConstants
                 setDisplay('result-'+id, true);
             }
         }
+        function feedStatusUpdate()
+        {
+            var startUrl = "<?php e(html_entity_decode(
+                $paging_query).'&arg=status'); ?>";
+            var feedTag = elt('feedstatus');
+            getPage(feedTag, startUrl);
+            elt('feedstatus').style.backgroundColor = "#EEE";
+            setTimeout("resetBackground()", 0.5*sec);
+        }
+
+        function clearUpdate()
+        {
+             clearInterval(updateId);
+             var feedTag = elt('feedstatus');
+             feedTag.innerHTML= "<h2 class='red'><?php
+                e(tl('groupfeed_element_no_longer_update'))?></h2>";
+        }
+        function resetBackground()
+        {
+             elt('feedstatus').style.backgroundColor = "#FFF";
+        }
+        function doUpdate()
+        {
+             var sec = 1000;
+             var minute = 60*sec;
+             updateId = setInterval("feedStatusUpdate()", 15*sec);
+             setTimeout("clearUpdate()", 20*minute + sec);
+        }
         </script>
         <?php
-        if($data['LIMIT'] == 0 ) { ?>
-            <script type="text/javascript" >
-            var updateId;
-            function feedStatusUpdate()
-            {
-                var startUrl = "<?php e(html_entity_decode(
-                    $paging_query).'&arg=status'); ?>";
-                var feedTag = elt('feedstatus');
-                getPage(feedTag, startUrl);
-                elt('feedstatus').style.backgroundColor = "#EEE";
-                setTimeout("resetBackground()", 0.5*sec);
-            }
-
-            function clearUpdate()
-            {
-                 clearInterval(updateId );
-                 var feedTag = elt('feedstatus');
-                 feedTag.innerHTML= "<h2 class='red'><?php
-                    e(tl('groupfeed_element_no_longer_update'))?></h2>";
-            }
-            function resetBackground()
-            {
-                 elt('feedstatus').style.backgroundColor = "#FFF";
-            }
-            function doUpdate()
-            {
-                 var sec = 1000;
-                 var minute = 60*sec;
-                 updateId = setInterval("feedStatusUpdate()", 15*sec);
-                 setTimeout("clearUpdate()", 20*minute + sec);
-            }
-            </script>
-        <?php
-        }
     }
 }
  ?>

@@ -600,8 +600,9 @@ class SocialComponent extends Component implements CrawlConstants
             switch($_REQUEST['arg'])
             {
                 case "addcomment":
-                    if(!isset($_REQUEST['parent_id']) || $_REQUEST['parent_id']
-                        ||!isset($_REQUEST['group_id'])||$_REQUEST['group_id']){
+                    if(!isset($_REQUEST['parent_id']) || !$_REQUEST['parent_id']
+                        ||!isset($_REQUEST['group_id'])||
+                        !$_REQUEST['group_id']){
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('social_component_comment_error').
                             "</h1>');";
@@ -649,7 +650,7 @@ class SocialComponent extends Component implements CrawlConstants
                         );
                     }
                     $title = "-- ".$parent_item['TITLE'];
-                    $group_model->addGroupItem($parent_item["ID"],
+                    $id = $group_model->addGroupItem($parent_item["ID"],
                         $group_id, $user_id, $title, $description);
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('social_component_comment_added'). "</h1>');";
@@ -804,8 +805,11 @@ class SocialComponent extends Component implements CrawlConstants
                         $page_info["GROUP_ID"];
                 }
             }
-            $pub_clause = array('pub_date', "=", "", "ASC");
-            $sort = "ksort";
+            if(!isset($_REQUEST['f']) ||
+                !in_array($_REQUEST['f'], array("rss", "json", "serial"))) {
+                $pub_clause = array('pub_date', "=", "", "ASC");
+                $sort = "ksort";
+            }
         }
         $search_array = array(
             array("parent_id", "=", $just_thread, ""),
