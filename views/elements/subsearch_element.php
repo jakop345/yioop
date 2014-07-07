@@ -87,12 +87,12 @@ class SubsearchElement extends Element
                         $query = "";
                         if(isset($data[CSRF_TOKEN]) && $logged_in) {
                             $query .= $delim.CSRF_TOKEN.
-                                "=".$data[CSRF_TOKEN].
-                                "&amp;c=search";
-                            if(isset($data['QUERY']) &&
-                                !isset($data['NO_QUERY'])) {
-                                $query .= "&amp;q={$data['QUERY']}";
-                            }
+                                "=".$data[CSRF_TOKEN];
+                        }
+                        if(isset($data['QUERY']) &&
+                            !isset($data['NO_QUERY'])) {
+                            $query .= "&amp;c=search".
+                                "&amp;q={$data['QUERY']}";
                         }
                         e("<li class='outer'><a href='$source$query'>".
                             "{$search['SUBSEARCH_NAME']}</a></li>");
