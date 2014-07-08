@@ -328,7 +328,7 @@ class PhraseModel extends ParallelModel
             $cache_results = false;
             if(USE_CACHE && $save_timestamp == "" &&
                 $use_cache_if_allowed) {
-                $cache_results = $CACHE->get($phrase);
+                $cache_results = $CACHE->get($phrase . $this->index_name);
                 if(QUERY_STATISTICS) {
                     $this->query_info['QUERY'] .=
                         "$in2<b>Parse done by Cache Lookup</b><br />";
@@ -353,7 +353,7 @@ class PhraseModel extends ParallelModel
                     }
                 }
                 if(USE_CACHE && $save_timestamp == "") {
-                    $CACHE->set($phrase, array($word_structs,
+                    $CACHE->set($phrase.$this->index_name, array($word_structs,
                         $format_words));
                 }
             }
