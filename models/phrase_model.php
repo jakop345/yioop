@@ -327,7 +327,7 @@ class PhraseModel extends ParallelModel
             }
             $cache_results = false;
             if(USE_CACHE && $save_timestamp == "" &&
-                $use_cache_if_allowed) {
+                $use_cache_if_allowed && !$network) {
                 $cache_results = $CACHE->get($phrase . $this->index_name);
                 if(QUERY_STATISTICS) {
                     $this->query_info['QUERY'] .=
