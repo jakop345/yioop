@@ -1059,7 +1059,7 @@ class PhraseModel extends ParallelModel
         }
         if(USE_CACHE && $save_timestamp_name == "") {
             $mem_tmp = serialize($raw).serialize($word_structs).
-                $original_query;
+                $original_query . $this->index_name;
             $summary_hash = crawlHash($mem_tmp.":".$limit.":".$num);
             if($use_cache_if_allowed) {
                 $cache_success = true;
