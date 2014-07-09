@@ -131,36 +131,40 @@ class CrawloptionsElement extends Element
         <textarea class="short-text-area" id="disallowed-sites"
             name="disallowed_sites" ><?php e($data['disallowed_sites']);
         ?></textarea>
-        <?php if(!isset($data['ts'])) { ?>
-        <div class="top-margin"><label for="seed-sites"><b><?php
-            e(tl('crawloptions_element_seed_sites'))?></b></label>
-            [<a href="?c=admin&amp;a=manageCrawls&amp;arg=options<?php
-                e('&amp;'.CSRF_TOKEN.'='.$data[CSRF_TOKEN]);
-                ?>&amp;suggest=add"><?php
-            e(tl('crawloptions_element_add_suggest_urls')); ?></a>]
-            [<a href="?c=admin&amp;a=manageCrawls&amp;arg=options<?php
-                e('&amp;'.CSRF_TOKEN.'='.$data[CSRF_TOKEN]);
-                ?>&amp;suggest=clear"><?php
-                e(tl('crawloptions_element_clear_suggest_urls'));
-                ?></a>]</div>
-        <textarea class="tall-text-area" id="seed-sites"
-            name="seed_sites" ><?php e($data['seed_sites']);
-        ?></textarea>
-        <?php } else { ?>
-        <div class="top-margin"><label for="inject-sites"><b><?php
-            e(tl('crawloptions_element_inject_sites'))?></b></label>
+        <?php
+        if(!isset($data['ts'])) {
+            ?>
+            <div class="top-margin"><label for="seed-sites"><b><?php
+                e(tl('crawloptions_element_seed_sites'))?></b></label>
+                [<a href="?c=admin&amp;a=manageCrawls&amp;arg=options<?php
+                    e('&amp;'.CSRF_TOKEN.'='.$data[CSRF_TOKEN]);
+                    ?>&amp;suggest=add"><?php
+                e(tl('crawloptions_element_add_suggest_urls')); ?></a>]
+            </div>
+            <textarea class="tall-text-area" id="seed-sites"
+                name="seed_sites" ><?php e($data['seed_sites']);
+            ?></textarea>
+        <?php
+        } else {
+            ?>
+            <div class="top-margin"><label for="inject-sites"><b><?php
+                e(tl('crawloptions_element_inject_sites'))?></b></label>
             [<a href="?c=admin&amp;a=manageCrawls&amp;arg=options<?php
                 e('&amp;'.CSRF_TOKEN.'='.$data[CSRF_TOKEN].'&amp;ts='.
                 $data['ts']); ?>&amp;suggest=add"><?php
             e(tl('crawloptions_element_add_suggest_urls')); ?></a>]
-            [<a href="?c=admin&amp;a=manageCrawls&amp;arg=options<?php
-                e('&amp;'.CSRF_TOKEN.'='.$data[CSRF_TOKEN]);
-                ?>&amp;suggest=clear"><?php
-                e(tl('crawloptions_element_clear_suggest_urls'));
-                ?></a>]</div></div>
-        <textarea class="short-text-area" id="inject-sites"
-            name="inject_sites" ></textarea>
-        <?php } ?>
+            </div></div>
+            <?php
+            if($data['INJECT_SITES'] != "") {
+                ?>
+                <input type="hidden" name="use_suggest" value="true" />
+                <?php
+            }
+            ?>
+            <textarea class="short-text-area" id="inject-sites"
+                name="inject_sites"><?php e($data['INJECT_SITES']);?></textarea>
+            <?php
+        } ?>
         </div>
         <div id='archivetab'>
         <?php if(!isset($data['ts'])) { ?>

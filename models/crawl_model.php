@@ -672,6 +672,7 @@ EOT;
             $updatable_site_info = array(
                 "allowed_sites" => array(self::ALLOWED_SITES,'url'),
                 "disallowed_sites" => array(self::DISALLOWED_SITES, 'url'),
+                "seed_sites" => array(self::TO_CRAWL, "url"),
                 "page_rules" => array(self::PAGE_RULES, 'rule'),
                 "indexed_file_types" => array(self::INDEXED_FILE_TYPES,
                     "extensions"),
@@ -922,7 +923,12 @@ EOT;
             $scheduler_info[self::HASH_SEEN_URLS] = array();
 
             foreach ($seed_info['seed_sites']['url'] as $site) {
-                $scheduler_info[self::TO_CRAWL][] = array($site, 1.0);
+                if($site[0] == "#") { continue; } //ignore comments in file
+                $site_parts = preg_split("/\s+|#/", $site);
+                if(strlen($site_parts[0]) > 0) {
+                    $scheduler_info[self::TO_CRAWL][] =
+                        array($site_parts[0], 1.0);
+                }
             }
             $scheduler_string = "\n".webencode(
                 gzcompress(serialize($scheduler_info)));

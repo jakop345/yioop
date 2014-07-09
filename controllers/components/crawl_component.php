@@ -337,6 +337,7 @@ class CrawlComponent extends Component implements CrawlConstants
             tl('crawl_component_use_below'),
             tl('crawl_component_use_defaults'));
         $data['available_crawl_indexes'] = array();
+        $data['INJECT_SITES'] = "";
         $data['options_default'] = tl('crawl_component_use_below');
         foreach($crawls as $crawl) {
             if(strlen($crawl['DESCRIPTION']) > 0 ) {
@@ -362,7 +363,7 @@ class CrawlComponent extends Component implements CrawlConstants
             }
             if(isset(
                 $seed_current['general']['page_recrawl_frequency'])
-                ){
+                ) {
                 $seed_info['general']['page_recrawl_frequency'] =
                 $seed_current['general']['page_recrawl_frequency'];
             }
@@ -379,6 +380,22 @@ class CrawlComponent extends Component implements CrawlConstants
                 $parent->clean($_REQUEST['load_option'], "int");
             $seed_info = $crawl_model->getCrawlSeedInfo(
                 $timestamp, $machine_urls);
+            if(isset(
+                $seed_current['general']['page_range_request'])) {
+                $seed_info['general']['page_range_request'] =
+                    $seed_current['general']['page_range_request'];
+            }
+            if(isset(
+                $seed_current['general']['page_recrawl_frequency'])
+                ) {
+                $seed_info['general']['page_recrawl_frequency'] =
+                $seed_current['general']['page_recrawl_frequency'];
+            }
+            if(isset(
+                $seed_current['general']['max_description_len'])) {
+                $seed_info['general']['max_description_len'] =
+                    $seed_current['general']['max_description_len'];
+            }
             $update_flag = true;
             $no_further_changes = true;
         } else if(isset($_REQUEST['ts'])) {
@@ -392,27 +409,33 @@ class CrawlComponent extends Component implements CrawlConstants
         }
         if(isset($_REQUEST['suggest']) && $_REQUEST['suggest']=='add') {
             $suggest_urls = $crawl_model->getSuggestSites();
-            $seed_info['seed_sites']['url'] =
-            $tmp_urls = array_merge(
-                $seed_info['seed_sites']['url'], $suggest_urls);
-            $urls = array();
-            foreach($tmp_urls as $url) {
-                $trim_url = trim($url);
-                if(strlen($trim_url) > 0) {
-                    $urls[$trim_url] = "";
+            if(isset($_REQUEST['ts'])) {
+                $new_urls = array();
+            } else {
+                $seed_info['seed_sites']['url'][] = "#\n#".
+                    tl('crawl_component_added_urls', date('r'))."\n#";
+                $crawl_model->clearSuggestSites();
+            }
+            foreach($suggest_urls as $suggest_url) {
+                $suggest_url = trim($suggest_url);
+                if(!in_array($suggest_url, $seed_info['seed_sites']['url'])
+                    && strlen($suggest_url) > 0) {
+                    if(isset($_REQUEST['ts'])) {
+                        $new_urls[] = $suggest_url;
+                    } else {
+                        $seed_info['seed_sites']['url'][] = $suggest_url;
+                    }
                 }
             }
-            $seed_info['seed_sites']['url'] = array_keys($urls);
-            if(!isset($_REQUEST['ts'])) {
-                $crawl_model->setSeedInfo($seed_info);
-            }
             $add_message= tl('crawl_component_add_suggest');
+            if(isset($_REQUEST['ts'])) {
+                $data["INJECT_SITES"] = $parent->convertArrayLines($new_urls);
+                if($data["INJECT_SITES"] == "") {
+                    $add_message= tl('crawl_component_no_new_suggests');
+                }
+            }
             $update_flag = true;
-        }
-        if(isset($_REQUEST['suggest']) && $_REQUEST['suggest']=='clear') {
-            $crawl_model->clearSuggestSites();
-            $add_message= tl('crawl_component_clear_suggest');
-            $update_flag = true;
+            $no_further_changes = true;
         }
         $page_options_properties = array('indexed_file_types',
             'active_classifiers', 'page_rules', 'indexing_plugins');
@@ -506,23 +529,35 @@ class CrawlComponent extends Component implements CrawlConstants
             $data['SCRIPT'] .=
                 "switchTab('archivetab', 'webcrawltab');";
         }
+        $inject_urls = array();
         if(isset($_REQUEST['ts']) &&
-            isset($_REQUEST['inject_sites'])) {
+            isset($_REQUEST['inject_sites']) && $_REQUEST['inject_sites']) {
                 $timestamp = $parent->clean($_REQUEST['ts'],
                     "string");
                 $inject_urls =
                     $parent->convertStringCleanArray(
                     $_REQUEST['inject_sites']);
-                if($crawl_model->injectUrlsCurrentCrawl(
-                    $timestamp, $inject_urls, $machine_urls)) {
-                    $add_message = "<br />".
-                        tl('crawl_component_urls_injected');
-                }
         }
         if($update_flag) {
             if(isset($_REQUEST['ts'])) {
+                if($inject_urls != array()) {
+                    $seed_info['seed_sites']['url'][] = "#\n#".
+                        tl('crawl_component_added_urls', date('r'))."\n#";
+                    $seed_info['seed_sites']['url'] = array_merge(
+                        $seed_info['seed_sites']['url'], $inject_urls);
+                }
                 $crawl_model->setCrawlSeedInfo($timestamp,
                     $seed_info, $machine_urls);
+                if($inject_urls != array() &&
+                    $crawl_model->injectUrlsCurrentCrawl(
+                    $timestamp, $inject_urls, $machine_urls)) {
+                    $add_message = "<br />".
+                        tl('crawl_component_urls_injected');
+                    if(isset($_REQUEST['use_suggest']) &&
+                        $_REQUEST['use_suggest']) {
+                        $crawl_model->clearSuggestSites();
+                    }
+                }
             } else {
                 $crawl_model->setSeedInfo($seed_info);
             }

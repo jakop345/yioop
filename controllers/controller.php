@@ -601,7 +601,7 @@ abstract class Controller
     /**
      * Cleans a string consisting of lines, typically of urls into an array of
      * clean lines. This is used in handling data from the crawl options
-     * text areas.
+     * text areas. # is treated as a comment
      *
      * @param string $str contains the url data
      * @param string $line_type does additional cleaning depending on the type
@@ -611,11 +611,7 @@ abstract class Controller
      */
     function convertStringCleanArray($str, $line_type="url")
     {
-        if($line_type == "url") {
-            $pre_lines = preg_split("/(\s)+/", $str);
-        } else {
-            $pre_lines = preg_split('/\n+/', $str);
-        }
+        $pre_lines = preg_split('/\n+/', $str);
         $lines = array();
         foreach($pre_lines as $line) {
             $pre_line = trim($this->clean($line, "string"));
@@ -623,7 +619,8 @@ abstract class Controller
                 if($line_type == "url") {
                     $start_line = substr($pre_line, 0, 6);
                     if(!in_array($start_line,
-                        array("file:/", "http:/", "domain", "https:"))) {
+                        array("file:/", "http:/", "domain", "https:")) &&
+                        $start_line[0] != "#") {
                         $pre_line = "http://". $pre_line;
                     }
                 }
