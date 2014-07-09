@@ -76,7 +76,7 @@ class SubsearchElement extends Element
                     $source = "?s={$search["FOLDER_NAME"]}";
                     $delim = "&amp;";
                     if($search["FOLDER_NAME"] == "") {
-                        $source = "";
+                        $source = "./";
                         $delim = "?";
                     }
                     if($search['FOLDER_NAME'] == $data['SUBSEARCH']) {

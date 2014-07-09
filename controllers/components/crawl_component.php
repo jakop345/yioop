@@ -86,7 +86,6 @@ class CrawlComponent extends Component implements CrawlConstants
                 case "start":
                     $this->startCrawl($data, $machine_urls);
                 break;
-
                 case "stop":
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('crawl_component_stop_crawl')."</h1>')";
@@ -103,7 +102,6 @@ class CrawlComponent extends Component implements CrawlConstants
 
                     $crawl_model->sendStopCrawlMessage($machine_urls);
                 break;
-
                 case "resume":
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('crawl_component_resume_crawl')."</h1>')";
@@ -132,7 +130,6 @@ class CrawlComponent extends Component implements CrawlConstants
                     $crawl_model->sendStartCrawlMessage($crawl_params,
                         NULL, $machine_urls);
                 break;
-
                 case "delete":
                     if(isset($_REQUEST['timestamp'])) {
                          $timestamp =
@@ -150,7 +147,6 @@ class CrawlComponent extends Component implements CrawlConstants
                             "</h1>')";
                      }
                 break;
-
                 case "index":
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('crawl_component_set_index')."</h1>')";
@@ -158,7 +154,6 @@ class CrawlComponent extends Component implements CrawlConstants
                     $timestamp = $parent->clean($_REQUEST['timestamp'], "int");
                     $crawl_model->setCurrentIndexDatabaseName($timestamp);
                 break;
-
                 case "options":
                     $this->editCrawlOption($data, $machine_urls);
                 break;
