@@ -924,7 +924,7 @@ EOT;
 
             foreach ($seed_info['seed_sites']['url'] as $site) {
                 if($site[0] == "#") { continue; } //ignore comments in file
-                $site_parts = preg_split("/\s+|#/", $site);
+                $site_parts = preg_split("/\s+/", $site);
                 if(strlen($site_parts[0]) > 0) {
                     $scheduler_info[self::TO_CRAWL][] =
                         array($site_parts[0], 1.0);
