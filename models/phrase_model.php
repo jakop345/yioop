@@ -1387,7 +1387,11 @@ class PhraseModel extends ParallelModel
             }
             $index++;
         }
-        $summaries = $this->getCrawlItems($lookups, $queue_servers);
+        if(!in_array(NAME_SERVER, $queue_servers)) {
+            $lookup_queue_servers[] = NAME_SERVER;
+                //name server might still have news
+        }
+        $summaries = $this->getCrawlItems($lookups, $lookup_queue_servers);
         $lookups = array();
         foreach($summaries as $hash_url => $summary) {
             $lookup_url = false;
@@ -1412,7 +1416,7 @@ class PhraseModel extends ParallelModel
                 unset($summaries[$hash_url]);
             }
         }
-        $loc_summaries = $this->getCrawlItems($lookups, $queue_servers);
+        $loc_summaries = $this->getCrawlItems($lookups, $lookup_queue_servers);
         if(is_array($loc_summaries)) {
             $summaries = array_merge($summaries, $loc_summaries);
         }
@@ -1496,6 +1500,10 @@ class PhraseModel extends ParallelModel
             !$this->isSingleLocalhost($queue_servers)) {
             $network_flag = true;
             $total_iterators = 1;
+            if(!in_array(NAME_SERVER, $queue_servers)) {
+                $queue_servers[] = NAME_SERVER;
+                    //name server might still have news
+            }
             $num_servers = count($queue_servers);
             if( (!isset($this->index_name) || !$this->index_name) &&
                 isset($word_structs[0]["INDEX_NAME"]) ) {
