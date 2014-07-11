@@ -340,7 +340,8 @@ class SourceModel extends Model
         $time = time();
         $feeds_one_go = self::MAX_FEEDS_ONE_GO;
         $feeds = array();
-        $sql = "SELECT COUNT(*) AS CNT FROM MEDIA_SOURCE WHERE TYPE='rss'";
+        $sql = "SELECT COUNT(*) AS CNT FROM MEDIA_SOURCE WHERE
+            TYPE='rss' OR TYPE='html'";
         $result = $db->execute($sql);
         $row = $db->fetchArray($result);
         $num_feeds = (isset($row['CNT'])) ? $row['CNT'] : 0;
@@ -349,10 +350,16 @@ class SourceModel extends Model
         $current_bin = $hour % $num_bins;
         $limit = $current_bin * $feeds_one_go;
         $limit = $db->limitOffset($limit, $feeds_one_go);
-        $sql = "SELECT * FROM MEDIA_SOURCE WHERE TYPE='rss' $limit";
+        $sql = "SELECT * FROM MEDIA_SOURCE WHERE (TYPE='rss'
+             OR TYPE='html') $limit";
         $result = $db->execute($sql);
         $i = 0;
         while($feeds[$i] = $this->db->fetchArray($result)) {
+            if($feeds[$i]['TYPE'] == 'html') {
+                list($feeds[$i]['ITEM_PATH'], $feeds[$i]['TITLE_PATH'],
+                    $feeds[$i]['DESCRIPTION_PATH'], $feeds[$i]['LINK_PATH']) =
+                    explode("###", html_entity_decode($feeds[$i]['AUX_INFO']));
+            }
             $i++;
         }
         unset($feeds[$i]); //last one will be null
@@ -361,30 +368,45 @@ class SourceModel extends Model
         $feed_items = array();
         $sql = "UPDATE MEDIA_SOURCE SET LANGUAGE=? WHERE TIMESTAMP=?";
         foreach($feeds as $feed) {
+            $is_html = ($feed['TYPE'] == 'html') ? true : false;
             $dom = new DOMDocument();
-            @$dom->loadXML($feed[CrawlConstants::PAGE]);
+            if($is_html) {
+                @$dom->loadHTML($feed[CrawlConstants::PAGE]);
+            } else {
+                @$dom->loadXML($feed[CrawlConstants::PAGE]);
+            }
             $lang = "";
-            if(!isset($feed["LANGUAGE"]) || $feed["LANGUAGE"] == "") {
+            if($feed['TYPE'] != 'html' &&
+                !isset($feed["LANGUAGE"]) || $feed["LANGUAGE"] == "") {
                 $languages = $dom->getElementsByTagName('language');
                 if($languages && is_object($languages) &&
                     is_object($languages->item(0))) {
                     $lang = $languages->item(0)->textContent;
-                    $this->db->execute($sql, array($lang, $feed['TIMESTAMP']));
+                    $db->execute($sql, array($lang, $feed['TIMESTAMP']));
                 }
             } else if(isset($feed["LANGUAGE"]) && $feed["LANGUAGE"] != "") {
                 $lang = $feed["LANGUAGE"];
+            } else {
+                $lang = DEFAULT_LOCALE;
             }
-
-            $nodes = $dom->getElementsByTagName('item');
-            $rss_elements = array("title" => "title",
-                "description" => "description", "link" =>"link",
-                "guid" => "guid", "pubDate" => "pubDate");
-            if($nodes->length == 0) {
-                // maybe we're dealing with atom rather than rss
-                $nodes = $dom->getElementsByTagName('entry');
-                $rss_elements = array(
-                    "title" => "title", "description" => "summary",
-                    "link" => "link", "guid" => "id", "pubDate" => "updated");
+            if($is_html) {
+                $nodes = $this->getTags($dom, $feed['ITEM_PATH']);
+                $rss_elements = array("title" => $feed['TITLE_PATH'],
+                    "description" => $feed['DESCRIPTION_PATH'],
+                    "link" => $feed['LINK_PATH']);
+            } else {
+                $nodes = $dom->getElementsByTagName('item');
+                $rss_elements = array("title" => "title",
+                    "description" => "description", "link" =>"link",
+                    "guid" => "guid", "pubDate" => "pubDate");
+                if($nodes->length == 0) {
+                    // maybe we're dealing with atom rather than rss
+                    $nodes = $dom->getElementsByTagName('entry');
+                    $rss_elements = array(
+                        "title" => "title", "description" => "summary",
+                        "link" => "link", "guid" => "id",
+                        "pubDate" => "updated");
+                }
             }
             crawlLog("Updating {$feed['NAME']}...");
             $num_added = 0;
@@ -393,12 +415,31 @@ class SourceModel extends Model
                 $item = array();
                 foreach($rss_elements as $db_element => $feed_element) {
                     crawlTimeoutLog("..still adding feed items to index.");
-                    $tag_node = $node->getElementsByTagName(
-                            $feed_element)->item(0);
-                    $element_text = (is_object($tag_node)) ?
-                        $tag_node->nodeValue: "";
-                    if($feed_element == "link" && $element_text == "") {
-                        $element_text = $tag_node->getAttribute("href");
+                    if($is_html) {
+                        $tag_nodes = $this->getTags($node, $feed_element);
+                        if(!isset($tag_nodes[0])) {
+                            $tag_node = NULL;
+                        } else {
+                            $tag_node = $tag_nodes[0];
+                        }
+                        $element_text = (is_object($tag_node)) ?
+                            $tag_node->textContent: "";
+                    } else {
+                        $tag_node = $node->getElementsByTagName(
+                                $feed_element)->item(0);
+                        $element_text = (is_object($tag_node)) ?
+                            $tag_node->nodeValue: "";
+                    }
+                    if($db_element == "link" && $tag_node &&
+                        ($element_text == "" || $is_html)) {
+                        if($is_html) {
+                            $element_text =
+                               $tag_node->documentElement->getAttribute("href");
+                        } else {
+                            $element_text = $tag_node->getAttribute("href");
+                        }
+                        $element_text = UrlParser::canonicalLink($element_text,
+                            $feed["SOURCE_URL"]);
                     }
                     $item[$db_element] = strip_tags($element_text);
                 }
@@ -415,6 +456,27 @@ class SourceModel extends Model
         return true;
     }
     /**
+     *
+     * @param DOMDocument $dom
+     * @param string $query
+     */
+    function getTags($dom, $query)
+    {
+        $dom_xpath = new DOMXPath($dom);
+        $tags = $dom_xpath->query($query);
+        $i = 0;
+        $nodes = array();
+        while($item = $tags->item($i)) {
+            $tmp_dom = new DOMDocument;
+            $tmp_dom->formatOutput = true;
+            $node = $tmp_dom->importNode($item, true);
+            $tmp_dom->appendChild($node);
+            $nodes[] = $tmp_dom;
+            $i++;
+        }
+        return $nodes;
+    }
+    /**
      * Copies all feeds items newer than $age to a new shard, then deletes
      * old index shard and database entries older than $age. Finally sets copied
      * shard to be active. If this method is going to take max_execution_time/2
@@ -429,13 +491,13 @@ class SourceModel extends Model
         $time = time();
         $feed_shard_name = WORK_DIRECTORY."/feeds/index";
         $prune_shard_name = WORK_DIRECTORY."/feeds/prune_index";
-        @unlink($prune_shard_name);
         $prune_shard =  new IndexShard($prune_shard_name);
         $too_old = $time - $age;
         if(!$prune_shard) {
             return false;
         }
         $pre_feeds = $this->getMediaSources("rss");
+        $pre_feeds = array_merge($pre_feeds, $this->getMediaSources("html"));
         if(!$pre_feeds) { return false; }
         $feeds = array();
         foreach($pre_feeds as $pre_feed) {
@@ -472,7 +534,6 @@ class SourceModel extends Model
                     UrlParser::getHost($item["LINK"])."/",true), 1);
                 $meta_ids = $this->calculateMetas($lang, $item['PUBDATE'],
                     $source_name, $item["GUID"]);
-
                 $prune_shard->addDocumentWords($doc_keys, $item['PUBDATE'],
                     $word_lists, $meta_ids, PhraseParser::$materialized_metas,
                     true, false);
@@ -499,7 +560,7 @@ class SourceModel extends Model
     function addFeedItemIfNew($item, $source_name, $lang, $age)
     {
         if(!isset($item["link"]) || !isset($item["title"]) ||
-            !isset($item["description"])) return false;
+            !isset($item["description"])) { return false; }
         if(!isset($item["guid"]) || $item["guid"] == "") {
             $item["guid"] = crawlHash($item["link"]);
         } else {

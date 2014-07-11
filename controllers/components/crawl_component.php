@@ -1384,7 +1384,8 @@ class CrawlComponent extends Component implements CrawlConstants
         $data['SCRIPT'] = "";
         $data['SOURCE_TYPES'] = array(-1 => tl('crawl_component_media_kind'),
             "video" => tl('crawl_component_video'),
-            "rss" => tl('crawl_component_rss_feed'));
+            "rss" => tl('crawl_component_rss_feed'),
+            "html" => tl('crawl_component_html_feed'));
         $source_type_flag = false;
         if(isset($_REQUEST['type']) &&
             in_array($_REQUEST['type'],
@@ -1437,7 +1438,9 @@ class CrawlComponent extends Component implements CrawlConstants
         }
         $data["CURRENT_SOURCE"] = array(
             "name" => "", "type"=> $data['SOURCE_TYPE'], "source_url" => "",
-            "aux_info" => "", "language" => $data['SOURCE_LOCALE_TAG']);
+            "aux_info" => "", 'item_path' => "", 'title_path' => "",
+            'description_path' => "", 'link_path' => "",
+            "language" => $data['SOURCE_LOCALE_TAG']);
         $data["CURRENT_SUBSEARCH"] = array(
             "locale_string" => "", "folder_name" =>"",
             "index_identifier" => "",
@@ -1457,6 +1460,13 @@ class CrawlComponent extends Component implements CrawlConstants
                     }
                     $must_have = array("name", "type",
                         'source_url');
+                    $is_html_feed = false;
+                    if(isset($_REQUEST['type']) && $_REQUEST['type'] == 'html'){
+                        $is_html_feed = true;
+                        $must_have = array_merge($must_have, array(
+                            'item_path', 'title_path', 'description_path',
+                            'link_path'));
+                    }
                     $to_clean = array_merge($must_have,
                         array('aux_info','language'));
                     foreach ($to_clean as $clean_me) {
@@ -1469,6 +1479,10 @@ class CrawlComponent extends Component implements CrawlConstants
                                 "</h1>');";
                             break 2;
                         }
+                    }
+                    if($is_html_feed) {
+                        $r['aux_info'] = $r['item_path']."###".$r['title_path'].
+                            "###".$r['description_path']."###".$r['link_path'];
                     }
                     $source_model->addMediaSource(
                         $r['name'], $r['type'], $r['source_url'],
@@ -1573,6 +1587,13 @@ class CrawlComponent extends Component implements CrawlConstants
                     }
                     $data['ts'] = $timestamp;
                     $update = false;
+                    $is_html_feed = false;
+                    if($source['TYPE'] == 'html') {
+                        $is_html_feed = true;
+                        list($source['ITEM_PATH'], $source['TITLE_PATH'],
+                            $source['DESCRIPTION_PATH'], $source['LINK_PATH']) =
+                                explode("###", $source['AUX_INFO']);
+                    }
                     foreach($data['CURRENT_SOURCE'] as $field => $value) {
                         $upper_field = strtoupper($field);
                         if(isset($_REQUEST[$field]) && $field != 'name') {
@@ -1587,6 +1608,16 @@ class CrawlComponent extends Component implements CrawlConstants
                         }
                     }
                     if($update) {
+                        if($is_html_feed) {
+                            $source['AUX_INFO'] = $source['ITEM_PATH']."###".
+                            $source['TITLE_PATH'] . "###" .
+                            $source['DESCRIPTION_PATH'] . "###".
+                            $source['LINK_PATH'];
+                            unset($source['ITEM_PATH']);
+                            unset($source['TITLE_PATH']);
+                            unset($source['DESCRIPTION_PATH']);
+                            unset($source['LINK_PATH']);
+                        }
                         $source_model->updateMediaSource($source);
                         $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
                             tl('crawl_component_media_source_updated').

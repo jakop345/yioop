@@ -103,6 +103,26 @@ class SearchsourcesElement extends Element
             <input type="text" id="source-thumbnail" name="aux_info"
                 value="<?php e($data['CURRENT_SOURCE']['aux_info']); ?>"
                 maxlength="80" class="wide-field" /></td></tr>
+        <tr><td><label for="item-path"><b id="item-text"><?php
+            e(tl('searchsources_element_itempath'))?></b></label></td><td>
+            <input type="text" id="item-path" name="item_path"
+                value="<?php e($data['CURRENT_SOURCE']['item_path']); ?>"
+                maxlength="80" class="wide-field" /></td></tr>
+        <tr><td><label for="title-path"><b id="title-text"><?php
+            e(tl('searchsources_element_titlepath'))?></b></label></td><td>
+            <input type="text" id="title-path" name="title_path"
+                value="<?php e($data['CURRENT_SOURCE']['title_path']); ?>"
+                maxlength="80" class="wide-field" /></td></tr>
+        <tr><td><label for="description-path"><b id="description-text"><?php
+            e(tl('searchsources_element_descpath'))?></b></label></td><td>
+            <input type="text" id="description-path" name="description_path"
+                value="<?php e($data['CURRENT_SOURCE']['description_path']); ?>"
+                maxlength="80" class="wide-field" /></td></tr>
+        <tr><td><label for="date-path"><b id="link-text"><?php
+            e(tl('searchsources_element_linkpath'))?></b></label></td><td>
+            <input type="text" id="link-path" name="link_path"
+                value="<?php e($data['CURRENT_SOURCE']['link_path']); ?>"
+                maxlength="80" class="wide-field" /></td></tr>
         <tr><td><label for="source-locale-tag"><b id="locale-text"><?php
             e(tl('searchsources_element_locale_tag'))?></b></label></td><td>
             <?php $this->view->helper("options")->render("source-locale-tag",
@@ -288,15 +308,45 @@ class SearchsourcesElement extends Element
         <script type= "text/javascript">
         function switchSourceType()
         {
-            stype = elt("source-type");
-            if(stype.options[stype.selectedIndex].value == "video") {
+            var stype = elt("source-type");
+            stype = stype.options[stype.selectedIndex].value;
+            if(stype == "video") {
                 setDisplay("thumb-text", true);
                 setDisplay("source-thumbnail", true);
+                setDisplay("item-text", false);
+                setDisplay("item-path", false);
+                setDisplay("title-text", false);
+                setDisplay("title-path", false);
+                setDisplay("description-text", false);
+                setDisplay("description-path", false);
+                setDisplay("link-text", false);
+                setDisplay("link-path", false);
                 setDisplay("locale-text", false);
                 setDisplay("source-locale-tag", false);
+            } else if(stype == "html") {
+                setDisplay("thumb-text", false);
+                setDisplay("source-thumbnail", false);
+                setDisplay("item-text", true);
+                setDisplay("item-path", true);
+                setDisplay("title-text", true);
+                setDisplay("title-path", true);
+                setDisplay("description-text", true);
+                setDisplay("description-path", true);
+                setDisplay("link-text", true);
+                setDisplay("link-path", true);
+                setDisplay("locale-text", true);
+                setDisplay("source-locale-tag", true);
             } else {
                 setDisplay("thumb-text", false);
                 setDisplay("source-thumbnail", false);
+                setDisplay("item-text", false);
+                setDisplay("item-path", false);
+                setDisplay("title-text", false);
+                setDisplay("title-path", false);
+                setDisplay("description-text", false);
+                setDisplay("description-path", false);
+                setDisplay("link-text", false);
+                setDisplay("link-path", false);
                 setDisplay("locale-text", true);
                 setDisplay("source-locale-tag", true);
             }
