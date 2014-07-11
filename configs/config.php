@@ -37,7 +37,7 @@ if(!defined('BASE_DIR') ||
 /** Version number for upgrade function
  * @var int
  */
-define('YIOOP_VERSION', 20);
+define('YIOOP_VERSION', 21);
 /*
     pcre is an external library to php which can cause Yioop
     to seg fault if given instances of reg expressions with

@@ -343,5 +343,32 @@ abstract class DatasourceManager
         }
         return $bounds;
     }
+    /**
+     * Copies the contents of from_table in the first database into the 
+     * to a to_table of suitable schema in a second database. It assumes the 
+     * table exists in both databases
+     *
+     * @param string $from_table name of the table to be copied from
+     * @param resource $from_dbm database resource for the from table
+     * @param resource $to_table name of the table to be copied to
+     * @param resource $to_dbm database resource for the to table
+     */
+    static function copyTable($from_table, $from_dbm, $to_table, $to_dbm)
+    {
+        $sql = "SELECT * FROM $from_table";
+        if(($result = $from_dbm->execute($sql)) === false) {return false;}
+        while($row = $from_dbm->fetchArray($result))
+        {
+            $statement = "INSERT INTO $to_table VALUES (";
+            $comma ="";
+            foreach($row as $col=> $value) {
+                $statement .= $comma." '".$to_dbm->escapeString($value)."'";
+                $comma = ",";
+            }
+            $statement .= ")";
+            if(($to_dbm->execute($statement)) === false) {return false;}
+        }
+        return true;
+    }
 }
 ?>

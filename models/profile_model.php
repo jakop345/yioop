@@ -144,6 +144,8 @@ class ProfileModel extends Model
                 TITLE VARCHAR(512), PAGE VARCHAR(".MAX_GROUP_PAGE_LEN."),
                 EDIT_COMMENT VARCHAR(80), LOCALE_TAG VARCHAR(16),
                 PUBDATE NUMERIC(11), PRIMARY KEY(PAGE_ID, PUBDATE))",
+            "GROUP_THREAD_VIEWS" => "CREATE TABLE GROUP_THREAD_VIEWS(
+                THREAD_ID INTEGER PRIMARY KEY, NUM_VIEWS INTEGER)",
             "GROUPS" => "CREATE TABLE GROUPS (
                 GROUP_ID $serial PRIMARY KEY $auto_increment,
                 GROUP_NAME VARCHAR(128), CREATED_TIME VARCHAR(20),
@@ -168,7 +170,7 @@ class ProfileModel extends Model
             "MEDIA_SOURCE" => "CREATE TABLE MEDIA_SOURCE (
                 TIMESTAMP NUMERIC(11) PRIMARY KEY,
                 NAME VARCHAR(64) UNIQUE, TYPE VARCHAR(16),
-                SOURCE_URL VARCHAR(256), THUMB_URL VARCHAR(256),
+                SOURCE_URL VARCHAR(256), AUX_INFO VARCHAR(512),
                 LANGUAGE VARCHAR(7))",
             "MS_TYPE_INDEX" => "CREATE INDEX MS_TYPE_INDEX ON
                 MEDIA_SOURCE(TYPE)",
@@ -405,8 +407,8 @@ EOT;
                 stristr($table_or_index, "_INDEX")) {
                 continue;
             }
-            if(!$this->copyTable($table_or_index, $default_dbm, $test_dbm))
-                {return false;}
+            if(!DatasourceManager::copyTable($table_or_index, $default_dbm,
+                $table_or_index, $test_dbm)) {return false;}
         }
         if(stristr($dbinfo["DB_HOST"], "pgsql") !== false) {
             /* For postgres count initial values of SERIAL sequences 
@@ -522,31 +524,6 @@ EOT;
             return true;
         }
         return $test_dbm;
-    }
-    /**
-     * Copies the contents of table in the first database into the same named
-     * table in a second database. It assumes the table exists in both databases
-     *
-     * @param string $table name of the table to be copied
-     * @param resource $from_dbm database resource for the from table
-     * @param resource $to_dbm database resource for the to table
-     */
-    function copyTable($table, $from_dbm, $to_dbm)
-    {
-        $sql = "SELECT * FROM $table";
-        if(($result = $from_dbm->execute($sql)) === false) {return false;}
-        while($row = $from_dbm->fetchArray($result))
-        {
-            $statement = "INSERT INTO $table VALUES (";
-            $comma ="";
-            foreach($row as $col=> $value) {
-                $statement .= $comma." '".$to_dbm->escapeString($value)."'";
-                $comma = ",";
-            }
-            $statement .= ")";
-            if(($to_dbm->execute($statement)) === false) {return false;}
-        }
-        return true;
     }
     /**
      * Modifies the config.php file so the WORK_DIRECTORY define points at

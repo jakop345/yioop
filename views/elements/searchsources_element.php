@@ -100,8 +100,8 @@ class SearchsourcesElement extends Element
                 maxlength="80" class="wide-field" /></td></tr>
         <tr><td><label for="source-thumbnail"><b id="thumb-text"><?php
             e(tl('searchsources_element_thumbnail'))?></b></label></td><td>
-            <input type="text" id="source-thumbnail" name="thumb_url"
-                value="<?php e($data['CURRENT_SOURCE']['thumb_url']); ?>"
+            <input type="text" id="source-thumbnail" name="aux_info"
+                value="<?php e($data['CURRENT_SOURCE']['aux_info']); ?>"
                 maxlength="80" class="wide-field" /></td></tr>
         <tr><td><label for="source-locale-tag"><b id="locale-text"><?php
             e(tl('searchsources_element_locale_tag'))?></b></label></td><td>
@@ -155,7 +155,7 @@ class SearchsourcesElement extends Element
             if(!MOBILE) {
                 ?>
                 <td><?php e($source['SOURCE_URL']."<br />".
-                    $source['THUMB_URL']); ?></td>
+                    $source['AUX_INFO']); ?></td>
                 <?php
             }
             ?>

@@ -1437,7 +1437,7 @@ class CrawlComponent extends Component implements CrawlConstants
         }
         $data["CURRENT_SOURCE"] = array(
             "name" => "", "type"=> $data['SOURCE_TYPE'], "source_url" => "",
-            "thumb_url" => "", "language" => $data['SOURCE_LOCALE_TAG']);
+            "aux_info" => "", "language" => $data['SOURCE_LOCALE_TAG']);
         $data["CURRENT_SUBSEARCH"] = array(
             "locale_string" => "", "folder_name" =>"",
             "index_identifier" => "",
@@ -1458,7 +1458,7 @@ class CrawlComponent extends Component implements CrawlConstants
                     $must_have = array("name", "type",
                         'source_url');
                     $to_clean = array_merge($must_have,
-                        array('thumb_url','language'));
+                        array('aux_info','language'));
                     foreach ($to_clean as $clean_me) {
                         $r[$clean_me] = (isset($_REQUEST[$clean_me])) ?
                             $parent->clean($_REQUEST[$clean_me], "string" ):"";
@@ -1472,7 +1472,7 @@ class CrawlComponent extends Component implements CrawlConstants
                     }
                     $source_model->addMediaSource(
                         $r['name'], $r['type'], $r['source_url'],
-                        $r['thumb_url'], $r['language']);
+                        $r['aux_info'], $r['language']);
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('crawl_component_media_source_added').
                         "</h1>');";

@@ -775,6 +775,27 @@ function upgradeDatabaseVersion20(&$db)
 }
 
 /**
+ * Upgrades a Version 18 version of the Yioop! database to a Version 19 version
+ * This update has been superseded by the Version20 update and so its contents
+ * have been eliminated except for the change to the version table.
+ * @param object $db datasource to use to upgrade
+ */
+function upgradeDatabaseVersion21(&$db)
+{
+    $db->execute("DELETE FROM VERSION WHERE ID < 20");
+    $db->execute("UPDATE VERSION SET ID=21 WHERE ID=20");
+    $db->execute("CREATE TABLE GROUP_THREAD_VIEWS(
+                THREAD_ID INTEGER PRIMARY KEY, NUM_VIEWS INTEGER)");
+    $db->execute("ALTER TABLE MEDIA_SOURCE RENAME TO MEDIA_SOURCE_OLD");
+    $db->execute("CREATE TABLE MEDIA_SOURCE (TIMESTAMP NUMERIC(11) PRIMARY KEY,
+        NAME VARCHAR(64) UNIQUE, TYPE VARCHAR(16), SOURCE_URL VARCHAR(256),
+        AUX_INFO VARCHAR(512), LANGUAGE VARCHAR(7))");
+    DatasourceManager::copyTable("MEDIA_SOURCE_OLD", $db,
+                "MEDIA_SOURCE", $db);
+    $db->execute("DROP TABLE MEDIA_SOURCE_OLD");
+}
+
+/**
  * Used to insert a new activity into the database at a given acitivity_id
  *
  * Inserting at an ID rather than at the end is useful since activities are

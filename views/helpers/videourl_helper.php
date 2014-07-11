@@ -80,7 +80,7 @@ class VideourlHelper extends Helper
                 }
             }
             if($found_id) {
-                $thumb_expression = $source['THUMB_URL'];
+                $thumb_expression = $source['AUX_INFO'];
                 $thumb_parts = explode("{}", $thumb_expression);
                 $thumb_url = $thumb_parts[0] . $id;
                 if(isset($thumb_parts[1])) {

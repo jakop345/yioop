@@ -109,7 +109,7 @@ class SourceModel extends Model
      * Return the media source by the name of the source
      * @param string $timestamp of the media source to look up
      * @return array associative array with SOURCE_NAME, TYPE, SOURCE_URL,
-     *     THUMB_URL, and LANGUAGE
+     *     AUX_INFO, and LANGUAGE
      */
     function getMediaSource($timestamp)
     {
@@ -123,7 +123,7 @@ class SourceModel extends Model
         return $row;
     }
     /**
-     * Used to add a new video, rss, or other sources to Yioop
+     * Used to add a new video, rss, html news, or other sources to Yioop
      *
      * @param string $name
      * @param string $source_type whether video, rss, etc
@@ -133,19 +133,20 @@ class SourceModel extends Model
      *     should go http://www.youtube.com/watch?v={}&
      *     (anything after & is ignored, so between = and & will be matched
      *     as the name of a video)
-     * @param string $thumb_url regex of where to get thumbnails for videos
-     *     based on match of $source_url, for example,
-     *     http://img.youtube.com/vi/{}/2.jpg
+     * @param string $aux_info regex of where to get thumbnails for videos
+     *      based on match of $source_url, for example,
+     *      http://img.youtube.com/vi/{}/2.jpg
+     *      For html news feeds has xpaths to scrape news items from regex
      * @param string $language the locale tag for the media source (rss)
      */
-    function addMediaSource($name, $source_type, $source_url, $thumb_url,
+    function addMediaSource($name, $source_type, $source_url, $aux_info,
         $language = DEFAULT_LOCALE)
     {
         $db = $this->db;
         $sql = "INSERT INTO MEDIA_SOURCE VALUES (?,?,?,?,?,?)";
 
         $db->execute($sql, array(time(), $name, $source_type, $source_url,
-            $thumb_url, $language));
+            $aux_info, $language));
     }
     /**
      * Used to update the fields stored in a MEDIA_SOURCE row according to
