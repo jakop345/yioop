@@ -1387,6 +1387,7 @@ class PhraseModel extends ParallelModel
             }
             $index++;
         }
+        $lookup_queue_servers = $queue_servers;
         if(!in_array(NAME_SERVER, $queue_servers)) {
             $lookup_queue_servers[] = NAME_SERVER;
                 //name server might still have news
