@@ -1438,7 +1438,8 @@ class CrawlComponent extends Component implements CrawlConstants
         }
         $data["CURRENT_SOURCE"] = array(
             "name" => "", "type"=> $data['SOURCE_TYPE'], "source_url" => "",
-            "aux_info" => "", 'item_path' => "", 'title_path' => "",
+            "aux_info" => "", 'channel_path' => "",
+            'item_path' => "", 'title_path' => "",
             'description_path' => "", 'link_path' => "",
             "language" => $data['SOURCE_LOCALE_TAG']);
         $data["CURRENT_SUBSEARCH"] = array(
@@ -1481,7 +1482,8 @@ class CrawlComponent extends Component implements CrawlConstants
                         }
                     }
                     if($is_html_feed) {
-                        $r['aux_info'] = $r['item_path']."###".$r['title_path'].
+                        $r['aux_info'] = $r['channel_path']."###".
+                            $r['item_path']."###".$r['title_path'].
                             "###".$r['description_path']."###".$r['link_path'];
                     }
                     $source_model->addMediaSource(
@@ -1590,7 +1592,8 @@ class CrawlComponent extends Component implements CrawlConstants
                     $is_html_feed = false;
                     if($source['TYPE'] == 'html') {
                         $is_html_feed = true;
-                        list($source['ITEM_PATH'], $source['TITLE_PATH'],
+                        list($source['CHANNEL_PATH'],
+                            $source['ITEM_PATH'], $source['TITLE_PATH'],
                             $source['DESCRIPTION_PATH'], $source['LINK_PATH']) =
                                 explode("###", $source['AUX_INFO']);
                     }
@@ -1609,10 +1612,12 @@ class CrawlComponent extends Component implements CrawlConstants
                     }
                     if($update) {
                         if($is_html_feed) {
-                            $source['AUX_INFO'] = $source['ITEM_PATH']."###".
+                            $source['AUX_INFO'] = $source['CHANNEL_PATH']."###".
+                            $source['ITEM_PATH']."###".
                             $source['TITLE_PATH'] . "###" .
                             $source['DESCRIPTION_PATH'] . "###".
                             $source['LINK_PATH'];
+                            unset($source['CHANNEL_PATH']);
                             unset($source['ITEM_PATH']);
                             unset($source['TITLE_PATH']);
                             unset($source['DESCRIPTION_PATH']);

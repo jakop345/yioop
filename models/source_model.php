@@ -356,8 +356,9 @@ class SourceModel extends Model
         $i = 0;
         while($feeds[$i] = $this->db->fetchArray($result)) {
             if($feeds[$i]['TYPE'] == 'html') {
-                list($feeds[$i]['ITEM_PATH'], $feeds[$i]['TITLE_PATH'],
-                    $feeds[$i]['DESCRIPTION_PATH'], $feeds[$i]['LINK_PATH']) =
+                list($feeds[$i]['CHANNEL_PATH'], $feeds[$i]['ITEM_PATH'],
+                    $feeds[$i]['TITLE_PATH'], $feeds[$i]['DESCRIPTION_PATH'],
+                    $feeds[$i]['LINK_PATH']) =
                     explode("###", html_entity_decode($feeds[$i]['AUX_INFO']));
             }
             $i++;
@@ -390,7 +391,8 @@ class SourceModel extends Model
                 $lang = DEFAULT_LOCALE;
             }
             if($is_html) {
-                $nodes = $this->getTags($dom, $feed['ITEM_PATH']);
+                $sub_dom = $this->getTags($dom, $feed['CHANNEL_PATH']);
+                $nodes = $this->getTags($sub_dom[0], $feed['ITEM_PATH']);
                 $rss_elements = array("title" => $feed['TITLE_PATH'],
                     "description" => $feed['DESCRIPTION_PATH'],
                     "link" => $feed['LINK_PATH']);
@@ -456,9 +458,13 @@ class SourceModel extends Model
         return true;
     }
     /**
+     * Returns an array of DOMDocuments for the nodes that match an xpath 
+     * query on $dom, a DOMDocument
      *
-     * @param DOMDocument $dom
-     * @param string $query
+     * @param DOMDocument $dom document to run xpath query on
+     * @param string $query xpath query to run
+     * @return array of DOMDocuments one for each node matching the
+     *  xpath query in the orginal DOMDocument
      */
     function getTags($dom, $query)
     {

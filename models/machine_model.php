@@ -275,7 +275,6 @@ class MachineModel extends Model
         $value = ($action == "start") ? "true" : "false";
         $time = time();
         $session = md5($time . AUTH_KEY);
-        $db->execute("BEGIN");
         $sql = "SELECT URL FROM MACHINE WHERE NAME=?";
         $result = $db->execute($sql, array($machine_name));
         $row = $db->fetchArray($result);
@@ -298,7 +297,6 @@ class MachineModel extends Model
             }
             echo FetchUrl::getPage($url);
         }
-        $db->execute("COMMIT");
     }
     /**
      * Used to restart any fetchers which the user turned on, but which

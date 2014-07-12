@@ -98,13 +98,26 @@ class SearchsourcesElement extends Element
             <input type="text" id="source-url" name="source_url"
                 value="<?php e($data['CURRENT_SOURCE']['source_url']); ?>"
                 maxlength="80" class="wide-field" /></td></tr>
+        <tr><td><label for="source-locale-tag"><b id="locale-text"><?php
+            e(tl('searchsources_element_locale_tag'))?></b></label></td><td>
+            <?php $this->view->helper("options")->render("source-locale-tag",
+                "language", $data['LANGUAGES'],
+                 $data['CURRENT_SOURCE']['language']); ?></td></tr>
         <tr><td><label for="source-thumbnail"><b id="thumb-text"><?php
             e(tl('searchsources_element_thumbnail'))?></b></label></td><td>
             <input type="text" id="source-thumbnail" name="aux_info"
                 value="<?php e($data['CURRENT_SOURCE']['aux_info']); ?>"
                 maxlength="80" class="wide-field" /></td></tr>
+        <tr><td colspan="2"><span id='instruct'><?php 
+            e(tl('searchsources_element_feed_instruct'));
+            ?></span></td></tr>
+        <tr><td><label for="item-path"><b id="channel-text"><?php
+            e(tl('searchsources_element_channelpath')); ?></b></label></td><td>
+            <input type="text" id="channel-path" name="channel_path"
+                value="<?php e($data['CURRENT_SOURCE']['channel_path']); ?>"
+                maxlength="80" class="wide-field" /></td></tr>
         <tr><td><label for="item-path"><b id="item-text"><?php
-            e(tl('searchsources_element_itempath'))?></b></label></td><td>
+            e(tl('searchsources_element_itempath')); ?></b></label></td><td>
             <input type="text" id="item-path" name="item_path"
                 value="<?php e($data['CURRENT_SOURCE']['item_path']); ?>"
                 maxlength="80" class="wide-field" /></td></tr>
@@ -123,11 +136,6 @@ class SearchsourcesElement extends Element
             <input type="text" id="link-path" name="link_path"
                 value="<?php e($data['CURRENT_SOURCE']['link_path']); ?>"
                 maxlength="80" class="wide-field" /></td></tr>
-        <tr><td><label for="source-locale-tag"><b id="locale-text"><?php
-            e(tl('searchsources_element_locale_tag'))?></b></label></td><td>
-            <?php $this->view->helper("options")->render("source-locale-tag",
-                "language", $data['LANGUAGES'],
-                 $data['CURRENT_SOURCE']['language']); ?></td></tr>
         <tr><td></td><td class="center"><button class="button-box"
             type="submit"><?php e(tl('searchsources_element_submit'));
             ?></button></td></tr>
@@ -313,6 +321,9 @@ class SearchsourcesElement extends Element
             if(stype == "video") {
                 setDisplay("thumb-text", true);
                 setDisplay("source-thumbnail", true);
+                setDisplay("instruct", false);
+                setDisplay("channel-text", false);
+                setDisplay("channel-path", false);
                 setDisplay("item-text", false);
                 setDisplay("item-path", false);
                 setDisplay("title-text", false);
@@ -326,6 +337,9 @@ class SearchsourcesElement extends Element
             } else if(stype == "html") {
                 setDisplay("thumb-text", false);
                 setDisplay("source-thumbnail", false);
+                setDisplay("instruct", true);
+                setDisplay("channel-text", true);
+                setDisplay("channel-path", true);
                 setDisplay("item-text", true);
                 setDisplay("item-path", true);
                 setDisplay("title-text", true);
@@ -339,6 +353,9 @@ class SearchsourcesElement extends Element
             } else {
                 setDisplay("thumb-text", false);
                 setDisplay("source-thumbnail", false);
+                setDisplay("instruct", false);
+                setDisplay("channel-text", false);
+                setDisplay("channel-path", false);
                 setDisplay("item-text", false);
                 setDisplay("item-path", false);
                 setDisplay("title-text", false);
