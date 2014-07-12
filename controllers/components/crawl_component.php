@@ -1465,8 +1465,8 @@ class CrawlComponent extends Component implements CrawlConstants
                     if(isset($_REQUEST['type']) && $_REQUEST['type'] == 'html'){
                         $is_html_feed = true;
                         $must_have = array_merge($must_have, array(
-                            'item_path', 'title_path', 'description_path',
-                            'link_path'));
+                            'channel_path', 'item_path', 'title_path',
+                            'description_path', 'link_path'));
                     }
                     $to_clean = array_merge($must_have,
                         array('aux_info','language'));
