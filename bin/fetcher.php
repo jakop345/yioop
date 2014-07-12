@@ -39,7 +39,7 @@ define("BASE_DIR", substr(
     dirname(realpath($_SERVER['PHP_SELF'])), 0,
     -strlen("/bin")));
 
-ini_set("memory_limit", "1000M");  //so have enough memory to crawl sitemaps
+ini_set("memory_limit", "1000M"); //so have enough memory to crawl sitemaps
 
 /** Load in global configuration settings */
 require_once BASE_DIR.'/configs/config.php';
@@ -2322,19 +2322,18 @@ class Fetcher implements CrawlConstants
             $this->found_sites[self::INVERTED_INDEX][$current_server] =
                 $this->found_sites[self::INVERTED_INDEX][
                     $current_server]->save(true, true);
-
             $compress_urls = $this->compressAndUnsetSeenUrls();
             $len_urls =  strlen($compress_urls);
-
             crawlLog("...Finish Compressing seen URLs.");
             $out_string = packInt($len_urls). $compress_urls;
             unset($compress_urls);
             $out_string .= $this->found_sites[self::INVERTED_INDEX][
                 $current_server];
+            crawlLog(".....add inverted index string.");
             unset($this->found_sites[self::INVERTED_INDEX][$current_server]);
-
             gc_collect_cycles();
             $data = webencode($out_string);
+            crawlLog(".....web encode result.");
                 // don't compress index data
             $post_data['data'] .= $data;
             unset($out_string);
