@@ -518,8 +518,9 @@ class SearchController extends Controller implements CrawlConstants
         /*  Only set up spell correction if single conjunctive query without
             without meta words
          */
-        if(isset($data['QUERY']) &&
+        if(!isset($data['QUERY']) ||
             !preg_match('/(\%7C|\%3A|%26quot%3B)/u', $data['QUERY'])) {
+
             $data['INCLUDE_SCRIPTS'] = array("suggest");
         }
         if(!isset($data['SCRIPT'])) {
