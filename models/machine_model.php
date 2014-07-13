@@ -166,20 +166,14 @@ class MachineModel extends Model
      */
     function getMachineList()
     {
-
-        $this->db->selectDB(DB_NAME);
-
         $machines = array();
-
         $sql = "SELECT * FROM MACHINE ORDER BY NAME DESC";
-
         $result = $this->db->execute($sql);
         $i = 0;
         while($machines[$i] = $this->db->fetchArray($result)) {
             $i++;
         }
         unset($machines[$i]); //last one will be null
-
         return $machines;
 
     }
