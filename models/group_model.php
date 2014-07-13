@@ -566,6 +566,8 @@ class GroupModel extends Model
         if($parent_id == 0) {
             $sql = "UPDATE GROUP_ITEM SET PARENT_ID=? WHERE ID=?";
             $db->execute($sql, array($id, $id));
+            $sql = "INSERT INTO GROUP_THREAD_VIEWS VALUES(?, 1)";
+            $db->execute($sql, array($id));
         }
         return $id;
     }
