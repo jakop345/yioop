@@ -713,7 +713,7 @@ EOT;
                 $old_configure['strings'] = isset($old_configure['strings']) ?
                     $old_configure['strings'] : array();
                 $fallback_configure['strings'] =
-                    isset($$fallback_configure['strings']) ?
+                    isset($fallback_configure['strings']) ?
                     $fallback_configure['strings'] : array();
                 $n[] = $this->updateTranslation($new_configure['strings'],
                     $old_configure['strings'], $fallback_configure['strings'],
