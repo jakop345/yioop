@@ -263,6 +263,13 @@ if(!PROFILE) {
 define('USER_AGENT',
     'Mozilla/5.0 (compatible; '.USER_AGENT_SHORT.'; +'.NAME_SERVER.'bot.php)');
 /**
+ * To change the favicon.ico file overrride the following variable
+ * in your local_config.php file
+ */
+if(!defined('FAVICON')) {
+    define('FAVICON', BASE_URL."favicon.ico");
+}
+/**
  * To change the Open Search Tool bar name overrride the following variable
  * in your local_config.php file
  */

@@ -83,7 +83,7 @@ class WebLayout extends Layout
                 $_SERVER["PATH_INFO"].'/' : '.';
         ?>
         <link rel="shortcut icon"
-            href="<?php e($path_info); ?>/favicon.ico" />
+            href="<?php e(FAVICON); ?>" />
         <link rel="stylesheet" type="text/css"
             href="<?php e($path_info); ?>/css/search.css" />
             <link rel="stylesheet" type="text/css"
