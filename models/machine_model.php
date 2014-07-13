@@ -160,6 +160,30 @@ class MachineModel extends Model
 
     }
     /**
+     *  Returns all the machine names stored in the DB
+     *
+     *  @return array machine names
+     */
+    function getMachineList()
+    {
+
+        $this->db->selectDB(DB_NAME);
+
+        $machines = array();
+
+        $sql = "SELECT * FROM MACHINE ORDER BY NAME DESC";
+
+        $result = $this->db->execute($sql);
+        $i = 0;
+        while($machines[$i] = $this->db->fetchArray($result)) {
+            $i++;
+        }
+        unset($machines[$i]); //last one will be null
+
+        return $machines;
+
+    }
+    /**
      * Returns the statuses of machines in the machine table of their
      * fetchers and queue_server as well as the name and url's of these machines
      *
@@ -305,7 +329,8 @@ class MachineModel extends Model
      */
     function restartCrashedFetchers()
     {
-        $machines =  $this->getMachineStatuses();
+        $machine_list = $this->getMachineList();
+        $machines = $this->getMachineStatuses($machine_list);
         foreach($machines as $machine) {
             if(isset($machine["STATUSES"]["fetcher"])) {
                 $fetchers = $machine["STATUSES"]["fetcher"];
