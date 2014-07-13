@@ -591,7 +591,7 @@ class GroupModel extends Model
      * @param int $post_id of item to remove
      * @param int $user_id the id of the person trying to perform the
      *     removal. If not root, or the original creator of the item,
-     *     the item won'r be removed
+     *     the item won't be removed
      */
     function deleteGroupItem($post_id, $user_id)
     {
@@ -604,8 +604,14 @@ class GroupModel extends Model
             $params[] = $user_id;
         }
         $sql = "DELETE FROM GROUP_ITEM WHERE ID=? $and_where";
-        $db->execute($sql, $params);
-        return $db->affectedRows();
+        if($result = $db->execute($sql, $params)) {
+            $affected_rows = $db->affectedRows();
+            $sql = "DELETE FROM GROUP_THREAD_VIEWS WHERE THREAD_ID=?";
+            $db->execute($sql, array($post_id));
+        } else {
+            $affected_rows = $db->affectedRows();
+        }
+        return $affected_rows;
     }
     /**
      * Gets the group feed items visible to a user with $user_id

@@ -492,8 +492,8 @@ class AdminController extends Controller implements CrawlConstants
         $paging = "";
         foreach($comparison_fields as $comparison_start) {
             $comparison = $comparison_start."_comparison";
-            $comparison_types = (in_array($comparison_start, $data[
-                'EQUAL_COMPARISON_TYPES']))
+            $comparison_types = (in_array($comparison_start,
+                 $equal_comparison_fields))
                 ? 'EQUAL_COMPARISON_TYPES' : 'COMPARISON_TYPES';
             $data[$comparison] = (isset($_REQUEST[$comparison]) &&
                 isset($data[$comparison_types][

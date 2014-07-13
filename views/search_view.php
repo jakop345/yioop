@@ -73,13 +73,13 @@ class SearchView extends View implements CrawlConstants
         <?php
         }
         $logged_in = isset($data["ADMIN"]) && $data["ADMIN"];
-        $logo = "resources/yioop.png";
+        $logo = LOGO;
         $is_landing = (!isset($data['PAGES']) && !isset($data['MORE']));
         if($is_landing) { ?>
             <div class="landing">
         <?php
         } else if(MOBILE) {
-            $logo = "resources/m-yioop.png";
+            $logo = M_LOGO;
         }
         ?>
         <h1 class="logo"><a href="./<?php if($logged_in) {

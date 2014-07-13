@@ -119,8 +119,9 @@ class SearchformHelper extends Helper
                 $out_name = $name."_$postfix";
             }
             if(isset($dropdowns[$name])) {
-                array_unshift($dropdowns[$name],
-                    tl('searchform_helper_any'));
+                $dropdowns[$name] =
+                    array('-1' => tl('searchform_helper_any')) +
+                    $dropdowns[$name];
                 ?>
                 <style type="text/css">
                 #<?php e($name); ?>-id {
@@ -128,6 +129,7 @@ class SearchformHelper extends Helper
                 }
                 </style>
                 <?php
+                if($data["{$out_name}"] == "") { $data["{$out_name}"] = '-1'; }
                 $view->helper("options")->render("{$name}-id",
                     "{$out_name}", $dropdowns[$name], $data["{$out_name}"]);
             } else {

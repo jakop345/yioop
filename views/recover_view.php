@@ -54,9 +54,9 @@ class RecoverView extends View
      */
     function renderView($data)
     {
-        $logo = "resources/yioop.png";
+        $logo = LOGO;
         if(MOBILE) {
-            $logo = "resources/m-yioop.png";
+            $logo = M_LOGO;
         }
         $missing = array();
         if(isset($data['MISSING'])) {
@@ -69,10 +69,10 @@ class RecoverView extends View
         <div class="small-top">
             <h1 class="logo"><a href="./?<?php
                 e(CSRF_TOKEN."=".$data[CSRF_TOKEN]) ?>"><img
-                src="<?php e($logo); ?>" alt="Yioop!"/></a>
-                <span> - <?php e(tl('recover_view_recover_password'));
+                src="<?php e($logo); ?>" alt="<?php e($this->logo_alt_text);
+                ?>"/></a><span> - <?php e(tl('recover_view_recover_password'));
                 ?></span></h1>
-            <form method="post" action="#">
+            <form method="post" action="./">
             <input type="hidden" name="c" value="register" />
             <input type="hidden" name="a" value="<?php e($activity); ?>" />
             <?php if(isset($_SESSION["random_string"])) { ?>

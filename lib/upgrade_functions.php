@@ -773,11 +773,8 @@ function upgradeDatabaseVersion20(&$db)
    <?php
    exit();
 }
-
 /**
- * Upgrades a Version 18 version of the Yioop! database to a Version 19 version
- * This update has been superseded by the Version20 update and so its contents
- * have been eliminated except for the change to the version table.
+ * Upgrades a Version 20 version of the Yioop! database to a Version 21 version
  * @param object $db datasource to use to upgrade
  */
 function upgradeDatabaseVersion21(&$db)
@@ -785,16 +782,28 @@ function upgradeDatabaseVersion21(&$db)
     $db->execute("DELETE FROM VERSION WHERE ID < 20");
     $db->execute("UPDATE VERSION SET ID=21 WHERE ID=20");
     $db->execute("CREATE TABLE GROUP_THREAD_VIEWS(
-                THREAD_ID INTEGER PRIMARY KEY, NUM_VIEWS INTEGER)");
+        THREAD_ID INTEGER PRIMARY KEY, NUM_VIEWS INTEGER)");
     $db->execute("ALTER TABLE MEDIA_SOURCE RENAME TO MEDIA_SOURCE_OLD");
     $db->execute("CREATE TABLE MEDIA_SOURCE (TIMESTAMP NUMERIC(11) PRIMARY KEY,
         NAME VARCHAR(64) UNIQUE, TYPE VARCHAR(16), SOURCE_URL VARCHAR(256),
         AUX_INFO VARCHAR(512), LANGUAGE VARCHAR(7))");
-    DatasourceManager::copyTable("MEDIA_SOURCE_OLD", $db,
-                "MEDIA_SOURCE", $db);
+    DatasourceManager::copyTable("MEDIA_SOURCE_OLD", $db, "MEDIA_SOURCE", $db);
     $db->execute("DROP TABLE MEDIA_SOURCE_OLD");
 }
-
+/**
+ * Upgrades a Version 21 version of the Yioop! database to a Version 22 version
+ * @param object $db datasource to use to upgrade
+ */
+function upgradeDatabaseVersion22(&$db)
+{
+    $db->execute("DELETE FROM VERSION WHERE ID < 21");
+    $db->execute("UPDATE VERSION SET ID=22 WHERE ID=21");
+    $db->execute("INSERT INTO GROUP_THREAD_VIEWS
+        SELECT DISTINCT PARENT_ID, 1 FROM GROUP_ITEM WHERE
+        NOT EXISTS (SELECT THREAD_ID
+        FROM GROUP_THREAD_VIEWS WHERE THREAD_ID=PARENT_ID)");
+    $db->execute("ALTER TABLE LOCALE ADD ACTIVE INTEGER DEFAULT 1");
+}
 /**
  * Used to insert a new activity into the database at a given acitivity_id
  *

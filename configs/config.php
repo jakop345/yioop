@@ -37,7 +37,7 @@ if(!defined('BASE_DIR') ||
 /** Version number for upgrade function
  * @var int
  */
-define('YIOOP_VERSION', 21);
+define('YIOOP_VERSION', 22);
 /*
     pcre is an external library to php which can cause Yioop
     to seg fault if given instances of reg expressions with
@@ -84,20 +84,30 @@ $COMPONENT_ACTIVITIES = array(
     "system" => array("manageMachines", "manageLocales",
         "serverSettings", "security", "configure")
 );
-/** setting profile.php to something else in loac_config.php allows one to have
-    two different yioop instances share the same work_directory but maybe have
-    different
-    configuration settings. This might be useful if one was production
-    and one was more dev.
-*/
+/** setting profile.php to something else in local_config.php allows one to have
+ *  two different yioop instances share the same work_directory but maybe have
+ *  different configuration settings. This might be useful if one was production
+ *  and one was more dev.
+ */
 if(!defined('PROFILE_FILE_NAME')) {
     define('PROFILE_FILE_NAME', "/profile.php");
+}
+/**
+ * To change the Yioop logo to your own sites logo, change the variables 
+ * LOGO and M_LOGO in your local_config.php file
+ */
+if(!defined('LOGO')) {
+    define('LOGO', "resources/yioop.png");
+}
+if(!defined('M_LOGO')) {
+    define('M_LOGO', "resources/m-yioop.png");
 }
 if(MAINTENANCE_MODE && $_SERVER["SERVER_ADDR"] != $_SERVER["REMOTE_ADDR"]) {
     echo "This Yioop! installation is undergoing maintenance, please come ".
         "back later!";
     exit();
 }
+
 if(!defined('WORK_DIRECTORY')) {
 /*+++ The next block of code is machine edited, change at
 your own risk, please use configure web page instead +++*/
@@ -252,6 +262,13 @@ if(!PROFILE) {
  */
 define('USER_AGENT',
     'Mozilla/5.0 (compatible; '.USER_AGENT_SHORT.'; +'.NAME_SERVER.'bot.php)');
+/**
+ * To change the Open Search Tool bar name overrride the following variable
+ * in your local_config.php file
+ */
+if(!defined('SEARCHBAR_PATH')) {
+    define('SEARCHBAR_PATH', NAME_SERVER."yioopbar.xml");
+}
 /**
  * @global array addresses of memcached servers to use assuming memcached is
  * available

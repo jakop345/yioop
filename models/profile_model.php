@@ -161,7 +161,8 @@ class ProfileModel extends Model
                 ON GROUPS(MEMBER_ACCESS)",
             "LOCALE" => "CREATE TABLE LOCALE(LOCALE_ID $serial PRIMARY KEY
                 $auto_increment, LOCALE_TAG VARCHAR(16),
-                LOCALE_NAME VARCHAR(256), WRITING_MODE CHAR(5))",
+                LOCALE_NAME VARCHAR(256), WRITING_MODE CHAR(5),
+                ACTIVE INTEGER DEFAULT 1)",
             "LCL_LOCALE_TAG_INDEX" => "CREATE INDEX LCL_LOCALE_TAG_INDEX ON
                 LOCALE(LOCALE_TAG)",
             "MACHINE" => "CREATE TABLE MACHINE (NAME VARCHAR(16) PRIMARY KEY,

@@ -55,7 +55,7 @@ class WikiView extends View
      */
     function renderView($data)
     {
-        $logo = "resources/yioop.png";
+        $logo = LOGO;
         $logged_in = isset($data["ADMIN"]) && $data["ADMIN"];
         $can_edit = $logged_in && isset($data["CAN_EDIT"]) && $data["CAN_EDIT"];
         $base_query = "?c=group&amp;".CSRF_TOKEN."=".
@@ -65,7 +65,7 @@ class WikiView extends View
             $base_query = "?c=group&amp;group_id=". $data["GROUP"]["GROUP_ID"];
         }
         if(MOBILE) {
-            $logo = "resources/m-yioop.png";
+            $logo = M_LOGO;
         }
         ?>
         <div class="top-bar">
@@ -111,8 +111,8 @@ class WikiView extends View
             if($logged_in) {
                 e("?".CSRF_TOKEN."=".$data[CSRF_TOKEN]);
             } ?>"><img
-            src="<?php e($logo); ?>" alt="Yioop!" /></a><small> - <?php
-            e($data["GROUP"]["GROUP_NAME"].
+            src="<?php e($logo); ?>" alt="<?php e($this->logo_alt_text);
+                ?>" /></a><small> - <?php e($data["GROUP"]["GROUP_NAME"].
                 "[<a href='$base_query&amp;a=groupFeeds'>".tl('wiki_view_feed').
                 "</a>|".tl('wiki_view_wiki')."]");
             ?></small>

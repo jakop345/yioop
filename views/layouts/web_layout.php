@@ -89,7 +89,7 @@ class WebLayout extends Layout
             <link rel="stylesheet" type="text/css"
                   href="<?php e($path_info); ?>/css/editor.css" />
         <link rel="search" type="application/opensearchdescription+xml"
-            href="<?php e(NAME_SERVER."yioopbar.xml");?>"
+            href="<?php e(SEARCHBAR_PATH); ?>"
             title="Content search" />
         </head>
         <?php

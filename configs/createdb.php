@@ -505,7 +505,7 @@ $locales = array(
 $i = 1;
 foreach($locales as $locale) {
     $db->execute("INSERT INTO LOCALE VALUES ($i, '{$locale[0]}',
-        '{$locale[1]}', '{$locale[2]}')");
+        '{$locale[1]}', '{$locale[2]}', '1')");
     $locale_index[$locale[0]] = $i;
     $i++;
 }

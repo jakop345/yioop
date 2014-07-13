@@ -106,14 +106,14 @@ class LocaleModel extends Model
      * @var array
      */
     var $search_table_column_map = array("name"=>"LOCALE_NAME",
-        "tag"=>"LOCALE_TAG", "mode" => "WRITING_MODE");
+        "tag"=>"LOCALE_TAG", "mode" => "WRITING_MODE", "active" => "ACTIVE");
     /**
      * These fields if present in $search_array (used by @see getRows() ),
      * but with value "0", will be skipped as part of the where clause
      * but will be used for order by clause
      * @var array
      */
-    var $any_fields = array("mode");
+    var $any_fields = array("mode", "active");
     /**
      * {@inheritDoc}
      *
@@ -124,7 +124,7 @@ class LocaleModel extends Model
      */
     function selectCallback($args = NULL)
     {
-        return "LOCALE_ID, LOCALE_TAG, LOCALE_NAME, WRITING_MODE";
+        return "LOCALE_ID, LOCALE_TAG, LOCALE_NAME, WRITING_MODE, ACTIVE";
     }
     /**
      * This is called after each row is retrieved by getRows. This method
@@ -205,19 +205,24 @@ class LocaleModel extends Model
             $locale_tag_parts[0].'.UTF8', $locale_tag_parts[0].".TCVN");
         //hacks for things that didn't work from the above
         if($locale_tag == 'vi_VN') {
-            setlocale(LC_NUMERIC, 'fr_FR.UTF-8');        }
-
+            setlocale(LC_NUMERIC, 'fr_FR.UTF-8');
+        }
     }
     /**
-     * Returns information about all available locales
+     * Returns information about available locales
      *
+     * @param bool $only_active says whether to return info only about active
+     *      locales (true) or about all locales (false);
      * @return array rows of locale information
      */
-    function getLocaleList()
+    function getLocaleList($only_active = true)
     {
         $db = $this->db;
         $sql = "SELECT LOCALE_ID, LOCALE_TAG, LOCALE_NAME, WRITING_MODE ".
             " FROM LOCALE";
+        if($only_active) {
+            $sql .= " WHERE ACTIVE > 0";
+        }
         $result = $db->execute($sql);
         $i = 0;
         $locales = array();
@@ -328,11 +333,13 @@ class LocaleModel extends Model
      * @param string $locale_tag the IANA langauge tag for the locale
      * @param string $writing_mode  a combination of the horizontal and
      *     vertical text direction used for writing in the locale
+     * @param int $active whether the locale is current active (>0) or not
+     *      used (== 0)
      */
-    function addLocale($locale_name, $locale_tag, $writing_mode)
+    function addLocale($locale_name, $locale_tag, $writing_mode, $active = 1)
     {
         $sql = "INSERT INTO LOCALE (LOCALE_NAME, LOCALE_TAG,
-            WRITING_MODE) VALUES (?, ?, ?)";
+            WRITING_MODE, ACTIVE) VALUES (?, ?, ?, ?)";
         $this->db->execute($sql, array($locale_name, $locale_tag,
             $writing_mode));
         if(!file_exists(LOCALE_DIR."/$locale_tag")) {

@@ -74,6 +74,8 @@ class ManagelocalesElement extends Element
                 <th><?php e(tl('managelocales_element_localetag'));?></th>
                 <th><?php e(tl('managelocales_element_writingmode'));
                     ?></th>
+                <th><?php e(tl('managelocales_element_enabled'));
+                    ?></th>
             <?php
             }
             ?>
@@ -90,6 +92,8 @@ class ManagelocalesElement extends Element
             if(!MOBILE) {
                 e("<td>".$locale['LOCALE_TAG']."</td>");
                 e("<td>".$locale['WRITING_MODE']."</td>");
+                e("<td>".($locale['ACTIVE'] ? tl('managelocales_element_true') :
+                    tl('managelocales_element_false'))."</td>");
             }
             e("<td class='align-right' >".
                 $locale['PERCENT_WITH_STRINGS']."</td>");
@@ -141,8 +145,8 @@ class ManagelocalesElement extends Element
         }
         ?>
         <table class="name-table">
-            <tr><td><label for="locale-name"><?php
-                e(tl('managelocales_element_localenamelabel'))?></label></td>
+            <tr><th><label for="locale-name"><?php
+                e(tl('managelocales_element_localenamelabel'))?></label></th>
                 <td><input type="text" id="locale-name"
                     name="localename" maxlength="80" class="narrow-field"
                     value="<?php e($data['CURRENT_LOCALE']['localename']); ?>"
@@ -153,22 +157,33 @@ class ManagelocalesElement extends Element
                     ?> />
                 </td><td></td>
             </tr>
-            <tr><td><label for="locale-tag"><?php
-                e(tl('managelocales_element_localetaglabel'))?></label></td>
+            <tr><th><label for="locale-tag"><?php
+                e(tl('managelocales_element_localetaglabel'))?></label></th>
                 <td><input type="text" id="locale-tag"
                 name="localetag"  maxlength="80"
                 value="<?php e($data['CURRENT_LOCALE']['localetag']); ?>"
                 class="narrow-field"/></td>
             </tr>
-            <tr><td><?php e(tl('managelocales_element_writingmodelabel'))?></td>
+            <tr><th><?php e(tl('managelocales_element_writingmodelabel'))?></th>
             <td><?php $this->view->helper("options")->render(
                         "writing-mode", "writingmode",
                         $data['WRITING_MODES'],
                         $data['CURRENT_LOCALE']['writingmode']); ?>
             </td>
             </tr>
+            <tr><th><label for="locale-active"><?php
+                e(tl('managelocales_element_localeenabled'))?></label></th>
+            <td><input type="checkbox" id="locale-active"
+                    name="active" value="1" <?php
+                    if($data['CURRENT_LOCALE']['active'] > 0) {
+                        e("checked='checked'");
+                    }
+                    ?> />
+            </td>
+            </tr>
             <tr><td></td><td class="center"><button class="button-box"
-                type="submit"><?php e(tl('managelocales_element_submit'));
+                type="submit" name="update" value="true"><?php
+                e(tl('managelocales_element_submit'));
                 ?></button></td>
             </tr>
         </table>
@@ -191,11 +206,15 @@ class ManagelocalesElement extends Element
         $fields = array(
             tl('managelocales_element_localename') => "name",
             tl('managelocales_element_localetag') => "tag",
-            tl('managelocales_element_writingmode') => "mode"
+            tl('managelocales_element_writingmode') => "mode",
+            tl('managelocales_element_enabled') =>
+                array("active", $data['EQUAL_COMPARISON_TYPES'])
         );
         $dropdowns = array(
             "mode" => array("lr-tb" => "lr-rb", "rl-tb" => "rl-tb",
-                "tb-rl" => "tb-rl", "tb-lr" => "tb-lr")
+                "tb-rl" => "tb-rl", "tb-lr" => "tb-lr"),
+            "active" => array("1" => tl('managelocales_element_true'),
+                "0" => tl('managelocales_element_false'))
         );
         $view->helper("searchform")->render($data, $controller, $activity,
             $view, $title, $return_form_name, $fields, $dropdowns);

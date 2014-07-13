@@ -54,10 +54,10 @@ class SettingsView extends View
      *     the language info and the current and possible per page settings
      */
     function renderView($data) {
-    $logo = "resources/yioop.png";
+    $logo = LOGO;
     $logged_in = isset($data['ADMIN']) && $data['ADMIN'];
     if(MOBILE) {
-        $logo = "resources/m-yioop.png";
+        $logo = M_LOGO;
     }
 ?>
 <div class="landing non-search">
@@ -65,7 +65,8 @@ class SettingsView extends View
         e(CSRF_TOKEN."=".$data[CSRF_TOKEN]. "&amp;");
     } ?>its=<?php
     e($data['its'])?>"><img
-    src="<?php e($logo); ?>" alt="Yioop!" /></a><span> - <?php
+    src="<?php e($logo); ?>" alt="<?php e($this->logo_alt_text);
+        ?>" /></a><span> - <?php
     e(tl('settings_view_settings')); ?></span>
 </h1>
 <div class="settings">

@@ -339,7 +339,7 @@ class SystemComponent extends Component
         $data['SCRIPT'] = "";
         $data["ELEMENT"] = "managelocales";
         $data['CURRENT_LOCALE'] = array("localename" => "",
-            'localetag' => "", 'writingmode' => '-1');
+            'localetag' => "", 'writingmode' => '-1', 'active' => 1);
         $data['WRITING_MODES'] = array(
             -1 => tl('system_component_select_mode'),
             "lr-tb" => "lr-tb",
@@ -352,9 +352,12 @@ class SystemComponent extends Component
         if(isset($_REQUEST['arg']) &&
             in_array($_REQUEST['arg'], $possible_arguments)) {
             $clean_fields = array('localename', 'localetag', 'writingmode',
-                'selectlocale');
+                'selectlocale', 'active');
             foreach($clean_fields as $field) {
                 $$field = "";
+                if($field == 'active') {
+                    $active = 0;
+                }
                 if(isset($_REQUEST[$field])) {
                     $tmp = $parent->clean($_REQUEST[$field], "string");
                     if($field == "writingmode" && ($tmp == -1 ||
@@ -368,7 +371,7 @@ class SystemComponent extends Component
             {
                 case "addlocale":
                     $locale_model->addLocale(
-                        $localename, $localetag, $writingmode);
+                        $localename, $localetag, $writingmode, $active);
                     $locale_model->extractMergeLocales();
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('system_component_locale_added')."</h1>')";
@@ -404,7 +407,12 @@ class SystemComponent extends Component
                         $info["WRITING_MODE"] = $writingmode;
                         $change = true;
                     }
-                    if(isset($localetag))
+                    if(isset($_REQUEST['update']) &&
+                        $active != $info['ACTIVE']) {
+                        $info['ACTIVE'] =  $active;
+                        $change=true;
+                    }
+                    $data['CURRENT_LOCALE']['active'] = $info['ACTIVE'];
                     $data['CURRENT_LOCALE']['localename'] =
                         $info["LOCALE_NAME"];
                     $data['CURRENT_LOCALE']['localetag'] =
@@ -412,6 +420,7 @@ class SystemComponent extends Component
                     $data['CURRENT_LOCALE']['writingmode'] =
                         $info["WRITING_MODE"];
                     if($change) {
+                    echo "hi";
                         $locale_model->updateLocaleInfo($info);
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('system_component_locale_updated').
@@ -476,7 +485,8 @@ class SystemComponent extends Component
                 break;
                 case "search":
                     $search_array = $parent->tableSearchRequestHandler($data,
-                        array('name', 'tag', 'mode'));
+                        array('name', 'tag', 'mode', 'active'),
+                        array('active'));
                 break;
             }
         }

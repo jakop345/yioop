@@ -59,6 +59,11 @@ abstract class View
      */
     var $layout_object;
     /**
+     * Logo image text name
+     * @var string
+     */
+    var $logo_alt_text;
+    /**
      * The constructor reads in any Element and Helper subclasses which are
      * needed to draw the view. It also reads in the Layout subclass on which
      * the View will be drawn.
@@ -77,7 +82,7 @@ abstract class View
                     BASE_DIR."/views/layouts/".$this->layout."_layout.php";
             }
         }
-
+        $this->logo_alt_text = tl('view_logo_alt_text');
         $this->layout_object = new $layout_name($this);
     }
     /**

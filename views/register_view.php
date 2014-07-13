@@ -139,9 +139,9 @@ class RegisterView extends View
         $logged_in = (isset($data['ADMIN']) && $data['ADMIN']);
         $append_url = ($logged_in && isset($data[CSRF_TOKEN]))
                 ? CSRF_TOKEN. "=".$data[CSRF_TOKEN] : "";
-        $logo = "resources/yioop.png";
+        $logo = LOGO;
         if(MOBILE) {
-            $logo = "resources/m-yioop.png";
+            $logo = M_LOGO;
         }
         $missing = array();
         if(isset($data['MISSING'])) {
@@ -152,8 +152,8 @@ class RegisterView extends View
         <div class="small-top">
             <h1 class="logo"><a href="./?<?php
                 e($append_url); ?>"><img
-                src="<?php e($logo); ?>" alt="Yioop!"/></a>
-                <span> - <?php e(tl('register_view_create_account'));
+                src="<?php e($logo); ?>" alt="<?php e($this->logo_alt_text);
+                ?>" /></a><span> - <?php e(tl('register_view_create_account'));
                 ?></span></h1>
             <?php
             if($data['AUTHENTICATION_MODE'] == ZKP_AUTHENTICATION) { ?>

@@ -54,15 +54,16 @@ class SigninView extends View
     function renderView($data)
     {
         $logged_in = isset($data['ADMIN']) && $data['ADMIN'];
-        $logo = "resources/yioop.png";
+        $logo = LOGO;
         if(MOBILE) {
-            $logo = "resources/m-yioop.png";
+            $logo = M_LOGO;
         }?>
         <div class="landing non-search">
         <h1 class="logo"><a href="./<?php if($logged_in) {
                 e('?'.CSRF_TOKEN."=".$data[CSRF_TOKEN]);
-            }?>"><img src="<?php e($logo); ?>" alt="Yioop!"
-                /></a><span> - <?php e(tl('signin_view_signin')); ?></span></h1>
+            }?>"><img src="<?php e($logo); ?>" alt="<?php
+                e($this->logo_alt_text); ?>" /></a><span> - <?php
+                e(tl('signin_view_signin')); ?></span></h1>
         <?php if (isset($data['AUTH_ITERATION'])) { ?>
                 <form  method="post" id="zkp-form" action="#"
                     onsubmit="generateKeys('zkp-form','username', <?php

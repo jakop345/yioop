@@ -432,7 +432,7 @@ class Model implements CrawlConstants
      *     name of a field, what comparison to perform, a value to check,
      *     and an order (ascending/descending) to sort by
      * @param array $any_fields these fields if present in search array
-     *     but with value "0" will be skipped as part of the where clause
+     *     but with value "-1" will be skipped as part of the where clause
      *     but will be used for order by clause
      * @return array string for where clause, string for order by clause
      */
@@ -451,7 +451,7 @@ class Model implements CrawlConstants
             $value = $row[2];
             $sort_dir = $row[3];
             if($value != "" && (!in_array($row[0], $any_fields)
-                || $value != "0")) {
+                || $value != "-1")) {
                 if($where == "") {
                     $where = " WHERE ";
                 }

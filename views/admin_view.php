@@ -55,9 +55,9 @@ class AdminView extends View
      */
     function renderView($data)
     {
-        $logo = "resources/yioop.png";
+        $logo = LOGO;
         if(MOBILE) {
-            $logo = "resources/m-yioop.png";
+            $logo = M_LOGO;
         }
         if(PROFILE) {
         ?>
@@ -69,7 +69,8 @@ class AdminView extends View
         ?>
         <h1 class="admin-heading logo"><a href="./?<?php
             e(CSRF_TOKEN."=".$data[CSRF_TOKEN]); ?>"><img
-            src="<?php e($logo); ?>" alt="Yioop!" /></a><span> - <?php
+            src="<?php e($logo); ?>" alt="<?php e($this->logo_alt_text);
+                ?>" /></a><span> - <?php
         e(tl('admin_view_admin'));
         if(!MOBILE) {e(' ['.$data['CURRENT_ACTIVITY'].']');}?></span></h1>
         <?php
