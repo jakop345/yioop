@@ -688,10 +688,10 @@ EOT;
                 $n[] = "[$general_name]";
                 $old_configure[$general_name] = 
                     isset($old_configure[$general_name]) ?
-                    $old_configure[$general_name] : "";
+                    $old_configure[$general_name] : array();
                 $fallback_configure[$general_name] = 
                     isset($fallback_configure[$general_name]) ?
-                    $fallback_configure[$general_name] : "";
+                    $fallback_configure[$general_name] : array();
                 foreach($general_value as $name => $value) {
                     $n[] = $this->updateTranslation(
                         $new_configure[$general_name],
@@ -711,10 +711,10 @@ EOT;
                 $n[] = $string;
             } else {
                 $old_configure['strings'] = isset($old_configure['strings']) ?
-                    $old_configure['strings'] : "";
+                    $old_configure['strings'] : array();
                 $fallback_configure['strings'] =
                     isset($$fallback_configure['strings']) ?
-                    $fallback_configure['strings'] : "";
+                    $fallback_configure['strings'] : array();
                 $n[] = $this->updateTranslation($new_configure['strings'],
                     $old_configure['strings'], $fallback_configure['strings'],
                     $string);
