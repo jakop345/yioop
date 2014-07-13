@@ -268,7 +268,7 @@ class NetworkIterator extends IndexBundleIterator
                             $results[$page_data[self::KEY]] =
                                 $page_data;
                             $results[$page_data[self::KEY]][self::MACHINE_ID] =
-                                $j;
+                                $lookup[$j];
                         }
                     }
                 }
