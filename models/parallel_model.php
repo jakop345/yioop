@@ -182,7 +182,6 @@ class ParallelModel extends Model implements CrawlConstants
             foreach($page_set as $elt) {
                 $description_hash = array();
                 $result = @unserialize(webdecode($elt[self::PAGE]));
-
                 if(!is_array($result)) {
                     $elapsed_times[] = 0;
                     continue;

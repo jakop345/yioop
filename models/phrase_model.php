@@ -1388,7 +1388,7 @@ class PhraseModel extends ParallelModel
             $index++;
         }
         $lookup_queue_servers = $queue_servers;
-        if(!in_array(NAME_SERVER, $queue_servers)) {
+        if($queue_servers && !in_array(NAME_SERVER, $queue_servers)) {
             $lookup_queue_servers[] = NAME_SERVER;
                 //name server might still have news
         }
@@ -1615,7 +1615,11 @@ class PhraseModel extends ParallelModel
                                 $old_info = IndexManager::getWordInfo(
                                     $index_name, $old_distinct_key_id, $shift,
                                     $mask);
-                                $info = array_merge($info, $old_info);
+                                if($info !== false && $old_info !== false) {
+                                    $info = array_merge($info, $old_info);
+                                } else if($old_info !== false) {
+                                    $info = $old_info;
+                                }
                             }
                             if($info != array()) {
                                 $tmp_keys = arrayColumnCount($info, 4, 3);
