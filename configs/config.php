@@ -270,6 +270,13 @@ if(!defined('FAVICON')) {
     define('FAVICON', BASE_URL."favicon.ico");
 }
 /**
+ * To change the Author meta tag for the site overrride the following variable
+ * in your local_config.php file
+ */
+if(!defined('SITE_AUTHOR')) {
+    define('SITE_AUTHOR', "Christopher Pollett");
+}
+/**
  * To change the Open Search Tool bar name overrride the following variable
  * in your local_config.php file
  */
