@@ -50,8 +50,10 @@ class LanguageElement extends Element
      */
     function render($data)
     {
+        $num_languages = count($data['LANGUAGES']);
+        $size = min(4, $num_languages);
         ?>
-        <select id="locale" name="lang" dir="ltr" size="4">
+        <select id="locale" name="lang" dir="ltr" size="<?php e($size); ?>">
         <?php
         foreach ($data['LANGUAGES'] as $locale_tag => $locale_name) {
             if($data['LOCALE_TAG'] == $locale_tag) {

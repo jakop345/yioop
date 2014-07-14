@@ -92,11 +92,12 @@ class SettingsView extends View
     class="table-input"><?php $this->helper("options")->render(
     "index-ts", "index_ts", $data['CRAWLS'], $data['its']); ?>
 </td></tr>
+<?php if(count($data['LANGUAGES']) > 1) { ?>
 <tr><td class="table-label"><label for="locale"><b><?php
     e(tl('settings_view_language_label')); ?></b></label></td><td
     class="table-input"><?php $this->element("language")->render($data); ?>
 </td></tr>
-
+<?php } ?>
 <tr><td class="cancel"><input type="hidden" name="<?php
     e(CSRF_TOKEN); ?>" value="<?php
     e($data[CSRF_TOKEN]); ?>" /><input type="hidden"
@@ -115,7 +116,7 @@ class SettingsView extends View
 </div>
 <div class="setting-footer"><a
     href="javascript:window.external.AddSearchProvider('<?php
-    e(NAME_SERVER."yioopbar.xml");?>')"><?php
+    e(SEARCHBAR_PATH);?>')"><?php
     e(tl('settings_install_search_plugin'));
 ?></a>.</div>
 </div>
