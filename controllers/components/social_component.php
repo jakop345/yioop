@@ -809,6 +809,7 @@ class SocialComponent extends Component implements CrawlConstants
                 !in_array($_REQUEST['f'], array("rss", "json", "serial"))) {
                 $pub_clause = array('pub_date', "=", "", "ASC");
                 $sort = "ksort";
+                $group_model->incrementThreadViewCount($just_thread);
             }
         }
         $search_array = array(

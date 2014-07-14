@@ -231,6 +231,8 @@ class GroupfeedElement extends Element implements CrawlConstants
                             0, $data['RESULTS_PER_PAGE'], $page['NUM_POSTS'],
                             true);
                     }
+                    e(", " . tl('groupfeed_element_num_views',
+                        $page['NUM_VIEWS']));
                     e(") ");
                 }
                 ?>.

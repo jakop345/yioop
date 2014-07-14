@@ -659,7 +659,8 @@ class GroupModel extends Model
             $select = "SELECT E.*, I.TITLE AS TITLE, 
                 I.DESCRIPTION AS DESCRIPTION,
                 I.USER_ID AS USER_ID, II.USER_ID AS LAST_POSTER_ID,
-                U.USER_NAME AS USER_NAME, P.USER_NAME AS LAST_POSTER";
+                U.USER_NAME AS USER_NAME, P.USER_NAME AS LAST_POSTER,
+                GV.NUM_VIEWS AS NUM_VIEWS";
             $sub_select = "SELECT DISTINCT MIN(GI.ID) AS ID,
                 MAX(GI.ID) AS LAST_ID,
                 COUNT(DISTINCT GI.ID) AS NUM_POSTS, GI.PARENT_ID AS PARENT_ID,
@@ -672,10 +673,11 @@ class GroupModel extends Model
             $sub_sql = "$sub_select
                 FROM GROUP_ITEM GI, GROUPS G, USER_GROUP UG
                 $where $group_by";
-            $sql = "$select FROM ($sub_sql) E,
+            $sql = "$select FROM ($sub_sql) E, GROUP_THREAD_VIEWS AS GV,
                 GROUP_ITEM I, GROUP_ITEM II, USERS U, USERS P
                 WHERE E.ID = I.ID AND E.LAST_ID = II.ID AND
-                I.USER_ID = U.USER_ID AND II.USER_ID = P.USER_ID
+                I.USER_ID = U.USER_ID AND II.USER_ID = P.USER_ID AND
+                GV.THREAD_ID = E.PARENT_ID
                 $order_by $limit";
         } else {
             $where .= " AND P.USER_ID = GI.USER_ID";
@@ -970,6 +972,16 @@ class GroupModel extends Model
         }
         return array($total, $page_name, $pages);
     }
+    /**
+     *
+     */
+    function incrementThreadViewCount($thread_id)
+    {
+        $sql = "UPDATE GROUP_THREAD_VIEWS 
+            SET NUM_VIEWS = NUM_VIEWS + 1 WHERE THREAD_ID=?";
+        $this->db->execute($sql, array($thread_id));
+    }
+
     /**
      * Returns a list of applicable wiki pages of a group
      *
