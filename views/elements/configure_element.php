@@ -107,7 +107,8 @@ class ConfigureElement extends Element
             e(tl('configure_element_toggle_advanced')); ?></a>]</div>
         <?php } ?>
         <div class="bold">
-        <div class="top-margin"><span <?php if(!MOBILE) { ?>
+        <div class="top-margin"><span <?php if(!MOBILE &&
+            count($data["LANGUAGES"]) > 3) { ?>
             style="position:relative; top:-3.2em;" <?php } ?>><label
             for="locale"><?php
             e(tl('configure_element_default_language')); ?></label></span>
