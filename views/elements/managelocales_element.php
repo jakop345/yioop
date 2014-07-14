@@ -92,7 +92,10 @@ class ManagelocalesElement extends Element
             if(!MOBILE) {
                 e("<td>".$locale['LOCALE_TAG']."</td>");
                 e("<td>".$locale['WRITING_MODE']."</td>");
-                e("<td>".($locale['ACTIVE'] ? tl('managelocales_element_true') :
+                $gr_class = ($locale['ACTIVE']) ? " class='green' " :
+                    " class='red' ";
+                e("<td $gr_class>".($locale['ACTIVE'] ? 
+                    tl('managelocales_element_true') :
                     tl('managelocales_element_false'))."</td>");
             }
             e("<td class='align-right' >".
