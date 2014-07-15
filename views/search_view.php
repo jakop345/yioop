@@ -73,6 +73,7 @@ class SearchView extends View implements CrawlConstants
         <?php
         }
         $logged_in = isset($data["ADMIN"]) && $data["ADMIN"];
+        $token_string = ($logged_in) ? CSRF_TOKEN."=".$data[CSRF_TOKEN] : "";
         $logo = LOGO;
         $is_landing = (!isset($data['PAGES']) && !isset($data['MORE']));
         if($is_landing) { ?>
@@ -83,7 +84,7 @@ class SearchView extends View implements CrawlConstants
         }
         ?>
         <h1 class="logo"><a href="./<?php if($logged_in) {
-            e("?".CSRF_TOKEN."=".$data[CSRF_TOKEN]);
+            e("?".$token_string);
             } ?>"><img
             src="<?php e($logo); ?>" alt="<?php e(tl('search_view_title'));
                  ?>"
@@ -103,8 +104,10 @@ class SearchView extends View implements CrawlConstants
             <input type="hidden" name="s" value="<?php
                 e($data['SUBSEARCH']); ?>" />
             <?php } ?>
+            <?php if($logged_in) { ?>
             <input id="csrf-token" type="hidden" name="<?php e(CSRF_TOKEN); ?>"
                 value="<?php e($data[CSRF_TOKEN]); ?>" />
+            <?php } ?>
             <input id="its-value" type="hidden" name="its" value="<?php
                 e($data['its']); ?>" />
             <input type="text" <?php if(WORD_SUGGEST) { ?>
@@ -152,7 +155,7 @@ class SearchView extends View implements CrawlConstants
                 e(tl('search_view_no_index_set'));
             } ?></b> <?php
             if(isset($data["HAS_STATISTICS"]) && $data["HAS_STATISTICS"]) {
-            ?>[<a href="index.php?<?php e(CSRF_TOKEN."=".$data[CSRF_TOKEN]);
+            ?>[<a href="index.php?<?php e($token_string);
                 ?>&amp;c=statistics&amp;its=<?php e($data['its']);?>"><?php
                 e(tl('search_view_more_statistics')); ?></a>]
             <?php
@@ -174,7 +177,12 @@ class SearchView extends View implements CrawlConstants
      *     to render search result
      */
     function renderSearchResults($data)
-    { ?>
+    {
+        $logged_in = isset($data["ADMIN"]) && $data["ADMIN"];
+        $token_string = ($logged_in) ? CSRF_TOKEN."=".$data[CSRF_TOKEN]."&":"";
+        $token_string_amp = ($logged_in) ?
+            CSRF_TOKEN."=".$data[CSRF_TOKEN]."&amp;":"";
+        ?>
         <div <?php if(WORD_SUGGEST) { e('id="spell-check"'); } ?>
             class="spell"><span class="hidden"
         >&nbsp;</span></div>
@@ -199,8 +207,8 @@ class SearchView extends View implements CrawlConstants
                 e(tl('search_view_thesaurus_results'));
                 foreach ($similar_words as $word) {
                     e("<br />");
-                    ?><span><a href="?<?php e(CSRF_TOKEN."=".$data[CSRF_TOKEN]);
-                    ?>&amp;its=<?php e($data['its']);?>&amp;q=<?php 
+                    ?><span><a href="?<?php e($token_string_amp);
+                    ?>its=<?php e($data['its']);?>&amp;q=<?php 
                         e($word);?>"><?php e($word); ?></a></span>
                     <?php
                 }
@@ -225,8 +233,8 @@ class SearchView extends View implements CrawlConstants
                     } else {
                         $url = $page[self::URL];
                         if(substr($url, 0, 7) == "record:") {
-                            $link_url="?".CSRF_TOKEN."=".$data[CSRF_TOKEN].
-                            "&c=search&a=cache&q=".$data['QUERY'].
+                            $link_url="?".$token_string.
+                            "c=search&a=cache&q=".$data['QUERY'].
                             "&arg=".urlencode($url)."&its=".
                             $page[self::CRAWL_TIME];
                         } else {
@@ -249,8 +257,8 @@ class SearchView extends View implements CrawlConstants
                 <?php
                 $subsearch = (isset($data["SUBSEARCH"])) ? $data["SUBSEARCH"] :
                     "";
-                $base_query = "?".CSRF_TOKEN."=".$data[CSRF_TOKEN].
-                        "&amp;c=search";
+                $base_query = "?".$token_string_amp.
+                        "c=search";
                 if(isset($page['IMAGES'])) {
                     $this->helper("images")->render($page['IMAGES'],
                         $base_query."&amp;q={$data['QUERY']}", $subsearch);
@@ -267,8 +275,8 @@ class SearchView extends View implements CrawlConstants
                 <h2>
                 <?php
                     if(strpos($link_url, self::GIT_EXTENSION)) { ?>
-                    <a href="?<?php e(CSRF_TOKEN."=".$data[CSRF_TOKEN]);
-                        ?>&amp;c=search&amp;a=cache&amp;q=<?php
+                    <a href="?<?php e($token_string_amp);
+                        ?>c=search&amp;a=cache&amp;q=<?php
                         e($data['QUERY']); ?>&amp;arg=<?php
                         e(urlencode($url));
                         ?>&amp;its=<?php e($page[self::CRAWL_TIME]);?>
@@ -311,8 +319,8 @@ class SearchView extends View implements CrawlConstants
                             if($len > 40) { break; }
                             ?><span class="word-cloud">
                             <a class='word-cloud-<?php e($i)?>'
-                            href="?<?php e(CSRF_TOKEN."=".$data[CSRF_TOKEN]);
-                                ?>&amp;its=<?php e($data['its']);
+                            href="?<?php e($token_string_amp);
+                                ?>its=<?php e($data['its']);
                                 ?>&amp;q=<?php e($word);?>"><?php
                                 e($this->helper("displayresults")->
                                 render($word)."</a></span>");
@@ -340,8 +348,8 @@ class SearchView extends View implements CrawlConstants
                           in_array("NONE", $page[self::ROBOT_METAS])))) {
                         $aux_link_flag = true;
                     ?>
-                    <a href="?<?php e(CSRF_TOKEN."=".$data[CSRF_TOKEN]);
-                            ?>&amp;c=search&amp;a=cache&amp;q=<?php
+                    <a href="?<?php e($token_string_amp);
+                            ?>c=search&amp;a=cache&amp;q=<?php
                             e($data['QUERY']); ?>&amp;arg=<?php
                             e(urlencode($url));
                             ?>&amp;its=<?php e($page[self::CRAWL_TIME]); ?>"
@@ -360,8 +368,8 @@ class SearchView extends View implements CrawlConstants
                     if(SIMILAR_LINK) {
                         $aux_link_flag = true;
                     ?>
-                    <a href="?<?php e(CSRF_TOKEN."=".$data[CSRF_TOKEN]);
-                        ?>&amp;c=search&amp;a=related&amp;arg=<?php
+                    <a href="?<?php e($token_string_amp);
+                        ?>c=search&amp;a=related&amp;arg=<?php
                         e(urlencode($url)); ?>&amp;<?php
                         ?>its=<?php e($page[self::CRAWL_TIME]); ?>"
                         rel='nofollow'><?php
@@ -372,8 +380,8 @@ class SearchView extends View implements CrawlConstants
                     if(IN_LINK) {
                         $aux_link_flag = true;
                     ?>
-                    <a href="?<?php e(CSRF_TOKEN."=".$data[CSRF_TOKEN]);
-                        ?>&amp;c=search&amp;q=<?php
+                    <a href="?<?php e($token_string_amp);
+                        ?>c=search&amp;q=<?php
                         e(urlencode("link:".$url)); ?>&amp;<?php
                         ?>its=<?php e($page[self::CRAWL_TIME]); ?>"
                         rel='nofollow'><?php
@@ -383,8 +391,8 @@ class SearchView extends View implements CrawlConstants
                     }
                     if(IP_LINK && isset($page[self::IP_ADDRESSES])){
                     foreach($page[self::IP_ADDRESSES] as $address) {?>
-                    <a href="?<?php e(CSRF_TOKEN."=".$data[CSRF_TOKEN]);
-                            ?>&amp;c=search&amp;q=<?php
+                    <a href="?<?php e($token_string_amp);
+                            ?>c=search&amp;q=<?php
                             e(urlencode('ip:'.$address));?>&amp;<?php
                             ?>its=<?php e($data['its']); ?>"
                             rel='nofollow'>IP:<?php
