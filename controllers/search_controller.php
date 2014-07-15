@@ -1286,7 +1286,7 @@ class SearchController extends Controller implements CrawlConstants
             $data["URL"] = $url;
             $data["SUMMARY_STRING"] = 
                 "\n\n". tl('search_controller_download_fetcher',
-                $cache_item[self::ROBOT_INSTANCE]) ."\n\n". $summary_string;
+                $robot_instance ."\n\n". $summary_string;
             $this->displayView("nocache", $data);
             return;
         }
