@@ -473,6 +473,7 @@ class FetchUrl implements CrawlConstants
             if(preg_match($canonical_regex, $line, $matches)) {
                 // for rel canonical headers
                 $site[CrawlConstants::LOCATION][] = $matches[1];
+                $site[CrawlConstants::ROBOT_METAS][] = 'NOFOLLOW';
             }
             if(USE_ETAG_EXPIRES && stristr($line, 'ETag:')) {
                 $line_parts = preg_split("/ETag\:/i", $line);
