@@ -1584,7 +1584,7 @@ class SearchController extends Controller implements CrawlConstants
             "display:none;", 'pre');
         $summaryNode->setAttributeNS("","id", "summary-page-id");
         $summaryNode = $body->insertBefore($summaryNode, $first_child);
-        if(isset$cache_item[self::ROBOT_INSTANCE]) {
+        if(isset($cache_item[self::ROBOT_INSTANCE]) {
             $summary_string = 
                 "\n\n". tl('search_controller_download_fetcher',
                 $cache_item[self::ROBOT_INSTANCE]) ."\n\n" .
