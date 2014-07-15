@@ -1251,7 +1251,8 @@ class SearchController extends Controller implements CrawlConstants
             $crawl_item[$field] = (isset($crawl_item[$field])) ?
                 $crawl_item[$field] : "";
         }
-        $summary_string = $this->crawlItemSummary($crawl_item);
+        $summary_string =
+            $this->crawlItemSummary($crawl_item);
         $robot_instance = $crawl_item[self::ROBOT_INSTANCE];
         $robot_table_name = CRAWL_DIR."/".self::robot_table_name;
         $robot_table = array();
@@ -1583,7 +1584,10 @@ class SearchController extends Controller implements CrawlConstants
         $summaryNode = $body->insertBefore($summaryNode, $first_child);
         if(isset($cache_item[self::HEADER])) {
             //without mb_convert_encoding get conv error when do saveHTML
-            $summary_string = $cache_item[self::HEADER]."\n".
+            $summary_string = 
+                "\n\n". tl('search_controller_download_fetcher',
+                $cache_item[self::ROBOT_INSTANCE]) ."\n\n" .
+                $cache_item[self::HEADER]."\n".
                 mb_convert_encoding($summary_string, "UTF-8", "UTF-8");
         }
         $textNode = $dom->createTextNode($summary_string);

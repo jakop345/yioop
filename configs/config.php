@@ -266,7 +266,7 @@ define('USER_AGENT',
  * To change the favicon.ico file overrride the following variable
  * in your local_config.php file
  */
-if(!defined('FAVICON')) {
+if(!defined('FAVICON') && defined('BASE_URL')) {
     define('FAVICON', BASE_URL."favicon.ico");
 }
 /**
