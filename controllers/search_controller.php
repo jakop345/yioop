@@ -1584,14 +1584,15 @@ class SearchController extends Controller implements CrawlConstants
             "display:none;", 'pre');
         $summaryNode->setAttributeNS("","id", "summary-page-id");
         $summaryNode = $body->insertBefore($summaryNode, $first_child);
-        if(isset($cache_item[self::ROBOT_INSTANCE]) {
-            $summary_string = 
+        $summary_string_prefix = "";
+        if(isset($cache_item[self::ROBOT_INSTANCE])) {
+            $summary_string_prefix = 
                 "\n\n". tl('search_controller_download_fetcher',
-                $cache_item[self::ROBOT_INSTANCE]) ."\n\n" .
+                $cache_item[self::ROBOT_INSTANCE]) ."\n\n";
         }
         if(isset($cache_item[self::HEADER])) {
             //without mb_convert_encoding get conv error when do saveHTML
-            $summary_string = 
+            $summary_string = $summary_string_prefix .
                 $cache_item[self::HEADER]."\n".
                 mb_convert_encoding($summary_string, "UTF-8", "UTF-8");
         }
