@@ -1304,7 +1304,9 @@ class SearchController extends Controller implements CrawlConstants
         if(isset($crawl_item[self::KEYWORD_LINKS])) {
             $cache_item[self::KEYWORD_LINKS] = $crawl_item[self::KEYWORD_LINKS];
         }
-
+        if(!isset($cache_item[self::ROBOT_INSTANCE])) {
+            $cache_item[self::ROBOT_INSTANCE] = $robot_instance;
+        }
         if(in_array('yioop_nav', $ui_flags) && !((isset($_SERVER['_']) &&
             stristr($_SERVER['_'], 'hhvm')) ||
             (isset($_SERVER['SERVER_SOFTWARE']) &&
@@ -1582,11 +1584,14 @@ class SearchController extends Controller implements CrawlConstants
             "display:none;", 'pre');
         $summaryNode->setAttributeNS("","id", "summary-page-id");
         $summaryNode = $body->insertBefore($summaryNode, $first_child);
-        if(isset($cache_item[self::HEADER])) {
-            //without mb_convert_encoding get conv error when do saveHTML
+        if(isset$cache_item[self::ROBOT_INSTANCE]) {
             $summary_string = 
                 "\n\n". tl('search_controller_download_fetcher',
                 $cache_item[self::ROBOT_INSTANCE]) ."\n\n" .
+        }
+        if(isset($cache_item[self::HEADER])) {
+            //without mb_convert_encoding get conv error when do saveHTML
+            $summary_string = 
                 $cache_item[self::HEADER]."\n".
                 mb_convert_encoding($summary_string, "UTF-8", "UTF-8");
         }
