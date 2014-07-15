@@ -109,22 +109,38 @@ class HtmlProcessor extends TextProcessor
                     $summary[self::DESCRIPTION] = self::description($dom,
                         $dom_page);
                 }
+                $crude = false;
                 if(trim($summary[self::DESCRIPTION]) == "") {
                     $summary[self::DESCRIPTION] = self::crudeDescription(
                         $dom_page);
+                    $crude = true;
                 }
                 $summary[self::LINKS] = self::links($dom, $url);
                 if($summary[self::LINKS] == array()) {
                     $summary[self::LINKS] = parent::extractHttpHttpsUrls(
                         $page);
                 }
-                $location = self::location($dom, $url);
+                $location = self::location($dom);
                 if($location) {
                     $summary[self::LINKS][$location] = "location:".$url;
                     $summary[self::LOCATION] = true;
                     $summary[self::DESCRIPTION] .= $url." => ".$location;
                     if(!$summary[self::TITLE]) {
                         $summary[self::TITLE] = $url;
+                    }
+                }
+                if(!$crude && !$location) {
+                    $location = self::relCanonical($dom);
+                    if($location) {
+                        $summary[self::LINKS] = array();
+                        $summary[self::LINKS][$location] = "location:".$url;
+                        $summary[self::LOCATION] = true;
+                        if(!$summary[self::DESCRIPTION]) {
+                            $summary[self::DESCRIPTION] .=$url." => ".$location;
+                        }
+                        if(!$summary[self::TITLE]) {
+                            $summary[self::TITLE] = $url;
+                        }
                     }
                 }
                 $summary[self::PAGE] = $page;
@@ -386,10 +402,9 @@ class HtmlProcessor extends TextProcessor
      * in site
      *
      * @param object $dom document object version of web page
-     * @param string $site string version of page
      * @return mixed refresh or location url if found, false otherwise
      */
-    static function location($dom, $site)
+    static function location($dom)
     {
         $xpath = new DOMXPath($dom);
         //Look for Refresh or Location
@@ -401,6 +416,31 @@ class HtmlProcessor extends TextProcessor
                 if(isset($urls[1]) && !UrlParser::checkRecursiveUrl($urls[1]) &&
                     strlen($urls[1]) < MAX_URL_LENGTH) {
                     $url = @trim($urls[1]);
+                    return $url;
+                }
+            }
+        }
+        return false;
+    }
+    /**
+     * If a canonical link element 
+     * (https://en.wikipedia.org/wiki/Canonical_link_element)
+     * is in $dom, then this function extracts it
+     *
+     *
+     * @param object $dom document object version of web page
+     * @return mixed refresh or location url if found, false otherwise
+     */
+    static function relCanonical($dom)
+    {
+        $xpath = new DOMXPath($dom);
+        //Look for Refresh or Location
+        $links = $xpath->evaluate("/html/head/link");
+        foreach($links as $link) {
+            if(stristr($link->getAttribute('rel'), "canonical") ) {
+                $url = trim($link->getAttribute('href'));
+                if(!UrlParser::checkRecursiveUrl($url) &&
+                    strlen($url) < MAX_URL_LENGTH) {
                     return $url;
                 }
             }

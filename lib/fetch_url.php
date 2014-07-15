@@ -460,13 +460,19 @@ class FetchUrl implements CrawlConstants
                 $site[CrawlConstants::MODIFIED] =
                     strtotime(@trim($line_parts[1]));
             }
-            if(stristr($line, 'X-Robots-Tag:')) {
+            if(stristr($line, 'X-Robots-Tag:')) { // robot directives pdfs etc
                 $line_parts = preg_split("/X\-Robots\-Tag\:/i", $line);
                 $robot_metas = explode(",", $line_parts[1]);
                 foreach($robot_metas as $robot_meta) {
                     $site[CrawlConstants::ROBOT_METAS][] = strtoupper(
                         trim($robot_meta));
                 }
+            }
+            $canonical_regex = "/Link\:\s*\<\s*(http.*)\s*\>\s*\;\s*".
+                "rel\s*\=\s*(\"|')?canonical(\"|')?/";
+            if(preg_match($canonical_regex, $line, $matches)) {
+                // for rel canonical headers
+                $site[CrawlConstants::LOCATION][] = $matches[1];
             }
             if(USE_ETAG_EXPIRES && stristr($line, 'ETag:')) {
                 $line_parts = preg_split("/ETag\:/i", $line);
