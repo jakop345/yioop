@@ -864,7 +864,8 @@ class CrawlComponent extends Component implements CrawlConstants
                     $timestamp, $machine_urls);
             }
             $copy_options = array("general" => array("page_recrawl_frequency",
-                "page_range_request", "max_description_len", "cache_pages"),
+                "page_range_request", "max_description_len", "cache_pages",
+                'summarizer_option'),
                 "indexed_file_types" => array("extensions"),
                 "indexing_plugins" => array("plugins"));
             foreach($copy_options as $main_option => $sub_options) {
@@ -875,6 +876,7 @@ class CrawlComponent extends Component implements CrawlConstants
                     }
                 }
             }
+
             if(isset($seed_loaded['page_rules'])) {
                 $seed_info['page_rules'] =
                     $seed_loaded['page_rules'];
@@ -906,8 +908,6 @@ class CrawlComponent extends Component implements CrawlConstants
                 $seed_info['general']['summarizer_option'] =
                     $_REQUEST['summarizer_option'];
             }
-            $data['summarizer_option'] =
-                $seed_info['general']['summarizer_option'];
             if(isset($_REQUEST["max_description_len"]) &&
                 in_array($_REQUEST["max_description_len"],$data['LEN_VALUES'])){
                 $seed_info["general"]["max_description_len"] =
@@ -930,6 +930,8 @@ class CrawlComponent extends Component implements CrawlConstants
             $seed_info["general"]["page_recrawl_frequency"] =
                 PAGE_RECRAWL_FREQUENCY;
         }
+        $data['summarizer_option'] =
+            $seed_info['general']['summarizer_option'];
         $data['PAGE_RECRAWL_FREQUENCY'] =
             $seed_info["general"]["page_recrawl_frequency"];
         if(!isset($seed_info["general"]["cache_pages"])) {
@@ -947,7 +949,7 @@ class CrawlComponent extends Component implements CrawlConstants
 
         $data['INDEXING_PLUGINS'] = array();
         $included_plugins = array();
-        if(isset($_REQUEST["posted"])) {
+        if(isset($_REQUEST["posted"]) && !isset($_REQUEST['load_option'])) {
             $seed_info['indexing_plugins']['plugins'] =
                 (isset($_REQUEST["INDEXING_PLUGINS"])) ?
                 $_REQUEST["INDEXING_PLUGINS"] : array();
@@ -1180,7 +1182,12 @@ class CrawlComponent extends Component implements CrawlConstants
                         $parent_processor = $processor_name;
                         do {
                             if ($supported_processor == $parent_processor) {
-                                $plugin_processors[] = new $plugin_name();
+                                $plugin_object = new $plugin_name();
+                                if(method_exists($plugin_name,
+                                    "loadConfiguration")) {
+                                    $plugin_object->loadConfiguration();
+                                }
+                                $plugin_processors[] = $plugin_object;
                                 break;
                             }
                         } while(($parent_processor =
@@ -1196,7 +1203,13 @@ class CrawlComponent extends Component implements CrawlConstants
             $doc_info = $page_processor->handle($_REQUEST['TESTPAGE'],
                 $site[self::URL]);
             set_error_handler("yioop_error_handler");
-
+            if(!$doc_info) {
+                $data["AFTER_PAGE_PROCESS"] = "";
+                $data["AFTER_RULE_PROCESS"] = "";
+                $data["EXTRACTED_WORDS"] = "";
+                $data["EXTRACTED_META_WORDS"] ="";
+                return $data;
+            }
             if($processor_name != "RobotProcessor" &&
                 !isset($doc_info[self::JUST_METAS])) {
                 $doc_info[self::LINKS] = UrlParser::pruneLinks(

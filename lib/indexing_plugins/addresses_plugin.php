@@ -329,8 +329,9 @@ class AddressesPlugin extends IndexingPlugin implements CrawlConstants
      *
      * @param array $summary of current document. It will be adjusted
      *     by the code below
+     * @param string $url the url where the summary contents came from
      */
-    function pageSummaryProcessing(&$summary)
+    function pageSummaryProcessing(&$summary, $url)
     {
         if(isset($summary[self::SUBDOCS])) {;
             $num_subdocs = count($summary[self::SUBDOCS]);

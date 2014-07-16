@@ -470,7 +470,8 @@ class FetchUrl implements CrawlConstants
             }
             $canonical_regex = "/Link\:\s*\<\s*(http.*)\s*\>\s*\;\s*".
                 "rel\s*\=\s*(\"|')?canonical(\"|')?/";
-            if(preg_match($canonical_regex, $line, $matches)) {
+            if(preg_match($canonical_regex, $line, $matches) &&
+                $matches[1] != $site[CrawlConstants::URL]) {
                 // for rel canonical headers
                 $site[CrawlConstants::LOCATION][] = $matches[1];
                 $site[CrawlConstants::ROBOT_METAS][] = 'NOFOLLOW';

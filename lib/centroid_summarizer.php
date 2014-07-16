@@ -64,9 +64,17 @@ class CentroidSummarizer
     const LONG_SENTENCE_LEN = 30;
     /**
      * Number of sentences in a document before only consider longer
-     * sentences in cenroid
+     * sentences in centroid
      */
     const LONG_SENTENCE_THRESHOLD = 200;
+    /**
+     * Number of words in word cloud
+     */
+    const WORD_CLOUD_LEN = 5;
+    /**
+     * Number of nonzero centroid components
+     */
+    const CENTROID_COMPONENTS = 50;
     /**
      * Generates a centroid with which every sentence is ranked with cosine
      * ranking method and also generates a word cloud.
@@ -89,18 +97,18 @@ class CentroidSummarizer
         } else {
             $doc_stop = $doc;
         }
-
-        /* Spliting into sentences */
+        /* Splitting into sentences */
         $sentences = self::getSentences($doc);
         $n = count($sentences);
-
-        /*  Spliting into terms */
+        /*  Splitting into terms */
         $doc_st = self::formatSentence($doc_stop);
         $term = preg_split("/[\s,]+/u", $doc_st, -1, PREG_SPLIT_NO_EMPTY);
         $terms = array_unique($term);
         sort($terms);
         $t = count($terms);
-
+        if($t == 0) {
+            return array("", "");
+        }
         /* Initialize Nk array(Number of Documents the term occurs) */
         $nk = array();
         $nk = array_fill(0, $t, 0);
@@ -140,18 +148,17 @@ class CentroidSummarizer
         }
         /* Calculate centroid */
         arsort($wc);
-        $centroid = array();
-        $centroid = array_slice($wc, 0, 5, true);
-
+        $centroid = array_slice($wc, 0, self::CENTROID_COMPONENTS, true);
         /* Initializing centroid weight array by 0 */
         $wc = array_fill(0, $t, 0);
-
         /* Word cloud */
         $i = 0;
         $word_cloud = array();
         foreach($centroid as $key => $value) {
             $wc[$key] = $value;
-            $word_cloud[$i] = $terms[$key];
+            if($i < self::WORD_CLOUD_LEN) {
+                $word_cloud[$i] = $terms[$key];
+            }
             $i++;
         }
         ksort($wc);

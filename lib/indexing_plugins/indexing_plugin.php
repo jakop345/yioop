@@ -162,8 +162,9 @@ abstract class IndexingPlugin
      *
      * @param array& $summary the summary data produced by the relevant page
      *     processor's handle method; modified in-place.
+     * @param string $url the url where the summary contents came from
      */
-    function pageSummaryProcessing(&$summary) {return NULL;}
+    function pageSummaryProcessing(&$summary, $url) {return NULL;}
     /**
      * This method is called by the queue_server with the name of
      * a completed index. This allows the indexing plugin to

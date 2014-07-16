@@ -129,7 +129,7 @@ abstract class PageProcessor implements CrawlConstants
                         $summary[self::SUBDOCS][] = $subdoc;
                     }
                 }
-                $plugin_instance->pageSummaryProcessing($summary);
+                $plugin_instance->pageSummaryProcessing($summary, $url);
             }
         }
         return $summary;

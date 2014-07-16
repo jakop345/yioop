@@ -83,7 +83,7 @@ class PageOptionsElement extends Element
         <div class="top-margin"><label for="load-options"><b><?php
             e(tl('pageoptions_element_load_options'))?></b></label><?php
             $this->view->helper("options")->render("load-options","load_option",
-                $data['available_options'], $data['options_default']);
+                $data['available_options'], $data['options_default'], true);
         ?></div>
         <div class="top-margin"><b><label for="page-range-request"><?php
             e(tl('pageoptions_element_page_range'))?></label></b>

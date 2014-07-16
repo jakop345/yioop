@@ -120,7 +120,7 @@ class HtmlProcessor extends TextProcessor
                     $summary[self::LINKS] = parent::extractHttpHttpsUrls(
                         $page);
                 }
-                $location = self::location($dom);
+                $location = self::location($dom, $url);
                 if($location) {
                     $summary[self::LINKS][$location] = "location:".$url;
                     $summary[self::LOCATION] = true;
@@ -130,7 +130,7 @@ class HtmlProcessor extends TextProcessor
                     }
                 }
                 if(!$crude && !$location) {
-                    $location = self::relCanonical($dom);
+                    $location = self::relCanonical($dom, $url);
                     if($location) {
                         $summary[self::LINKS] = array();
                         $summary[self::LINKS][$location] = "location:".$url;
@@ -402,9 +402,10 @@ class HtmlProcessor extends TextProcessor
      * in site
      *
      * @param object $dom document object version of web page
+     * @param string $url the url where the dom object comes from
      * @return mixed refresh or location url if found, false otherwise
      */
-    static function location($dom)
+    static function location($dom, $url)
     {
         $xpath = new DOMXPath($dom);
         //Look for Refresh or Location
@@ -415,8 +416,11 @@ class HtmlProcessor extends TextProcessor
                 $urls = explode("=", $meta->getAttribute('content'));
                 if(isset($urls[1]) && !UrlParser::checkRecursiveUrl($urls[1]) &&
                     strlen($urls[1]) < MAX_URL_LENGTH) {
-                    $url = @trim($urls[1]);
-                    return $url;
+                    $refresh_url = @trim($urls[1]);
+                    if($refresh_url != $url) { 
+                        //ignore refresh if points to same place
+                        return $refresh_url;
+                    }
                 }
             }
         }
@@ -429,19 +433,22 @@ class HtmlProcessor extends TextProcessor
      *
      *
      * @param object $dom document object version of web page
+     * @param string $url the url where the dom object comes from
      * @return mixed refresh or location url if found, false otherwise
      */
-    static function relCanonical($dom)
+    static function relCanonical($dom, $url)
     {
         $xpath = new DOMXPath($dom);
         //Look for Refresh or Location
         $links = $xpath->evaluate("/html/head/link");
         foreach($links as $link) {
             if(stristr($link->getAttribute('rel'), "canonical") ) {
-                $url = trim($link->getAttribute('href'));
-                if(!UrlParser::checkRecursiveUrl($url) &&
-                    strlen($url) < MAX_URL_LENGTH) {
-                    return $url;
+                $canonical_url = trim($link->getAttribute('href'));
+                if(!UrlParser::checkRecursiveUrl($canonical_url) &&
+                    strlen($canonical_url) < MAX_URL_LENGTH &&
+                    $canonical_url != $url) {
+                    //ignore canonical if points to same place
+                    return $canonical_url;
                 }
             }
         }
