@@ -1673,7 +1673,7 @@ class PhraseModel extends ParallelModel
                     }
                 }
                 $num_word_keys += $num_disallow_keys;
-                if($num_word_keys == 1) {
+                if($num_word_keys == 1 && $weight == 1) {
                     $base_iterator = $word_iterators[0];
                 } else {
                     $base_iterator = new IntersectIterator(
