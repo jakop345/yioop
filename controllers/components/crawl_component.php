@@ -867,7 +867,7 @@ class CrawlComponent extends Component implements CrawlConstants
                 "page_range_request", "max_description_len", "cache_pages",
                 'summarizer_option'),
                 "indexed_file_types" => array("extensions"),
-                "indexing_plugins" => array("plugins"));
+                "indexing_plugins" => array("plugins", "plugins_data"));
             foreach($copy_options as $main_option => $sub_options) {
                 foreach($sub_options as $sub_option) {
                     if(isset($seed_loaded[$main_option][$sub_option])) {
@@ -876,7 +876,6 @@ class CrawlComponent extends Component implements CrawlConstants
                     }
                 }
             }
-
             if(isset($seed_loaded['page_rules'])) {
                 $seed_info['page_rules'] =
                     $seed_loaded['page_rules'];
@@ -949,7 +948,7 @@ class CrawlComponent extends Component implements CrawlConstants
 
         $data['INDEXING_PLUGINS'] = array();
         $included_plugins = array();
-        if(isset($_REQUEST["posted"]) && !isset($_REQUEST['load_option'])) {
+        if(isset($_REQUEST["posted"]) && !$loaded) {
             $seed_info['indexing_plugins']['plugins'] =
                 (isset($_REQUEST["INDEXING_PLUGINS"])) ?
                 $_REQUEST["INDEXING_PLUGINS"] : array();
@@ -969,6 +968,17 @@ class CrawlComponent extends Component implements CrawlConstants
              */
             $plugin_object = $parent->plugin(lcfirst($plugin_name));
             $class_name = $plugin_name."Plugin";
+            if($loaded && method_exists($class_name, 'setConfiguration') &&
+                method_exists($class_name, 'loadDefaultConfiguration')) {
+                if(isset($seed_info['indexing_plugins']['plugins_data'][
+                    $plugin_name])) {
+                    $plugin_object->setConfiguration($seed_info[
+                        'indexing_plugins']['plugins_data'][$plugin_name]);
+                } else {
+                    $plugin_object->loadDefaultConfiguration();
+                }
+                $plugin_object->saveConfiguration();
+            }
             if(method_exists($class_name, 'configureHandler') &&
                 method_exists($class_name, 'configureView')) {
                 $data['INDEXING_PLUGINS'][$plugin_name]['configure'] = true;
@@ -1182,7 +1192,8 @@ class CrawlComponent extends Component implements CrawlConstants
                         $parent_processor = $processor_name;
                         do {
                             if ($supported_processor == $parent_processor) {
-                                $plugin_object = new $plugin_name();
+                                $plugin_object = 
+                                    $parent->plugin(lcfirst($plugin));
                                 if(method_exists($plugin_name,
                                     "loadConfiguration")) {
                                     $plugin_object->loadConfiguration();

@@ -642,6 +642,10 @@ EOT;
                 $seed_info['indexing_plugins']['plugins'] =
                     $index_info[self::INDEXING_PLUGINS];
             }
+            if(isset($index_info[self::INDEXING_PLUGINS_DATA])) {
+                $seed_info['indexing_plugins']['plugins_data'] =
+                    $index_info[self::INDEXING_PLUGINS_DATA];
+            }
         }
         return $seed_info;
     }

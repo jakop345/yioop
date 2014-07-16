@@ -352,8 +352,7 @@ EOD;
         }
         if(isset($_REQUEST['word_filter']) &&
             $_REQUEST['word_filter'] == "restore") {
-            $this->rules_string = $this->default_rules_string;
-            $configuration = $this->parseRules();
+            $configuration = $this->loadDefaultConfiguration();
             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                 tl('wordfilter_plugin_defaults_restored')."</h1>');";
         }
@@ -362,6 +361,19 @@ EOD;
         }
         $this->saveConfiguration();
         $data["filter_rules"] = $this->rules_string;
+    }
+    /**
+     * Reads plugin configuration data from the default setting of this
+     * plugin. Then parse this string to $this->filter_rules, the format used by
+     * $this->pageSummaryProcessing(&$summary)
+     *
+     * @return array configuration associative array
+     */
+    function loadDefaultConfiguration()
+    {
+        $this->rules_string = $this->default_rules_string;
+        $configuration = $this->parseRules();
+        return $configuration;
     }
     /**
      * Parse rules into array format from the string $this->rules_string
