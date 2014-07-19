@@ -60,8 +60,8 @@ class SocialComponent extends Component implements CrawlConstants
             "addgroup", "banuser", "changeowner",
             "creategroup", "deletegroup", "deleteuser", "editgroup",
             "inviteusers", "joingroup", "memberaccess",
-            "registertype", "reinstateuser", "search", "unsubscribe"
-            );
+            "registertype", "reinstateuser", "search", "unsubscribe",
+            "voteaccess");
 
         $data["ELEMENT"] = "managegroups";
         $data['SCRIPT'] = "";
@@ -83,10 +83,15 @@ class SocialComponent extends Component implements CrawlConstants
             GROUP_READ_COMMENT => tl('social_component_read_comment'),
             GROUP_READ_WRITE => tl('social_component_read_write')
         );
+        $data['VOTING_CODES'] = array(
+            NON_VOTING_GROUP => tl('social_component_no_voting'),
+            UP_VOTING_GROUP => tl('social_component_up_voting'),
+            UP_DOWN_VOTING_GROUP => tl('social_component_up_down_voting')
+        );
         $search_array = array();
 
         $data['CURRENT_GROUP'] = array("name" => "","id" => "", "owner" =>"",
-            "register" => -1, "member_access" => -1);
+            "register" => -1, "member_access" => -1, 'vote_access' => -1);
         $data['PAGING'] = "";
         $name = "";
         $data['visible_users'] = "";
@@ -110,6 +115,8 @@ class SocialComponent extends Component implements CrawlConstants
                     $group['REGISTER_TYPE'];
                 $data['CURRENT_GROUP']['member_access'] =
                     $group['MEMBER_ACCESS'];
+                $data['CURRENT_GROUP']['member_access'] =
+                    $group['VOTE_ACCESS'];
             } else if(!in_array($_REQUEST['arg'], array("deletegroup",
                 "joingroup", "unsubscribe"))) {
                 $group_id = NULL;
@@ -240,7 +247,9 @@ class SocialComponent extends Component implements CrawlConstants
                             "member_access" => array("ACCESS_CODES",
                                 GROUP_READ),
                             "register" => array("REGISTER_CODES",
-                                REQUEST_JOIN)
+                                REQUEST_JOIN),
+                            "vote_access" => array("VOTING_CODES",
+                                NON_VOTING_GROUP)
                         );
                         foreach($group_fields as $field => $info) {
                             if(!isset($_REQUEST[$field]) ||
@@ -251,7 +260,8 @@ class SocialComponent extends Component implements CrawlConstants
                         }
                         $group_model->addGroup($name,
                             $_SESSION['USER_ID'], $_REQUEST['register'],
-                            $_REQUEST['member_access']);
+                            $_REQUEST['member_access'],
+                            $_REQUEST['vote_access']);
                         //one exception to setting $group_id
                         $group_id = $group_model->getGroupId($name);
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
@@ -261,12 +271,12 @@ class SocialComponent extends Component implements CrawlConstants
                     $data['FORM_TYPE'] = "addgroup";
                     $data['CURRENT_GROUP'] = array("name" => "",
                         "id" => "", "owner" =>"", "register" => -1,
-                        "member_access" => -1);
+                        "member_access" => -1, "vote_access" => -1);
                 break;
                 case "deletegroup":
                     $data['CURRENT_GROUP'] = array("name" => "",
                         "id" => "", "owner" =>"", "register" => -1,
-                        "member_access" => -1);
+                        "member_access" => -1, "vote_access" => -1);
                     if( $group_id <= 0) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                           tl('social_component_groupname_doesnt_exists').
@@ -307,13 +317,16 @@ class SocialComponent extends Component implements CrawlConstants
                     $data['FORM_TYPE'] = "editgroup";
                     $update_fields = array(
                         array('register', 'REGISTER_TYPE','REGISTER_CODES'),
-                        array('member_access', 'MEMBER_ACCESS', 'ACCESS_CODES')
+                        array('member_access', 'MEMBER_ACCESS', 'ACCESS_CODES'),
+                        array('vote_access', 'VOTE_ACCESS', 'VOTING_CODES')
                         );
                     $this->updateGroup($data, $group, $update_fields);
                     $data['CURRENT_GROUP']['register'] =
                         $group['REGISTER_TYPE'];
                     $data['CURRENT_GROUP']['member_access'] =
                         $group['MEMBER_ACCESS'];
+                    $data['CURRENT_GROUP']['vote_access'] =
+                        $group['VOTE_ACCESS'];
                     $this->getGroupUsersData($data, $group_id);
                 break;
                 case "inviteusers":
@@ -372,7 +385,15 @@ class SocialComponent extends Component implements CrawlConstants
                     $this->updateGroup($data, $group, $update_fields);
                     $data['CURRENT_GROUP'] = array("name" => "",
                         "id" => "", "owner" =>"", "register" => -1,
-                        "member_access" => -1);
+                        "member_access" => -1, "vote_access" => -1);
+                break;
+                case "voteaccess":
+                    $update_fields = array(
+                        array('voteaccess', 'VOTE_ACCESS', 'VOTING_CODES'));
+                    $this->updateGroup($data, $group, $update_fields);
+                    $data['CURRENT_GROUP'] = array("name" => "",
+                        "id" => "", "owner" =>"", "register" => -1,
+                        "member_access" => -1, "vote_access" => -1);
                 break;
                 case "registertype":
                     $update_fields = array(
@@ -381,7 +402,7 @@ class SocialComponent extends Component implements CrawlConstants
                     $this->updateGroup($data, $group, $update_fields);
                     $data['CURRENT_GROUP'] = array("name" => "",
                         "id" => "", "owner" =>"", "register" => -1,
-                        "member_access" => -1);
+                        "member_access" => -1, "vote_access" => -1);
                 break;
                 case "reinstateuser":
                     $data['FORM_TYPE'] = "editgroup";
@@ -411,8 +432,8 @@ class SocialComponent extends Component implements CrawlConstants
                         tl('social_component_banned_status');
                     $search_array =
                         $parent->tableSearchRequestHandler($data,
-                        array('name', 'owner', 'register', 'access'),
-                        array('register', 'access'));
+                        array('name', 'owner', 'register', 'access','voting'),
+                        array('register', 'access', 'voting'));
                 break;
                 case "unsubscribe":
                     $user_id = (isset($_REQUEST['user_id'])) ?

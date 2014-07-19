@@ -85,12 +85,14 @@ class HtmlProcessor extends TextProcessor
     function process($page, $url)
     {
         $summary = NULL;
+        $is_centroid = $this->summarizer_option == self::CENTROID_SUMMARIZER;
         if(is_string($page)) {
-            $page = preg_replace('@<script[^>]*?>.*?</script>@si', ' ', $page);
             $page = preg_replace('/\&nbsp\;|\&rdquo\;|\&ldquo\;|\&mdash\;/si',
                 ' ',$page);
-            $dom_page = preg_replace(
-                '@<style[^>]*?>.*?</style>@si', ' ', $page);
+            $page = 
+                preg_replace('@<script[^>]*?>.*?</script>@si', ' ', $page);
+            $dom_page = preg_replace('@<style[^>]*?>.*?</style>@si', ' ',
+                $page);
             $dom = self::dom($dom_page);
             if($dom !== false ) {
                 $summary[self::ROBOT_METAS] = self::getMetaRobots($dom);
@@ -100,19 +102,23 @@ class HtmlProcessor extends TextProcessor
                 }
                 $summary[self::LANG] = self::lang($dom,
                     $summary[self::TITLE], $url);
-                if($this->summarizer_option == self::CENTROID_SUMMARIZER) {
+                if($is_centroid) {
                     $summary_cloud = CentroidSummarizer::getCentroidSummary(
                         $dom_page, $summary[self::LANG]);
                     $summary[self::DESCRIPTION] = $summary_cloud[0];
                     $summary[self::WORD_CLOUD] = $summary_cloud[1];
+                    crawlLog("..Using Centroid Summarizer");
                 } else {
                     $summary[self::DESCRIPTION] = self::description($dom,
                         $dom_page);
+                    crawlLog("..Using Basic Summarizer");
                 }
                 $crude = false;
                 if(trim($summary[self::DESCRIPTION]) == "") {
                     $summary[self::DESCRIPTION] = self::crudeDescription(
                         $dom_page);
+                    crawlLog("..No text extracted. ".
+                        "Invoked crude description fallback.");
                     $crude = true;
                 }
                 $summary[self::LINKS] = self::links($dom, $url);
@@ -316,10 +322,10 @@ class HtmlProcessor extends TextProcessor
     static function crudeDescription($page)
     {
         $body = parent::getBetweenTags($page, 0, "<body", "</body");
+        $body = preg_replace("/\</", " <", $body);
         $body = strip_tags("<body".$body[1]."</body>");
         if($body == "") { return $body; }
-        $body_parts = preg_split("/\s+/", $body);
-        $body = implode(" ", $body_parts);
+        $body= preg_replace("/\s+/", " ", $body);
         return mb_substr($body, 0, self::$max_description_len);
     }
     /**
@@ -446,7 +452,7 @@ class HtmlProcessor extends TextProcessor
                 $canonical_url = trim($link->getAttribute('href'));
                 if(!UrlParser::checkRecursiveUrl($canonical_url) &&
                     strlen($canonical_url) < MAX_URL_LENGTH &&
-                    $canonical_url != $url) {
+                    levenshtein($canonical_url, $url) > 3) {
                     //ignore canonical if points to same place
                     return $canonical_url;
                 }

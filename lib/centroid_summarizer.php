@@ -61,12 +61,16 @@ class CentroidSummarizer
      * We use strlen rather than mbstrlen. This might actually be
      * a better metric of the potential of a sentence to have info.
      */
-    const LONG_SENTENCE_LEN = 30;
+    const LONG_SENTENCE_LEN = 50;
     /**
      * Number of sentences in a document before only consider longer
      * sentences in centroid
      */
-    const LONG_SENTENCE_THRESHOLD = 200;
+    const LONG_SENTENCE_THRESHOLD = 100;
+    /**
+     * Number of distinct terms to use in generating summary
+     */
+    const MAX_DISTINCT_TERMS = 1000;
     /**
      * Number of words in word cloud
      */
@@ -92,19 +96,29 @@ class CentroidSummarizer
         */
         $formatted_doc = self::formatDoc($doc);
         $stop_obj = PhraseParser::getTokenizer($lang);
-        if($stop_obj && method_exists($stop_obj, "stopwordsRemover")) {
-            $doc_stop = $stop_obj->stopwordsRemover($doc);
-        } else {
-            $doc_stop = $doc;
-        }
         /* Splitting into sentences */
-        $sentences = self::getSentences($doc);
-        $n = count($sentences);
+        $out_sentences = self::getSentences($doc);
+        $n = count($out_sentences);
+        $sentences = array();
+        if($stop_obj && method_exists($stop_obj, "stopwordsRemover")) {
+            for($i = 0; $i < $n; $i++ ) {
+                $sentences[$i] = $stop_obj->stopwordsRemover(
+                    self::formatDoc($out_sentences[$i]));
+             }
+        } else {
+            $sentences = $out_sentences;
+        }
         /*  Splitting into terms */
-        $doc_st = self::formatSentence($doc_stop);
-        $term = preg_split("/[\s,]+/u", $doc_st, -1, PREG_SPLIT_NO_EMPTY);
-        $terms = array_unique($term);
-        sort($terms);
+        $terms = array();
+        foreach($sentences as $sentence) {
+            $terms = array_merge($terms,
+                PhraseParser::segmentSegment($sentence, $lang));
+        }
+        $terms = array_filter($terms);
+        $terms_counts = array_count_values($terms);
+        arsort($terms_counts);
+        $terms_counts = array_slice($terms_counts, 0, self::MAX_DISTINCT_TERMS);
+        $terms = array_unique(array_keys($terms_counts));
         $t = count($terms);
         if($t == 0) {
             return array("", "");
@@ -112,7 +126,7 @@ class CentroidSummarizer
         /* Initialize Nk array(Number of Documents the term occurs) */
         $nk = array();
         $nk = array_fill(0, $t, 0);
-        $nt = 0;
+        $nt = array();
         /* Count TF for each word */
         for($i = 0; $i < $n; $i++) {
             for($j = 0; $j < $t; $j++) {
@@ -136,12 +150,15 @@ class CentroidSummarizer
             $idf[$k] = $tmp;
         }
         /* Count TF for finding centroid */
-        $doc_centroid = preg_replace('/[\.]+/', ' ', $formatted_doc);
         $wc = array();
+        $max_nt = -1;
+        $b = "\b";
+        if(in_array($lang, array("zh-CN", "ja", "ko"))) {
+            $b = "";
+        }
         for($j = 0; $j < $t; $j++) {
-            $nt = preg_match_all('/\b'.$terms[$j].'\b/', $doc_centroid);
-            $tfc[$j] = 1 + log($nt);
-            $wc[$j] = $tfc[$j] * $idf[$j];
+            $nt = preg_match_all("/$b{$terms[$j]}$b/", $formatted_doc);
+            $wc[$j] = $nt * $idf[$j];
             if(is_nan($wc[$j]) || is_infinite($wc[$j])) {
                 $wc[$j] = 0;
             }
@@ -186,20 +203,16 @@ class CentroidSummarizer
         }
         arsort($sim);
         /* Getting how many sentences should be there in summary */
-        $top = self::summarySentenceCount($sentences, $sim);
+        $top = self::summarySentenceCount($out_sentences, $sim);
         $sum_array = array();
         $sum_array = array_slice($sim, 0, $top - 1, true);
         ksort($sum_array);
         /* Printing Summary */
         $summary = '';
-        $d = NULL;
         foreach($sum_array as $key => $value) {
-            $summary .= "$sentences[$key]".". ";
+            $summary .= "$out_sentences[$key]".". ";
         }
-
         /* Summary of text summarization */
-        $words = explode(" ", $doc);
-        $sum_words = explode(" ", $summary);
         return array($summary, $word_cloud);
     }
     /**
@@ -232,28 +245,31 @@ class CentroidSummarizer
      */
     static function getSentences($content)
     {
-        $lines = preg_split("/[\.\!\?。]\s+|[\n\r][\n\r]+/u", $content, -1,
-            PREG_SPLIT_NO_EMPTY);
+        $lines = preg_split(
+            '/(\.|\||\!|\?|！|？|。)\s+|(\n|\r)(\n|\r)+|\s{5}/',
+            $content, 0, PREG_SPLIT_NO_EMPTY);
         $out = array();
         $sentence = "";
         $count = 0;
+        $theshold_factor = 1;
         foreach($lines as $line) {
             $sentence .= " " . $line;
             if(strlen($line) < 2) {
                 continue;
             }
-            $end = substr($line, -2);
-            if($end[0] != " " && $end[1] != " ") {
-                if($count < self::LONG_SENTENCE_THRESHOLD ||
-                    strlen($sentence) > self::LONG_SENTENCE_LEN) {
-                    $out[] = $sentence;
-                    $count++;
-                }
-                $sentence = "";
+            if($count < self::LONG_SENTENCE_THRESHOLD ||
+                strlen($sentence) > $theshold_factor * self::LONG_SENTENCE_LEN){
+                $sentence = preg_replace("/\s+/ui", " ", $sentence);
+                $out[] = trim($sentence);
+                $count++;
+                $theshold_factor = 
+                    pow(1.5, floor($count/self::LONG_SENTENCE_THRESHOLD));
             }
+            $sentence = "";
         }
-        if($sentence != "") {
-            $out[] = $sentence;
+        if(trim($sentence) != "") {
+            $sentence = preg_replace("/\s+/ui", " ", $sentence);
+            $out[] = trim($sentence);
         }
         return $out;
     }
@@ -279,7 +295,7 @@ class CentroidSummarizer
      */
     static function formatDoc($content)
     {
-        $substitute = array('/[\n\r\-]+/', '/[^\p{L}\s\.]+/u');
+        $substitute = array('/[\n\r\-]+/', '/[^\p{L}\s\.]+/u', '/[\.]+/');
         $content = preg_replace($substitute, ' ', mb_strtolower($content));
         return $content;
     }
@@ -308,7 +324,9 @@ class CentroidSummarizer
             "p|address|section)\s*\>/", "\n\n", $page);
         $page = preg_replace("/\<a/", " <a", $page);
         $page = preg_replace("/\&\#\d{3}(\d?)\;|\&\w+\;/", " ", $page);
+        $page = preg_replace("/\</", " <", $page);
         $page = strip_tags($page);
+
         if($changed) {
             $page = preg_replace("/(\r?\n[\t| ]*){2}/", "\n", $page);
         }

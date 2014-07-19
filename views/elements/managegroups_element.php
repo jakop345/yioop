@@ -83,8 +83,9 @@ class ManagegroupsElement extends Element
                 <th><?php e(tl('managegroups_element_groupowner'));?></th>
                 <?php if(!MOBILE) { ?>
                 <th><?php e(tl('managegroups_element_registertype'));?></th>
-                <?php } ?>
                 <th><?php e(tl('managegroups_element_memberaccess'));?></th>
+                <th><?php e(tl('managegroups_element_voting'));?></th>
+                <?php } ?>
                 <th colspan='2'><?php
                     e(tl('managegroups_element_actions'));?></th>
             </tr>
@@ -113,10 +114,12 @@ class ManagegroupsElement extends Element
                 $igore_columns[] = 'STATUS';
             }
             $access_columns = array("MEMBER_ACCESS");
-            $dropdown_columns = array("MEMBER_ACCESS", "REGISTER_TYPE");
+            $dropdown_columns = array("MEMBER_ACCESS", "REGISTER_TYPE",
+                "VOTE_ACCESS");
             $choice_arrays = array(
                 "MEMBER_ACCESS" => array("ACCESS_CODES", "memberaccess"),
                 "REGISTER_TYPE" =>  array("REGISTER_CODES", "registertype"),
+                "VOTE_ACCESS" =>  array("VOTING_CODES", "voteaccess"),
             );
             $stretch = (MOBILE) ? 1 : 2;
             foreach($data['GROUPS'] as $group) {
@@ -329,6 +332,13 @@ class ManagegroupsElement extends Element
                     $this->view->helper("options")->render(
                         "member-access", "member_access", $data["ACCESS_CODES"],
                         $data['CURRENT_GROUP']['member_access']);
+                    ?></td></tr>
+            <tr><th class="table-label"><label for="vote-access"><?php
+                e(tl('managegroups_element_voting'))?></label>:</th>
+                <td><?php
+                    $this->view->helper("options")->render(
+                        "vote-access", "vote_access", $data["VOTING_CODES"],
+                        $data['CURRENT_GROUP']['vote_access']);
                     ?></td></tr>
         <?php
         }
@@ -591,11 +601,14 @@ class ManagegroupsElement extends Element
             tl('managegroups_element_registertype') =>
                 array("register", $data['EQUAL_COMPARISON_TYPES']),
             tl('managegroups_element_memberaccess') =>
-                array("access", $data['EQUAL_COMPARISON_TYPES'])
+                array("access", $data['EQUAL_COMPARISON_TYPES']),
+            tl('managegroups_element_voting') =>
+                array("voting", $data['EQUAL_COMPARISON_TYPES'])
         );
         $dropdowns = array(
             "register" => $data['REGISTER_CODES'],
-            "access" => $data['ACCESS_CODES']
+            "access" => $data['ACCESS_CODES'],
+            "voting" => $data['VOTING_CODES']
         );
         $view->helper("searchform")->render($data, $controller, $activity,
             $view, $title, $return_form_name, $fields, $dropdowns);

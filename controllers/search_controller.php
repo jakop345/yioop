@@ -1463,7 +1463,9 @@ class SearchController extends Controller implements CrawlConstants
             $cache_file = "<html><head><title>Yioop! Cache</title></head>".
                 "<body>".$cache_file."</body></html>";
             $dom = new DOMDocument();
+            restore_error_handler();
             @$dom->loadHTML($cache_file);
+            set_error_handler("yioop_error_handler");
         }
         $body =  $dom->getElementsByTagName('body')->item(0);
         //make tags in body absolute

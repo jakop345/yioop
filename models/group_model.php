@@ -64,7 +64,7 @@ class GroupModel extends Model
         "name"=>"G.GROUP_NAME", "owner"=>"O.USER_NAME",
         "pub_date" => "GI.PUBDATE", "parent_id"=>"GI.PARENT_ID",
         "register"=>"G.REGISTER_TYPE", "status"=>"UG.STATUS",
-        "user_id"=>"P.USER_ID");
+        "user_id"=>"P.USER_ID", "voting" => "G.VOTE_ACCESS");
     /**
      * These fields if present in $search_array (used by @see getRows() ),
      * but with value "0", will be skipped as part of the where clause
@@ -95,7 +95,7 @@ class GroupModel extends Model
         $select = "DISTINCT G.GROUP_ID AS GROUP_ID,
             G.GROUP_NAME AS GROUP_NAME, G.OWNER_ID AS OWNER_ID,
             O.USER_NAME AS OWNER, REGISTER_TYPE, $status
-            G.MEMBER_ACCESS $join_date";
+            G.MEMBER_ACCESS, VOTE_ACCESS $join_date";
         return $select;
     }
     /**
@@ -211,16 +211,19 @@ class GroupModel extends Model
      * @param int $member flag that says how members other than the owner can
      *      access this group GROUP_READ, GROUP_READ_COMMENT (can comment
      *      on threads but not start. i.e., a blog), GROUP_READ_WRITE
+     * @param int $voting flag that says how members can vote on each others
+     *      posts: NON_VOTING_GROUP, UP_VOTING_GROUP, UP_DOWN_VOTING_GROUP
      */
     function addGroup($group_name, $user_id, $register = REQUEST_JOIN,
-        $member = GROUP_READ)
+        $member = GROUP_READ, $voting = NON_VOTING_GROUP)
     {
         $db = $this->db;
         $timestamp = microTimestamp();
         $sql = "INSERT INTO GROUPS (GROUP_NAME, CREATED_TIME, OWNER_ID,
-            REGISTER_TYPE, MEMBER_ACCESS) VALUES (?, ?, ?, ?, ?);";
+            REGISTER_TYPE, MEMBER_ACCESS, VOTE_ACCESS)
+            VALUES (?, ?, ?, ?, ?, ?);";
         $db->execute($sql, array($group_name, $timestamp, $user_id,
-            $register, $member));
+            $register, $member, $voting));
         $sql = "SELECT G.GROUP_ID AS GROUP_ID FROM ".
             " GROUPS G WHERE G.GROUP_NAME = ?";
         $result = $db->execute($sql, array($group_name));
@@ -387,7 +390,8 @@ class GroupModel extends Model
         $sql = "SELECT G.GROUP_ID AS GROUP_ID,
             G.GROUP_NAME AS GROUP_NAME, G.OWNER_ID AS OWNER_ID,
             O.USER_NAME AS OWNER, REGISTER_TYPE, UG.STATUS,
-            G.MEMBER_ACCESS AS MEMBER_ACCESS, UG.JOIN_DATE AS JOIN_DATE
+            G.MEMBER_ACCESS AS MEMBER_ACCESS, G.VOTE_ACCESS AS VOTE_ACCESS,
+            UG.JOIN_DATE AS JOIN_DATE
             FROM GROUPS G, USERS O, USER_GROUP UG $where " .
             $db->limitOffset(1);
         $result = $db->execute($sql, $params);

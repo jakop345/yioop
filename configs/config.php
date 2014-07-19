@@ -93,7 +93,7 @@ if(!defined('PROFILE_FILE_NAME')) {
     define('PROFILE_FILE_NAME', "/profile.php");
 }
 /**
- * To change the Yioop logo to your own sites logo, change the variables 
+ * To change the Yioop logo to your own sites logo, change the variables
  * LOGO and M_LOGO in your local_config.php file
  */
 if(!defined('LOGO')) {
@@ -515,7 +515,7 @@ $MOD9_NUM_ELTS_DECODES = array(
 /** Characters we view as not part of words, not same as POSIX [:punct:]*/
 define ('PUNCT', "\.|\,|\:|\;|\"|\'|\[|\/|\%|\?|-|".
     "\]|\{|\}|\(|\)|\!|\||\&|\`|\’|\‘|©|®|™|℠|…|\/|\>|，|\=|。|）|：|、|".
-    "”|“|《|》|（|「|」|★|【|】|·|\+|\*|；|！|—|―");
+    "”|“|《|》|（|「|」|★|【|】|·|\+|\*|；|！|—|―|？|！");
 /** Percentage ASCII text before guess we dealing with english*/
 define ('EN_RATIO', 0.9);
 /** Number of total description deemed title */
@@ -652,9 +652,13 @@ define('GROUP_READ_WRITE', 4);
  */
 define("NON_VOTING_GROUP", 0);
 /**
- * Indicates a group where people can up and down vote threads
+ * Indicates a group where people can vote up threads (but not down)
  */
-define("VOTING_GROUP", 1);
+define("UP_VOTING_GROUP", 1);
+/**
+ * Indicates a group where people can vote up and down threads
+ */
+define("UP_DOWN_VOTING_GROUP", 2);
 /**
  *  Typical posts to a group feed are on user created threads and
  *  so are of this type
