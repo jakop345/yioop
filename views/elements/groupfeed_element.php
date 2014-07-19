@@ -234,6 +234,15 @@ class GroupfeedElement extends Element implements CrawlConstants
                     e(", " . tl('groupfeed_element_num_views',
                         $page['NUM_VIEWS']));
                     e(") ");
+                } else if (!isset($data['JUST_GROUP_ID'])) {
+                    if(isset($page["VOTE_ACCESS"]) &&
+                        $page["VOTE_ACCESS"] == UP_DOWN_VOTING_GROUP ) {
+                        e(' (+'.$page['UPS'].'/'.($page['UPS'] +
+                            $page['DOWNS']).')');
+                    } else if(isset($page["VOTE_ACCESS"]) && 
+                        $page["VOTE_ACCESS"] == UP_VOTING_GROUP) {
+                        e(' (+'.$page['UPS'].')');
+                    }
                 }
                 ?>.
             <a class="gray-link" rel='nofollow' href="<?php e($base_query.
@@ -257,6 +266,32 @@ class GroupfeedElement extends Element implements CrawlConstants
                     <div id='old-description<?php e($page['ID']);?>'
                         class='none'><?php
                         e($page['OLD_DESCRIPTION']); ?></div>
+                    <?php
+                }
+                if($logged_in && isset($page["VOTE_ACCESS"])) {
+                    ?>
+                    <div class="gray"><b>
+                    <?php
+                    e(tl('groupfeed_element_post_vote'));
+                    $up_vote = $paging_query."&amp;post_id=".$page['ID'].
+                        "&amp;arg=upvote&amp;group_id=".$page['GROUP_ID'];
+                    $down_vote = $paging_query."&amp;post_id=".$page['ID'].
+                        "&amp;arg=downvote&amp;group_id=".$page['GROUP_ID'];
+                    if($page["VOTE_ACCESS"] == UP_DOWN_VOTING_GROUP) {
+                        ?>
+                        <button onclick='window.location="<?php
+                            e($up_vote); ?>"'>+</button><button
+                            onclick='window.location="<?php
+                            e($down_vote); ?>"'>-</button>
+                        <?php
+                    } else if($page["VOTE_ACCESS"] == UP_VOTING_GROUP) {
+                        ?>
+                        <button onclick='window.location="<?php
+                            e($up_vote); ?>"'>+</button>
+                        <?php
+                    }
+                    ?>
+                    </b></div>
                     <?php
                 }
             } else if(isset($page['LAST_POSTER']) ){ ?>

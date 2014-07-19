@@ -615,7 +615,7 @@ class SocialComponent extends Component implements CrawlConstants
             }
         }
         $possible_arguments = array("addcomment", "deletepost", "newthread",
-            "updatepost", "status");
+            "updatepost", "status", "upvote", "downvote");
         if(isset($_REQUEST['arg']) &&
             in_array($_REQUEST['arg'], $possible_arguments)) {
             switch($_REQUEST['arg'])
@@ -694,6 +694,81 @@ class SocialComponent extends Component implements CrawlConstants
                             tl('social_component_no_item_deleted').
                             "</h1>');";
                     }
+                break;
+                case "upvote":
+                    if(!isset($_REQUEST['group_id']) || !$_REQUEST['group_id']
+                        ||!isset($_REQUEST['post_id']) ||
+                        !$_REQUEST['post_id']){
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('social_component_vote_error').
+                            "</h1>');";
+                        break;
+                    }
+                    $post_id = $parent->clean($_REQUEST['post_id'], "int");
+                    $group_id = $parent->clean($_REQUEST['group_id'], "int");
+                    $group = $group_model->getGroupById($group_id, $user_id);
+                    if(!$group || (!in_array($group["VOTE_ACCESS"],
+                        array(UP_VOTING_GROUP, UP_DOWN_VOTING_GROUP) ) ) ) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('social_component_no_vote_access').
+                            "</h1>');";
+                        break;
+                    }
+                    $post_item = $group_model->getGroupItem($post_id);
+                    if(!$post_item || $post_item['GROUP_ID'] != $group_id) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('social_component_no_post_access').
+                            "</h1>');";
+                        break;
+                    }
+                    if($group_model->alreadyVoted($user_id, $post_id)) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('social_component_already_voted').
+                            "</h1>');";
+                        break;
+                    }
+                    $group_model->voteUp($user_id, $post_id);
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        tl('social_component_vote_recorded').
+                        "</h1>');";
+                break;
+                case "downvote":
+                    if(!isset($_REQUEST['group_id']) || !$_REQUEST['group_id']
+                        ||!isset($_REQUEST['post_id']) ||
+                        !$_REQUEST['post_id']){
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('social_component_vote_error').
+                            "</h1>');";
+                        break;
+                    }
+                    $post_id = $parent->clean($_REQUEST['post_id'], "int");
+                    $group_id = $parent->clean($_REQUEST['group_id'], "int");
+                    $group = $group_model->getGroupById($group_id,
+                        $user_id);
+                    if(!$group || (!in_array($group["VOTE_ACCESS"],
+                        array(UP_DOWN_VOTING_GROUP) ) ) ) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('social_component_no_vote_access').
+                            "</h1>');";
+                        break;
+                    }
+                    $post_item = $group_model->getGroupItem($post_id);
+                    if(!$post_item || $post_item['GROUP_ID'] != $group_id) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('social_component_no_post_access').
+                            "</h1>');";
+                        break;
+                    }
+                    if($group_model->alreadyVoted($user_id, $post_id)) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('social_component_already_voted').
+                            "</h1>');";
+                        break;
+                    }
+                    $group_model->voteDown($user_id, $post_id);
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        tl('social_component_vote_recorded').
+                        "</h1>');";
                 break;
                 case "newthread":
                     if(!isset($_REQUEST['group_id']) || !$_REQUEST['group_id']){

@@ -691,7 +691,8 @@ class GroupModel extends Model
                 GI.PUBDATE AS PUBDATE, G.OWNER_ID AS OWNER_ID,
                 G.MEMBER_ACCESS AS MEMBER_ACCESS,
                 G.GROUP_NAME AS GROUP_NAME, P.USER_NAME AS USER_NAME,
-                P.USER_ID AS USER_ID, GI.TYPE AS TYPE ";
+                P.USER_ID AS USER_ID, GI.TYPE AS TYPE, GI.UPS AS UPS,
+                GI.DOWNS AS DOWNS, G.VOTE_ACCESS AS VOTE_ACCESS ";
             $sql = "$select
                 FROM GROUP_ITEM GI, GROUPS G, USER_GROUP UG, USERS P
                 $where $order_by $limit";
@@ -761,6 +762,63 @@ class GroupModel extends Model
         $result = $db->execute($sql);
         $row = $db->fetchArray($result);
         return $row['NUM'];
+    }
+    /**
+     * Increments the count of the number of times a group thread has been
+     * viewed
+     *
+     * @param int $thread_id id of thread to increment the view count for
+     */
+    function incrementThreadViewCount($thread_id)
+    {
+        $sql = "UPDATE GROUP_THREAD_VIEWS
+            SET NUM_VIEWS = NUM_VIEWS + 1 WHERE THREAD_ID=?";
+        $this->db->execute($sql, array($thread_id));
+    }
+    /**
+     * Returns true or false depending on whether a given user has voted on
+     * a given post or not
+     *
+     * @param int $user_id id of user to check if voted
+     * @param int $post_id id of GROUP_ITEM to see if voted on
+     * @return bool whether or not the user has voted on that item
+     */
+    function alreadyVoted($user_id, $post_id)
+    {
+        $db = $this->db;
+        $sql = "SELECT COUNT(*) AS NUM FROM GROUP_ITEM_VOTE WHERE USER_ID = ?
+            AND ITEM_ID = ?";
+        $result = $db->execute($sql, array($user_id, $post_id));
+        if(!$result) { return false; }
+        $row = $db->fetchArray($result);
+        if(!$row || !isset($row['NUM'])) { return false; }
+        return ($row['NUM'] > 0);
+    }
+    /**
+     * Casts one up vote by a user to a post
+     *
+     * @param int $user_id  id of user to cast vote for
+     * @param int $post_id  id of post on which to cast vote
+     */
+    function voteUp($user_id, $post_id)
+    {
+        $sql = "INSERT INTO GROUP_ITEM_VOTE VALUES (?, ?)";
+        $this->db->execute($sql, array($user_id, $post_id));
+        $sql = "UPDATE GROUP_ITEM SET UPS = UPS + 1 WHERE ID=?";
+        $this->db->execute($sql, array($post_id));
+    }
+    /**
+     * Casts one up vote by a user to a post
+     *
+     * @param int $user_id  id of user to cast vote for
+     * @param int $post_id  id of post on which to cast vote
+     */
+    function voteDown($user_id, $post_id)
+    {
+        $sql = "INSERT INTO GROUP_ITEM_VOTE VALUES (?, ?)";
+        $this->db->execute($sql, array($user_id, $post_id));
+        $sql = "UPDATE GROUP_ITEM SET DOWNS = DOWNS + 1 WHERE ID=?";
+        $this->db->execute($sql, array($post_id));
     }
     /**
      * Used to add a wiki page revision by a given user to a wiki page
@@ -976,16 +1034,6 @@ class GroupModel extends Model
         }
         return array($total, $page_name, $pages);
     }
-    /**
-     *
-     */
-    function incrementThreadViewCount($thread_id)
-    {
-        $sql = "UPDATE GROUP_THREAD_VIEWS 
-            SET NUM_VIEWS = NUM_VIEWS + 1 WHERE THREAD_ID=?";
-        $this->db->execute($sql, array($thread_id));
-    }
-
     /**
      * Returns a list of applicable wiki pages of a group
      *
