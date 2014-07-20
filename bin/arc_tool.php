@@ -30,20 +30,15 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(php_sapi_name() != 'cli') {echo "BAD REQUEST"; exit();}
-
 /** Calculate base directory of script @ignore*/
 define("BASE_DIR", substr(
     dirname(realpath($_SERVER['PHP_SELF'])), 0,
     -strlen("/bin")));
-
 ini_set("memory_limit","2000M"); /*
         reindex sometimes takes more than the default 128M, 850 to be safe */
-
 /** This tool does not need logging*/
 define("LOG_TO_FILES", false);
-
 /** Load in global configuration settings */
 require_once BASE_DIR.'/configs/config.php';
 if(!PROFILE) {
@@ -51,45 +46,35 @@ if(!PROFILE) {
         "its web interface on localhost.\n";
     exit();
 }
-
 /** NO_CACHE means don't try to use memcache*/
 define("NO_CACHE", true);
-
 /** USE_CACHE false rules out file cache as well*/
 define("USE_CACHE", false);
-
 /** Load the class that maintains our URL queue */
 require_once BASE_DIR."/lib/web_queue_bundle.php";
-
 /** Load word->{array of docs with word} index class */
 require_once BASE_DIR."/lib/index_archive_bundle.php";
-
 /** To be able to determine info about word in a index dictionary*/
 require_once BASE_DIR."/lib/index_bundle_iterators/word_iterator.php";
-
 /** Used by word_iterator.php*/
 require_once BASE_DIR."/lib/index_manager.php";
-
 /** Load the iterator classes for non-yioop archives*/
 foreach(glob(BASE_DIR."/lib/archive_bundle_iterators/*_iterator.php")
     as $filename) {
     require_once $filename;
 }
-
 /** Used for manipulating urls*/
 require_once BASE_DIR."/lib/url_parser.php";
-
 /**  For crawlHash function */
 require_once BASE_DIR."/lib/utility.php";
-
 /** Get the database library based on the current database type */
 require_once BASE_DIR."/models/datasources/".DBMS."_manager.php";
-
 /** Load FetchUrl, used by the MediaWiki archive iterator */
 require_once BASE_DIR."/lib/fetch_url.php";
-
 /** Loads common constants for web crawling*/
 require_once BASE_DIR."/lib/crawl_constants.php";
+/** To get models when doing a crawl seed injection*/
+require_once BASE_DIR."/controllers/admin_controller.php";
 /*
  * We'll set up multi-byte string handling to use UTF-8
  */
@@ -134,17 +119,23 @@ class ArcTool implements CrawlConstants
     {
         global $argv;
         if(!isset($argv[1]) || (!isset($argv[2]) && $argv[1] != "list") ||
-            (!isset($argv[3]) &&
-            ($argv[1] == "dict" || $argv[1] == "posting"))) {
+            (!isset($argv[3]) && in_array($argv[1],
+            array("dict", "posting","inject") ) ) ) {
             $this->usageMessageAndExit();
         }
         if($argv[1] != "list") {
-            $path =  $bundle_name = UrlParser::getDocumentFilename($argv[2]);
-            if($path == $argv[2] && !file_exists($path)) {
-                $path = CRAWL_DIR."/cache/".$path;
-                if(!file_exists($path)) {
-                    $path = CRAWL_DIR."/archives/".$argv[2];
+            if($argv[1] != "inject") {
+                $path = UrlParser::getDocumentFilename($argv[2]);
+                if($path == $argv[2] && !file_exists($path)) {
+                    $path = CRAWL_DIR."/cache/".$path;
+                    if(!file_exists($path)) {
+                        $path = CRAWL_DIR."/archives/".$argv[2];
+                    }
                 }
+            } else if(is_numeric($argv[2])) {
+                    $path = $argv[2];
+            } else {
+                $this->usageMessageAndExit();
             }
         }
         switch($argv[1])
@@ -152,39 +143,34 @@ class ArcTool implements CrawlConstants
             case "list":
                 $this->outputArchiveList();
             break;
-
             case "info":
                 $this->outputInfo($path);
             break;
-
             case "shard":
                 $this->outputShardInfo($path, $argv[3]);
             break;
-
             case "dict":
                 $this->outputDictInfo($path, $argv[3]);
             break;
-
+            case "inject":
+                $this->inject($path, $argv[3]);
+            break;
             case "posting":
                 $num = (isset($argv[5])) ? $argv[5] : 1;
                 $this->outputPostingInfo($path, $argv[3], $argv[4], $num);
             break;
-
             case "rebuild":
                 $this->rebuildIndexArchive($path);
             break;
-
             case "reindex":
                 $this->reindexIndexArchive($path);
             break;
-
             case "mergetiers":
                 if(!isset($argv[3])) {
                     $this->usageMessageAndExit();
                 }
                 $this->reindexIndexArchive($path, $argv[3]);
             break;
-
             case "show":
                 if(!isset($argv[3])) {
                     $this->usageMessageAndExit();
@@ -194,13 +180,10 @@ class ArcTool implements CrawlConstants
                 }
                 $this->outputShowPages($path, $argv[3], $argv[4]);
             break;
-
             default:
                 $this->usageMessageAndExit();
         }
-
     }
-
     /**
      * Lists the Web or IndexArchives in the crawl directory
      */
@@ -261,7 +244,6 @@ class ArcTool implements CrawlConstants
             $this->$call($info, $archive_path);
         }
     }
-
     /**
      * Prints the IndexDictionary records for a word in an IndexArchiveBundle
      *
@@ -589,7 +571,6 @@ class ArcTool implements CrawlConstants
         }
         echo "\n";
     }
-
     /**
      * Outputs to stdout header information for a WebArchiveBundle
      * bundle.
@@ -597,7 +578,6 @@ class ArcTool implements CrawlConstants
      * @param array $info header info that has already been read from
      *     the description.txt file
      * @param string $archive_path file path of the folder containing the bundle
-
      */
     function outputInfoWebArchiveBundle($info, $archive_path)
     {
@@ -609,7 +589,40 @@ class ArcTool implements CrawlConstants
             ($info['WRITE_PARTITION']+1)."\n";
         echo "\n";
     }
-
+    /**
+     * Adds a list of urls as a upcoming schedule for a given queue bundle.
+     * Can be used to make a closed schedule startable
+     *
+     * @param string $timestamp for a queue bundle to add urls to
+     * @param string $url_file_name name of file consist of urls to inject into
+     *      the given crawl
+     */
+    function inject($timestamp, $url_file_name)
+    {
+        $admin = new AdminController();
+        $machine_urls = $admin->model("machine")->getQueueServerUrls();
+        $num_machines = count($machine_urls);
+        $new_urls = file_get_contents($url_file_name);
+        $inject_urls = $admin->convertStringCleanArray($new_urls);
+        if(!$inject_urls || count($inject_urls) == 0) {
+            echo "\nNo urls in $url_file_name to inject.\n\n";
+            exit();
+        }
+        $crawl_model = $admin->model("crawl");
+        $seed_info = $crawl_model->getCrawlSeedInfo($timestamp, $machine_urls);
+        if(!$seed_info) {
+            echo "\nNo queue bundle with timestamp: $timestamp.\n\n";
+            exit();
+        }
+        $seed_info['seed_sites']['url'][] = "#\n#". date('r')."\n#";
+        $seed_info['seed_sites']['url'] = array_merge(
+            $seed_info['seed_sites']['url'], $inject_urls);
+        $crawl_model->setCrawlSeedInfo($timestamp,
+            $seed_info, $machine_urls);
+        $crawl_model->injectUrlsCurrentCrawl($timestamp, $inject_urls,
+            $machine_urls);
+        echo "Urls injected!";
+    }
     /**
      * Used to list out the pages/summaries stored in a bundle at
      * $archive_path. It lists to stdout $num many documents starting at $start.
@@ -976,6 +989,9 @@ php arc_tool.php dict bundle_name word
 
 php arc_tool.php info bundle_name
     // return info about documents stored in archive.
+
+php arc_tool.php inject timestamp file
+    // injects the urls in file as a schedule into crawl of given timestamp
 
 php arc_tool.php list
     /* returns a list of all the archives in the Yioop! crawl directory,
