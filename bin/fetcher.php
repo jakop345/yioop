@@ -2465,24 +2465,23 @@ class Fetcher implements CrawlConstants
                             crawlLog($info[self::SUMMARY]);
                         }
                         crawlLog("Trying again in 5 seconds...");
-                        if($i == 1) {
-                            /* maybe server has limited memory
-                               and two high a post_max_size
-                             */
-                            crawlLog("Using smaller post size to see if helps");
-                            if(!defined('FORCE_SMALL')) {
-                                define('FORCE_SMALL', true);
-                            }
-                            $this->post_max_size = 1000000;
-                            $info[self::POST_MAX_SIZE] = 1000001;
-                            /* set to small value before try again.
-                             */
-                        }
                     } else {
                         crawlLog("Trying again in 5 seconds. You might want");
                         crawlLog("to check the queue server url and server");
                         crawlLog("key. Queue Server post_max_size is:".
                             $this->post_max_size);
+                    }
+                    if($i == 1 && !defined('FORCE_SMALL') &&
+                        $this->post_max_size > 1000000) {
+                        /* maybe server has limited memory
+                           and two high a post_max_size
+                         */
+                        crawlLog("Using smaller post size to see if helps");
+                        define('FORCE_SMALL', true);
+                        $this->post_max_size = 1000000;
+                        $info[self::POST_MAX_SIZE] = 1000001;
+                        /* set to small value before try again.
+                         */
                     }
                     sleep(5);
                 }
@@ -2495,7 +2494,7 @@ class Fetcher implements CrawlConstants
                     crawlLog($info[self::LOGGING]);
                 }
                 if(isset($info[self::POST_MAX_SIZE]) &&
-                    $this->post_max_size != $info[self::POST_MAX_SIZE]) {
+                    $this->post_max_size > $info[self::POST_MAX_SIZE]) {
                     if(!defined('FORCE_SMALL')) {
                         crawlLog("post_max_size has changed was ".
                             "{$this->post_max_size}. Now is ".
