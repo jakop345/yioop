@@ -2430,6 +2430,7 @@ class Fetcher implements CrawlConstants
         $post_data['num_parts'] = ceil($len/$max_len);
         $num_parts = $post_data['num_parts'];
         $data = & $post_data['data'];
+        unset($post_data['data']);
         $post_data['hash_data'] = crawlHash($data);
         $offset = 0;
         for($i = 1; $i <= $num_parts; $i++) {
@@ -2508,6 +2509,7 @@ class Fetcher implements CrawlConstants
                             crawlLog("Restart failed");
                             return;
                         }
+                        $post_data['data'] = $data;
                         $post_data["resized_once"] = true;
                         return $this->uploadCrawlData(
                             $queue_server, $byte_counts, $post_data);
