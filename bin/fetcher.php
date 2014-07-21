@@ -2430,7 +2430,6 @@ class Fetcher implements CrawlConstants
         $post_data['num_parts'] = ceil($len/$max_len);
         $num_parts = $post_data['num_parts'];
         $data = & $post_data['data'];
-        unset($post_data['data']);
         $post_data['hash_data'] = crawlHash($data);
         $offset = 0;
         for($i = 1; $i <= $num_parts; $i++) {
