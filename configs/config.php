@@ -102,9 +102,14 @@ if(!defined('LOGO')) {
 if(!defined('M_LOGO')) {
     define('M_LOGO', "resources/m-yioop.png");
 }
+if(!defined('MAINTENANCE_MESSAGE')) {
+    define('MAINTENANCE_MESSAGE', <<<EOD
+This Yioop! installation is undergoing maintenance, please come back later!
+EOD
+);
+}
 if(MAINTENANCE_MODE && $_SERVER["SERVER_ADDR"] != $_SERVER["REMOTE_ADDR"]) {
-    echo "This Yioop! installation is undergoing maintenance, please come ".
-        "back later!";
+    echo MAINTENANCE_MESSAGE;
     exit();
 }
 
