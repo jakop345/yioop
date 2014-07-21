@@ -61,10 +61,12 @@ function upgradeLocales()
     $force_folders = array();
     /*
         if we're upgrading version2 to 3 we want to make sure stemmer becomes
-        tokenizer
+        tokenizer, version3 to 4 pushes out stopwordsRemover used for
+        summarization
     */
     if(isset($locale->configure['strings']["view_locale_version2"])
-        || isset($locale->configure['strings']["view_locale_version3"])) {
+        || isset($locale->configure['strings']["view_locale_version3"])
+        || isset($locale->configure['strings']["view_locale_version4"])) {
         $force_folders = array("resources");
     }
     $locale->extractMergeLocales($force_folders);
