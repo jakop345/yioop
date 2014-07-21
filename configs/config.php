@@ -135,8 +135,12 @@ define('FALLBACK_LOCALE_DIR', BASE_DIR."/locale");
 /** name of the cookie used to manage the session
  * (store language and perpage settings), define CSRF token
  */
-define ('SESSION_NAME', "yioopbiscuit");
-define('CSRF_TOKEN', "YIOOP_TOKEN");
+if(!defined('SESSION_NAME')) {
+    define ('SESSION_NAME', "yioopbiscuit");
+}
+if(!defined('CSRF_TOKEN')) {
+    define('CSRF_TOKEN', "YIOOP_TOKEN");
+}
 /** Captcha mode indicating to use a text captcha*/
 define('TEXT_CAPTCHA', 1);
 /** Captcha mode indicating to use a hash cash computation for a captcha*/
