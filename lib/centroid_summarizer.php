@@ -157,7 +157,7 @@ class CentroidSummarizer
             $b = "";
         }
         for($j = 0; $j < $t; $j++) {
-            $nt = preg_match_all("/$b{$terms[$j]}$b/", $formatted_doc);
+            $nt = @preg_match_all("/$b{$terms[$j]}$b/", $formatted_doc);
             $wc[$j] = $nt * $idf[$j];
             if(is_nan($wc[$j]) || is_infinite($wc[$j])) {
                 $wc[$j] = 0;

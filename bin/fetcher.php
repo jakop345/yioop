@@ -1383,7 +1383,8 @@ class Fetcher implements CrawlConstants
                 $this->plugin_processors[$processor] = array_values($plugins);
             }
         }
-        if(isset($info[self::POST_MAX_SIZE])) {
+        if(isset($info[self::POST_MAX_SIZE]) && ($this->post_max_size >
+            $info[self::POST_MAX_SIZE] || !$this->post_max_size) ) {
             $this->post_max_size = $info[self::POST_MAX_SIZE];
         }
         if(isset($info[self::SCHEDULE_TIME])) {
