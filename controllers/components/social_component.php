@@ -957,7 +957,7 @@ class SocialComponent extends Component implements CrawlConstants
                 $recent_found = true;
                 $data['SCRIPT'] .= 'doUpdate();';
             }
-            $pages[$item["PUBDATE"] . "$j"] = $page;
+            $pages[$item["PUBDATE"] . sprintf("%04d", $j)] = $page;
             $j++;
         }
         $sort($pages);
