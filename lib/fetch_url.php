@@ -117,7 +117,9 @@ class FetchUrl implements CrawlConstants
                     curl_setopt($sites[$i][0], CURLOPT_PROXY, $tor_proxy);
                     //CURLPROXY_SOCKS5_HOSTNAME = 7
                     curl_setopt($sites[$i][0], CURLOPT_PROXYTYPE, 7);
-                    crawlLog("Using Tor proxy for $url..");
+                    if($timer) {
+                        crawlLog("Using Tor proxy for $url..");
+                    }
                 } else if($proxy_servers != array()) {
                     $select_proxy = rand(0, count($proxy_servers) - 1);
                     $proxy_server = $proxy_servers[$select_proxy];
@@ -140,7 +142,9 @@ class FetchUrl implements CrawlConstants
                         "$proxy_ip:$proxy_port");
                     curl_setopt($sites[$i][0], CURLOPT_PROXYTYPE,
                         $proxy_type);
-                    crawlLog("Selecting proxy $select_proxy for $url");
+                    if($timer) {
+                        crawlLog("Selecting proxy $select_proxy for $url");
+                    }
                 }
                 if(!$minimal) {
                     curl_setopt($sites[$i][0], CURLOPT_HEADER, true);
@@ -175,7 +179,9 @@ class FetchUrl implements CrawlConstants
             $ready=curl_multi_select($agent_handler, 0.005);
         } while (memory_get_usage() < $memory_limit &&
             time() - $start < PAGE_TIMEOUT &&  $running > 0 );
-        if(time() - $start > PAGE_TIMEOUT) {crawlLog("  TIMED OUT!!!");}
+        if(time() - $start > PAGE_TIMEOUT && $timer) {
+            crawlLog("  TIMED OUT!!!");
+        }
         if($timer) {
             crawlLog("  Page Request time ".(changeInMicrotime($start_time)));
         }
@@ -572,6 +578,7 @@ class FetchUrl implements CrawlConstants
     static function getPage($site, $post_data = NULL, $check_for_errors = false)
     {
         static $agents = array();
+        $not_web_setting = (php_sapi_name() == 'cli');
         $MAX_SIZE = 50;
         $host = @parse_url($site, PHP_URL_HOST);
         if($host !== false) {
@@ -582,7 +589,9 @@ class FetchUrl implements CrawlConstants
                 $agents[$host] = curl_init();
             }
         }
-        crawlLog("  Init curl request of a single page");
+        if($not_web_setting) {
+            crawlLog("  Init curl request of a single page");
+        }
         curl_setopt($agents[$host], CURLOPT_USERAGENT, USER_AGENT);
         curl_setopt($agents[$host], CURLOPT_URL, $site);
 
@@ -604,17 +613,21 @@ class FetchUrl implements CrawlConstants
             // as post and so query string ignored for get's
             curl_setopt($agents[$host], CURLOPT_HTTPGET, true);
         }
-        crawlLog("  Set curl options for single page request");
+        if($not_web_setting) {
+            crawlLog("  Set curl options for single page request");
+        }
         $time = time();
         $response = curl_exec($agents[$host]);
-        if(time() - $time > PAGE_TIMEOUT) {
+        if(time() - $time > PAGE_TIMEOUT && $not_web_setting) {
             crawlLog("  Request took longer than page timeout!!");
             crawlLog("  Either could not reach URL or website took too");
             crawlLog("  long to respond.");
         }
         curl_setopt($agents[$host], CURLOPT_POSTFIELDS, "");
-        crawlLog("  Done curl exec");
-        if($check_for_errors) {
+        if($not_web_setting) {
+            crawlLog("  Done curl exec");
+        }
+        if($not_web_setting && $check_for_errors) {
             self::checkResponseForErrors($response);
         }
         return $response;
