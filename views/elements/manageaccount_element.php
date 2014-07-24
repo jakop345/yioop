@@ -96,12 +96,23 @@ class ManageaccountElement extends Element
             <input type="hidden" name="arg" value="updateuser" />
 
             <table class="name-table">
-            <tr><th class="table-label"><label for="user-name"><?php
+            <tr>
+            <td rowspan="8"><img class='user-icon'
+                src="resources/anonymous.png" alt="<?php
+                    e(manageusers_element_icon); ?>" /><?php
+                if(isset($data['EDIT_USER'])) {
+                    ?><br />
+                    <input type="file" class='icon-upload' name='user_icon' />
+                    <?php
+                }
+                ?></td>
+            <th class="table-label"><label for="user-name"><?php
                 e(tl('manageusers_element_username'))?>:</label></th>
                 <td><input type="text" id="user-name"
                     name="user_name"  maxlength="80"
                     value="<?php e($data['USER']['USER_NAME']); ?>"
-                    class="narrow-field" disabled="disabled" /></td></tr>
+                    class="narrow-field" disabled="disabled" /></td>
+                    </tr>
             <tr><th class="table-label"><label for="first-name"><?php
                     e(tl('manageusers_element_firstname')); ?>:</label></th>
                 <td><input type="text" id="first-name"

@@ -97,6 +97,24 @@ function addRegexDelimiters($expression)
     return $expression;
 }
 /**
+ *  search for a pcre pattern in a subject from a given offset,
+ *  return position of first match if found -1 otherwise.
+ *
+ *  @param string $pattern a Perl compatible regular expression
+ *  @param string $subject to search for pattern in
+ *  @param int $offset character offset into $subject to begin searching from
+ *  @return int position of first match
+ */
+function preg_search($pattern, $subject, $offset = 0)
+{
+    $pos = -1;
+    if(preg_match($pattern, $subject, $matches, PREG_OFFSET_CAPTURE,
+        $offset)) {
+        $pos = $matches[0][1];
+    }
+    return $pos;
+}
+/**
  * Yioop replacement for parse_ini_file($name, true) in case
  * parse_ini_file is on the disable_functions list. Name has underscores
  * to match original function. This function

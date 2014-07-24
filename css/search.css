@@ -148,7 +148,6 @@ span.indent5
     margin-left: 50px;
 }
 
-
 .html-ltr .float-opposite
 {
     float: right;
@@ -420,13 +419,11 @@ a.echo-link:hover
 {
     padding: 3px;
 }
-
 .border-top
 {
     border-top:2px solid black;
     padding-top:5px;
 }
-
 .align-top
 {
     vertical-align: top;
@@ -1145,7 +1142,6 @@ ul.in-list li
 {
     font-size:14pt;
 }
-
 .mobile .login button,
 .mobile .register button,
 .mobile .settings button,
@@ -1153,10 +1149,32 @@ ul.in-list li
 {
     font-size: 14pt;
 }
-
 .mobile .register select
 {
     font-size:12pt;
+}
+
+.user-icon
+{
+    width: 1.4in;
+}
+.mobile .user-icon
+{
+    width:80px;
+}
+.icon-upload
+{
+    color:white;
+    left:16px;
+    padding-right:2px;
+    position:relative;
+    width: 1.2in;
+}
+.mobile .icon-upload
+{
+    left:-5px;
+    position:relative;
+    width:82px;
 }
 /*
    Styles for the statistics for a crawl page

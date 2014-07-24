@@ -87,7 +87,7 @@ class TextProcessor extends PageProcessor
             $lang = self::calculateLang($page);
             if($this->summarizer_option == self::CENTROID_SUMMARIZER) {
                 $summary_cloud =
-                    CentroidSummarizer::getCentroidSummary($page,$lang);
+                    CentroidSummarizer::getCentroidSummary($page, $lang);
                 $summary[self::DESCRIPTION] = $summary_cloud[0];
                 $summary[self::WORD_CLOUD] = $summary_cloud[1];
             }

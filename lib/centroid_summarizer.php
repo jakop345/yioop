@@ -178,6 +178,13 @@ class CentroidSummarizer
             }
             $i++;
         }
+        if(strlen($formatted_doc) < PageProcessor::$max_description_len
+            || $n == 1) {
+            //if input short only use above to get a word cloud
+            $formatted_doc = substr($formatted_doc, 0,
+                PageProcessor::$max_description_len);
+            return array($formatted_doc, $word_cloud);
+        }
         ksort($wc);
         /* Calculate similarity measure between centroid and each sentence */
         $sim = array();

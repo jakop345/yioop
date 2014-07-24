@@ -37,7 +37,7 @@ if(!defined("WORDNET_EXEC")) {
     define("WORDNET_EXEC", "");
 }
 /**
- * This class has a colloection of methods for English locale specific
+ * This class has a collection of methods for English locale specific
  * tokenization. In particular, it has a stemmer, a stop word remover (for
  * use mainly in word cloud creation), and a part of speech tagger (if
  * thesaurus reordering used). The stemmer is my stab at implementing the
@@ -199,7 +199,7 @@ class EnTokenizer
         return $similar_phrases;
     }
     /**
-     * Removes the stop words from the page
+     * Removes the stop words from the page (used for Word Cloud generation)
      *
      * @param string $page the page to remove stop words from.
      * @return string $page with no stop words
