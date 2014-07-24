@@ -66,7 +66,8 @@ function upgradeLocales()
     */
     if(isset($locale->configure['strings']["view_locale_version2"])
         || isset($locale->configure['strings']["view_locale_version3"])
-        || isset($locale->configure['strings']["view_locale_version4"])) {
+        || isset($locale->configure['strings']["view_locale_version4"])
+        || isset($locale->configure['strings']["view_locale_version5"])) {
         $force_folders = array("resources");
     }
     $locale->extractMergeLocales($force_folders);
