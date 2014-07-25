@@ -269,10 +269,13 @@ class CrawlDaemon implements CrawlConstants
     {
         $name_string = CrawlDaemon::getNameString($name, $subname);
         $lock_file = CrawlDaemon::getLockFileName($name, $subname);
+        $not_web_setting = (php_sapi_name() == 'cli');
         if(file_exists($lock_file)) {
             unlink($lock_file);
-            crawlLog("Sending stop signal to $name_string...");
-        } else {
+            if($not_web_setting) {
+                crawlLog("Sending stop signal to $name_string...");
+            }
+        } else if($not_web_setting) {
             crawlLog("$name_string does not appear to running...");
         }
         if($exit) {

@@ -214,9 +214,14 @@ class GroupfeedElement extends Element implements CrawlConstants
             }
             ?>
             <div id='result-<?php e($page['ID']); ?>' >
-            <img src="resources/anonymous.png"
-                class='float-same' style="width:70px;" />
-            <div style="margin-left:.8in;">
+            <div class="float-same center" >
+            <img src="resources/anonymous.png" style="width:70px;" /><br />
+            <a class="echo-link" style="position:relative;top:-9px;"
+                rel='nofollow' href="<?php e($base_query.
+                "&amp;just_user_id=".$page['USER_ID']);?>" ><?php
+                e($page['USER_NAME']); ?></a>
+            </div>
+            <div style="margin-left:.8in;min-height:.7in">
             <h2><a href="<?php e($base_query . "&amp;just_thread=".
                 $page['PARENT_ID']);?>" rel="nofollow"
                 id='title<?php e($page['ID']);?>' <?php
@@ -253,10 +258,6 @@ class GroupfeedElement extends Element implements CrawlConstants
                 e($page[self::SOURCE_NAME]."</a>"
                 ."<span class='gray'> - $pub_date</span>");
              ?></h2>
-            <p>
-            <a class="echo-link" rel='nofollow' href="<?php e($base_query.
-                "&amp;just_user_id=".$page['USER_ID']);?>" ><?php
-                e($page['USER_NAME']); ?></a></p>
             <?php
             if(!isset($data['JUST_GROUP_ID'])) {
                 $description = isset($page[self::DESCRIPTION]) ?
