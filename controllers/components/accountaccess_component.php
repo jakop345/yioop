@@ -192,6 +192,13 @@ class AccountaccessComponent extends Component
                                 $data["MESSAGE"]."</h1>')";
                             return $data;
                         }
+                        if($_FILES['user_icon']['type'] > THUMB_SIZE) {
+                            $data["MESSAGE"] =
+                                tl('accountaccess_component_icon_too_big');
+                            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                                $data["MESSAGE"]."</h1>')";
+                            return $data;
+                        }
                         $user['IMAGE_STRING'] = file_get_contents(
                             $_FILES['user_icon']['tmp_name']);
                         $folder = $user_model->getUserIconFolder(

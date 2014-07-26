@@ -925,7 +925,7 @@ class SocialComponent extends Component implements CrawlConstants
         $parser = new WikiParser("", array(), true);
         foreach($group_items as $item) {
             $page = $item;
-            $page['USER_ICON'] = $user_model->getUserIconPath($page['USER_ID']);
+            $page['USER_ICON'] = $user_model->getUserIconUrl($page['USER_ID']);
             $page[self::TITLE] = $page['TITLE'];
             unset($page['TITLE']);
             $description = $page['DESCRIPTION'];

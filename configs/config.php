@@ -460,7 +460,11 @@ $IMAGE_TYPES = array();
 /**
  * Default edge size of square image thumbnails in pixels
  */
-define('THUMB_SIZE', 64);
+define('THUMB_DIM', 128);
+/**
+ * Maximum size of a user thumb file that can be uploaded
+ */
+define('THUMB_SIZE', 1000000);
 /**
  * @global array associates mimetypes that can be processed by the search
  * engine with the processor class that can process them. This
