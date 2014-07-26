@@ -312,6 +312,9 @@ class UserModel extends Model
         if(file_exists($user_path)) {
             return $user_path;
         }
+        if(!file_exists(APP_DIR) && !mkdir(APP_DIR)) {
+            return false;
+        }
         if(!file_exists($resource_path) && !mkdir($resource_path)) {
             return false;
         }
