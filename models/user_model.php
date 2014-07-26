@@ -306,10 +306,14 @@ class UserModel extends Model
     {
         $user_folder = crawlHash("user" . $user_id . AUTH_KEY);
         $user_prefix = substr($user_folder, 0, 3);
-        $prefix_path = APP_DIR . "/resources/$user_prefix";
+        $resource_path = APP_DIR . "/resources";
+        $prefix_path = $resource_path."/$user_prefix";
         $user_path = "$prefix_path/$user_folder";
         if(file_exists($user_path)) {
             return $user_path;
+        }
+        if(!file_exists($resource_path) && !mkdir($resource_path)) {
+            return false;
         }
         if(!file_exists($prefix_path) && !mkdir($prefix_path)) {
             return false;
