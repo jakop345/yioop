@@ -1184,13 +1184,14 @@ ul.in-list li
     left:16px;
     padding-right:2px;
     position:relative;
-    width: 1.2in;
+    width: 1.6in;
 }
 .mobile .icon-upload
 {
     left:-5px;
     position:relative;
-    width:82px;
+    font-size:11pt;
+    width:86px;
 }
 /*
    Styles for the statistics for a crawl page
