@@ -449,6 +449,7 @@ class UserModel extends Model
             $thumb_string = ImageProcessor::createThumb($image);
             file_put_contents($folder."/user_icon.jpg",
                 $thumb_string);
+            clearstatcache($folder."/user_icon.jpg");
         }
         unset($user['USER_ID']);
         unset($user['USER_NAME']);

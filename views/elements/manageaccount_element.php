@@ -97,12 +97,14 @@ class ManageaccountElement extends Element
 
             <table class="name-table">
             <tr>
-            <td rowspan="8"><img class='user-icon'
+            <td rowspan="8"><img class='user-icon' id='current-icon'
                 src="<?php e($data['USER']['USER_ICON']); ?>" alt="<?php
-                    e(tl('manageusers_element_icon')); ?>" /><?php
+                    e(tl('manageaccounts_element_icon')); ?>" /><?php
                 if(isset($data['EDIT_USER'])) {
-                    ?><br />
-                    <input type="file" class='icon-upload' name='user_icon' />
+                    ?>
+                    <div id='upload-info'></div>
+                    <input type="file" class='icon-upload' id='user-icon'
+                        name='user_icon' onchange="checkUploadIcon()" />
                     <?php
                 }
                 ?></td>
@@ -228,6 +230,31 @@ class ManageaccountElement extends Element
                 e(tl('manageaccount_element_manage_mixes'));
                 ?></a>]</p>
         </div>
+        <script type="text/javascript">
+        function checkUploadIcon()
+        {
+            var max_icon_size = <?php e(THUMB_SIZE) ?>;
+            var upload_icon = elt('user-icon').files[0];
+            var upload_info = elt('upload-info');
+            if(upload_icon.type != 'image/png' &&
+                upload_icon.type != 'image/jpeg' &&
+                upload_icon.type != 'image/gif') {
+                doMessage('<h1 class=\"red\" ><?php
+                    e(tl("manageaccount_element_invalid_filetype")); ?></h1>');
+                elt('user-icon').files[0] = NULL;
+                return;
+            }
+            if(upload_icon.size > max_icon_size) {
+                doMessage('<h1 class=\"red\" ><?php
+                    e(tl("manageaccount_element_file_too_big")); ?></h1>');
+                elt('user-icon').files[0] = NULL;
+                return;
+            }
+            setDisplay('current-icon', false);
+            upload_info.className = "upload-info";
+            upload_info.innerHTML = upload_icon.names;
+        }
+        </script>
         <?php
     }
 }

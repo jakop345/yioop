@@ -1162,6 +1162,22 @@ ul.in-list li
 {
     width:80px;
 }
+.upload-info
+{
+    background-color:gray;
+    height: 1.4in;
+    text-align:center;
+    width: 1.4in;
+    word-wrap: break-word;
+}
+.mobile .upload-info
+{
+    background-color:gray;
+    height: 80px;
+    text-align:center;
+    width:80px;
+    word-wrap: break-word;
+}
 .icon-upload
 {
     color:white;

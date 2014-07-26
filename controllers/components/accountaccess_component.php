@@ -212,7 +212,7 @@ class AccountaccessComponent extends Component
                         }
                     }
                     $user_model->updateUser($user);
-                    $user['USER_ICON'] = $user_model->getUserIconUrl(
+                    $data['USER']['USER_ICON'] = $user_model->getUserIconUrl(
                         $user['USER_ID']);
                     unset($user['IMAGE_STRING']);
                     $data["MESSAGE"] =
