@@ -182,9 +182,6 @@ class ProfileModel extends Model
             "MIX_FRAGMENTS" => "CREATE TABLE MIX_FRAGMENTS (
                 TIMESTAMP NUMERIC(11),FRAGMENT_ID INTEGER, RESULT_BOUND INTEGER,
                 PRIMARY KEY(TIMESTAMP, FRAGMENT_ID))",
-            "RESOURCE" => "CREATE TABLE RESOURCE (
-                RESOURCE_ID $serial PRIMARY KEY $auto_increment,
-                TYPE INTEGER, TYPE_ID INTEGER)",
             "ROLE" => "CREATE TABLE ROLE (
                 ROLE_ID $serial PRIMARY KEY $auto_increment,NAME VARCHAR(512))",
             "ROLE_ACTIVITY" => "CREATE TABLE ROLE_ACTIVITY (ROLE_ID INTEGER,

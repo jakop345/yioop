@@ -275,7 +275,7 @@ class CrawlDaemon implements CrawlConstants
             if($not_web_setting) {
                 crawlLog("Sending stop signal to $name_string...");
             }
-        } else if($not_web_setting) {
+        } else if ($not_web_setting) {
             crawlLog("$name_string does not appear to running...");
         }
         if($exit) {

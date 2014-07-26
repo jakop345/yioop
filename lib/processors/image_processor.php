@@ -66,18 +66,23 @@ class ImageProcessor extends PageProcessor
      */
     static function createThumb($image)
     {
-        $thumb = imagecreatetruecolor(50, 50);
+        $thumb = imagecreatetruecolor(THUMB_SIZE, THUMB_SIZE);
+        imagesavealpha($thumb, true);
+        $trans_colour = imagecolorallocatealpha($thumb, 255, 255, 255, 127);
+        imagefill($thumb, 0, 0, $trans_colour);
         if( isset($image) && $image !== false ) {
             $size_x = imagesx($image);
             $size_y = imagesy($image);
 
             @imagecopyresampled($thumb,
-                $image, 0,0, 0,0, 50, 50, $size_x, $size_y);
+                $image, 0,0, 0,0, THUMB_SIZE, THUMB_SIZE, $size_x, $size_y);
             imagedestroy($image);
         }
-        imagejpeg( $thumb, CRAWL_DIR."/cache/thumb.jpg", 100 );
+        ob_start();
+        imagejpeg($thumb);
+        $thumb_string = ob_get_contents();
+        ob_end_clean();
         imagedestroy($thumb);
-        $thumb_string = file_get_contents(CRAWL_DIR."/cache/thumb.jpg");
         return $thumb_string;
     }
 }

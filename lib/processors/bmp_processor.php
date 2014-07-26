@@ -76,8 +76,7 @@ class BmpProcessor extends ImageProcessor
     function process($page, $url)
     {
         if(is_string($page)) {
-            file_put_contents(CRAWL_DIR."/cache/tmp.bmp", $page);
-            $image = $this->imagecreatefrombmp(CRAWL_DIR."/cache/tmp.bmp");
+            $image = $this->imagecreatefrombmp($page);
             $thumb_string = self::createThumb($image);
             $summary[self::TITLE] = "";
             $summary[self::DESCRIPTION] = "Image of ".
@@ -99,15 +98,9 @@ class BmpProcessor extends ImageProcessor
      *
      * @param string $filename = name of
      */
-    function imagecreatefrombmp($filename)
+    function imagecreatefrombmp($bmp_string)
     {
-        // Read image into a string
-        $file = fopen($filename, "rb");
-        $read = fread($file, self::BMP_ID); //skip identifier and size
-        while(!feof($file) && ($read != "")) {
-            $read .= fread($file, self::BLOCK_SIZE);
-        }
-        $temp = unpack("H*", $read);
+        $temp = unpack("H*", $bmp_string);
         $hex = $temp[1];
         $header = substr($hex, 0, self::BMP_HEADER_LEN);
         $can_understand_flag = substr($header, 0, 4) == "424d";
@@ -124,7 +117,7 @@ class BmpProcessor extends ImageProcessor
         }
         $x = 0;
         $y = 1;
-       /* We're going to manually write pixel info in to the following
+       /* We're going to manually write pixel info into the following
             image object
         */
         $image  = imagecreatetruecolor($width, $height);

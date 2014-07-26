@@ -866,6 +866,7 @@ class SocialComponent extends Component implements CrawlConstants
             $pages = array();
             foreach($groups as $group) {
                 $page = array();
+                $page['USER_ICON'] = "resources/anonymous.png";
                 $page[self::TITLE] = tl('social_component_join_group',
                     $username, $group['GROUP_NAME']);
                 $page[self::DESCRIPTION] =
@@ -924,6 +925,7 @@ class SocialComponent extends Component implements CrawlConstants
         $parser = new WikiParser("", array(), true);
         foreach($group_items as $item) {
             $page = $item;
+            $page['USER_ICON'] = $user_model->getUserIconPath($page['USER_ID']);
             $page[self::TITLE] = $page['TITLE'];
             unset($page['TITLE']);
             $description = $page['DESCRIPTION'];

@@ -60,8 +60,7 @@ class PngProcessor extends ImageProcessor
     function process($page, $url)
     {
        if(is_string($page)) {
-            file_put_contents(CRAWL_DIR."/cache/tmp.png", $page);
-            $image = @imagecreatefrompng(CRAWL_DIR."/cache/tmp.png");
+            $image = @imagecreatefromstring($page);
             $thumb_string = self::createThumb($image);
             $summary[self::TITLE] = "";
             $summary[self::DESCRIPTION] = "Image of ".

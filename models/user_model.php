@@ -35,6 +35,9 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 require_once BASE_DIR."/models/model.php";
 /** Used for the crawlHash function */
 require_once BASE_DIR."/lib/utility.php";
+/** For createThumb used in manage account */
+require_once BASE_DIR."/lib/processors/image_processor.php";
+
 /**
  * This class is used to handle
  * database statements related to User Administration
@@ -247,6 +250,9 @@ class UserModel extends Model
             return false;
         }
         $row = $db->fetchArray($result);
+        if(isset($row['USER_ID'])) {
+            $row['USER_ICON'] = $this->getUserIconUrl($row['USER_ID']);
+        }
         return $row;
     }
     /**
@@ -267,7 +273,51 @@ class UserModel extends Model
             return false;
         }
         $row = $db->fetchArray($result);
+        if(isset($row['USER_ID'])) {
+            $row['USER_ICON'] = $this->getUserIconUrl($row['USER_ID']);
+        }
         return $row;
+    }
+    /**
+     *  Returns the relative url needed to request the given users avatar icon
+     *
+     *  @param int $user_id user to look up path for
+     *  @return string path to icon
+     */
+    function getUserIconUrl($user_id)
+    {
+        $user_icon = "resources/anonymous.png";
+        $user_folder = crawlHash("user" . $user_id . AUTH_KEY);
+        $user_prefix = substr($user_folder, 0, 3);
+        if(file_exists(APP_DIR."/resources/$user_prefix/$user_folder/user_icon".
+            ".jpg")) {
+            $user_icon = "?c=resource&amp;a=get&amp;f=resources&amp;".
+                "s=$user_folder&amp;n=user_icon.jpg";
+        }
+        return $user_icon;
+    }
+    /**
+     * Returns the path to a user's resource folder (where uploaded files
+     * will be stored). It creates the folder if it does not exist
+     *
+     * @param int $user_id user id of user to get path for
+     */
+    function getUserIconFolder($user_id)
+    {
+        $user_folder = crawlHash("user" . $user_id . AUTH_KEY);
+        $user_prefix = substr($user_folder, 0, 3);
+        $prefix_path = APP_DIR . "/resources/$user_prefix";
+        $user_path = "$prefix_path/$user_folder";
+        if(file_exists($user_path)) {
+            return $user_path;
+        }
+        if(!file_exists($prefix_path) && !mkdir($prefix_path)) {
+            return false;
+        }
+        if(mkdir($user_path)) {
+            return $user_path;
+        }
+        return false;
     }
     /**
      * Set status of user by user_id
@@ -381,13 +431,22 @@ class UserModel extends Model
      * Used to update the fields stored in a USERS row according to
      * an array holding new values
      *
-     * @param array $user updated values for a USERS row
+     * @param array $user updated values for a USERS row 
      */
     function updateUser($user)
     {
         $user_id = $user['USER_ID'];
+        if(isset($user['IMAGE_STRING'])) {
+            $folder = $this->getUserIconFolder($user_id);
+            $image = @imagecreatefromstring($user['IMAGE_STRING']);
+            $thumb_string = ImageProcessor::createThumb($image);
+            file_put_contents($folder."/user_icon.jpg",
+                $thumb_string);
+        }
         unset($user['USER_ID']);
         unset($user['USER_NAME']);
+        unset($user['IMAGE_STRING']);
+        unset($user['USER_ICON']);
         $sql = "UPDATE USERS SET ";
         $comma ="";
         $params = array();

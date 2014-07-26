@@ -86,7 +86,7 @@ class ManageaccountElement extends Element
                 <?php 
             } else { ?>
                 <form id="changeUserForm" method="post" action='#'
-                    autocomplete="off">
+                    autocomplete="off" enctype="multipart/form-data">
             <?php
             }?>
             <input type="hidden" name="c" value="admin" />
@@ -98,8 +98,8 @@ class ManageaccountElement extends Element
             <table class="name-table">
             <tr>
             <td rowspan="8"><img class='user-icon'
-                src="resources/anonymous.png" alt="<?php
-                    e(manageusers_element_icon); ?>" /><?php
+                src="<?php e($data['USER']['USER_ICON']); ?>" alt="<?php
+                    e(tl('manageusers_element_icon')); ?>" /><?php
                 if(isset($data['EDIT_USER'])) {
                     ?><br />
                     <input type="file" class='icon-upload' name='user_icon' />

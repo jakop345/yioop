@@ -30,9 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
 /**
  * Component of the Yioop control panel used to handle activitys for
  * managing accounts, users, roles, and groups. i.e., Settings of users
@@ -184,7 +182,32 @@ class AccountaccessComponent extends Component
                             $data['USER'][$field] =  $user[$field];
                         }
                     }
+                    if(isset($_FILES['user_icon']['name']) &&
+                        $_FILES['user_icon']['name'] !="") {
+                        if(!in_array($_FILES['user_icon']['type'],
+                            array('image/png', 'image/gif', 'image/jpeg'))) {
+                            $data["MESSAGE"] =
+                                tl('accountaccess_component_unknown_imagetype');
+                            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                                $data["MESSAGE"]."</h1>')";
+                            return $data;
+                        }
+                        $user['IMAGE_STRING'] = file_get_contents(
+                            $_FILES['user_icon']['tmp_name']);
+                        $folder = $user_model->getUserIconFolder(
+                            $user['USER_ID']);
+                        if(!$folder) {
+                            $data["MESSAGE"] =
+                                tl('accountaccess_component_no_user_folder');
+                            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                                $data["MESSAGE"]."</h1>')";
+                            return $data;
+                        }
+                    }
                     $user_model->updateUser($user);
+                    $user['USER_ICON'] = $user_model->getUserIconUrl(
+                        $user['USER_ID']);
+                    unset($user['IMAGE_STRING']);
                     $data["MESSAGE"] =
                         tl('accountaccess_component_user_updated');
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".

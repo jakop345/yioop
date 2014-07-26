@@ -215,13 +215,14 @@ class GroupfeedElement extends Element implements CrawlConstants
             ?>
             <div id='result-<?php e($page['ID']); ?>' >
             <div class="float-same center" >
-            <img src="resources/anonymous.png" style="width:70px;" /><br />
-            <a class="echo-link" style="position:relative;top:-9px;"
-                rel='nofollow' href="<?php e($base_query.
+            <img class="feed-user-icon" src="<?php
+                e($page['USER_ICON']); ?>" /><br />
+            <a class="feed-user-link echo-link" rel='nofollow'
+                href="<?php e($base_query.
                 "&amp;just_user_id=".$page['USER_ID']);?>" ><?php
                 e($page['USER_NAME']); ?></a>
             </div>
-            <div style="margin-left:.8in;min-height:.7in">
+            <div class="feed-item-body">
             <h2><a href="<?php e($base_query . "&amp;just_thread=".
                 $page['PARENT_ID']);?>" rel="nofollow"
                 id='title<?php e($page['ID']);?>' <?php

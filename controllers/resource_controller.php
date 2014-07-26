@@ -74,7 +74,7 @@ class ResourceController extends Controller implements CrawlConstants
      */
     function get()
     {
-        if(!isset($_REQUEST['n']) || !isset($_REQUEST['f'])) return;
+        if(!isset($_REQUEST['n']) || !isset($_REQUEST['f'])) { return; }
         $name = $this->clean($_REQUEST['n'], "string");
         if(in_array($_REQUEST['f'], array("css", "scripts", "resources"))) {
             /* notice in this case we don't check if request come from a
@@ -83,6 +83,12 @@ class ResourceController extends Controller implements CrawlConstants
             */
             $folder = $_REQUEST['f'];
             $base_dir = APP_DIR."/$folder";
+            if(isset($_REQUEST['s']) && $folder == "resources") {
+                // handle sub-folders of resource (must be numeric)
+                $subfolder = $this->clean($_REQUEST['s'], "hash");
+                $prefix_folder = substr($subfolder, 0, 3);
+                $base_dir .= "/$prefix_folder/$subfolder";
+            }
             $type = UrlParser::getDocumentType($name);
             $name = UrlParser::getDocumentFilename($name);
             $name = ($type != "") ? "$name.$type" :$name;

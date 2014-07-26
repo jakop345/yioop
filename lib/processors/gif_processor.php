@@ -60,8 +60,7 @@ class GifProcessor extends ImageProcessor
     function process($page, $url)
     {
         if(is_string($page)) {
-            file_put_contents(CRAWL_DIR."/cache/tmp.gif", $page);
-            $image = @imagecreatefromgif(CRAWL_DIR."/cache/tmp.gif");
+            $image = @imagecreatefromstring($page);
             $thumb_string = self::createThumb($image);
             $summary[self::TITLE] = "";
             $summary[self::DESCRIPTION] =

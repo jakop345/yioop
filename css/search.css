@@ -2342,13 +2342,11 @@ div.group-result
     left: 0px;
     right: 0px;
 }
-
 .mobile .light-content h2
 {
     font-size:12pt;
     padding:20px;
 }
-
 .light-content
 {
     background-color: white;
@@ -2367,7 +2365,6 @@ div.group-result
 {
     top: 8.5in;
 }
-
 .share-lightbox .light-content
 {
     top: 1.5in;
@@ -2377,7 +2374,6 @@ div.group-result
 {
     font-size:16pt;
 }
-
 .mobile .light-content
 {
     border: 5px solid #8A4;
@@ -2386,25 +2382,40 @@ div.group-result
     right:10px;
     width:260px;
 }
-
 .restrict-sites-by-url
 {
     height:0.25in;
     width: 0.25in;
 }
-
 .overlay
 {
     margin:100px auto;
 }
-
+/** Feed styles*/
+.feed-user-link
+{
+    position:relative;
+    top:-9px;
+}
+.feed-user-icon
+{
+    width: 70px;
+}
+.html-ltr .feed-item-body
+{
+    margin-left:.8in;
+    min-height:.7in;
+}
+.html-rtl .feed-item-body
+{
+    margin-right:.8in;
+    min-height:.7in;
+}
 /* Captcha settings styles */
-
 .captcha {
     padding: 5px;
     width: 2.1in;
 }
-
 /**
  * Styles for wiki tables
  */

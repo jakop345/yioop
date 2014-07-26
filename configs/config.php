@@ -458,6 +458,10 @@ $INDEXED_FILE_TYPES = array("unknown");
  */
 $IMAGE_TYPES = array();
 /**
+ * Default edge size of square image thumbnails in pixels
+ */
+define('THUMB_SIZE', 64);
+/**
  * @global array associates mimetypes that can be processed by the search
  * engine with the processor class that can process them. This
  * array is populated in the individual lib/processors page processors
