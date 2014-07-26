@@ -252,7 +252,7 @@ class ManageaccountElement extends Element
             }
             setDisplay('current-icon', false);
             upload_info.className = "upload-info";
-            upload_info.innerHTML = upload_icon.names;
+            upload_info.innerHTML = upload_icon.name;
         }
         </script>
         <?php
