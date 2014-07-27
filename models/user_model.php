@@ -291,7 +291,7 @@ class UserModel extends Model
         $user_prefix = substr($user_folder, 0, 3);
         if(file_exists(APP_DIR."/resources/$user_prefix/$user_folder/user_icon".
             ".jpg")) {
-            $user_icon = "?c=resource&amp;a=get&amp;f=resources&amp;".
+            $user_icon = "./?c=resource&amp;a=get&amp;f=resources&amp;".
                 "s=$user_folder&amp;n=user_icon.jpg";
         }
         return $user_icon;
