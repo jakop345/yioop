@@ -1272,6 +1272,10 @@ class SocialComponent extends Component implements CrawlConstants
                         $page_name = $filter;
                     }
                 break;
+                case 'resources':
+                    $data["MODE"] = 'resources';
+                    $data['PAGE_NAME'] = $page_name;
+                break;
             }
         }
         if(!$page_name) {

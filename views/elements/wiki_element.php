@@ -148,10 +148,13 @@ class WikiElement extends Element implements CrawlConstants
             case "history":
                 $this->renderHistory($data);
             break;
-            case "show":
             case "read":
+            case "show":
             default:
                 $this->renderReadPage($data, $can_edit, $logged_in);
+            break;
+            case "resources":
+                $this->renderResources($data);
             break;
         }
         e('</div>');
@@ -223,8 +226,13 @@ class WikiElement extends Element implements CrawlConstants
             e(CSRF_TOKEN.'='.$data[CSRF_TOKEN].
             '&amp;just_thread='.$data['DISCUSS_THREAD']);?>" ><?php
             e(tl('wiki_element_discuss'))?></a>]
+        [<a href="?c=<?php e($data['CONTROLLER']); ?>&amp;a=wiki&amp;<?php
+            e(CSRF_TOKEN.'='.$data[CSRF_TOKEN].'&amp;arg=resources&amp;'.
+            'group_id='.$data['GROUP']['GROUP_ID'].
+            '&amp;page_name='.$data['PAGE_NAME']);?>" ><?php
+            e(tl('wiki_element_resources')); ?></a>]
         </div>
-        <form id="editpageForm" method="post" action='#' 
+        <form id="editpageForm" method="post" action='/.'
             onsubmit="elt('caret-pos').value =
             (elt('wiki-page').selectionStart) ?
             elt('wiki-page').selectionStart : 0;
@@ -373,8 +381,8 @@ class WikiElement extends Element implements CrawlConstants
             <b><?php e(tl('wiki_view_difference')); ?></b>
             <input type="text" id="diff-1" name="diff1"
                 value="<?php  e($data['diff1']); ?>" /> -
-            <input type="text" id="diff-2" name="diff2" 
-                value="<?php  e($data['diff2']); ?>" /> 
+            <input type="text" id="diff-2" name="diff2"
+                value="<?php  e($data['diff2']); ?>" />
             <button class="button-box" type="submit"><?php
                 e(tl('wiki_view_go')); ?></button>
             </form>
@@ -440,6 +448,67 @@ class WikiElement extends Element implements CrawlConstants
         function updateSecond(val)
         {
             elt('diff-2').value=val;
+        }
+        </script>
+        <?php
+    }
+
+    /**
+     * Used to draw the revision history page for a wiki document
+     * Has a form that can be used to draw the diff of two revisions
+     *
+     * @param array $data fields contain info about revisions of a Wiki page
+     */
+    function renderResources($data)
+    {
+        $base_query = "?c={$data['CONTROLLER']}&amp;".CSRF_TOKEN."=".
+            $data[CSRF_TOKEN] . "&amp;group_id=".
+            $data["GROUP"]["GROUP_ID"]."&amp;a=wiki";
+        ?>
+        <div class="float-opposite"><a href="<?php e($base_query .
+                    '&amp;arg=edit&amp;a=wiki&amp;page_name='.
+                    $data['PAGE_NAME']); ?>"><?php
+            e(tl("wiki_view_back")); ?></a></div>
+        <div>
+        <form id="resourceUploadForm" method="get" action='./'>
+        <input type="hidden" name="c" value="group" />
+        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
+            e($data[CSRF_TOKEN]); ?>" />
+        <input type="hidden" name="a" value="wiki" />
+        <input type="hidden" name="arg" value="resources" />
+        <input type="hidden" name="group_id" value="<?php
+            e($data['GROUP']['GROUP_ID']); ?>" />
+        <input type="hidden" name="page_id" value="<?php
+            e($data["page_id"]); ?>" />
+        <input type="file" id='page-resource'
+            name='page_resource' onchange="checkUploadResource()" />
+        <button class="button-box" type="submit"><?php
+            e(tl('wiki_view_upload')); ?></button>
+        </form>
+        </div>
+        <script type="text/javascript">
+        function checkUploadIcon()
+        {
+            var max_resource_size = 0;
+            var upload_icon = elt('page-resource').files[0];
+            var upload_info = elt('upload-info');
+            if(upload_icon.type != 'image/png' &&
+                upload_icon.type != 'image/jpeg' &&
+                upload_icon.type != 'image/gif') {
+                doMessage('<h1 class=\"red\" ><?php
+                    e(tl("manageaccount_element_invalid_filetype")); ?></h1>');
+                elt('user-icon').files[0] = NULL;
+                return;
+            }
+            if(upload_icon.size > max_resource_size) {
+                doMessage('<h1 class=\"red\" ><?php
+                    e(tl("manageaccount_element_file_too_big")); ?></h1>');
+                elt('user-icon').files[0] = NULL;
+                return;
+            }
+            setDisplay('current-icon', false);
+            upload_info.className = "upload-info";
+            upload_info.innerHTML = upload_icon.name;
         }
         </script>
         <?php
