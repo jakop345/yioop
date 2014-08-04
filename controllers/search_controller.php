@@ -1029,11 +1029,11 @@ class SearchController extends Controller implements CrawlConstants
     }
     //*********BEGIN SEARCH API *********
     /**
-     * Part of Yioop! Search API. Performs a normal search query and returns
+     * Part of Yioop Search API. Performs a normal search query and returns
      * associative array of query results
      *
      * @param string $query this can be any query string that could be
-     *     entered into the search bar on Yioop! (other than related: and
+     *     entered into the search bar on Yioop (other than related: and
      *     cache: queries)
      * @param int $results_per_page number of results to return
      * @param int $limit first result to return from the ordered query results
@@ -1071,7 +1071,7 @@ class SearchController extends Controller implements CrawlConstants
         $this->model("phrase")->clearQuerySavePoint($save_timestamp);
     }
     /**
-     * Part of Yioop! Search API. Performs a related to a given url
+     * Part of Yioop Search API. Performs a related to a given url
      * search query and returns associative array of query results
      *
      * @param string $url to find related documents for
@@ -1101,7 +1101,7 @@ class SearchController extends Controller implements CrawlConstants
         return $data;
     }
     /**
-     * Part of Yioop! Search API. Performs a related to a given url
+     * Part of Yioop Search API. Performs a related to a given url
      * search query and returns associative array of query results
      *
      * @param string $url to get cached page for
@@ -1342,7 +1342,8 @@ class SearchController extends Controller implements CrawlConstants
             $inlinks["PAGES"][0][self::URL] : "";
         $type = $cache_item[self::TYPE];
         $loc_url = ($in_url == "") ? $url : $in_url;
-        $cache_file = "<html><head><title>Yioop! Cache</title></head>".
+        $cache_file = "<html><head><title>" .
+            tl('search_controller_yioop_cache') . "</title></head>".
             "<body><object onclick=\"document.location='$loc_url'\"".
             " data='data:$type;base64,".
             base64_encode($cache_file)."' type='$type' />";
@@ -1460,7 +1461,8 @@ class SearchController extends Controller implements CrawlConstants
                 "<a><table><tr><td><th><dt><dir><dl><dd><pre>";
             $cache_file = strip_tags($cache_file, $body_tags);
             $cache_file = wordwrap($cache_file, 80);
-            $cache_file = "<html><head><title>Yioop! Cache</title></head>".
+            $cache_file = "<html><head><title>". 
+                tl('search_controller_yioop_cache') . "</title></head>".
                 "<body>".$cache_file."</body></html>";
             $dom = new DOMDocument();
             restore_error_handler();

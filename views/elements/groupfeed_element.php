@@ -273,7 +273,9 @@ class GroupfeedElement extends Element implements CrawlConstants
                         e($page['OLD_DESCRIPTION']); ?></div>
                     <?php
                 }
-                if($logged_in && isset($page["VOTE_ACCESS"])) {
+                if($logged_in && isset($page["VOTE_ACCESS"]) &&
+                    in_array($page["VOTE_ACCESS"], array(UP_DOWN_VOTING_GROUP,
+                        UP_VOTING_GROUP))) {
                     ?>
                     <div class="gray"><b>
                     <?php

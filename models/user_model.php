@@ -286,7 +286,7 @@ class UserModel extends Model
      */
     function getUserIconUrl($user_id)
     {
-        $user_icon = "resources/anonymous.png";
+        $user_icon = "./resources/anonymous.png";
         $user_folder = crawlHash("user" . $user_id . AUTH_KEY);
         $user_prefix = substr($user_folder, 0, 3);
         if(file_exists(APP_DIR."/resources/$user_prefix/$user_folder/user_icon".

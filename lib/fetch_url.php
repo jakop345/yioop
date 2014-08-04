@@ -103,6 +103,7 @@ class FetchUrl implements CrawlConstants
                     CURL_IPRESOLVE_WHATEVER);
                 curl_setopt($sites[$i][0], CURLOPT_URL, $url);
                 if(strcmp(substr($url,-10), "robots.txt") == 0 ) {
+                    $sites[$i]['ROBOT'] = true;
                     $follow = true; /*wikipedia redirects their robot page. grr
                                       want to force this for robots pages
                                     */
@@ -246,6 +247,30 @@ class FetchUrl implements CrawlConstants
                 }
                 //curl_multi_remove_handle($agent_handler, $sites[$i][0]);
                 curl_close($sites[$i][0]);
+                if(isset($sites[$i]['ROBOT']) && $sites[$i]['ROBOT']) {
+                    if(isset($sites[$i][self::TYPE]) &&
+                        $sites[$i][self::TYPE] != "text/plain" &&
+                        isset($sites[$i][CrawlConstants::LOCATION]) &&
+                        count($site[CrawlConstants::LOCATION]) > 0) {
+                        $sites[$i][self::TYPE] = "text/plain";
+                        $sites[$i][self::HTTP_CODE] = "200";
+                        $tmp = wordwrap($sites[$i][$value], 80);
+                        $tmp_parts = explode("\n", $tmp);
+                        $tmp = "# Suspect server misconfiguration\n";
+                        $tmp .= "# Assume shouldn't crawl this site\n";
+                        $tmp .= "User-agent: *\n";
+                        $tmp .= "Disallow: /\n";
+                        $tmp .= "# Original error code: ".
+                            $sites[$i][self::HTTP_CODE]."\n";
+                        $tmp .= "# Original content:\n";
+                        foreach($tmp_parts as $part) {
+                            $tmp = "#".$part."\n";
+                        }
+                        $sites[$i][$value] = $tmp;
+                        $sites[$i][self::HTTP_CODE] = "200";
+                        unset($site[CrawlConstants::LOCATION]);
+                    }
+                }
             } //end big if
         } //end for
         if($timer) {

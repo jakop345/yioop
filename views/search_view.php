@@ -305,7 +305,8 @@ class SearchView extends View implements CrawlConstants
                     $this->helper("videourl")->render($url,
                         $data['VIDEO_SOURCES'], $data["OPEN_IN_TABS"]);
                 }
-                if(!MOBILE && isset($page[self::WORD_CLOUD])) { ?>
+                if(!MOBILE && isset($page[self::WORD_CLOUD]) &&
+                    is_array($page[self::WORD_CLOUD])) { ?>
                     <p><span class="echo-link" <?php e($subtitle); ?>><?php
                         e(UrlParser::simplifyUrl($url, 40)." ");
                     ?></span><?php
@@ -314,18 +315,18 @@ class SearchView extends View implements CrawlConstants
                     e("<span class='word-cloud-spacer'>".
                         tl('search_view_word_cloud')."</span>");
                         $len = 0;
-                        foreach($cloud as $word) {
-                            $len += strlen($word);
-                            if($len > 40) { break; }
-                            ?><span class="word-cloud">
-                            <a class='word-cloud-<?php e($i)?>'
-                            href="?<?php e($token_string_amp);
-                                ?>its=<?php e($data['its']);
-                                ?>&amp;q=<?php e($word);?>"><?php
-                                e($this->helper("displayresults")->
-                                render($word)."</a></span>");
-                            $i++;
-                        }
+                    foreach($cloud as $word) {
+                        $len += strlen($word);
+                        if($len > 40) { break; }
+                        ?><span class="word-cloud">
+                        <a class='word-cloud-<?php e($i)?>'
+                        href="?<?php e($token_string_amp);
+                            ?>its=<?php e($data['its']);
+                            ?>&amp;q=<?php e($word);?>"><?php
+                            e($this->helper("displayresults")->
+                            render($word)."</a></span>");
+                        $i++;
+                    }
                 } else { ?>
                     <p><span class="echo-link" <?php e($subtitle); ?>><?php
                         e(UrlParser::simplifyUrl($url, 100)." ");

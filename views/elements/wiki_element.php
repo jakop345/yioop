@@ -232,7 +232,7 @@ class WikiElement extends Element implements CrawlConstants
             '&amp;page_name='.$data['PAGE_NAME']);?>" ><?php
             e(tl('wiki_element_resources')); ?></a>]
         </div>
-        <form id="editpageForm" method="post" action='/.'
+        <form id="editpageForm" method="post" action='./'
             onsubmit="elt('caret-pos').value =
             (elt('wiki-page').selectionStart) ?
             elt('wiki-page').selectionStart : 0;
@@ -470,45 +470,50 @@ class WikiElement extends Element implements CrawlConstants
                     $data['PAGE_NAME']); ?>"><?php
             e(tl("wiki_view_back")); ?></a></div>
         <div>
-        <form id="resourceUploadForm" method="get" action='./'>
-        <input type="hidden" name="c" value="group" />
+        <form id="resourceUploadForm" method="post" action='./'
+            enctype="multipart/form-data">
+        <input type="hidden" name="c" value="<?php e($data['CONTROLLER']);
+            ?>" />
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" name="a" value="wiki" />
         <input type="hidden" name="arg" value="resources" />
         <input type="hidden" name="group_id" value="<?php
             e($data['GROUP']['GROUP_ID']); ?>" />
-        <input type="hidden" name="page_id" value="<?php
-            e($data["page_id"]); ?>" />
-        <input type="file" id='page-resource'
+        <input type="hidden" name="page_name" value="<?php
+            e($data['PAGE_NAME']); ?>" />
+        <h3><?php e(tl('wiki_view_resources_page'));?></h3>
+        <p><?php e(tl('wiki_view_resources_info'));?></p>
+        <div><input type="file" id='page-resource'
             name='page_resource' onchange="checkUploadResource()" />
-        <button class="button-box" type="submit"><?php
-            e(tl('wiki_view_upload')); ?></button>
+            <button class="button-box" type="submit"><?php
+            e(tl('wiki_view_upload')); ?></button></div>
         </form>
         </div>
         <script type="text/javascript">
-        function checkUploadIcon()
+        function checkUploadResource()
         {
-            var max_resource_size = 0;
+            return true;
+          /*  var max_resource_size = 0;
             var upload_icon = elt('page-resource').files[0];
             var upload_info = elt('upload-info');
             if(upload_icon.type != 'image/png' &&
                 upload_icon.type != 'image/jpeg' &&
                 upload_icon.type != 'image/gif') {
                 doMessage('<h1 class=\"red\" ><?php
-                    e(tl("manageaccount_element_invalid_filetype")); ?></h1>');
+                    e(tl("wiki_element_invalid_filetype")); ?></h1>');
                 elt('user-icon').files[0] = NULL;
                 return;
             }
             if(upload_icon.size > max_resource_size) {
                 doMessage('<h1 class=\"red\" ><?php
-                    e(tl("manageaccount_element_file_too_big")); ?></h1>');
+                    e(tl("wiki_element_file_too_big")); ?></h1>');
                 elt('user-icon').files[0] = NULL;
                 return;
             }
             setDisplay('current-icon', false);
             upload_info.className = "upload-info";
-            upload_info.innerHTML = upload_icon.name;
+            upload_info.innerHTML = upload_icon.name;*/
         }
         </script>
         <?php

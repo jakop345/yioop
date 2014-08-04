@@ -916,6 +916,9 @@ class GroupModel extends Model
                 GROUP_PAGE_HISTORY HP WHERE GP.GROUP_ID = ?
                 AND GP.TITLE = ? AND GP.LOCALE_TAG = ? AND HP.PAGE_ID = GP.ID
                 ORDER BY HP.PUBDATE DESC ".$db->limitOffset(0, 1);
+        } else if ($mode == "resources") {
+            $sql = "SELECT ID FROM GROUP_PAGE
+                WHERE GROUP_ID = ? AND TITLE=? AND LOCALE_TAG = ?";
         } else {
             $sql = "SELECT ID, PAGE, DISCUSS_THREAD FROM GROUP_PAGE
                 WHERE GROUP_ID = ? AND TITLE=? AND LOCALE_TAG = ?";
@@ -1033,6 +1036,101 @@ class GroupModel extends Model
             }
         }
         return array($total, $page_name, $pages);
+    }
+    /**
+     *
+     * @param int $group_id
+     * @param int $page_id
+     */
+    function getGroupPageResourcesFolders($group_id, $page_id)
+    {
+        $group_page_folder = crawlHash(
+            "group" . $group_id. $page_id . AUTH_KEY);
+        $thumb_page_folder = crawlHash(
+            "thumb" . $group_id. $page_id . AUTH_KEY);
+        $group_prefix = substr($group_page_folder, 0, 3);
+        $thumb_prefix = substr($group_page_folder, 0, 3);
+        $resource_path = APP_DIR . "/resources";
+        $group_prefix_path = $resource_path."/$group_prefix";
+        $thumb_prefix_path = $resource_path."/$thumb_prefix";
+        $group_path = "$group_prefix_path/$group_page_folder";
+        $thumb_path = "$thumb_prefix_path/$thumb_page_folder";
+        if(file_exists($group_path) && file_exists($thumb_path)) {
+            return array($group_path, $thumb_path);
+        }
+        if(!file_exists(APP_DIR) && !mkdir(APP_DIR)) {
+            return false;
+        }
+        if(!file_exists($resource_path) && !mkdir($resource_path)) {
+            return false;
+        }
+        if(!file_exists($group_prefix_path) && !mkdir($group_prefix_path)) {
+            return false;
+        }
+        if(!file_exists($thumb_prefix_path) && !mkdir($thumb_prefix_path)) {
+            return false;
+        }
+        if(mkdir($group_path) && mkdir($thumb_path)) {
+            return array($group_path, $thumb_path);
+        }
+    }
+    /**
+     *
+     * @param int $group_id
+     * @param int $page_id
+     */
+    function copyFileToGroupPageResource($tmp_name, $file_name, $mime_type,
+        $group_id, $page_id)
+    {
+        $folders = $this->getGroupPageResourcesFolders($group_id, $page_id);
+        if(!$folders) {return false; }
+        list($folder, $thumb_folder) = $folders;
+        if(move_uploaded_file($tmp_name, "$folder/$file_name")) {
+            $file_string = file_get_contents("$folder/$file_name");
+        } else {
+            return false;
+        }
+        if(in_array($mime_type, array('image/png', 'image/gif', 'image/jpeg'))){
+            $image = @imagecreatefromstring($file_string);
+            $thumb_string = ImageProcessor::createThumb($image);
+            file_put_contents("$thumb_folder/$file_name.jpg",
+                $thumb_string);
+            clearstatcache("$thumb_folder/$file_name.jpg");
+        }
+    }
+    /**
+     *
+     * @param int $group_id
+     * @param int $page_id
+     */
+    function getGroupPageResourceUrls($group_id, $page_id)
+    {
+        $folders = $this->getGroupPageResourcesFolders($group_id, $page_id);
+        if(!$folders) {return false; }
+        list($folder, $thumb_folder) = $folders;
+        $folder_len = strlen($folder) + 1;
+        $thumb_len = strlen($thumb_folder) + 1;
+        $pre_resources = glob("$folder/*");
+        $pre_thumbs = glob("$thumb_folder/*");
+        $resources = array();
+        $thumbs = array();
+        foreach($pre_thumbs as $pre_thumb) {
+            $thumbs[] = substr($pre_thumb, $thumb_len);
+        }
+        foreach($pre_resources as $pre_resource) {
+            $resource = array();
+            $name = substr($pre_resource, $folder_len);
+            $resource['name'] = "./?c=resource&amp;a=get&amp;f=resources&amp;".
+                "g=$group_id&amp;p=$page_id&amp;n=$name";
+            if(in_array($name.".jpg", $thumbs)) {
+                $resource['thumb'] = "./?c=resource&amp;a=get&amp;".
+                    "f=resources&amp;g=$group_id&amp;p=$page_id&amp;t=$name";
+            } else {
+                $resource['thumb'] = "./resources/file-icon.png";
+            }
+            $resources[] = $resource;
+        }
+        return $resources;
     }
     /**
      * Returns a list of applicable wiki pages of a group

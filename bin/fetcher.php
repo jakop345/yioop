@@ -432,14 +432,12 @@ class Fetcher implements CrawlConstants
      * @var array
      */
     var $programming_language_extension;
-
     /**
      * If this is not null and a .onion url is detected then this url will
      * used as a proxy server to download the .onion url
      * @var string
      */
     var $tor_proxy;
-
     /**
      * an array of proxy servers to use rather than to directly download web
      * pages from the current machine. If is the empty array, then we just
@@ -528,6 +526,7 @@ class Fetcher implements CrawlConstants
         $this->tor_proxy = "";
         $this->proxy_servers = array();
 
+        $ip_array = gethostbynamel(gethostname());
         $this->total_git_urls = 0;
         $this->all_git_urls = array();
         $this->programming_language_extension = array('java' => 'java',
@@ -1478,7 +1477,7 @@ class Fetcher implements CrawlConstants
         foreach($delete_indices as $delete_index) {
             $extension = UrlParser::getDocumentType(
                 $this->to_crawl[$delete_index][0]);
-            $repository_type = FetchGitRepositoryUrls::checKForRepository(
+            $repository_type = FetchGitRepositoryUrls::checkForRepository(
                 $extension);
             $git_set = false;
             if($to_crawl_flag == true) {
@@ -1574,7 +1573,6 @@ class Fetcher implements CrawlConstants
             }
             // text/robot is my made up mimetype for robots.txt files
             if(isset($site[self::ROBOT_PATHS])) {
-                $site[self::GOT_ROBOT_TXT] = true;
                 if(!$was_error) {
                     $type = "text/robot";
                 } else {
@@ -1936,7 +1934,7 @@ class Fetcher implements CrawlConstants
             self::HASH, self::SERVER, self::SERVER_VERSION,
             self::OPERATING_SYSTEM, self::MODIFIED, self::ROBOT_INSTANCE,
             self::LOCATION, self::SIZE, self::TOTAL_TIME, self::DNS_TIME,
-            self::ROBOT_PATHS, self::GOT_ROBOT_TXT, self::CRAWL_DELAY,
+            self::ROBOT_PATHS, self::CRAWL_DELAY,
             self::AGENT_LIST, self::ROBOT_METAS, self::WARC_ID,
             self::CACHE_PAGE_VALIDATORS);
         foreach($summary_fields as $field) {

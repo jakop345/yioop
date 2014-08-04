@@ -695,43 +695,6 @@ class SocialComponent extends Component implements CrawlConstants
                             "</h1>');";
                     }
                 break;
-                case "upvote":
-                    if(!isset($_REQUEST['group_id']) || !$_REQUEST['group_id']
-                        ||!isset($_REQUEST['post_id']) ||
-                        !$_REQUEST['post_id']){
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('social_component_vote_error').
-                            "</h1>');";
-                        break;
-                    }
-                    $post_id = $parent->clean($_REQUEST['post_id'], "int");
-                    $group_id = $parent->clean($_REQUEST['group_id'], "int");
-                    $group = $group_model->getGroupById($group_id, $user_id);
-                    if(!$group || (!in_array($group["VOTE_ACCESS"],
-                        array(UP_VOTING_GROUP, UP_DOWN_VOTING_GROUP) ) ) ) {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('social_component_no_vote_access').
-                            "</h1>');";
-                        break;
-                    }
-                    $post_item = $group_model->getGroupItem($post_id);
-                    if(!$post_item || $post_item['GROUP_ID'] != $group_id) {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('social_component_no_post_access').
-                            "</h1>');";
-                        break;
-                    }
-                    if($group_model->alreadyVoted($user_id, $post_id)) {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('social_component_already_voted').
-                            "</h1>');";
-                        break;
-                    }
-                    $group_model->voteUp($user_id, $post_id);
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('social_component_vote_recorded').
-                        "</h1>');";
-                break;
                 case "downvote":
                     if(!isset($_REQUEST['group_id']) || !$_REQUEST['group_id']
                         ||!isset($_REQUEST['post_id']) ||
@@ -850,6 +813,43 @@ class SocialComponent extends Component implements CrawlConstants
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('social_component_post_updated'). "</h1>');";
                 break;
+                case "upvote":
+                    if(!isset($_REQUEST['group_id']) || !$_REQUEST['group_id']
+                        ||!isset($_REQUEST['post_id']) ||
+                        !$_REQUEST['post_id']){
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('social_component_vote_error').
+                            "</h1>');";
+                        break;
+                    }
+                    $post_id = $parent->clean($_REQUEST['post_id'], "int");
+                    $group_id = $parent->clean($_REQUEST['group_id'], "int");
+                    $group = $group_model->getGroupById($group_id, $user_id);
+                    if(!$group || (!in_array($group["VOTE_ACCESS"],
+                        array(UP_VOTING_GROUP, UP_DOWN_VOTING_GROUP) ) ) ) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('social_component_no_vote_access').
+                            "</h1>');";
+                        break;
+                    }
+                    $post_item = $group_model->getGroupItem($post_id);
+                    if(!$post_item || $post_item['GROUP_ID'] != $group_id) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('social_component_no_post_access').
+                            "</h1>');";
+                        break;
+                    }
+                    if($group_model->alreadyVoted($user_id, $post_id)) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('social_component_already_voted').
+                            "</h1>');";
+                        break;
+                    }
+                    $group_model->voteUp($user_id, $post_id);
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        tl('social_component_vote_recorded').
+                        "</h1>');";
+                break;
             }
         }
         $groups_count = 0;
@@ -902,8 +902,8 @@ class SocialComponent extends Component implements CrawlConstants
                         $page_info["GROUP_ID"];
                 }
             }
-            if(!isset($_REQUEST['f']) ||
-                !in_array($_REQUEST['f'], array("rss", "json", "serial"))) {
+            if(!$data['REFRESH'] && (!isset($_REQUEST['f']) ||
+                !in_array($_REQUEST['f'], array("rss", "json", "serial")))) {
                 $pub_clause = array('pub_date', "=", "", "ASC");
                 $sort = "ksort";
                 $group_model->incrementThreadViewCount($just_thread);
@@ -1063,6 +1063,9 @@ class SocialComponent extends Component implements CrawlConstants
         $data["CAN_EDIT"] = false;
         $data["MODE"] = "read";
         if(!$group) {
+            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                tl("group_controller_no_group_access").
+                "</h1>');";
             $group_id = PUBLIC_GROUP_ID;
             $group = $group_model->getGroupById($group_id, $user_id);
         } else {
@@ -1273,8 +1276,44 @@ class SocialComponent extends Component implements CrawlConstants
                     }
                 break;
                 case 'resources':
+                    if(!$data["CAN_EDIT"]) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('social_component_insufficient_access').
+                            "</h1>')";
+                        continue;
+                    }
                     $data["MODE"] = 'resources';
                     $data['PAGE_NAME'] = $page_name;
+                    $page_info = $group_model->getPageInfoByName($group_id,
+                        $page_name, $locale_tag, 'resources');
+                    if(isset($_FILES['page_resource']['name']) &&
+                        $_FILES['page_resource']['name'] !="") {
+                        $parts = array('name', 'type', 'tmp_name');
+                        $file = array();
+                        $parts_okay = true;
+                        foreach($parts as $part) {
+                            if(isset($_FILES['page_resource'][$part])) {
+                                $file[$part] = $parent->clean(
+                                    $_FILES['page_resource'][$part], 'string');
+                            } else {
+                                $parts_okay = false;
+                                break;
+                            }
+                        }
+                        if(!$parts_okay) {
+                            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                                tl('social_component_upload_error').
+                                "</h1>')";
+                            break;
+                        }
+                        $group_model->copyFileToGroupPageResource(
+                            $file['tmp_name'], $file['name'], $file['type'],
+                            $group_id, $page_info['ID']);
+                    }
+                    $data['RESOURCES'] =
+                        $group_model->getGroupPageResourceUrls($group_id,
+                        $page_info['ID']);
+                    print_r($data['RESOURCES']);
                 break;
             }
         }

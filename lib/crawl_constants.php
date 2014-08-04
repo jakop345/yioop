@@ -106,7 +106,6 @@ interface CrawlConstants
     const WEIGHT = 'm';
     const ROBOT_PATHS = 'n';
     const HASH = 'o';
-    const GOT_ROBOT_TXT = 'p';
     const PAGE = 'q';
     const DOC_INFO = 'r';
     const TITLE = 's';
