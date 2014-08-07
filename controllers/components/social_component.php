@@ -902,7 +902,8 @@ class SocialComponent extends Component implements CrawlConstants
                         $page_info["GROUP_ID"];
                 }
             }
-            if(!$data['REFRESH'] && (!isset($_REQUEST['f']) ||
+            if((!isset($data['REFRESH']) || !$data['REFRESH']) &&
+                (!isset($_REQUEST['f']) ||
                 !in_array($_REQUEST['f'], array("rss", "json", "serial")))) {
                 $pub_clause = array('pub_date', "=", "", "ASC");
                 $sort = "ksort";
@@ -1310,9 +1311,10 @@ class SocialComponent extends Component implements CrawlConstants
                             $file['tmp_name'], $file['name'], $file['type'],
                             $group_id, $page_info['ID']);
                     }
+                    $data[CSRF_TOKEN] = $parent->generateCSRFToken($user_id);
                     $data['RESOURCES'] =
                         $group_model->getGroupPageResourceUrls($group_id,
-                        $page_info['ID']);
+                        $page_info['ID'], $data[CSRF_TOKEN]);
                     print_r($data['RESOURCES']);
                 break;
             }

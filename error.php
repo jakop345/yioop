@@ -45,13 +45,13 @@ if(!defined('BASE_DIR')) {
  */
 require_once(BASE_DIR.'configs/config.php');
 /**
- * Used to set-up static error pages
- */
-require_once(BASE_DIR."/controllers/static_controller.php");
-/**
  * Load global functions related to localization
  */
 require_once BASE_DIR."/lib/locale_functions.php";
+/**
+ * Used to set-up static error pages
+ */
+require_once(BASE_DIR."/controllers/static_controller.php");
 mb_internal_encoding("UTF-8");
 mb_regex_encoding("UTF-8");
 $locale_tag = guessLocale();

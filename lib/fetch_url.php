@@ -257,7 +257,8 @@ class FetchUrl implements CrawlConstants
                         $tmp = wordwrap($sites[$i][$value], 80);
                         $tmp_parts = explode("\n", $tmp);
                         $tmp = "# Suspect server misconfiguration\n";
-                        $tmp .= "# Assume shouldn't crawl this site\n";
+                        $tmp .= "# Assume shouldn't crawl this site.\n";
+                        $tmp .= "# Pretending got following robots.txt.\n";
                         $tmp .= "User-agent: *\n";
                         $tmp .= "Disallow: /\n";
                         $tmp .= "# Original error code: ".

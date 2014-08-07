@@ -81,13 +81,9 @@ class ResourceController extends Controller implements CrawlConstants
                legitimate source but we do try to restrict it to being
                a file (not a folder) in the above array
             */
-            $folder = $_REQUEST['f'];
-            $base_dir = APP_DIR."/$folder";
-            if(isset($_REQUEST['s']) && $folder == "resources") {
-                // handle sub-folders of resource (must be numeric)
-                $subfolder = $this->clean($_REQUEST['s'], "hash");
-                $prefix_folder = substr($subfolder, 0, 3);
-                $base_dir .= "/$prefix_folder/$subfolder";
+            $base_dir = $this->getBaseFolder();
+            if(!$base_dir) {
+                return;
             }
             $type = UrlParser::getDocumentType($name);
             $name = UrlParser::getDocumentFilename($name);
@@ -110,20 +106,118 @@ class ResourceController extends Controller implements CrawlConstants
             $limit = $this->clean($_REQUEST['l'], "int");
         }
         $path = "$base_dir/$name";
-        if(class_exists("finfo")) {
-            $finfo = new finfo(FILEINFO_MIME);
-            $mime_type = $finfo->file($path);
-        } else {
-            $mime_type = exec('file -b --mime-type ' . $path);
-        }
         if(file_exists($path)) {
+            if(class_exists("finfo")) {
+                $finfo = new finfo(FILEINFO_MIME);
+                $mime_type = $finfo->file($path);
+            } else {
+                $mime_type = exec('file -b --mime-type ' . $path);
+            }
+            $size = filesize($path);
+            $start = 0; 
+            $end = $size - 1;
             header("Content-type:$mime_type");
+            header("Accept-Ranges: bytes");
+            if(isset($_SERVER['HTTP_RANGE'])) {
+                $this->serveRangeRequest($path, $size, $start, $end);
+                return;
+            }
+            header("Content-Length: ".$size);
+            header("Content-Range: bytes $start-$end/$size");
             if(isset($offset) && isset($limit)) {
                 echo file_get_contents($path, false, NULL, $offset, $limit);
             } else {
                 readfile($path);
             }
+        } else {
+            header("Location:./error.php");
         }
+    }
+    /**
+     * Computes based on the request the folder that should be used to
+     * find a file during a resource get request. It also checks if user
+     * has access to the requested folder.
+     *
+     * @return mixed either a string with the folder name in it or false if
+     *      the user does not have access or that folder does not exist.
+     */
+    function getBaseFolder()
+    {
+        $folder = $this->clean($_REQUEST['f'], 'string');
+        $base_dir = APP_DIR."/$folder";
+        if(isset($_REQUEST['s']) && $folder == "resources") {
+            // handle sub-folders of resource (must be numeric)
+            $subfolder = $this->clean($_REQUEST['s'], "hash");
+            $prefix_folder = substr($subfolder, 0, 3);
+        } else if(isset($_REQUEST['g'])) {
+            $user_id = $_SESSION['USER_ID'];
+            if(!isset($_REQUEST[CSRF_TOKEN]) ||
+                !$this->checkCSRFToken(CSRF_TOKEN, $user_id)) {
+                return false; 
+            }
+            if(isset($_REQUEST['p'])) {
+                $page_id = $this->clean($_REQUEST['p'], 'int');
+            }
+            $group_id = $this->clean($_REQUEST['g'], "int");
+            $group_model = $this->model('group');
+            $group = $group_model->getGroupById($group_id, $user_id);
+            if(!$group) { return false; }
+            $hash_word = (isset($_REQUEST['t'])) ? 'thumb' : 'group';
+            $subfolder = crawlHash(
+                $hash_word . $group_id. $page_id . AUTH_KEY);
+            $prefix_folder = substr($subfolder, 0, 3);
+        }
+        $base_dir .= "/$prefix_folder/$subfolder";
+        return $base_dir;
+    }
+    /**
+     * Code to handle HTTP range requests of resources. This allows
+     * HTTP pseudo streaming of video. This code was inspired by:
+     * http://www.tuxxin.com/php-mp4-streaming/
+     */
+    function serveRangeRequest($file, $size, $start, $end)
+    {
+        $current_start = $start;
+        $current_end = $end;
+        list(, $range) = explode('=', $_SERVER['HTTP_RANGE'], 2);
+        if(strpos($range, ',') !== false) {
+            header('HTTP/1.1 416 Requested Range Not Satisfiable');
+            header("Content-Range: bytes $start-$end/$size");
+            return;
+        }
+        if ($range == '-') {
+            $current_start = $size - substr($range, 1);
+        } else {
+            $range = explode('-', $range);
+            $current_start = $range[0];
+            $current_end = (isset($range[1]) && is_numeric($range[1]))
+                ? $range[1] : $size;
+        }
+        $current_end = ($current_end > $end) ? $end : $current_end;
+        if ($current_start > $current_end || $current_start > $size - 1 ||
+            $current_end >= $size) {
+            header('HTTP/1.1 416 Requested Range Not Satisfiable');
+            header("Content-Range: bytes $start-$end/$size");
+            return;
+        }
+        $start = $current_start;
+        $end = $current_end;
+        $length = $end - $start + 1;
+        fseek($fp, $start);
+        header('HTTP/1.1 206 Partial Content');
+        header("Content-Range: bytes $start-$end/$size");
+        header("Content-Length: ".$length);
+        $buffer = 8192;
+        $position = 0;
+        while(!feof($fp) && $position <= $end) {
+            $position = ftell($fp);
+            if ($position + $buffer > $end) {
+                $buffer = $end - $position + 1;
+            }
+            echo fread($fp, $buffer);
+            flush();
+        }
+        fclose($fp);
     }
     /**
      * Used to get a keyword suggest trie. This sends additional

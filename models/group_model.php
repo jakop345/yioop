@@ -1103,7 +1103,7 @@ class GroupModel extends Model
      * @param int $group_id
      * @param int $page_id
      */
-    function getGroupPageResourceUrls($group_id, $page_id)
+    function getGroupPageResourceUrls($group_id, $page_id, $token)
     {
         $folders = $this->getGroupPageResourcesFolders($group_id, $page_id);
         if(!$folders) {return false; }
@@ -1121,10 +1121,12 @@ class GroupModel extends Model
             $resource = array();
             $name = substr($pre_resource, $folder_len);
             $resource['name'] = "./?c=resource&amp;a=get&amp;f=resources&amp;".
-                "g=$group_id&amp;p=$page_id&amp;n=$name";
+                "g=$group_id&amp;p=$page_id&amp;n=$name&amp;".
+                CSRF_TOKEN."=".$token;
             if(in_array($name.".jpg", $thumbs)) {
                 $resource['thumb'] = "./?c=resource&amp;a=get&amp;".
-                    "f=resources&amp;g=$group_id&amp;p=$page_id&amp;t=$name";
+                    "f=resources&amp;g=$group_id&amp;p=$page_id&amp;n=$name".
+                    "&amp;t=thumb&amp;". CSRF_TOKEN . "=" . $token;
             } else {
                 $resource['thumb'] = "./resources/file-icon.png";
             }

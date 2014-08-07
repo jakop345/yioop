@@ -334,8 +334,8 @@ class GroupfeedElement extends Element implements CrawlConstants
                 ?>
             </div>
             </div>
-            <div id='<?php e($page["ID"]); ?>'></div>
             </div>
+            <div id='<?php e($page["ID"]); ?>'></div>
             </div>
             <div>
             &nbsp;

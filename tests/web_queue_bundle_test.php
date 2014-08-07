@@ -133,7 +133,7 @@ class WebQueueBundleTest extends UnitTest
         $host = "http://www.test.com/";
         $paths = array(
             CrawlConstants::ALLOWED_SITES => array("/trapdoor"),
-            CrawlConstants::DISALLOWED_SITES => array("/trap","/*?"),
+            CrawlConstants::DISALLOWED_SITES => array("/trap","/*?",'/cgi-bin'),
         );
         $web_queue->addRobotPaths($host, $paths);
         $test_urls = array(
@@ -149,6 +149,8 @@ class WebQueueBundleTest extends UnitTest
                 "forbidden url 2"),
             array("http://www.test.com/a?b", false,
                 "forbidden url 3"),
+            array("http://www.test.com/cgi-bin/psearch?-list", false,
+                "forbidden url 4"),
         );
         foreach($test_urls as $test_url) {
             $result = $web_queue->checkRobotOkay($test_url[0]);
