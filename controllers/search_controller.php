@@ -1157,8 +1157,8 @@ class SearchController extends Controller implements CrawlConstants
         $hash_key = crawlHash(
             $terms.$url.serialize($ui_flags).serialize($crawl_time));
         if(USE_CACHE) {
-            if($newDoc = $CACHE->get($hash_key)) {
-                echo $newDoc;
+            if($new_doc = $CACHE->get($hash_key)) {
+                echo $new_doc;
                 return;
             }
         }
@@ -1313,16 +1313,16 @@ class SearchController extends Controller implements CrawlConstants
             stristr($_SERVER['_'], 'hhvm')) ||
             (isset($_SERVER['SERVER_SOFTWARE']) &&
             $_SERVER['SERVER_SOFTWARE'] == "HPHP"))) {
-            $newDoc = $this->formatCachePage($cache_item, $cache_file, $url,
+            $new_doc = $this->formatCachePage($cache_item, $cache_file, $url,
                 $summary_string, $crawl_time, $all_crawl_times, $terms,
                 $ui_flags);
         } else {
-            $newDoc = $cache_file;
+            $new_doc = $cache_file;
         }
         if(USE_CACHE) {
-            $CACHE->set($hash_key, $newDoc);
+            $CACHE->set($hash_key, $new_doc);
         }
-        echo $newDoc;
+        echo $new_doc;
     }
     /**
      * Makes an HTML web page for an image cache item

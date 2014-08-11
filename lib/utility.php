@@ -1723,6 +1723,25 @@ function readMessage()
     return rtrim($message);
 }
 /**
+ * Returns the mime type of the provided file name if it can be determined.
+ *
+ * @param string $file_name (name of file including path to figure out
+ *      mime type for)
+ * @return string mime type or unknown if can't be determined
+ */
+function mimeType($file_name)
+{
+    $mime_type = "unknown";
+    if(class_exists("finfo")) {
+        $finfo = new finfo(FILEINFO_MIME);
+        $mime_type = $finfo->file($file_name);
+    } else {
+        $mime_type = exec('file -b --mime-type ' . $file_name);
+    }
+    $mime_type = str_replace('application/ogg', 'video/ogg', $mime_type);
+    return $mime_type;
+}
+/**
  * Checks if class_1 is the same as class_2 or has class_2 as a parent
  * Behaves like 3 param version (last param true) of PHP is_a function
  * that came into being with Version 5.3.9.

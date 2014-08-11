@@ -61,7 +61,9 @@ class ResourceController extends Controller implements CrawlConstants
     {
         if(!isset($_REQUEST['a']) ||
             (!in_array($_REQUEST['a'], array("get", "suggest"))
-            && !$this->checkRequest())) {return; }
+            && !$this->checkRequest())) {
+            return;
+        }
         $activity = $_REQUEST['a'];
 
         if(in_array($activity, $this->activities)) {
@@ -83,11 +85,17 @@ class ResourceController extends Controller implements CrawlConstants
             */
             $base_dir = $this->getBaseFolder();
             if(!$base_dir) {
+                header('HTTP/1.1 401 Unauthorized');
+                echo "<html><head><title>401 Unauthorized</title></head>".
+                    "<body><p>401 Unauthorized</p></body></html>";
                 return;
             }
             $type = UrlParser::getDocumentType($name);
             $name = UrlParser::getDocumentFilename($name);
             $name = ($type != "") ? "$name.$type" :$name;
+            if(isset($_REQUEST['t'])) {
+                $name .= ".jpg";
+            }
         } else if(in_array(
             $_REQUEST['f'], array("cache"))) {
             /*  perform check since these request should come from a known
@@ -107,16 +115,11 @@ class ResourceController extends Controller implements CrawlConstants
         }
         $path = "$base_dir/$name";
         if(file_exists($path)) {
-            if(class_exists("finfo")) {
-                $finfo = new finfo(FILEINFO_MIME);
-                $mime_type = $finfo->file($path);
-            } else {
-                $mime_type = exec('file -b --mime-type ' . $path);
-            }
+            $mime_type = mimeType($path);
             $size = filesize($path);
             $start = 0; 
             $end = $size - 1;
-            header("Content-type:$mime_type");
+            header("Content-type: $mime_type");
             header("Accept-Ranges: bytes");
             if(isset($_SERVER['HTTP_RANGE'])) {
                 $this->serveRangeRequest($path, $size, $start, $end);
@@ -150,11 +153,8 @@ class ResourceController extends Controller implements CrawlConstants
             $subfolder = $this->clean($_REQUEST['s'], "hash");
             $prefix_folder = substr($subfolder, 0, 3);
         } else if(isset($_REQUEST['g'])) {
-            $user_id = $_SESSION['USER_ID'];
-            if(!isset($_REQUEST[CSRF_TOKEN]) ||
-                !$this->checkCSRFToken(CSRF_TOKEN, $user_id)) {
-                return false; 
-            }
+            $user_id = isset($_SESSION['USER_ID']) ? $_SESSION['USER_ID'] :
+                PUBLIC_USER_ID;
             if(isset($_REQUEST['p'])) {
                 $page_id = $this->clean($_REQUEST['p'], 'int');
             }
@@ -185,13 +185,16 @@ class ResourceController extends Controller implements CrawlConstants
             header("Content-Range: bytes $start-$end/$size");
             return;
         }
-        if ($range == '-') {
-            $current_start = $size - substr($range, 1);
+        if($range == '-') {
+            $current_start = $size - 1;
         } else {
             $range = explode('-', $range);
-            $current_start = $range[0];
-            $current_end = (isset($range[1]) && is_numeric($range[1]))
-                ? $range[1] : $size;
+            $current_start = trim($range[0]);
+            $current_end = (isset($range[1]) && is_numeric(trim($range[1])))
+                ? trim($range[1]) : $size;
+            if($current_start === "") {
+                $current_start = max(0, $size - $range[1] - 1);
+            }
         }
         $current_end = ($current_end > $end) ? $end : $current_end;
         if ($current_start > $current_end || $current_start > $size - 1 ||
@@ -203,6 +206,7 @@ class ResourceController extends Controller implements CrawlConstants
         $start = $current_start;
         $end = $current_end;
         $length = $end - $start + 1;
+        $fp = @fopen($file, 'rb');
         fseek($fp, $start);
         header('HTTP/1.1 206 Partial Content');
         header("Content-Range: bytes $start-$end/$size");

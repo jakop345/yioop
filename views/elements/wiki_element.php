@@ -71,7 +71,7 @@ class WikiElement extends Element implements CrawlConstants
             "page_name=".$data['PAGE_NAME'];
         if($logged_in) {
             $other_base_query .= $csrf_token;
-            $csrf_token = "&".CSRF_TOKEN."=".$data[CSRF_TOKEN];
+            $csrf_token = "&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN];
         }
         if($is_admin || $logged_in) { ?>
             <div class="float-same admin-collapse">[<a id='arrows-link'
@@ -99,8 +99,8 @@ class WikiElement extends Element implements CrawlConstants
             ?>
             <h2><?php
             e($data['GROUP']['GROUP_NAME'].
-                "</a> [<a href='?c={$data['CONTROLLER']}".$csrf_token.
-                "&a=groupFeeds&just_group_id=".
+                "[<a href='?c={$data['CONTROLLER']}".$csrf_token.
+                "&amp;a=groupFeeds&amp;just_group_id=".
                 $data['GROUP']['GROUP_ID']."'>".tl('groupfeed_element_feed').
                 "</a>|".tl('wiki_view_wiki')."]" ); ?></h2>
             <div class="top-margin"><b>
@@ -216,21 +216,18 @@ class WikiElement extends Element implements CrawlConstants
      */
     function renderEditPageForm($data)
     {
+        $base_url = "?c=".$data['CONTROLLER']."&amp;a=wiki&amp;".
+            CSRF_TOKEN.'='.$data[CSRF_TOKEN]."&amp;group_id=".
+            $data['GROUP']['GROUP_ID'];
         ?>
         <div class="float-opposite" style="position:relative; top:35px;">
-        [<a href="?c=<?php e($data['CONTROLLER']); ?>&amp;a=wiki&amp;<?php
-            e(CSRF_TOKEN.'='.$data[CSRF_TOKEN].'&amp;arg=history&amp;'.
-            'page_id='.$data['PAGE_ID']); ?>"
+        [<a href="?c=<?php e($base_url); ?>&amp;<?php
+            e('&amp;arg=history&amp;page_id='.$data['PAGE_ID']); ?>"
         ><?php e(tl('wiki_element_history'))?></a>]
         [<a href="?c=<?php e($data['CONTROLLER']); ?>&amp;a=groupFeeds&amp;<?php
             e(CSRF_TOKEN.'='.$data[CSRF_TOKEN].
             '&amp;just_thread='.$data['DISCUSS_THREAD']);?>" ><?php
             e(tl('wiki_element_discuss'))?></a>]
-        [<a href="?c=<?php e($data['CONTROLLER']); ?>&amp;a=wiki&amp;<?php
-            e(CSRF_TOKEN.'='.$data[CSRF_TOKEN].'&amp;arg=resources&amp;'.
-            'group_id='.$data['GROUP']['GROUP_ID'].
-            '&amp;page_name='.$data['PAGE_NAME']);?>" ><?php
-            e(tl('wiki_element_resources')); ?></a>]
         </div>
         <form id="editpageForm" method="post" action='./'
             onsubmit="elt('caret-pos').value =
@@ -278,6 +275,125 @@ class WikiElement extends Element implements CrawlConstants
                 e(tl('wiki_element_savebutton')); ?></button>
             </div>
         </form>
+        <div>
+        <form id="resourceUploadForm" method="post" action='./'
+            enctype="multipart/form-data">
+        <input type="hidden" name="c" value="<?php e($data['CONTROLLER']);
+            ?>" />
+        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
+            e($data[CSRF_TOKEN]); ?>" />
+        <input type="hidden" name="a" value="wiki" />
+        <input type="hidden" name="arg" value="edit" />
+        <input type="hidden" name="group_id" value="<?php
+            e($data['GROUP']['GROUP_ID']); ?>" />
+        <input type="hidden" name="page_name" value="<?php
+            e($data['PAGE_NAME']); ?>" />
+        <h3><?php e(tl('wiki_view_page_resources'));?></h3>
+        <p><?php e(tl('wiki_view_resources_info'));?></p>
+        <div><input type="file" class="slight-pad wide-field"
+            id='page-resource' name='page_resource' />
+            <button class="button-box" type="submit"><?php
+            e(tl('wiki_view_upload')); ?></button></div>
+        </form>
+        <h2 id="progress-bar" class='center red'></h2>
+        <?php if(isset($data['RESOURCES_INFO'])) {
+            $url_prefix = $data['RESOURCES_INFO']['url_prefix'];
+            $thumb_prefix = $data['RESOURCES_INFO']['thumb_prefix'];
+            $default_thumb = $data['RESOURCES_INFO']['default_thumb'];
+            if(count($data['RESOURCES_INFO']['resources']) > 0) {
+                e('<table >');
+                foreach($data['RESOURCES_INFO']['resources'] as $resource) {
+                    $name = $resource['name'];
+                    e("<tr class='resource-list' >");
+                    if($resource['has_thumb']) {
+                        e("<td><img src='$thumb_prefix&amp;n=$name' alt='' />".
+                            "</td>");
+                    } else {
+                        e("<td><img src='".$default_thumb."'  alt='' /></td>");
+                    }
+                    e("<td><a href='$url_prefix&amp;n=$name'>$name</a></td>");
+                    e("<td><button onclick='javascript:addToPage(\"".
+                        $name."\")'>".tl('wiki_element_add_to_page').
+                        "</button></td>");
+                    e("<td>[<a href='$base_url&amp;arg=edit&amp;page_name=".
+                        $data['PAGE_NAME']."&amp;delete=$name'>X</a>]</td>");
+                    e("</tr>");
+                }
+                e('</table>');
+            }
+        }
+        ?>
+        </div>
+        <script type="text/javascript">
+        function addToPage(resource_name)
+        {
+            wikify("{{resource:","|<?php
+                e(tl('wiki_element_resource_description'));
+                ?>}}", resource_name, "wiki-page");
+        }
+        function checkUploadResource()
+        {
+            var max_resource_size = <?php e(metricToInt(
+                ini_get('upload_max_filesize'))); ?>;
+            var page_resource = elt('page-resource').files[0];
+            if(page_resource.size > max_resource_size) {
+                doMessage('<h1 class=\"red\" ><?php
+                    e(tl("wiki_element_file_too_big")); ?></h1>');
+                return false;
+            }
+            return true;
+        }
+        function uploadForm(event)
+        {
+            if(!checkUploadResource()) {
+                event.preventDefault();
+                return;
+            }
+            var resource_form = elt('resourceUploadForm');
+            var form_data = new FormData(resource_form);
+            var request = new XMLHttpRequest();
+            request.upload.addEventListener("progress", uploadProgress, false);
+            request.addEventListener("load", uploadComplete, false);
+            request.addEventListener("error", uploadFailed, false);
+            request.addEventListener("abort", uploadCanceled, false);
+            request.open("POST", "./");
+            request.send(form_data);
+            event.preventDefault();
+        }
+        function uploadProgress(event)
+        {
+            var progress = elt('progress-bar');
+            if(event.lengthComputable) {
+                var percent_complete =
+                    Math.round(event.loaded * 100 / event.total);
+                progress.innerHTML = percentComplete.toString() + '%';
+            } else {
+                progress.innerHTML = '<?php
+                e(tl("wiki_element_waiting_for_progress")); ?>';
+            }
+        }
+        function uploadComplete(event)
+        {
+            /* This event is raised when the server send back a response */
+            document.open();
+            document.write(event.target.responseText);
+            document.close();
+        }
+
+        function uploadFailed(event)
+        {
+            doMessage('<h1 class=\"red\" ><?php
+                e(tl("wiki_element_upload_error")); ?></h1>');
+        }
+
+        function uploadCanceled(event) 
+        {
+            doMessage('<h1 class=\"red\" ><?php
+                e(tl("wiki_element_upload_cancelled")); ?></h1>');
+        }
+        var resource_form = document.getElementById('resourceUploadForm');
+        resource_form.addEventListener('submit', uploadForm);
+        </script>
         <?php
     }
     /**
@@ -285,7 +401,7 @@ class WikiElement extends Element implements CrawlConstants
      * draws a search form and can be used to create pages
      *
      * @param array $data fields for the current controller, CSRF_TOKEN
-     *     ect needed to render the search for and paging queries
+     *     etc needed to render the search for and paging queries
      * @param bool $can_edit whether the current user has permissions to
      *     edit or create this page
      * @param bool $logged_in whethe current user is logged in or not
@@ -448,72 +564,6 @@ class WikiElement extends Element implements CrawlConstants
         function updateSecond(val)
         {
             elt('diff-2').value=val;
-        }
-        </script>
-        <?php
-    }
-
-    /**
-     * Used to draw the revision history page for a wiki document
-     * Has a form that can be used to draw the diff of two revisions
-     *
-     * @param array $data fields contain info about revisions of a Wiki page
-     */
-    function renderResources($data)
-    {
-        $base_query = "?c={$data['CONTROLLER']}&amp;".CSRF_TOKEN."=".
-            $data[CSRF_TOKEN] . "&amp;group_id=".
-            $data["GROUP"]["GROUP_ID"]."&amp;a=wiki";
-        ?>
-        <div class="float-opposite"><a href="<?php e($base_query .
-                    '&amp;arg=edit&amp;a=wiki&amp;page_name='.
-                    $data['PAGE_NAME']); ?>"><?php
-            e(tl("wiki_view_back")); ?></a></div>
-        <div>
-        <form id="resourceUploadForm" method="post" action='./'
-            enctype="multipart/form-data">
-        <input type="hidden" name="c" value="<?php e($data['CONTROLLER']);
-            ?>" />
-        <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
-            e($data[CSRF_TOKEN]); ?>" />
-        <input type="hidden" name="a" value="wiki" />
-        <input type="hidden" name="arg" value="resources" />
-        <input type="hidden" name="group_id" value="<?php
-            e($data['GROUP']['GROUP_ID']); ?>" />
-        <input type="hidden" name="page_name" value="<?php
-            e($data['PAGE_NAME']); ?>" />
-        <h3><?php e(tl('wiki_view_resources_page'));?></h3>
-        <p><?php e(tl('wiki_view_resources_info'));?></p>
-        <div><input type="file" id='page-resource'
-            name='page_resource' onchange="checkUploadResource()" />
-            <button class="button-box" type="submit"><?php
-            e(tl('wiki_view_upload')); ?></button></div>
-        </form>
-        </div>
-        <script type="text/javascript">
-        function checkUploadResource()
-        {
-            return true;
-          /*  var max_resource_size = 0;
-            var upload_icon = elt('page-resource').files[0];
-            var upload_info = elt('upload-info');
-            if(upload_icon.type != 'image/png' &&
-                upload_icon.type != 'image/jpeg' &&
-                upload_icon.type != 'image/gif') {
-                doMessage('<h1 class=\"red\" ><?php
-                    e(tl("wiki_element_invalid_filetype")); ?></h1>');
-                elt('user-icon').files[0] = NULL;
-                return;
-            }
-            if(upload_icon.size > max_resource_size) {
-                doMessage('<h1 class=\"red\" ><?php
-                    e(tl("wiki_element_file_too_big")); ?></h1>');
-                elt('user-icon').files[0] = NULL;
-                return;
-            }
-            setDisplay('current-icon', false);
-            upload_info.className = "upload-info";
-            upload_info.innerHTML = upload_icon.name;*/
         }
         </script>
         <?php

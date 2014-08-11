@@ -852,6 +852,9 @@ class GroupModel extends Model
         $parser = new WikiParser($base_address);
         $parsed_page = $parser->parse($page);
         if($page_id = $this->getPageID($group_id, $page_name, $locale_tag)) {
+            //can only add and use resources for a page that exists
+            $parsed_page = $this->insertResourcesParsePage($group_id, $page_id,
+                $parsed_page);
             $sql = "UPDATE GROUP_PAGE SET PAGE=? WHERE ID = ?";
             $result = $db->execute($sql, array($parsed_page, $page_id));
         } else {
@@ -916,9 +919,6 @@ class GroupModel extends Model
                 GROUP_PAGE_HISTORY HP WHERE GP.GROUP_ID = ?
                 AND GP.TITLE = ? AND GP.LOCALE_TAG = ? AND HP.PAGE_ID = GP.ID
                 ORDER BY HP.PUBDATE DESC ".$db->limitOffset(0, 1);
-        } else if ($mode == "resources") {
-            $sql = "SELECT ID FROM GROUP_PAGE
-                WHERE GROUP_ID = ? AND TITLE=? AND LOCALE_TAG = ?";
         } else {
             $sql = "SELECT ID, PAGE, DISCUSS_THREAD FROM GROUP_PAGE
                 WHERE GROUP_ID = ? AND TITLE=? AND LOCALE_TAG = ?";
@@ -996,7 +996,7 @@ class GroupModel extends Model
     /**
      * Returns a list of revision history info for a wiki page.
      *
-     * @param int $page_id indentifier for page want revision history of
+     * @param int $page_id identifier for page want revision history of
      * @param string $limit first row we want from the result set
      * @param string $num number of rows we want starting from the first row
      *     in the result set
@@ -1039,8 +1039,8 @@ class GroupModel extends Model
     }
     /**
      *
-     * @param int $group_id
-     * @param int $page_id
+     * @param int $group_id group identifier of group wiki page belongs to
+     * @param int $page_id identifier for page want folder paths for
      */
     function getGroupPageResourcesFolders($group_id, $page_id)
     {
@@ -1049,7 +1049,7 @@ class GroupModel extends Model
         $thumb_page_folder = crawlHash(
             "thumb" . $group_id. $page_id . AUTH_KEY);
         $group_prefix = substr($group_page_folder, 0, 3);
-        $thumb_prefix = substr($group_page_folder, 0, 3);
+        $thumb_prefix = substr($thumb_page_folder, 0, 3);
         $resource_path = APP_DIR . "/resources";
         $group_prefix_path = $resource_path."/$group_prefix";
         $thumb_prefix_path = $resource_path."/$thumb_prefix";
@@ -1070,14 +1070,95 @@ class GroupModel extends Model
         if(!file_exists($thumb_prefix_path) && !mkdir($thumb_prefix_path)) {
             return false;
         }
-        if(mkdir($group_path) && mkdir($thumb_path)) {
+        if((file_exists($group_path) || mkdir($group_path) ) &&
+            (file_exists($thumb_path) || mkdir($thumb_path))) {
             return array($group_path, $thumb_path);
         }
     }
     /**
+     * @param int $group_id group identifier of group wiki page belongs to
+     * @param int $page_id identifier for page want to parse resources for
+     */
+    function insertResourcesParsePage($group_id, $page_id, $parsed_page)
+    {
+        $folders = $this->getGroupPageResourcesFolders($group_id,
+            $page_id);
+        if(!$folders) { return $parsed_page; }
+        list($folder, $thumb_folder) = $folders;
+        if(!preg_match_all('/{{resource:(.+?)\|(.+?)}}/ui',
+            $parsed_page, $matches)){
+            return $parsed_page;
+        }
+        $num_matches = count($matches[0]);
+        for($i = 0; $i < $num_matches; $i++) {
+            $match_string = $matches[0][$i];
+            $resource_name = $matches[1][$i];
+            $resource_description = $matches[2][$i];
+            $file_name = "$folder/$resource_name";
+            $mime_type = mimeType($file_name);
+            $mime_type_parts =explode(";", $mime_type);
+            $mime_type = $mime_type_parts[0];
+            $resource_url = $this->getGroupPageResourceUrl($group_id,
+                $page_id, $resource_name);
+            if(in_array($mime_type, array('image/png', 'image/gif',
+                'image/jpeg', 'image/bmp', 'image/svg+xml'))) {
+                $replace_string = "<img src='$resource_url' ".
+                    " alt='$resource_description' />";
+                $parsed_page = preg_replace('/'.preg_quote($match_string).'/u',
+                    $replace_string, $parsed_page);
+            } else if (in_array($mime_type, array('video/mp4', 'video/ogg',
+                'video/avi', 'video/quicktime', 'video/x-flv',
+                'video/x-ms-wmv', 'video/webm', 'application/ogg'))) {
+                $replace_string = "<video style='width:100%'
+                    controls='controls' >\n".
+                    "<source src='$resource_url' type='$mime_type'/>\n".
+                    $resource_description."\n".
+                    "</video>";
+                $parsed_page = preg_replace('/'.preg_quote($match_string).'/u',
+                    $replace_string, $parsed_page);
+            } else if (in_array($mime_type, array('audio/basic', 'audio/L24',
+                'audio/mp4', 'audio/mpeg', 'audio/ogg', 'audio/opus', 
+                'audio/vorbis', 'audio/vnd.rn-realaudio', 'audio/vnd.wave',
+                'audio/webm'))) {
+                $replace_string = "<audio controls='controls' >\n".
+                    "<source src='$resource_url'  >\n".
+                    $resource_description."\n".
+                    "</audio>";
+                $parsed_page = preg_replace('/'.preg_quote($match_string).'/u',
+                    $replace_string, $parsed_page);
+            } else {
+                $replace_string = "$mime_type<a href='$resource_url' >".
+                    "$resource_description</a>";
+                $parsed_page = preg_replace('/'.preg_quote($match_string).'/u',
+                    $replace_string, $parsed_page);
+            }
+        }
+        return $parsed_page;
+    }
+    /**
+     * @param int $group_id group identifier of group wiki page belongs to
+     * @param int $page_id identifier for page want to delete resource from
+     */
+    function deleteResource($resource_name, $group_id, $page_id)
+    {
+        $folders = $this->getGroupPageResourcesFolders($group_id,
+            $page_id);
+        if(!$folders) {return false; }
+        list($folder, $thumb_folder) = $folders;
+        $file_name = "$folder/$resource_name";
+        $thumb_name = "$thumb_folder/$resource_name.jpg";
+        if(file_exists($file_name)) {
+            unlink($file_name);
+        }
+        if(file_exists($thumb_name)) {
+            unlink($thumb_name);
+        }
+        return true;
+    }
+    /**
      *
-     * @param int $group_id
-     * @param int $page_id
+     * @param int $group_id group identifier of group wiki page belongs to
+     * @param int $page_id identifier for page want copy a page resource for
      */
     function copyFileToGroupPageResource($tmp_name, $file_name, $mime_type,
         $group_id, $page_id)
@@ -1100,10 +1181,10 @@ class GroupModel extends Model
     }
     /**
      *
-     * @param int $group_id
-     * @param int $page_id
+     * @param int $group_id group identifier of group wiki page belongs to
+     * @param int $page_id identifier for page want to get page resources for
      */
-    function getGroupPageResourceUrls($group_id, $page_id, $token)
+    function getGroupPageResourceUrls($group_id, $page_id)
     {
         $folders = $this->getGroupPageResourcesFolders($group_id, $page_id);
         if(!$folders) {return false; }
@@ -1112,27 +1193,42 @@ class GroupModel extends Model
         $thumb_len = strlen($thumb_folder) + 1;
         $pre_resources = glob("$folder/*");
         $pre_thumbs = glob("$thumb_folder/*");
-        $resources = array();
         $thumbs = array();
         foreach($pre_thumbs as $pre_thumb) {
             $thumbs[] = substr($pre_thumb, $thumb_len);
         }
+        $resource_info['url_prefix'] ="./?c=resource&amp;a=get&amp;f=resources".
+            "&amp;g=$group_id&amp;p=$page_id";
+        $resource_info['thumb_prefix'] = "./?c=resource&amp;a=get&amp;".
+            "f=resources&amp;g=$group_id&amp;p=$page_id&amp;t=thumb";
+        $resource_info['default_thumb'] = "./resources/file-icon.png";
+        $resources = array();
         foreach($pre_resources as $pre_resource) {
             $resource = array();
             $name = substr($pre_resource, $folder_len);
-            $resource['name'] = "./?c=resource&amp;a=get&amp;f=resources&amp;".
-                "g=$group_id&amp;p=$page_id&amp;n=$name&amp;".
-                CSRF_TOKEN."=".$token;
+            $resource['name'] = $name;
+            $resource['has_thumb'] = false;
             if(in_array($name.".jpg", $thumbs)) {
-                $resource['thumb'] = "./?c=resource&amp;a=get&amp;".
-                    "f=resources&amp;g=$group_id&amp;p=$page_id&amp;n=$name".
-                    "&amp;t=thumb&amp;". CSRF_TOKEN . "=" . $token;
-            } else {
-                $resource['thumb'] = "./resources/file-icon.png";
+                $resource['has_thumb'] = true;
             }
             $resources[] = $resource;
         }
-        return $resources;
+        $resource_info['resources'] = $resources;
+        return $resource_info;
+    }
+    /**
+     *
+     * @param int $group_id group identifier of group wiki page belongs to
+     * @param int $page_id identifier for page want to get page resources for
+     * @param string $resource_name
+     */
+    function getGroupPageResourceUrl($group_id, $page_id, $resource_name)
+    {
+        $folders = $this->getGroupPageResourcesFolders($group_id, $page_id);
+        if(!$folders) {return false; }
+        list($folder, ) = $folders;
+        return "./?c=resource&amp;a=get&amp;f=resources".
+            "&amp;g=$group_id&amp;p=$page_id&amp;n=$resource_name";
     }
     /**
      * Returns a list of applicable wiki pages of a group

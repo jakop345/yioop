@@ -40,6 +40,13 @@ $pathinfo = pathinfo($_SERVER['SCRIPT_FILENAME']);
 if(!defined('BASE_DIR')) {
     define("BASE_DIR", $pathinfo["dirname"].'/');
 }
+if(!defined('BASE_URL')) {
+    $pathinfo = pathinfo($_SERVER['SCRIPT_NAME']);
+    $http = isset($_SERVER['HTTPS']) ? "https://" : "http://";
+}
+//used in register controller to create links back to server
+define("BASE_URL", $http.$_SERVER['SERVER_NAME'].$pathinfo["dirname"]."/");
+
 /**
  * Load the configuration file
  */

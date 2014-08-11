@@ -1097,6 +1097,11 @@ class SocialComponent extends Component implements CrawlConstants
                             "wiki.scrollTop = $scroll_top;";
                     }
                     $data["MODE"] = "edit";
+                    $page_info = $group_model->getPageInfoByName($group_id,
+                        $page_name, $locale_tag, 'resources');
+                    /* if page not yet created than $page_info will be null
+                       so in the below $page_info['ID'] won't be set.
+                     */
                     if($missing_fields) {
                         $data['SCRIPT'] .=
                             "doMessage('<h1 class=\" red\" >". 
@@ -1121,6 +1126,62 @@ class SocialComponent extends Component implements CrawlConstants
                             "doMessage('<h1 class=\"red\" >".
                             tl("group_controller_page_saved").
                             "</h1>');";
+                    } else if(!$missing_fields &&
+                        isset($_FILES['page_resource']['name']) &&
+                        $_FILES['page_resource']['name'] !="") {
+                        if(!isset($page_info['ID'])) {
+                            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                                tl('social_component_resource_save_first').
+                                "</h1>')";
+                        } else {
+                            $upload_parts = array('name', 'type', 'tmp_name');
+                            $file = array();
+                            $upload_okay = true;
+                            foreach($upload_parts as $part) {
+                                if(isset($_FILES['page_resource'][$part])) {
+                                    $file[$part] = $parent->clean(
+                                        $_FILES['page_resource'][$part],
+                                        'string');
+                                } else {
+                                    $upload_okay = false;
+                                    break;
+                                }
+                            }
+                        }
+                        if($upload_okay) {
+                            $group_model->copyFileToGroupPageResource(
+                                $file['tmp_name'], $file['name'], $file['type'],
+                                $group_id, $page_info['ID']);
+                            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                                tl('social_component_resource_uploaded').
+                                "</h1>')";
+                        } else {
+                            $data['SCRIPT'] .= 
+                                "doMessage('<h1 class=\"red\" >".
+                                tl('social_component_upload_error').
+                                "</h1>')";
+                        }
+                    } else if(!$missing_fields && isset($_REQUEST['delete'])) {
+                        $resource_name = $parent->clean($_REQUEST['delete'],
+                            "string");
+                        if(isset($page_info['ID']) &&
+                            $group_model->deleteResource($resource_name,
+                            $group_id, $page_info['ID'])) {
+                            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                                tl('social_component_resource_deleted').
+                                "</h1>')";
+                        } else {
+                            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                                tl('social_component_resource_not_deleted').
+                                "</h1>')";
+                        }
+                    }
+                    if(isset($page_info['ID'])) {
+                        $data['RESOURCES_INFO'] =
+                            $group_model->getGroupPageResourceUrls($group_id,
+                            $page_info['ID']);
+                    } else {
+                        $data['RESOURCES_INFO'] = array();
                     }
                 break;
                 case "history":
@@ -1275,47 +1336,6 @@ class SocialComponent extends Component implements CrawlConstants
                         $data["MODE"] = "read";
                         $page_name = $filter;
                     }
-                break;
-                case 'resources':
-                    if(!$data["CAN_EDIT"]) {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('social_component_insufficient_access').
-                            "</h1>')";
-                        continue;
-                    }
-                    $data["MODE"] = 'resources';
-                    $data['PAGE_NAME'] = $page_name;
-                    $page_info = $group_model->getPageInfoByName($group_id,
-                        $page_name, $locale_tag, 'resources');
-                    if(isset($_FILES['page_resource']['name']) &&
-                        $_FILES['page_resource']['name'] !="") {
-                        $parts = array('name', 'type', 'tmp_name');
-                        $file = array();
-                        $parts_okay = true;
-                        foreach($parts as $part) {
-                            if(isset($_FILES['page_resource'][$part])) {
-                                $file[$part] = $parent->clean(
-                                    $_FILES['page_resource'][$part], 'string');
-                            } else {
-                                $parts_okay = false;
-                                break;
-                            }
-                        }
-                        if(!$parts_okay) {
-                            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                                tl('social_component_upload_error').
-                                "</h1>')";
-                            break;
-                        }
-                        $group_model->copyFileToGroupPageResource(
-                            $file['tmp_name'], $file['name'], $file['type'],
-                            $group_id, $page_info['ID']);
-                    }
-                    $data[CSRF_TOKEN] = $parent->generateCSRFToken($user_id);
-                    $data['RESOURCES'] =
-                        $group_model->getGroupPageResourceUrls($group_id,
-                        $page_info['ID'], $data[CSRF_TOKEN]);
-                    print_r($data['RESOURCES']);
                 break;
             }
         }
