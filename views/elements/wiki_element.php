@@ -338,7 +338,8 @@ class WikiElement extends Element implements CrawlConstants
             var page_resource = elt('page-resource').files[0];
             if(page_resource.size > max_resource_size) {
                 doMessage('<h1 class=\"red\" ><?php
-                    e(tl("wiki_element_file_too_big")); ?></h1>');
+                    e(tl("wiki_element_file_too_big", max_resource_size));
+                    ?></h1>');
                 return false;
             }
             return true;
@@ -369,7 +370,7 @@ class WikiElement extends Element implements CrawlConstants
                 progress.innerHTML = percentComplete.toString() + '%';
             } else {
                 progress.innerHTML = '<?php
-                e(tl("wiki_element_waiting_for_progress")); ?>';
+                    e(tl("wiki_element_waiting_for_progress")); ?>';
             }
         }
         function uploadComplete(event)
