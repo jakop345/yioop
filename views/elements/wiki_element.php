@@ -368,7 +368,7 @@ class WikiElement extends Element implements CrawlConstants
             if(event.lengthComputable) {
                 var percent_complete =
                     Math.round(event.loaded * 100 / event.total);
-                progress.innerHTML = percentComplete.toString() + '%';
+                progress.innerHTML = percent_complete.toString() + '%';
             } else {
                 progress.innerHTML = '<?php
                     e(tl("wiki_element_waiting_for_progress")); ?>';
