@@ -295,7 +295,7 @@ class WikiElement extends Element implements CrawlConstants
             <button class="button-box" type="submit"><?php
             e(tl('wiki_view_upload')); ?></button></div>
         </form>
-        <h2 id="progress-bar" class='center red'></h2>
+        <h3 id="progress-bar" class="indent"></h3>
         <?php if(isset($data['RESOURCES_INFO'])) {
             $url_prefix = $data['RESOURCES_INFO']['url_prefix'];
             $thumb_prefix = $data['RESOURCES_INFO']['thumb_prefix'];
@@ -368,10 +368,12 @@ class WikiElement extends Element implements CrawlConstants
             if(event.lengthComputable) {
                 var percent_complete =
                     Math.round(event.loaded * 100 / event.total);
-                progress.innerHTML = percent_complete.toString() + '%';
+                progress.innerHTML = '<?php
+                    e(tl('wiki_element_upload_progress')) ?>' +
+                    percent_complete.toString() + '%';
             } else {
                 progress.innerHTML = '<?php
-                    e(tl("wiki_element_waiting_for_progress")); ?>';
+                    e(tl("wiki_element_progress_meter_disabled")); ?>';
             }
         }
         function uploadComplete(event)
