@@ -295,7 +295,7 @@ class WikiElement extends Element implements CrawlConstants
             <button class="button-box" type="submit"><?php
             e(tl('wiki_view_upload')); ?></button></div>
         </form>
-        <h3 id="progress-bar" class="indent"></h3>
+        <h3 id="progress-bar" class="red indent margin-top slight-pad"></h3>
         <?php if(isset($data['RESOURCES_INFO'])) {
             $url_prefix = $data['RESOURCES_INFO']['url_prefix'];
             $thumb_prefix = $data['RESOURCES_INFO']['thumb_prefix'];
