@@ -338,7 +338,8 @@ class WikiElement extends Element implements CrawlConstants
             var page_resource = elt('page-resource').files[0];
             if(page_resource.size > max_resource_size) {
                 doMessage('<h1 class=\"red\" ><?php
-                    e(tl("wiki_element_file_too_big", max_resource_size));
+                    e(tl("wiki_element_file_too_big", metricToInt(
+                        ini_get('upload_max_filesize'))));
                     ?></h1>');
                 return false;
             }
