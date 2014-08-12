@@ -1109,11 +1109,27 @@ class GroupModel extends Model
             } else if (in_array($mime_type, array('video/mp4', 'video/ogg',
                 'video/avi', 'video/quicktime', 'video/x-flv',
                 'video/x-ms-wmv', 'video/webm', 'application/ogg'))) {
-                $replace_string = "<video style='width:100%'
-                    controls='controls' >\n".
-                    "<source src='$resource_url' type='$mime_type'/>\n".
-                    $resource_description."\n".
-                    "</video>";
+                $replace_string = "<video style='width:100%' ".
+                    "controls='controls' >\n".
+                    "<source src='$resource_url' type='$mime_type'/>\n";
+                $multi_source_types = array("mp4", "webm", "ogg");
+                $current_extension = substr($mime_type, strlen('video/'));
+                $add_sources = array();
+                if(in_array($current_extension, $multi_source_types)) {
+                    $add_sources = array_diff($multi_source_types,
+                        array($current_extension));
+                }
+                $pre_name = substr($resource_name, 0,
+                    -strlen($current_extension) -1);
+                foreach($add_sources as $extension) {
+                    if(file_exists("$folder/$pre_name.$extension")) {
+                        $resource_url = $this->getGroupPageResourceUrl(
+                            $group_id, $page_id, "$pre_name.$extension");
+                        $replace_string .= "<source src='$resource_url' ".
+                            "type='video/$extension'/>\n";
+                    }
+                }
+                $replace_string .= $resource_description."\n"."</video>";
                 $parsed_page = preg_replace('/'.preg_quote($match_string).'/u',
                     $replace_string, $parsed_page);
             } else if (in_array($mime_type, array('audio/basic', 'audio/L24',
