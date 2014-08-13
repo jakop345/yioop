@@ -1038,10 +1038,12 @@ class GroupModel extends Model
         return array($total, $page_name, $pages);
     }
     /**
+     *  Returns the folder and thumb folder associated with the resources of
+     *  a wiki page.
      *
      * @param int $group_id group identifier of group wiki page belongs to
      * @param int $page_id identifier for page want folder paths for
-     * @return string
+     * @return array (page_folder, thumb_folder)
      */
     function getGroupPageResourcesFolders($group_id, $page_id)
     {
@@ -1077,9 +1079,12 @@ class GroupModel extends Model
         }
     }
     /**
+     * Given a wiki that has been parsed to html except for wiki syntax related
+     * to resource, this method add the html to include these resources
+     *
      * @param int $group_id group identifier of group wiki page belongs to
      * @param int $page_id identifier for page want to parse resources for
-     * @return string
+     * @return string resulting html page
      */
     function insertResourcesParsePage($group_id, $page_id, $parsed_page)
     {
@@ -1154,9 +1159,12 @@ class GroupModel extends Model
         return $parsed_page;
     }
     /**
+     * Deletes a resource (image, video, etc) associated with a wiki page 
+     * belonging to a group.
+     *
      * @param int $group_id group identifier of group wiki page belongs to
      * @param int $page_id identifier for page want to delete resource from
-     * @return bool
+     * @return bool whether the deletion was successful
      */
     function deleteResource($resource_name, $group_id, $page_id)
     {
@@ -1175,7 +1183,14 @@ class GroupModel extends Model
         return true;
     }
     /**
+     * Moves a file that has been uploaded via a wiki pages resource form
+     * to its correct position in the resources folder so it shows up for
+     * that page
      *
+     * @param string $tmp_type tmp location that uploaded file initially stored
+     *  at
+     * @param string $file_name file name of file that has been uploaded
+     * @param string $mime_type mime type of uploaded file
      * @param int $group_id group identifier of group wiki page belongs to
      * @param int $page_id identifier for page want copy a page resource for
      */
@@ -1199,10 +1214,16 @@ class GroupModel extends Model
         }
     }
     /**
+     * Gets all the urls of resources belonging to a particular groups wiki
+     * page.
      *
      * @param int $group_id group identifier of group wiki page belongs to
      * @param int $page_id identifier for page want to get page resources for
-     * @return string
+     * @return array (url_prefix - prefix to apply to all urls, thum_prefix
+     *      prefix to apply to a resource name to get its thumb, list of
+     *      resources). Each resource is an pair (name - string
+     *      file name of the resource, has_thumb a boolean as to whether the
+     *      resource has a thumb)
      */
     function getGroupPageResourceUrls($group_id, $page_id)
     {
@@ -1237,11 +1258,13 @@ class GroupModel extends Model
         return $resource_info;
     }
     /**
+     * Return the url needed to get a resource of a given resource name that
+     * belongs to the provided group and page.
      *
      * @param int $group_id group identifier of group wiki page belongs to
      * @param int $page_id identifier for page want to get page resources for
-     * @param string $resource_name
-     * @return string
+     * @param string $resource_name file name of resource
+     * @return string relative url to get resource
      */
     function getGroupPageResourceUrl($group_id, $page_id, $resource_name)
     {
