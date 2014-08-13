@@ -257,7 +257,7 @@ class WikiElement extends Element implements CrawlConstants
                 ?></b></label>
             </div>
             <textarea id="wiki-page" class="tall-text-area" name="page"
-                data-buttons='all,!wikibtn-search' ><?php
+                data-buttons='all' ><?php
                 e($data['PAGE']);
             ?></textarea>
             <div class="green"><?php
@@ -296,7 +296,7 @@ class WikiElement extends Element implements CrawlConstants
             e(tl('wiki_view_upload')); ?></button></div>
         </form>
         <h3 id="progress-bar" class="red indent"></h3>
-        <?php if(isset($data['RESOURCES_INFO'])) {
+        <?php if(isset($data['RESOURCES_INFO']) && $data['RESOURCES_INFO']) {
             $url_prefix = $data['RESOURCES_INFO']['url_prefix'];
             $thumb_prefix = $data['RESOURCES_INFO']['thumb_prefix'];
             $default_thumb = $data['RESOURCES_INFO']['default_thumb'];

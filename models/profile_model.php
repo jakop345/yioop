@@ -52,16 +52,18 @@ class ProfileModel extends Model
      * @var array
      */
     var $profile_fields = array('API_ACCESS', 'AUTH_KEY',
-        'AUTHENTICATION_MODE', 'CACHE_LINK', 'CAPTCHA_MODE','DEBUG_LEVEL',
-        'DESCRIPTION_WEIGHT', 'DB_HOST', 'DBMS', 'DB_NAME','DB_PASSWORD',
-        'DB_USER', 'DEFAULT_LOCALE', 'FIAT_SHAMIR_MODULUS', 'GROUP_ITEM',
-        'IN_LINK','IP_LINK', 'LINK_WEIGHT', 'MAIL_PASSWORD', 'MAIL_SECURITY',
+        'AUTHENTICATION_MODE', 'CACHE_LINK', 'CAPTCHA_MODE', 'CSRF_TOKEN',
+        'DEBUG_LEVEL', 'DESCRIPTION_WEIGHT', 'DB_HOST', 'DBMS', 'DB_NAME',
+        'DB_PASSWORD', 'DB_USER', 'DEFAULT_LOCALE', 'FAVICON',
+        'FIAT_SHAMIR_MODULUS', 'GROUP_ITEM', 'IN_LINK','IP_LINK', 'LINK_WEIGHT',
+        'LOGO', 'M_LOGO', 'MAIL_PASSWORD',  'MAIL_SECURITY',
         'MAIL_SENDER', 'MAIL_SERVER', 'MAIL_SERVERPORT', 'MAIL_USERNAME',
         'MEMCACHE_SERVERS', 'MIN_RESULTS_TO_GROUP', 'NAME_SERVER', 'NEWS_MODE',
         'PROXY_SERVERS', 'REGISTRATION_TYPE', 'ROBOT_INSTANCE',
-        'RSS_ACCESS', 'SERVER_ALPHA', 'SIGNIN_LINK', 'SIMILAR_LINK',
-        'SUBSEARCH_LINK', 'TITLE_WEIGHT', 'TOR_PROXY', 'USE_FILECACHE',
-        'USE_MAIL_PHP', 'USE_MEMCACHE', 'USE_PROXY',
+        'RSS_ACCESS', 'SEARCHBAR_PATH', 'SERVER_ALPHA', 'SESSION_NAME',
+        'SIGNIN_LINK', 'SIMILAR_LINK',
+        'SUBSEARCH_LINK', 'TIMEZONE', 'TITLE_WEIGHT', 'TOR_PROXY',
+        'USE_FILECACHE', 'USE_MAIL_PHP', 'USE_MEMCACHE', 'USE_PROXY',
         'USER_AGENT_SHORT', 'WEB_URI', 'WEB_ACCESS', 'WORD_SUGGEST'
         );
     /**
@@ -318,7 +320,26 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 EOT;
         foreach($this->profile_fields as $field) {
             if(isset($new_profile_data[$field])) {
-                $profile[$field] = $new_profile_data[$field];
+                if(in_array($field, array('LOGO','M_LOGO', 'FAVICON',
+                    'SEARCHBAR_PATH'))) {
+                    if(isset($new_profile_data[$field]['name']) &&
+                        isset($new_profile_data[$field]['tmp_name'])) {
+                        move_uploaded_file(
+                            $new_profile_data[$field]['tmp_name'], APP_DIR .
+                            "/resources/". $new_profile_data[$field]['name']);
+                        $profile[$field] = "./?c=resource&amp;a=get&amp;" .
+                            "f=resources&amp;n=" .
+                            $new_profile_data[$field]['name'];
+                    } else if(isset($old_profile_data[$field])) {
+                        $profile[$field] = $old_profile_data[$field];
+                    } else if(defined($field)) {
+                        $profile[$field] =  constant($field);
+                    } else {
+                        $profile[$field] = "";
+                    }
+                } else {
+                    $profile[$field] = $new_profile_data[$field];
+                }
             } else if(isset($old_profile_data[$field])) {
                 $profile[$field] = $old_profile_data[$field];
             } else if(defined($field)) {

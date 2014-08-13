@@ -64,12 +64,6 @@ if(file_exists(BASE_DIR."/configs/local_config.php")) {
         way to set work directory) */
     require_once(BASE_DIR."/configs/local_config.php");
 }
-// following two variable might be set in local_config.php
-if(!defined('TIME_ZONE')) {
-    date_default_timezone_set('America/Los_Angeles');
-} else {
-    date_default_timezone_set(TIME_ZONE);
-}
 /**
  * @global array which activities are in which Component classes (use this
  *     array so don't have to instantiate classes to find out. Keys are
@@ -91,16 +85,6 @@ $COMPONENT_ACTIVITIES = array(
  */
 if(!defined('PROFILE_FILE_NAME')) {
     define('PROFILE_FILE_NAME', "/profile.php");
-}
-/**
- * To change the Yioop logo to your own sites logo, change the variables
- * LOGO and M_LOGO in your local_config.php file
- */
-if(!defined('LOGO')) {
-    define('LOGO', "resources/yioop.png");
-}
-if(!defined('M_LOGO')) {
-    define('M_LOGO', "resources/m-yioop.png");
 }
 if(!defined('MAINTENANCE_MESSAGE')) {
     define('MAINTENANCE_MESSAGE', <<<EOD
@@ -132,15 +116,6 @@ define('PREP_DIR', WORK_DIRECTORY."/prepare");
  * missing some file
  */
 define('FALLBACK_LOCALE_DIR', BASE_DIR."/locale");
-/** name of the cookie used to manage the session
- * (store language and perpage settings), define CSRF token
- */
-if(!defined('SESSION_NAME')) {
-    define ('SESSION_NAME', "yioopbiscuit");
-}
-if(!defined('CSRF_TOKEN')) {
-    define('CSRF_TOKEN', "YIOOP_TOKEN");
-}
 /** Captcha mode indicating to use a text captcha*/
 define('TEXT_CAPTCHA', 1);
 /** Captcha mode indicating to use a hash cash computation for a captcha*/
@@ -237,9 +212,18 @@ if(file_exists(WORK_DIRECTORY.PROFILE_FILE_NAME)) {
         server_alpha*total_num/num_servers will be returned any a given
         queue server machine*/
     define ('SERVER_ALPHA', 1.6);
+    define('LOGO', "resources/yioop.png");
+    define('M_LOGO', "resources/m-yioop.png");
+    define('FAVICON', BASE_URL."favicon.ico");
+    define('TIME_ZONE', 'America/Los_Angeles');
+    /** name of the cookie used to manage the session
+     * (store language and perpage settings), define CSRF token
+     */
+    define('SESSION_NAME', "yioopbiscuit");
+    define('CSRF_TOKEN', "YIOOP_TOKEN");
     $INDEXING_PLUGINS = array();
-
 }
+date_default_timezone_set(TIMEZONE);
 if((DEBUG_LEVEL & ERROR_INFO) == ERROR_INFO) {
     error_reporting(-1);
 } else {
@@ -271,20 +255,6 @@ if(!PROFILE) {
  */
 define('USER_AGENT',
     'Mozilla/5.0 (compatible; '.USER_AGENT_SHORT.'; +'.NAME_SERVER.'bot.php)');
-/**
- * To change the favicon.ico file overrride the following variable
- * in your local_config.php file
- */
-if(!defined('FAVICON') && defined('BASE_URL')) {
-    define('FAVICON', BASE_URL."favicon.ico");
-}
-/**
- * To change the Author meta tag for the site overrride the following variable
- * in your local_config.php file
- */
-if(!defined('SITE_AUTHOR')) {
-    define('SITE_AUTHOR', "Christopher Pollett");
-}
 /**
  * To change the Open Search Tool bar name overrride the following variable
  * in your local_config.php file

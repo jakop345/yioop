@@ -1167,10 +1167,23 @@ ul.in-list li
 {
     width:80px;
 }
+.small-icon
+{
+    height: 0.5in;
+    position:relative;
+    top:10px;
+    width: 0.5in;
+}
+.mobile .small-icon
+{
+    height: 30px;
+    width: 30px;
+}
 .upload-info
 {
     background-color:gray;
     height: 1.4in;
+    margin: 10px;
     text-align:center;
     width: 1.4in;
     word-wrap: break-word;

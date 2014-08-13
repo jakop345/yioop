@@ -85,7 +85,8 @@ class ConfigureElement extends Element
                     e(tl('configure_element_load_or_create')); ?></button>
         </div>
         </form>
-        <form id="configureProfileForm" method="post" action=''>
+        <form id="configureProfileForm" method="post" action='#'
+            enctype='multipart/form-data'>
         <?php if(isset($data['WORK_DIRECTORY'])) { ?>
             <input type="hidden" name="WORK_DIRECTORY" value="<?php
                 e($data['WORK_DIRECTORY']); ?>" />
@@ -156,6 +157,67 @@ class ConfigureElement extends Element
                         e(tl('configure_element_api_access')); ?></label>
             </fieldset>
             </div>
+            <div class="top-margin">
+            <fieldset><legend><?php
+                e(tl('configure_element_customizations'))?></legend>
+                <div class="top-margin"><label for="site-logo"><?php
+                    e(tl('configure_element_site_logo')); 
+                    ?></label>
+                <input type="file" id="site-logo"
+                    onchange="checkUploadIcon('site-logo')"
+                    name="LOGO" class='icon-upload' />
+                <img id='current-site-logo' class="small-icon"
+                    src="<?php e($data['LOGO']); ?>" alt="<?php
+                    e(tl('configure_element_site_logo')); ?>" />
+                <span id='info-site-logo'></span>
+                </div>
+                <div class="top-margin"><label for="mobile-logo"><?php
+                    e(tl('configure_element_mobile_logo'));
+                    ?></label>
+                <input type="file" id="mobile-logo"
+                    onchange="checkUploadIcon('mobile-logo')"
+                    name="M_LOGO" class='icon-upload'  />
+                <img id='current-mobile-logo' class="small-icon" 
+                    src="<?php e($data['M_LOGO']); ?>" alt="<?php
+                    e(tl('configure_element_mobile_logo')); ?>" />
+                <span id='info-mobile-logo'></span>
+                </div>
+                <div class="top-margin"><label for="favicon"><?php
+                    e(tl('configure_element_favicon'));
+                    ?></label>
+                <input type="file" id="favicon"
+                    onchange="checkUploadIcon('favicon')"
+                    name="FAVICON" class='icon-upload' />
+                <img id='current-favicon' class="small-icon" 
+                    src="<?php e($data['FAVICON']); ?>" alt="<?php
+                    e(tl('configure_element_favicon')); ?>" />
+                <span id='info-favicon'></span>
+                </div>
+                <div class="top-margin"><label for="toolbar"><?php
+                    e(tl('configure_element_toolbar'));
+                    ?></label>
+                <input type="file" id="toolbar"
+                    name="SEARCHBAR_PATH" class="extra-wide-field" /></div>
+                <div class="top-margin"><label for="timezone"><?php
+                    e(tl('configure_element_site_timezone'));
+                    ?></label>
+                <input type="text" id="timezone"
+                    name="TIMEZONE" class="extra-wide-field" value='<?php
+                    e($data["TIMEZONE"]); ?>' /></div>
+                <div class="top-margin"><label for="cookie-name"><?php
+                    e(tl('configure_element_cookie_name'));
+                    ?></label>
+                <input type="text" id="cookie-name"
+                    name="SESSION_NAME" class="extra-wide-field" value='<?php
+                    e($data["SESSION_NAME"]); ?>' /></div>
+                <div class="top-margin"><label for="token-name"><?php
+                    e(tl('configure_element_token_name'));
+                    ?></label>
+                <input type="text" id="token-name"
+                    name="CSRF_TOKEN" class="extra-wide-field" value='<?php
+                    e($data["CSRF_TOKEN"]); ?>' /></div>
+            </fieldset>
+            </div>
             </div>
             <div class="top-margin">
             <fieldset><legend><?php
@@ -192,7 +254,31 @@ class ConfigureElement extends Element
         <?php } ?>
         </form>
         </div>
-
+        <script type="text/javascript">
+        function checkUploadIcon(id)
+        {
+            var max_icon_size = <?php e(THUMB_SIZE) ?>;
+            var upload_icon = elt(id).files[0];
+            var upload_info = elt('info-'+id);
+            if(upload_icon.type != 'image/png' &&
+                upload_icon.type != 'image/jpeg' &&
+                upload_icon.type != 'image/gif') {
+                doMessage('<h1 class=\"red\" ><?php
+                    e(tl("configure_element_invalid_filetype")); ?></h1>');
+                elt(id).files[0] = NULL;
+                return;
+            }
+            if(upload_icon.size > max_icon_size) {
+                doMessage('<h1 class=\"red\" ><?php
+                    e(tl("configure_element_file_too_big")); ?></h1>');
+                elt(id).files[0] = NULL;
+                return;
+            }
+            setDisplay('current-'+id, false);
+            upload_info.className = "upload-info";
+            upload_info.innerHTML = upload_icon.name;
+        }
+        </script>
     <?php
     }
 }

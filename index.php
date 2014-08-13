@@ -138,6 +138,11 @@ if(in_array(REGISTRATION_TYPE, array('no_activation', 'email_registration',
 //the request variable c is used to determine the controller
 if(!isset($_REQUEST['c'])) {
     $controller_name = "search";
+    if(defined('LANDING_PAGE') && LANDING_PAGE && !isset($_REQUEST['q'])) {
+        $controller_name = "static";
+        $_REQUEST['c'] = "static";
+        $_REQUEST['p'] = LANDING_PAGE;
+    }
 } else {
     $controller_name = $_REQUEST['c'];
 }

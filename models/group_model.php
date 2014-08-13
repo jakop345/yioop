@@ -1041,6 +1041,7 @@ class GroupModel extends Model
      *
      * @param int $group_id group identifier of group wiki page belongs to
      * @param int $page_id identifier for page want folder paths for
+     * @return string
      */
     function getGroupPageResourcesFolders($group_id, $page_id)
     {
@@ -1078,6 +1079,7 @@ class GroupModel extends Model
     /**
      * @param int $group_id group identifier of group wiki page belongs to
      * @param int $page_id identifier for page want to parse resources for
+     * @return string
      */
     function insertResourcesParsePage($group_id, $page_id, $parsed_page)
     {
@@ -1154,6 +1156,7 @@ class GroupModel extends Model
     /**
      * @param int $group_id group identifier of group wiki page belongs to
      * @param int $page_id identifier for page want to delete resource from
+     * @return bool
      */
     function deleteResource($resource_name, $group_id, $page_id)
     {
@@ -1199,6 +1202,7 @@ class GroupModel extends Model
      *
      * @param int $group_id group identifier of group wiki page belongs to
      * @param int $page_id identifier for page want to get page resources for
+     * @return string
      */
     function getGroupPageResourceUrls($group_id, $page_id)
     {
@@ -1237,6 +1241,7 @@ class GroupModel extends Model
      * @param int $group_id group identifier of group wiki page belongs to
      * @param int $page_id identifier for page want to get page resources for
      * @param string $resource_name
+     * @return string
      */
     function getGroupPageResourceUrl($group_id, $page_id, $resource_name)
     {

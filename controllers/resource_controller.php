@@ -148,10 +148,12 @@ class ResourceController extends Controller implements CrawlConstants
     {
         $folder = $this->clean($_REQUEST['f'], 'string');
         $base_dir = APP_DIR."/$folder";
+        $add_to_path = false;
         if(isset($_REQUEST['s']) && $folder == "resources") {
             // handle sub-folders of resource (must be numeric)
             $subfolder = $this->clean($_REQUEST['s'], "hash");
             $prefix_folder = substr($subfolder, 0, 3);
+            $add_to_path = true;
         } else if(isset($_REQUEST['g'])) {
             $user_id = isset($_SESSION['USER_ID']) ? $_SESSION['USER_ID'] :
                 PUBLIC_USER_ID;
@@ -166,8 +168,11 @@ class ResourceController extends Controller implements CrawlConstants
             $subfolder = crawlHash(
                 $hash_word . $group_id. $page_id . AUTH_KEY);
             $prefix_folder = substr($subfolder, 0, 3);
+            $add_to_path = true;
         }
-        $base_dir .= "/$prefix_folder/$subfolder";
+        if($add_to_path) {
+            $base_dir .= "/$prefix_folder/$subfolder";
+        }
         return $base_dir;
     }
     /**

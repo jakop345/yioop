@@ -192,7 +192,7 @@ class AccountaccessComponent extends Component
                                 $data["MESSAGE"]."</h1>')";
                             return $data;
                         }
-                        if($_FILES['user_icon']['type'] > THUMB_SIZE) {
+                        if($_FILES['user_icon']['size'] > THUMB_SIZE) {
                             $data["MESSAGE"] =
                                 tl('accountaccess_component_icon_too_big');
                             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".

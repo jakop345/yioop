@@ -445,7 +445,11 @@ class AdminController extends Controller implements CrawlConstants
                 }
             }
             if(!isset($data[$field])) {
-                $data[$field] = "";
+                if(defined($field)) {
+                    $data[$field] = constant($field);
+                } else {
+                    $data[$field] = "";
+                }
                 if(in_array($field, $check_box_fields)) {
                     $profile[$field] = false;
                 }

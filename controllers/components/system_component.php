@@ -928,11 +928,46 @@ EOD;
                 $data['DEBUG_LEVEL'] |=
                     (isset($_REQUEST["TEST_INFO"])) ? TEST_INFO : 0;
                 $profile['DEBUG_LEVEL'] = $data['DEBUG_LEVEL'];
-
                 $old_profile =
                     $profile_model->getProfile($data['WORK_DIRECTORY']);
-
-
+                $folder = APP_DIR . "/resources";
+                if(!file_exists($folder) && !mkdir($folder)) {
+                    $data["MESSAGE"] =
+                        tl('system_component_no_resource_folder');
+                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        $data["MESSAGE"]."</h1>')";
+                    return $data;
+                }
+                foreach(array('LOGO','M_LOGO', 'FAVICON', 'SEARCHBAR_PATH') 
+                    as $field) {
+                    if(isset($_FILES[$field]['name']) &&
+                        $_FILES[$field]['name'] !="") {
+                        if((!in_array($_FILES[$field]['type'],
+                            array('image/png', 'image/gif', 'image/jpeg')) &&
+                            $field != 'SEARCHBAR_PATH') || (
+                            $_FILES[$field]['type'] != 'text/xml' &&
+                            $field == 'SEARCHBAR_PATH')) {
+                            $data["MESSAGE"] =
+                                tl('system_component_invalid_filetype');
+                            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                                $data["MESSAGE"]."</h1>')";
+                            return $data;
+                        }
+                        if($_FILES[$field]['size'] > THUMB_SIZE) {
+                            $data["MESSAGE"] =
+                                tl('system_component_file_too_big');
+                            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                                $data["MESSAGE"]."</h1>')";
+                            return $data;
+                        }
+                        $profile[$field] = array();
+                        $profile[$field]['name'] = $_FILES[$field]['name'];
+                        $profile[$field]['tmp_name'] =
+                            $_FILES[$field]['tmp_name'];
+                        $data[$field] = "./?c=resource&amp;a=get&amp;" .
+                            "f=resources&amp;n=" . $profile[$field]['name'];
+                    }
+                }
                 if($profile_model->updateProfile(
                     $data['WORK_DIRECTORY'], $profile, $old_profile)) {
                     $data['MESSAGE'] =
