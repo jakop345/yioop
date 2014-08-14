@@ -504,9 +504,9 @@ function useInputForSearch(id)
 {
     toggleDisplay('wiki-popup-prompt-'+id);
     size_elt = elt('wiki-search-size-'+id);
-    var size = size_elt.options[size_elt.selectedIndex].text;
-    insertTextAtCursor( "{{search:default|size:" + size+ "|placeholder:???}}\n",
-        id);
+    var size = size_elt.options[size_elt.selectedIndex].value;
+    insertTextAtCursor( "{{search:default|size:" + size+ "|placeholder:" +
+        tl['wiki_js_placeholder'] + "}}\n", id);
 }
 /**
  * Util function to Stringify an JS Object
@@ -721,9 +721,9 @@ function createSearchWidgetForm(id)
         '<select name="wiki_search_size" id="wiki-search-size-' + id + '" >' +
         '<option disabled="" selected="" >' + tl['wiki_js_search_size'] +
         '</option>'+
-        '<option value="1">' + tl['wiki_js_small'] + '</option>' +
-        '<option value="2">' + tl['wiki_js_medium'] + '</option>' +
-        '<option value="3">' + tl['wiki_js_large'] + '</option>'+
+        '<option value="small">' + tl['wiki_js_small'] + '</option>' +
+        '<option value="medium">' + tl['wiki_js_medium'] + '</option>' +
+        '<option value="large">' + tl['wiki_js_large'] + '</option>'+
         '</select></div>' +
         '<div class="center"><button onmousedown="useInputForSearch(\'' + id + 
             '\');"'+ 'name="submit"  class="button-box">' +

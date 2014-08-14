@@ -316,8 +316,8 @@ class WikiParser implements CrawlConstants
         if($head != "" && $parse_head_vars) {
             $document = $head . "END_HEAD_VARS" . $document;
         }
-        if(!$handle_big_files && strlen($document) > 0.9*MAX_GROUP_PAGE_LEN) {
-            $document = substr($document, 0, 0.9*MAX_GROUP_PAGE_LEN);
+        if(!$handle_big_files && strlen($document) > 0.9 * MAX_GROUP_PAGE_LEN) {
+            $document = substr($document, 0, 0.9 * MAX_GROUP_PAGE_LEN);
             TextProcessor::closeDanglingTags($document);
             $document .="...";
         }

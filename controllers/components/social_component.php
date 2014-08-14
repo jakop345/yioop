@@ -1020,6 +1020,20 @@ class SocialComponent extends Component implements CrawlConstants
         } else {
             $user_id = $_SERVER['REMOTE_ADDR'];
         }
+        $additional_substitutions = array();
+        $search_translation = tl('social_component_search');
+        $search_form = <<<EOD
+<form method='get' action='./' class='$2-search-box'>
+<input type='hidden' name="its" value='$1' />
+<input type='text'  name='q'  value="" placeholder='$3' class='search-input' />
+<button type="submit" class='search-button'><img style="margin:0;padding:0"
+    src='./resources/search-button.png' 
+    alt='$search_translation'/></button>
+</form>
+EOD;
+        $additional_substitutions[] = array('/{{\s*search\s*:\s*(.+?)\s*\|'.
+            '\s*size\s*:\s*(.+?)\s*\|\s*placeholder\s*:\s*(.+?)}}/',
+            $search_form);
         $clean_array = array(
             "group_id" => "int",
             "page_name" => "string",
@@ -1121,7 +1135,7 @@ class SocialComponent extends Component implements CrawlConstants
                             $locale_tag, $edit_reason,
                             tl('group_controller_page_created', $page_name),
                             tl('group_controller_page_discuss_here'),
-                            $read_address);
+                            $read_address, $additional_substitutions);
                         $data['SCRIPT'] .=
                             "doMessage('<h1 class=\"red\" >".
                             tl("group_controller_page_saved").
@@ -1202,7 +1216,8 @@ class SocialComponent extends Component implements CrawlConstants
                             $data["MODE"] = "show";
                             $default_history = false;
                             $data["PAGE_NAME"] = $page_info["PAGE_NAME"];
-                            $parser = new WikiParser($read_address);
+                            $parser = new WikiParser($read_address,
+                                $additional_substitutions);
                             $parsed_page = $parser->parse($page_info["PAGE"]);
                             $data["PAGE_ID"] = $page_id;
                             $data[CSRF_TOKEN] = 
@@ -1274,7 +1289,8 @@ class SocialComponent extends Component implements CrawlConstants
                                 $page_info["PAGE"],
                                 $locale_tag,
                                 tl('group_controller_page_revert_to',
-                                date('c', $revert)), "", "", $read_address);
+                                date('c', $revert)), "", "", $read_address,
+                                $additional_substitutions);
                             $data['SCRIPT'] .=
                                 "doMessage('<h1 class=\"red\" >".
                                 tl("group_controller_page_reverted").
@@ -1437,7 +1453,8 @@ class SocialComponent extends Component implements CrawlConstants
                 'wiki_js_for_table_rows :"'. tl('wiki_js_for_table_rows').'",'.
                 'wiki_js_add_hyperlink :"'. tl('wiki_js_add_hyperlink').'",'.
                 'wiki_js_link_text :"'. tl('wiki_js_link_text').'",'.
-                'wiki_js_link_url :"'. tl('wiki_js_link_url').'"'.
+                'wiki_js_link_url :"'. tl('wiki_js_link_url').'",'.
+                'wiki_js_placeholder :"'. tl('wiki_js_placeholder').'"'.
                 '};';
         }
         if($id != -1) {

@@ -843,13 +843,16 @@ class GroupModel extends Model
      *     this should be the body of the first post in discussion thread
      * @param string $base_address default url to be used in links
      *     on wiki page that use short syntax
+     * @param array $additional_substitutions list of pairs additional wiki 
+     *      page rewrites to do when parsing wiki pages
      */
     function setPageName($user_id, $group_id, $page_name, $page, $locale_tag,
-        $edit_comment, $thread_title, $thread_description, $base_address = "")
+        $edit_comment, $thread_title, $thread_description, $base_address = "",
+        $additional_substitutions = array())
     {
         $db = $this->db;
         $pubdate = time();
-        $parser = new WikiParser($base_address);
+        $parser = new WikiParser($base_address, $additional_substitutions);
         $parsed_page = $parser->parse($page);
         if($page_id = $this->getPageID($group_id, $page_name, $locale_tag)) {
             //can only add and use resources for a page that exists
