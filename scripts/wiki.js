@@ -505,12 +505,8 @@ function useInputForSearch(id)
     toggleDisplay('wiki-popup-prompt-'+id);
     size_elt = elt('wiki-search-size-'+id);
     var size = size_elt.options[size_elt.selectedIndex].text;
-    var widget_obj = {};
-    var search_obj = {};
-    search_obj.size = size;
-    widget_obj.search = objToString(search_obj);
-
-    insertTextAtCursor( "{" + objToString(widget_obj) + "}\n", id);
+    insertTextAtCursor( "{{search:default|size:" + size+ "|placeholder:???}}\n",
+        id);
 }
 /**
  * Util function to Stringify an JS Object

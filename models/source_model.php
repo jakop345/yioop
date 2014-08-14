@@ -370,12 +370,18 @@ class SourceModel extends Model
         $sql = "UPDATE MEDIA_SOURCE SET LANGUAGE=? WHERE TIMESTAMP=?";
         foreach($feeds as $feed) {
             $is_html = ($feed['TYPE'] == 'html') ? true : false;
+            crawlLog("Updating {$feed['NAME']}. Making dom object from feed.");
+            if(!$feed[CrawlConstants::PAGE]) {
+                crawlLog("...No data in feed skipping.");
+                continue;
+            }
             $dom = new DOMDocument();
             if($is_html) {
                 @$dom->loadHTML($feed[CrawlConstants::PAGE]);
             } else {
                 @$dom->loadXML($feed[CrawlConstants::PAGE]);
             }
+            crawlLog("...done. Extracting info about whole feed.");
             $lang = "";
             if($feed['TYPE'] != 'html' &&
                 !isset($feed["LANGUAGE"]) || $feed["LANGUAGE"] == "") {
@@ -410,7 +416,7 @@ class SourceModel extends Model
                         "pubDate" => "updated");
                 }
             }
-            crawlLog("Updating {$feed['NAME']}...");
+            crawlLog("...done. Check for new news items in {$feed['NAME']}.");
             $num_added = 0;
             $num_seen = 0;
             foreach($nodes as $node) {
@@ -453,7 +459,7 @@ class SourceModel extends Model
                 $num_seen++;
             }
             crawlLog("...added $num_added news items of $num_seen ".
-                "on rss page.");
+                "on rss page.\n Done Processing {$feed['NAME']}.");
         }
         return true;
     }
