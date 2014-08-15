@@ -1474,27 +1474,33 @@ div.group-result
     border-radius: 0.07in;
     border-style: solid;
     border-width: 0.02in;
-    padding: 0.07in;
+    padding: 0.04in;
+    padding-bottom: 0.06in;
     position: relative;
     top: 14pt;
-    width: 7in;
+    width: 6.125in;
 }
 .html-ltr .search-box
 {
-    padding-left: 0.2in;
+    padding-left:.125in;
+}
+.html-rtl .search-box
+{
+    padding-right:.125in;
 }
 .landing .search-box
 {
     position: relative;
-    width: 8in;
+    width: 100%;
     top: 0;
 }
 .mobile .search-box
 {
     padding: 3px;
+    padding-bottom: 2px;
     position: relative;
     top: 50px;
-    width:240px;
+    width:238px;
 }
 .mobile .landing .search-box
 {
@@ -1505,10 +1511,11 @@ div.group-result
 .search-box p
 {
     font-size: 16pt;
+    width:auto;
 }
 .landing .search-box input
 {
-    width: 6.45in;
+    width: 92%;
 }
 .search-box input
 {
@@ -1516,47 +1523,90 @@ div.group-result
     font-size: 16pt;
     margin: 0;
     padding: 0.05in;
-    padding-bottom: 0.1in;
     width: 5.45in;
 }
 .mobile .search-box input
 {
     font-size: 12pt;
-    padding-bottom: 4px;
-    width: 180px;
+    position: relative;
+    top: -5px;
+    width: 165px;
 }
 .mobile .landing .search-box input
 {
     font-size: 12pt;
-    width: 235px;
+    left: 6px;
+    margin-right:6px;
+    position: relative;
+    top: -5px;
+    width: 210px;
 }
 /*
     The next styles are for the search boxes which can be inserted
     into wiki pages
  */
+.mobile .small-search-box
+{
+    position:static;
+    width:1.6in;
+}
+.mobile .medium-search-box
+{
+    position:static;
+    width:2.1in;
+}
+.mobile .large-search-box
+{
+    position:static;
+    width:2.6in;
+}
 .mobile .small-search-box .search-input
 {
-    width:1.55in!important;
+    position:static;
+    width:.95in;
 }
 .mobile .medium-search-box .search-input
 {
-    width:2.05in!important;
+    position:static;
+    width:1.45in;
 }
 .mobile .large-search-box .search-input
 {
-    width:2.55in!important;
+    position:static;
+    width:1.95in;
+}
+.small-search-box
+{
+    margin:4px;
+    position:static;
+    width:2.6in;
 }
 .small-search-box .search-input
 {
-    width:2in!important;
+    position:static;
+    width:2in;
+}
+.medium-search-box 
+{
+    margin:4px;
+    position:static;
+    width:4.1in;
 }
 .medium-search-box .search-input
 {
-    width:3.5in!important;
+    position:static;
+    width:3.5in;
+}
+.large-search-box
+{
+    margin:4px;
+    position:static;
+    width:5.6in;
 }
 .large-search-box .search-input
 {
-    width:5in!important;
+    position:static;
+    width:5in;
 }
 .search-input
 {
@@ -1568,11 +1618,20 @@ div.group-result
 }
 .search-button
 {
-    height:0.35in!important;
-    left:-4px!important;
-    margin: 0!important;
-    padding: 0!important;
-    position:relative!important;
+    height:0.35in;
+    left:-4px;
+    margin: 0;
+    padding: 0;
+    position:relative;
+    right:-4px;
+}
+
+.mobile .search-button
+{
+    left:-4px;
+    position:relative;
+    right:-4px;
+    width:50px;
 }
 
 /*
@@ -1597,7 +1656,7 @@ div.group-result
     padding-bottom: 0;
     position: relative;
     top: 0.20in;
-    width: 6.5in;
+    width: 5.6in;
 
 }
 
@@ -1605,6 +1664,7 @@ div.group-result
 {
     position: relative;
     top:0;
+    width: 8in;
 }
 
 .mobile .dropdown
@@ -1621,9 +1681,12 @@ div.group-result
     padding: 0;
     padding-bottom: 0.1in;
     visibility: hidden;
-    width: 6.30in;
+    width: 5.40in;
 }
-
+.landing .suggest-list
+{
+    width: 8in;
+}
 .suggest-list li
 {
     background: #DDF;
@@ -1635,9 +1698,12 @@ div.group-result
     padding-left: 0.1in;
     padding-right: 0.1in;
     padding-top: 0;
-    width: 6.30in;
+    width: 5.40in;
 }
-
+.landing .suggest-list li
+{
+    width: 7.8in;
+}
 .suggest-list li span
 {
     color: black;

@@ -474,10 +474,10 @@ class SourceModel extends Model
      */
     function getTags($dom, $query)
     {
+        $nodes = array();
         $dom_xpath = new DOMXPath($dom);
         $tags = $dom_xpath->query($query);
         $i = 0;
-        $nodes = array();
         while($item = $tags->item($i)) {
             $tmp_dom = new DOMDocument;
             $tmp_dom->formatOutput = true;

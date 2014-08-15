@@ -118,10 +118,9 @@ class SearchView extends View implements CrawlConstants
                 if(isset($data['QUERY']) && !isset($data['NO_QUERY'])) {
                     e(urldecode($data['QUERY']));} ?>"
                 placeholder="<?php e(tl('search_view_input_placeholder')); ?>"/>
-            <button class="button-box" type="submit"><?php if(MOBILE) {
-                    e('>');
-                } else {
-                e(tl('search_view_search')); } ?></button>
+            <button class="button-box" type="submit"><img
+                src='./resources/search-button.png'
+                alt='<?php e(tl('search_view_search')); ?>'/></button>
             </p>
             </form>
         </div>
