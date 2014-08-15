@@ -399,6 +399,11 @@ class SourceModel extends Model
             crawlLog("...Language is $lang. Getting channel, finding nodes.");
             if($is_html) {
                 $sub_dom = $this->getTags($dom, $feed['CHANNEL_PATH']);
+                if(!$sub_dom) {
+                    crawlLog("... Scraper couldn't parse channel".
+                        " path so bailing on this feed.");
+                    continue;
+                }
                 $nodes = $this->getTags($sub_dom[0], $feed['ITEM_PATH']);
                 $rss_elements = array("title" => $feed['TITLE_PATH'],
                     "description" => $feed['DESCRIPTION_PATH'],
