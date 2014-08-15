@@ -396,6 +396,7 @@ class SourceModel extends Model
             } else {
                 $lang = DEFAULT_LOCALE;
             }
+            crawlLog("...Language is $lang. Getting channel, finding nodes.");
             if($is_html) {
                 $sub_dom = $this->getTags($dom, $feed['CHANNEL_PATH']);
                 $nodes = $this->getTags($sub_dom[0], $feed['ITEM_PATH']);
@@ -416,7 +417,8 @@ class SourceModel extends Model
                         "pubDate" => "updated");
                 }
             }
-            crawlLog("...done. Check for new news items in {$feed['NAME']}.");
+            crawlLog("...done extracting info. Check for new news ".
+                "items in {$feed['NAME']}.");
             $num_added = 0;
             $num_seen = 0;
             foreach($nodes as $node) {
