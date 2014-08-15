@@ -89,6 +89,17 @@ p
     margin: 0;
 }
 
+.inline ul,
+.inline li
+{
+    display:inline;
+    list-style-type: none;
+    border-right: 2px solid black;
+}
+.inline li:first-child
+{
+    border-left: 2px solid black;
+}
 .indent
 {
     text-indent: 0.25in;

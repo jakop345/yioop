@@ -476,7 +476,9 @@ class SourceModel extends Model
     {
         $nodes = array();
         $dom_xpath = new DOMXPath($dom);
+        if(!$dom_xpath) { return array(); }
         $tags = $dom_xpath->query($query);
+        if(!$tags) {return array(); }
         $i = 0;
         while($item = $tags->item($i)) {
             $tmp_dom = new DOMDocument;
