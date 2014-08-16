@@ -1536,12 +1536,28 @@ div.group-result
     padding: 0.05in;
     width: 5.45in;
 }
+.search-box button
+{
+        width:0.5in;
+        padding:0;
+}
+.search-box img
+{
+        left:-5px;
+        position:relative;
+        top:2px;
+}
+.mobile .search-box button
+{
+        width:50px;
+        padding:0;
+}
 .mobile .search-box input
 {
     font-size: 12pt;
     position: relative;
     top: -5px;
-    width: 165px;
+    width: 174px;
 }
 .mobile .landing .search-box input
 {
@@ -1550,7 +1566,7 @@ div.group-result
     margin-right:6px;
     position: relative;
     top: -5px;
-    width: 210px;
+    width: 218px;
 }
 /*
     The next styles are for the search boxes which can be inserted
