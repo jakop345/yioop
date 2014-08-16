@@ -544,6 +544,30 @@ class GroupModel extends Model
         return $row;
     }
     /**
+     *  @param int $thread_id
+     */
+    function getThreadFollowers($thread_id, $exclude_id = -1)
+    {
+        $db = $this->db;
+        $params = array($thread_id);
+        $sql = "SELECT DISTINCT U.USER_NAME AS USER_NAME, U.EMAIL AS EMAIL ".
+            "FROM GROUP_ITEM GI, USERS U ".
+            "WHERE GI.PARENT_ID=? AND GI.USER_ID=U.USER_ID ";
+        if($exclude_id != -1) {
+            $sql .= " AND U.USER_ID != ?";
+            $params[] = $exclude_id;
+        }
+        $result = $db->execute($sql, $params);
+        if(!$result) { return false; }
+        $i = 0;
+        while($row[$i] = $db->fetchArray($result)) {
+            $i++;
+        }
+        unset($row[$i]); //last one will be null
+        return $row;
+    }
+
+    /**
      * Creates a new group item
      *
      * @param int $parent_id thread id to use for the item

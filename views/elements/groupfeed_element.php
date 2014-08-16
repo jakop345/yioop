@@ -373,8 +373,8 @@ class GroupfeedElement extends Element implements CrawlConstants
      */
     function renderScripts($data)
     {
-        if($data['LIMIT'] + $data['RESULTS_PER_PAGE'] == $data['TOTAL_ROWS']) {
-            $data['LIMIT'] += $data['RESULTS_PER_PAGE'];
+        if($data['LIMIT'] + $data['RESULTS_PER_PAGE'] == $data['TOTAL_ROWS']){
+            $data['LIMIT'] += $data['RESULTS_PER_PAGE'] - 1;
         }
         $paging_query = $data['PAGING_QUERY']."&amp;".CSRF_TOKEN."=".
             $data[CSRF_TOKEN];

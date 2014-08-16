@@ -32,7 +32,10 @@
  */
 
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-
+/**
+ * Used to manage the process of sending emails to users
+ */
+require_once BASE_DIR."/lib/mail_server.php";
 /**
  * Provides activities to AdminController related to creating, updating
  * blogs (and blog entries), static web pages, and crawl mixes.
@@ -673,6 +676,19 @@ class SocialComponent extends Component implements CrawlConstants
                     $title = "-- ".$parent_item['TITLE'];
                     $id = $group_model->addGroupItem($parent_item["ID"],
                         $group_id, $user_id, $title, $description);
+                    $followers = $group_model->getThreadFollowers(
+                        $parent_item["ID"], $user_id);
+                    $server = new MailServer(MAIL_SENDER, MAIL_SERVER,
+                        MAIL_SERVERPORT, MAIL_USERNAME, MAIL_PASSWORD,
+                        MAIL_SECURITY);
+                    $subject = tl('social_component_thread_notification',
+                        $parent_item['TITLE']);
+                    foreach($followers as $follower) {
+                        $message = tl('social_component_thread_notify_text',
+                            $follower['USER_NAME'], $parent_item['TITLE'])."\n";
+                        $server->send($subject, MAIL_SENDER,
+                            $follower['EMAIL'], $message);
+                    }
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('social_component_comment_added'). "</h1>');";
                 break;
@@ -902,8 +918,7 @@ class SocialComponent extends Component implements CrawlConstants
                         $page_info["GROUP_ID"];
                 }
             }
-            if((!isset($data['REFRESH']) || !$data['REFRESH']) &&
-                (!isset($_REQUEST['f']) ||
+            if((!isset($_REQUEST['f']) ||
                 !in_array($_REQUEST['f'], array("rss", "json", "serial")))) {
                 $pub_clause = array('pub_date', "=", "", "ASC");
                 $sort = "ksort";
@@ -981,7 +996,7 @@ class SocialComponent extends Component implements CrawlConstants
             $data['ADD_PAGING_QUERY'] = "&amp;just_user_id=$just_user_id";
             $data['JUST_USER_ID'] = $just_user_id;
         }
-        $pages = array_slice($pages, $limit , $results_per_page);
+        $pages = array_slice($pages, $limit, $results_per_page);
         $data['TOTAL_ROWS'] = $item_count + $groups_count;
         $data['LIMIT'] = $limit;
         $data['RESULTS_PER_PAGE'] = $results_per_page;

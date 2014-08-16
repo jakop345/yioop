@@ -74,8 +74,6 @@ class WebLayout extends Layout
         else e(tl('web_layout_description')); ?>" />
         <meta name="Author" content="<?php 
             e(tl('web_layout_site_author')); ?>" />
-        <meta name="description" content="<?php
-            e(tl('web_layout_description')); ?>" />
         <meta charset="utf-8" />
         <?php if(MOBILE) {?>
         <meta name="viewport" content="width=device-width, initial-scale=1">
