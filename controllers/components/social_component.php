@@ -683,9 +683,14 @@ class SocialComponent extends Component implements CrawlConstants
                         MAIL_SECURITY);
                     $subject = tl('social_component_thread_notification',
                         $parent_item['TITLE']);
+                    $body = tl('social_component_notify_body')."\n".
+                        $parent_item['TITLE']."\n\n".
+                        tl('social_component_notify_closing')."\n".
+                        tl('social_component_notify_signature');
                     foreach($followers as $follower) {
-                        $message = tl('social_component_thread_notify_text',
-                            $follower['USER_NAME'], $parent_item['TITLE'])."\n";
+                        $message = tl('social_component_notify_salutation',
+                            $follower['USER_NAME'])."\n\n";
+                        $message .= $body;
                         $server->send($subject, MAIL_SENDER,
                             $follower['EMAIL'], $message);
                     }

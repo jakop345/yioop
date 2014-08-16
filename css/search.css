@@ -1611,7 +1611,7 @@ div.group-result
 .small-search-box .search-input
 {
     position:static;
-    width:2in;
+    width:1.95in;
 }
 .medium-search-box 
 {
@@ -1622,7 +1622,7 @@ div.group-result
 .medium-search-box .search-input
 {
     position:static;
-    width:3.5in;
+    width:3.45in;
 }
 .large-search-box
 {
@@ -1633,7 +1633,7 @@ div.group-result
 .large-search-box .search-input
 {
     position:static;
-    width:5in;
+    width:4.95in;
 }
 .search-input
 {
