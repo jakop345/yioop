@@ -33,7 +33,7 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /** Register File Types We Handle*/
-$INDEXED_FILE_TYPES[] = "pptx";
+$INDEXED_FILE_TYPES[] = "docx";
 $PAGE_PROCESSORS["application/vnd.openxmlformats-".
     "officedocument.wordprocessingml.document"] = "DocxProcessor";
 /**
