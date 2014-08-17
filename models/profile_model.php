@@ -366,6 +366,7 @@ EOT;
         }
         $out = implode("\n", $n);
         if(file_put_contents($directory.PROFILE_FILE_NAME, $out) !== false) {
+            restore_error_handler();
             @chmod($directory.PROFILE_FILE_NAME, 0777);
             if(isset($new_profile_data['ROBOT_DESCRIPTION'])) {
                 $robot_path = LOCALE_DIR."/".DEFAULT_LOCALE."/pages/bot.thtml";
@@ -373,6 +374,7 @@ EOT;
                     $new_profile_data['ROBOT_DESCRIPTION']);
                 @chmod($robot_path, 0777);
             }
+            set_error_handler("yioop_error_handler");
             return true;
         }
         return false;
@@ -386,10 +388,13 @@ EOT;
      */
     function createIfNecessaryDirectory($directory)
     {
-        if(file_exists($directory)) return 0;
-        else {
+        if(file_exists($directory)) {
+            return 0;
+        } else {
+            restore_error_handler();
             @mkdir($directory);
             @chmod($directory, 0777);
+            set_error_handler("yioop_error_handler");
         }
         if(file_exists($directory)) {
             return 1;
