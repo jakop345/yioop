@@ -34,26 +34,26 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 /** Load search engine-wide configuration file */
 require_once BASE_DIR.'configs/config.php';
 /** Load PPTX class we'll test */
-require_once BASE_DIR."lib/processors/pptx_processor.php";
+require_once BASE_DIR."lib/processors/docx_processor.php";
 /**
- * UnitTest for the PptxProcessor class. It is used to process
- * pptx files which are a zip of an xml-based format
+ * UnitTest for the DocxProcessor class. It is used to process
+ * docx files which are a zip of an xml-based format
  *
- * @author Nakul Natu
+ * @author Chris Pollett
  * @package seek_quarry
  * @subpackage test
  */
-class PptxProcessorTest extends UnitTest implements CrawlConstants
+class DocxProcessorTest extends UnitTest implements CrawlConstants
 {
     /**
      * Creates a summary of pptx document to check
      */
     function setUp()
     {
-        $processor = new PptxProcessor();
-        $url = "";
-        $filename = BASE_DIR . "/tests/test_files/test.pptx";
+        $processor = new DocxProcessor();
+        $filename = BASE_DIR . "/tests/test_files/test.docx";
         $page = file_get_contents($filename);
+        $url = "";
         $summary = array();
         $summary = $processor->process($page, $url);
         $this->test_objects['summary'] = $summary;
@@ -71,12 +71,12 @@ class PptxProcessorTest extends UnitTest implements CrawlConstants
     function checkTitleTestCase()
     {
         $objects = $this->test_objects['summary'];
-        $title = "Nakul Natu";
+        $title = "Test";
         $this->assertEqual($objects[self::TITLE],
             $title, "Correct Title Retrieved");
     }
     /**
-     * Checks Language of pptx is correct or not
+     * Checks Language of docx is correct or not
      */
     function checkLangTestCase()
     {
@@ -92,8 +92,7 @@ class PptxProcessorTest extends UnitTest implements CrawlConstants
     {
         $objects = $this->test_objects['summary'];
         $testLinks = array();
-        $testLinks[0] = "http://www.google.com/";
-        $testLinks[1] = "http://www.facebook.com/";
+        $testLinks[0] = "http://www.yahoo.com/";
         $links = array();
         $links = $objects[self::LINKS];
         $i = 0;

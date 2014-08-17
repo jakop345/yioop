@@ -22,10 +22,10 @@
  *
  * END LICENSE
  *
- * @author Nakul Natu nakul.natu@gmail.com
+ * @author Chris Pollett chris@pollett.org
  * @package seek_quarry
  * @subpackage processor
- * @license http://www.gnu.org/licenses/ GPLv3
+ * @license http://www.gnu.org/licenses/ GPL3
  * @link http://www.seekquarry.com/
  * @copyright 2009 - 2014
  * @filesource
@@ -34,8 +34,8 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 
 /** Register File Types We Handle*/
 $INDEXED_FILE_TYPES[] = "pptx";
-$PAGE_PROCESSORS["application/vnd.openxmlformats-officedocument.".
-    "presentationml.presentation"] = "PptxProcessor";
+$PAGE_PROCESSORS["application/vnd.openxmlformats-".
+    "officedocument.wordprocessingml.document"] = "DocxProcessor";
 /**
  * Load base class, if needed.
  */
@@ -54,19 +54,19 @@ require_once BASE_DIR."/lib/utility.php";
 require_once BASE_DIR."/lib/partial_zip_archive.php";
 /**
  * Used to create crawl summary information
- * for PPTX files
+ * for DOCX files
  *
- * @author Nakul Natu
+ * @author Chris Pollett
  * @package seek_quarry
  * @subpackage processor
  */
-class PptxProcessor extends TextProcessor
+class DocxProcessor extends TextProcessor
 {
     /**
      * Used to extract the title, description and links from
-     * a pptx file consisting of xml data.
+     * a docx file consisting of xml data.
      *
-     * @param string $page pptx(zip) contents
+     * @param string $page docx(zip) contents
      * @param string $url the url where the page contents came from,
      *    used to canonicalize relative links
      *
@@ -76,50 +76,33 @@ class PptxProcessor extends TextProcessor
     function process($page, $url)
     {
         $summary = NULL;
-        // Open zip archive
+        $sites = array();
         $zip = new PartialZipArchive($page);
-        $buf= $zip->getFromName("docProps/core.xml");
-        if ($buf) {
+        $buf = $zip->getFromName("docProps/core.xml");
+        if($buf) {
             $dom = self::dom($buf);
             if($dom !== false) {
-            // Get the title
+                // Try to get the title from the document meta data
                 $summary[self::TITLE] = self::title($dom);
             }
         }
-        $buf = $zip->getFromName("docProps/app.xml");
+        $buf = $zip->getFromName("word/document.xml");
         if($buf) {
-        // Get number of slides present
             $dom = self::dom($buf);
-            $num_slides = self::numSlides($dom);
+            $summary[self::DESCRIPTION] = self::docText($dom);
+            $summary[self::LANG] = guessLocaleFromString(
+                $summary[self::DESCRIPTION], 'en-US');
         } else {
-            /*  go for an upper bound on number of slides (might happen on
-                partial download of pptx file)
-             */
-            $num_slides = $zip->numFiles();
+            $summary[self::DESCRIPTION] = "Did not download ".
+                "word/document.xml portion of docx file";
+            $summary[self::LANG] = 'en-US';
         }
-        $summary[self::DESCRIPTION] = "";
-        $summary[self::LINKS] = array();
-        $lang = NULL;
-        for ($i = 1; $i <= $num_slides; $i++) {
-            $buf = $zip->getFromName("ppt/slides/slide" . $i . ".xml");
-            if($buf) {
-            /* Get description , language and url links asociated
-               with each slide*/
-                $dom = self::dom($buf);
-                $description = self::slideText($dom);
-                if(strlen($summary[self::DESCRIPTION]) + strlen($description)
-                    < self::$max_description_len) {
-                        $summary[self::DESCRIPTION] .= $description;
-                }
-                if(!$lang) {
-                    $lang = self::lang($dom);
-                    if($lang) {
-                        $summary[self::LANG] = $lang;
-                    }
-                }
-                $summary[self::LINKS] = array_merge($summary[self::LINKS],
-                    self::links($dom, $url));
-            }
+        $buf = $zip->getFromName("word/_rels/document.xml.rels");
+        if($buf) {
+            $dom = self::dom($buf);
+            $summary[self::LINKS] = self::links($dom, $url);
+        } else {
+            $summary[self::LINKS] = array();
         }
         return $summary;
     }
@@ -129,34 +112,38 @@ class PptxProcessor extends TextProcessor
      * the supplied $site information.
      *
      * @param object $dom a document object with links on it
-     * @param string $site a string containing a url
+     * @param string $sit  a string containing a url
      *
      * @return array links from the $dom object
      */
     static function links($dom, $site)
     {
         $sites = array();
-        $xpath = new DOMXPath($dom);
-        $paras = $xpath->evaluate("/p:sld//p:cSld//p:spTree//p:sp//
-            p:txBody//a:p//a:r//a:rPr//a:hlinkClick");
-        $i=0;
-        foreach($paras as $para) {
-            if($i < MAX_LINKS_TO_EXTRACT) {
-                $hlink = $para->parentNode->parentNode->
-                    getElementsByTagName("t")->item(0)->nodeValue;
-                $url = UrlParser::canonicalLink(
-                    $hlink, $site);
-                $len = strlen($url);
-                if(!UrlParser::checkRecursiveUrl($url)  &&
-                    strlen($url) < MAX_URL_LENGTH && $len > 0) {
-                    if(isset($sites[$url])) {
-                        $sites[$url] .= " ".$hlink;
-                    } else {
-                        $sites[$url] = $hlink;
+        $hyperlink = "http://schemas.openxmlformats.org/officeDocument/2006/".
+            "relationships/hyperlink";
+        $i = 0;
+        $relationships = $dom->getElementsByTagName("Relationships");
+        foreach ($relationships as $relationship) {
+            $relations = $relationship->getElementsByTagName("Relationship");
+            foreach ($relations as $relation) {
+                if( strcmp( $relation->getAttribute('Type'),
+                    $hyperlink) == 0 ) {
+                    if($i < MAX_LINKS_TO_EXTRACT) {
+                        $link = $relation->getAttribute('Target');
+                        $url = UrlParser::canonicalLink(
+                            $link, $site);
+                        if(!UrlParser::checkRecursiveUrl($url)  &&
+                            strlen($url) < MAX_URL_LENGTH) {
+                            if(isset($sites[$url])) {
+                                $sites[$url] .=" ".$link;
+                            } else {
+                                $sites[$url] = $link;
+                            }
+                            $i++;
+                        }
                     }
                 }
             }
-            $i++;
         }
         return $sites;
     }
@@ -185,42 +172,14 @@ class PptxProcessor extends TextProcessor
     {
         $coreProperties = $dom->getElementsByTagName("coreProperties");
         $property = $coreProperties->item(0);
-        $titles = $property->getElementsByTagName("title");
-        $title = $titles->item(0)->nodeValue;
-        return $title;
-    }
-    /**
-     * Returns number of slides of  pptx based on its document object
-     *
-     * @param object $dom   a document object to extract a title from.
-     * @return number  number of slides
-     *
-     */
-    static function numSlides($dom)
-    {
-        $properties = $dom->getElementsByTagName("Properties");
-        $property = $properties->item(0);
-        $slides = $property->getElementsByTagName("Slides");
-        $number = $slides->item(0)->nodeValue;
-        return $number;
-    }
-    /**
-     * Determines the language of the xml document by looking at the
-     * language attribute of a tag.
-     *
-     * @param object $dom  a document object to check the language of
-     *
-     * @return string language tag for guessed language
-     */
-    static function lang($dom)
-    {
-        $xpath = new DOMXPath($dom);
-        $languages = $xpath->evaluate("/p:sld//p:cSld//p:spTree//
-            p:sp//p:txBody//a:p//a:r//a:rPr");
-        if(!$languages) {
-            return false;
+        $title = "";
+        if($property) {
+            $titles = $property->getElementsByTagName("title");
+            if($titles->item(0)) {
+                $title = $titles->item(0)->nodeValue;
+            }
         }
-        return $languages->item(0)->getAttribute("lang");
+        return $title;
     }
     /**
      * Returns descriptive text concerning a pptx slide based on its document
@@ -229,10 +188,10 @@ class PptxProcessor extends TextProcessor
      * @param object $dom   a document object to extract a description from.
      * @return string a description of the slide
      */
-    static function slideText($dom)
+    static function docText($dom)
     {
         $xpath = new DOMXPath($dom);
-        $paragraphs = $xpath->evaluate("//a:p");
+        $paragraphs = $xpath->evaluate("//w:p");
         $description = "";
         $len = 0;
         foreach ($paragraphs as $paragraph) {

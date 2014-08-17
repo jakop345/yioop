@@ -46,49 +46,6 @@ if(!defined('BASE_DIR') && php_sapi_name() != 'cli') {
  */
 class BZip2BlockIterator
 {
-    /** String to tell if file is a bz2 file*/
-    const MAGIC = 'BZh';
-    /** String at the start of each bz2 block */
-    const BLOCK_HEADER = "\x31\x41\x59\x26\x53\x59";
-    /** String at the end of each bz2 block*/
-    const BLOCK_ENDMARK = "\x17\x72\x45\x38\x50\x90";
-    /**
-     * Blocks are NOT byte-aligned, so the block header (and endmark) may show
-     * up shifted right by 0-8 bits in various places throughout the file. This
-     * regular expression matches any of the possible shifts for both the block
-     * header and the block endmark.
-     */
-    const BLOCK_LEADER_RE = '
-        /
-         \x41\x59\x26\x53\x59 | \xa0\xac\x93\x29\xac | \x50\x56\x49\x94\xd6
-        |\x28\x2b\x24\xca\x6b | \x14\x15\x92\x65\x35 | \x8a\x0a\xc9\x32\x9a
-        |\xc5\x05\x64\x99\x4d | \x62\x82\xb2\x4c\xa6
-
-        |\x72\x45\x38\x50\x90 | \xb9\x22\x9c\x28\x48 | \xdc\x91\x4e\x14\x24
-        |\xee\x48\xa7\x0a\x12 | \x77\x24\x53\x85\x09 | \xbb\x92\x29\xc2\x84
-        |\x5d\xc9\x14\xe1\x42 | \x2e\xe4\x8a\x70\xa1
-        /x';
-    /**
-     * Lookup table fpr the number of bits by which the magic
-     * number for the next block has been shifted right. Second
-     * components of sub-arrays say whether block header or endmark
-     * @var array
-     */
-    static $header_info = array(
-        "\x41" => array(0,  true), "\xa0" => array(1,  true),
-        "\x50" => array(2,  true), "\x28" => array(3,  true),
-        "\x14" => array(4,  true), "\x8a" => array(5,  true),
-        "\xc5" => array(6,  true), "\x62" => array(7,  true),
-
-        "\x72" => array(0, false), "\xb9" => array(1, false),
-        "\xdc" => array(2, false), "\xee" => array(3, false),
-        "\x77" => array(4, false), "\xbb" => array(5, false),
-        "\x5d" => array(6, false), "\x2e" => array(7, false)
-    );
-    /**
-     * How many bytes to read into buffer from bz2 stream in one go
-     */
-    const BLOCK_SIZE = 8192;
     /**
      * File handle for bz2 file
      * @var resource
@@ -120,6 +77,49 @@ class BZip2BlockIterator
      * @var int
      */
     var $num_extra_bits = 0;
+    /**
+     * Lookup table fpr the number of bits by which the magic
+     * number for the next block has been shifted right. Second
+     * components of sub-arrays say whether block header or endmark
+     * @var array
+     */
+    static $header_info = array(
+        "\x41" => array(0,  true), "\xa0" => array(1,  true),
+        "\x50" => array(2,  true), "\x28" => array(3,  true),
+        "\x14" => array(4,  true), "\x8a" => array(5,  true),
+        "\xc5" => array(6,  true), "\x62" => array(7,  true),
+
+        "\x72" => array(0, false), "\xb9" => array(1, false),
+        "\xdc" => array(2, false), "\xee" => array(3, false),
+        "\x77" => array(4, false), "\xbb" => array(5, false),
+        "\x5d" => array(6, false), "\x2e" => array(7, false)
+    );
+    /** String to tell if file is a bz2 file*/
+    const MAGIC = 'BZh';
+    /** String at the start of each bz2 block */
+    const BLOCK_HEADER = "\x31\x41\x59\x26\x53\x59";
+    /** String at the end of each bz2 block*/
+    const BLOCK_ENDMARK = "\x17\x72\x45\x38\x50\x90";
+    /**
+     * Blocks are NOT byte-aligned, so the block header (and endmark) may show
+     * up shifted right by 0-8 bits in various places throughout the file. This
+     * regular expression matches any of the possible shifts for both the block
+     * header and the block endmark.
+     */
+    const BLOCK_LEADER_RE = '
+        /
+         \x41\x59\x26\x53\x59 | \xa0\xac\x93\x29\xac | \x50\x56\x49\x94\xd6
+        |\x28\x2b\x24\xca\x6b | \x14\x15\x92\x65\x35 | \x8a\x0a\xc9\x32\x9a
+        |\xc5\x05\x64\x99\x4d | \x62\x82\xb2\x4c\xa6
+
+        |\x72\x45\x38\x50\x90 | \xb9\x22\x9c\x28\x48 | \xdc\x91\x4e\x14\x24
+        |\xee\x48\xa7\x0a\x12 | \x77\x24\x53\x85\x09 | \xbb\x92\x29\xc2\x84
+        |\x5d\xc9\x14\xe1\x42 | \x2e\xe4\x8a\x70\xa1
+        /x';
+    /**
+     * How many bytes to read into buffer from bz2 stream in one go
+     */
+    const BLOCK_SIZE = 8192;
     /**
      * Creates a new iterator of a bz2 file by opening the file, doing a
      * sanity check and then setting up the initial file_offset to

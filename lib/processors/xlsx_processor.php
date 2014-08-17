@@ -45,6 +45,10 @@ require_once BASE_DIR."/lib/processors/text_processor.php";
  * Load so can parse urls
  */
 require_once BASE_DIR."/lib/url_parser.php";
+/**
+ * For reading potentially incomplete zip archive files
+ */
+require_once BASE_DIR."/lib/partial_zip_archive.php";
  /**
  * Used to create crawl summary information
  * for xlsx files
@@ -69,58 +73,46 @@ class XlsxProcessor extends TextProcessor
     function process($page, $url)
     {
         $summary = NULL;
-        $sites = array();
-        // Create a temporary xlsx file
-        $file_name = CRAWL_DIR . "/temp.xlsx";
-        file_put_contents($file_name, $page);
         // Open a zip archive
-        $zip = new ZipArchive;
-        if($zip->open($file_name) === TRUE) {
-            //Count of the sheets in xlsx
-            $file_count = 0;
-            //Getting the title from xlsx file
-            $buf = $zip->getFromName("docProps/app.xml");
-            if($buf) {
-               $dom = self::dom($buf);
-               if($dom !== false) {
-                   // Get the title
-                   $summary[self::TITLE] = self::title($dom);
-                   $file_count = self::sheetCount($dom);
-               }
+        $zip = new PartialZipArchive($page);
+        //Count of the sheets in xlsx
+        $file_count = 0;
+        //Getting the title from xlsx file
+        $buf = $zip->getFromName("docProps/app.xml");
+        if($buf) {
+           $dom = self::dom($buf);
+           if($dom !== false) {
+               // Get the title
+               $summary[self::TITLE] = self::title($dom);
+               $file_count = self::sheetCount($dom);
+           }
+        }
+        //Getting the description from xlsx file
+        $buf= $zip->getFromName("xl/sharedStrings.xml");
+        if($buf) {
+            $dom = self::dom($buf);
+            if($dom !== false) {
+                // Get the description
+                $summary[self::DESCRIPTION] = self::description($dom);
             }
-            //Getting the description from xlsx file
-            $buf= $zip->getFromName("xl/sharedStrings.xml");
+            //Getting the language from xlsx file
+            $summary[self::LANG] =
+                self::calculateLang($summary[self::DESCRIPTION], $url);
+        }
+        $summary[self::LINKS] = array();
+        //Getting links from each worksheet
+        for($i = 1; $i<= $file_count; $i++) {
+            $buf= $zip->getFromName("xl/worksheets/_rels/sheet" . $i .
+                ".xml.rels");
             if($buf) {
                 $dom = self::dom($buf);
                 if($dom !== false) {
-                    // Get the description
-                    $summary[self::DESCRIPTION] = self::description($dom);
-                }
-                //Getting the language from xlsx file
-                $summary[self::LANG] =
-                    self::calculateLang($summary[self::DESCRIPTION], $url);
-            }
-            $summary[self::LINKS] = $sites;
-            //Getting links from each worksheet
-            for($i = 1; $i<= $file_count; $i++) {
-                $buf= $zip->getFromName("xl/worksheets/_rels/sheet" . $i .
-                    ".xml.rels");
-                if($buf) {
-                    $dom = self::dom($buf);
-                    if($dom !== false) {
-                        // Get the links
-                        $summary[self::LINKS] = array_merge(
-                            $summary[self::LINKS], self::links($dom, $url));
-                    }
+                    // Get the links
+                    $summary[self::LINKS] = array_merge(
+                        $summary[self::LINKS], self::links($dom, $url));
                 }
             }
-        } else {
-            $summary=parent::process($page, $url);
         }
-        // Close the zip
-        $zip->close();
-        //delete the temporarily created file
-        @unlink("$file_name");
         return $summary;
     }
     /**
@@ -182,7 +174,7 @@ class XlsxProcessor extends TextProcessor
      * Returns descriptive text concerning a xlsx file based on its document
      * object
      *
-     * @param object $dom   a document object to extract a description from.
+     * @param object $dom a document object to extract a description from.
      * @return string a description of the slide
      */
     static function description($dom)
@@ -205,10 +197,10 @@ class XlsxProcessor extends TextProcessor
      * dom object where links have been canonicalized according to
      * the supplied $site information.
      *
-     * @param object $dom   a document object with links on it
-     * @param string $site   a string containing a url
+     * @param object $dom a document object with links on it
+     * @param string $sit  a string containing a url
      *
-     * @return array   links from the $dom object
+     * @return array links from the $dom object
      */
     static function links($dom, $site)
     {
@@ -217,13 +209,11 @@ class XlsxProcessor extends TextProcessor
             "relationships/hyperlink";
         $i = 0;
         $relationships = $dom->getElementsByTagName("Relationships");
-
         foreach ($relationships as $relationship) {
             $relations = $relationship->getElementsByTagName("Relationship");
             foreach ($relations as $relation) {
                 if( strcmp( $relation->getAttribute('Type'),
                     $hyperlink) == 0 ) {
-
                     if($i < MAX_LINKS_TO_EXTRACT) {
                         $link = $relation->getAttribute('Target');
                         $url = UrlParser::canonicalLink(
@@ -243,7 +233,5 @@ class XlsxProcessor extends TextProcessor
         }
         return $sites;
     }
-
 }
-
 ?>
