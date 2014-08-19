@@ -148,7 +148,7 @@ class FrTokenizer
         if(in_array($word, self::$no_stem_list)) {
             return $word;
         }
-        $before_process = mb_strtolower($word);
+        $before_process = mb_strtolower($word, "UTF-8");
         self::$buffer = $before_process;
         self::computeNonVowels();
         self::computeNonVowelRegions();
@@ -158,14 +158,14 @@ class FrTokenizer
             && $word_step1 == self::$buffer) { 
             self::step2b(); //other verb suffixes
         }
-        if(mb_strtolower(self::$buffer) != $before_process) {
+        if(mb_strtolower(self::$buffer, "UTF-8") != $before_process) {
             self::step3();
         } else {
             self::step4();
         }
         self::step5(); //un-double
         self::step6(); //un-accent
-        self::$buffer = mb_strtolower(self::$buffer);
+        self::$buffer = mb_strtolower(self::$buffer, "UTF-8");
         return self::$buffer;
     }
     /**
@@ -176,13 +176,13 @@ class FrTokenizer
     {
         $vowel = static::$vowel;
         self::$buffer = preg_replace("/qu/u", "qU", self::$buffer);
-        self::$buffer = preg_replace("/([$vowel])u([$vowel])/u", '$1U$2',
-            self::$buffer);
-        self::$buffer = preg_replace("/([$vowel])i([$vowel])/u", '$1I$2',
-            self::$buffer);
         self::$buffer = preg_replace("/([$vowel])y/u", '$1Y',
             self::$buffer);
         self::$buffer = preg_replace("/y([$vowel])/u", 'Y$1',
+            self::$buffer);
+        self::$buffer = preg_replace("/([$vowel])u([$vowel])/u", '$1U$2',
+            self::$buffer);
+        self::$buffer = preg_replace("/([$vowel])i([$vowel])/u", '$1I$2',
             self::$buffer);
     }
     /**
@@ -197,12 +197,13 @@ class FrTokenizer
         $vowel = static::$vowel;
         self::$rv = "";
         self::$rv_index = -1;
-        if(preg_search('/^(par|col|tap)/', $word) != -1 ||
-            preg_search("/^[$vowel]{2}/", $word) != -1) {
+        if(preg_search('/^(par|col|tap)/u', $word) != -1 ||
+            preg_search("/^[$vowel]{2}/u", $word) != -1) {
             self::$rv = substr($word, 3);
             self::$rv_index = 3;
         } else {
-            self::$rv_index = preg_search("/[$vowel]/", $word, 1);
+            self::$rv_index = preg_search("/[$vowel]/u", $word,
+                strlen(mb_substr($word, 0, 1, 'UTF-8')));
             if(self::$rv_index != -1){
                 self::$rv_index += 1;
                 self::$rv = substr($word, self::$rv_index);
@@ -210,18 +211,20 @@ class FrTokenizer
                 self::$rv_index = strlen($word);
             }
         }
-        preg_match("/[$vowel][^$vowel]/", $word, $matches,
+        preg_match("/[$vowel][^$vowel]/u", $word, $matches,
             PREG_OFFSET_CAPTURE);
         self::$r1 = "";
         $len = strlen($word);
-        self::$r1_index = isset($matches[0][1]) ? $matches[0][1] + 2 : $len;
+        self::$r1_index = isset($matches[0][1]) ? $matches[0][1] + 
+            strlen(mb_substr($word,$matches[0][1], 2, 'UTF-8')) : $len;
         if(self::$r1_index != $len) {
             self::$r1 = substr($word, self::$r1_index);
         }
         if(self::$r1_index != $len) {
             preg_match("/[$vowel][^$vowel]/", self::$r1, $matches,
                 PREG_OFFSET_CAPTURE);
-            self::$r2_index = isset($matches[0][1]) ? $matches[0][1] + 2 : $len;
+            self::$r2_index = isset($matches[0][1]) ? $matches[0][1] + 
+                strlen(mb_substr(self::$r1, $matches[0][1], 2, 'UTF-8')) : $len;
             if(self::$r2_index != $len) {
                 self::$r2 = substr(self::$r1, self::$r2_index);
                 self::$r2_index += self::$r1_index;
@@ -244,13 +247,14 @@ class FrTokenizer
         $r2_index = self::$r2_index;
         $a_index = array();
         $patterns = array('/(ance|iqUe|isme|able|iste|eux|'.
-            'ances|iqUes|ismes|ables|istes)$/',
-            '/(atrice|ateur|ation|atrices|ateurs|ations)$/',
-            '/(logie|logies)$/', '/(usion|ution|usions|utions)$/',
-            '/(ence|ences)$/', '/(ement|ements)$/', '/(ité|ités)$/',
-            '/(if|ive|ifs|ives)$/', '/(eaux)$/', '/(aux)$/', '/(euse|euses)$/',
-            "/[^$vowel](issement|issements)".'$/', '/(amment)$/',
-            '/(emment)$/', "/[$vowel]".'(ment|ments)$/');
+            'ances|iqUes|ismes|ables|istes)$/u',
+            '/(atrice|ateur|ation|atrices|ateurs|ations)$/u',
+            '/(logie|logies)$/u', '/(usion|ution|usions|utions)$/u',
+            '/(ence|ences)$/u', '/(ement|ements)$/u', '/(ité|ités)$/u',
+            '/(if|ive|ifs|ives)$/u', '/(eaux)$/u', '/(aux)$/u', 
+            '/(euse|euses)$/u',
+            "/[^$vowel](issement|issements)".'$/u', '/(amment)$/u',
+            '/(emment)$/u', "/[$vowel]".'(ment|ments)$/u');
         $i = 1;
         foreach($patterns as $pattern) {
             $a_index[$i] = preg_search($pattern, $word);
@@ -280,24 +284,30 @@ class FrTokenizer
             //+1- amendment to non-vowel
             $word = substr($word, 0, $a_index[12] + 1);
         } else if($a_index[6] != -1 && $a_index[6] >= $rv_index) {
-            $word = substr($word, 0, $a_index[6]);
-            if(preg_search('/(iv)$/', $word) >= $r2_index) {
-                $word = preg_replace('/(iv)$/u', '', $word);
-                if(preg_search('/(at)$/', $word) >= $r2_index){
-                    $word = preg_replace('/(at)$/u', '', $word);
+            if(preg_search("/(issement|issements)$/", $word) < 0) {
+                $word = substr($word, 0, $a_index[6]);
+                if(preg_search('/(iv)$/', $word) >= $r2_index) {
+                    $word = preg_replace('/(iv)$/u', '', $word);
+                    if(preg_search('/(at)$/', $word) >= $r2_index){
+                        $word = preg_replace('/(at)$/u', '', $word);
+                    }
+                } else if(($a6_index2 = preg_search('/(eus)$/u', $word)) != -1) {
+                    if($a6_index2 >= $r2_index){
+                        $word = substr($word, 0, $a6_index2);
+                    } else if($a6_index2 >= $r1_index){
+                        $word = substr($word, 0, $a6_index2) . "eux";
+                    }
+                } else if(preg_search('/(abl|iqU)$/', $word) >= $r2_index) {
+                    //if preceded by abl or iqU, delete if in R2,
+                    $word = preg_replace('/(abl|iqU)$/u', '', $word);
+                } else if(preg_search('/(ièr|Ièr)$/', $word) >= $rv_index) {
+                    //if preceded by abl or iqU, delete if in R2,
+                    $word = preg_replace('/(ièr|Ièr)$/u', 'i', $word);
                 }
-            } else if(($a6_index2 = preg_search('/(eus)$/', $word)) != -1) {
-                if($a6_index2 >= $r2_index){
-                    $word = substr($word, 0, $a6_index2);
-                } else if($a6_index2 >= $r1_index){
-                    $word = substr($word, 0, $a6_index2) . "eux";
-                }
-            } else if(preg_search('/(abl|iqU)$/', $word) >= $r2_index) {
-                //if preceded by abl or iqU, delete if in R2,
-                $word = preg_replace('/(abl|iqU)$/u', '', $word);
-            } else if(preg_search('/(ièr|Ièr)$/', $word) >= $rv_index) {
-                //if preceded by abl or iqU, delete if in R2,
-                $word = preg_replace('/(ièr|Ièr)$/u', 'i', $word);
+            } else if (preg_search("/[^$vowel](issement|issements)".'$/u',
+                $word) > 0) {
+                $word = preg_replace("/(issement|issements)".'$/u', 
+                    '', $word);
             }
         } else if($a_index[7] != -1 && $a_index[7] >= $r2_index) {
             //delete if in R2
@@ -319,7 +329,7 @@ class FrTokenizer
                     //else replace by iqU
                     $word = preg_replace('/(ic)$/u', 'iqU', $word);
                 }
-            } else if(preg_search('/(iv)$/', $word) != $r2_index){
+            } else if(preg_search('/(iv)$/', $word) >= $r2_index){
                 $word = preg_replace('/(iv)$/u', '', $word);
             }
         } else if($a_index[8] != -1 && $a_index[8] >= $r2_index) {
@@ -347,8 +357,10 @@ class FrTokenizer
             $word = preg_replace('/(amment)$/u', 'ant', $word);
         } else if($a_index[14] != -1 && $a_index[14] >= $rv_index) {
             $word = preg_replace('/(emment)$/u','ent', $word);
-        } else if($a_index[15] != -1 && $a_index[15] >= $rv_index) {
-            $word = substr($word, 0, $a_index[15] + 1);
+        } else if($a_index[15] != -1 && $a_index[15] >= $rv_index &&
+            $a_index[6] < 0) {
+            $tmp_index = preg_search('/(ment|ments)$/u', $word);
+            $word = substr($word, 0, $tmp_index);
         }
         self::$buffer = $word;
     }
@@ -358,12 +370,13 @@ class FrTokenizer
     static function step2a($ori_word)
     {
         $vowel = static::$vowel;
-        if($ori_word == mb_strtolower(self::$buffer) ||
-            preg_match('/(amment|emment|ment|ments)$/', $ori_word)) {
-            $b1_regex = "/([^$vowel])".'(âmes|ât|âtes|i|ie|ies|ir|ira|irai|'.
+        if($ori_word == mb_strtolower(self::$buffer, "UTF-8") ||
+            (preg_match('/(amment|emment|ment|ments)$/u', $ori_word)
+            && !preg_match('/(ement(s)?)$/u', $ori_word))) {
+            $b1_regex = "/([^$vowel])".'(îmes|ît|îtes|i|ie|ies|ir|ira|irai|'.
                 'iraIent|irais|irait|iras|irent|irez|iriez|irions|irons|'.
                 'iront|is|issaIent|issais|issait|issant|issante|issantes|'.
-                'issants|isse|issent|isses|issez|issiez|issions|issons|it)$/iu';
+                'issants|isse|issent|isses|issez|issiez|issions|issons|it)$/u';
             if(preg_search($b1_regex, self::$buffer) >= self::$rv_index) {
                 self::$buffer = preg_replace($b1_regex, '$1', self::$buffer);
             }
@@ -377,21 +390,28 @@ class FrTokenizer
     static function step2b()
     {
         $word = self::$buffer;
-        if (preg_search('/(ions)$/', $word) >= self::$r2_index) {
+        if (preg_search('/(ions)$/u', $word) >= self::$r2_index &&
+            preg_search('/erions$/u', $word) == -1) {
             $word = preg_replace('/(ions)$/u', '', $word);
         } else {
             $b2_regex = '/(é|ée|ées|és|èrent|er|era|erai|eraIent|erais|erait|'.
-                'eras|erez|eriez|erions|erons|eront|ez|iez)$/iu';
-            if (preg_search($b2_regex, $word) >= self::$rv_index) {
+                'eras|erez|eriez|erions|erons|eront|iez)$/u';
+            if(preg_search($b2_regex, $word) >= self::$rv_index) {
                 $word = preg_replace($b2_regex, '', $word);
+            } else if(preg_search('/iez$/iu', $word) >= self::$rv_index) {
+                //I am trying to avoid issues that eriez is a prefix of eriez
+                $word = preg_replace('/iez$/iu', '', $word);
+            }  else if(preg_search('/ez$/iu', $word) >= self::$rv_index) {
+                //I am trying to avoid issues that ez is a prefix of iez
+                $word = preg_replace('/ez$/iu', '', $word);
             } else {
                 $b3_regex = '/e(âmes|ât|âtes|a|ai|aIent|ais|ait|ant|ante|antes'.
-                    '|ants|as|asse|assent|asses|assiez|assions)$/iu';
+                    '|ants|as|asse|assent|asses|assiez|assions)$/u';
                 if (preg_search($b3_regex, $word) >= self::$rv_index) {
                     $word = preg_replace($b3_regex, '', $word);
                 } else {
                     $b3_regex2 = '/(âmes|ât|âtes|a|ai|aIent|ais|ait|ant|ante|'.
-                        'antes|ants|as|asse|assent|asses|assiez|assions)$/iu';
+                        'antes|ants|as|asse|assent|asses|assiez|assions)$/u';
                     if (preg_search($b3_regex2, $word) >= self::$rv_index) {
                         $word = preg_replace($b3_regex2, '', $word);
                     }
@@ -406,8 +426,8 @@ class FrTokenizer
     static function step3()
     {
         $word = self::$buffer;
-        $word = preg_replace('/Y$/', 'i', $word);
-        $word = preg_replace('/ç/', 'c', $word);
+        $word = preg_replace('/Y$/u', 'i', $word);
+        $word = preg_replace('/ç$/u', 'c', $word);
         self::$buffer = $word;
     }
     /**
@@ -416,22 +436,23 @@ class FrTokenizer
     static function step4()
     {
         $word = self::$buffer;
-        if (preg_search('/([^aiouès])s$/', $word) >= self::$rv_index) {
+
+        if(preg_search('/([^aiouès])s$/u', $word) >= 0) {
             $word = preg_replace('/([^aiouès])s$/u', '$1', $word);
         }
-        $e1_index = preg_search('/ion$/', $word);
+        $e1_index = preg_search('/ion$/u', $word);
         if ($e1_index >= self::$r2_index &&
-            preg_search('/[st]ion$/', $word) >= self::$rv_index) {
+            preg_search('/[st]ion$/u', $word) >= self::$rv_index) {
             $word = substr($word, 0, $e1_index);
         } else {
-            $e2_index = preg_search('/(ier|ière|Ier|Ière)$/', $word);
+            $e2_index = preg_search('/(ier|ière|Ier|Ière)$/u', $word);
             if($e2_index != -1 && $e2_index >= self::$rv_index) {
                 $word = substr($word, 0, $e2_index)."i";
             } else {
-                if(preg_search('/e$/', $word) >= self::$rv_index) {
+                if(preg_search('/e$/u', $word) >= self::$rv_index) {
                     $word = preg_replace('/e$/u', '', $word);   //delete last e
-                } else if(preg_search('/guë$/', $word) >= self::$rv_index) {
-                    $word = preg_replace('/guë$/u', 'gu');
+                } else if(preg_search('/guë$/u', $word) >= self::$rv_index) {
+                    $word = preg_replace('/guë$/u', 'gu', $word);
                 }
             }
         }
