@@ -561,19 +561,6 @@ class SystemComponent extends Component
                     WORK_DIRECTORY, $profile, $old_profile)) {
                     $data['MESSAGE'] =
                         tl('system_component_configure_profile_change');
-                    $not_null_fields = array(
-                        'LOGO' => "resources/yioop.png",
-                        'M_LOGO' => "resources/m-yioop.png",
-                        'FAVICON' => BASE_URL."favicon.ico",
-                        'TIMEZONE' => 'America/Los_Angeles',
-                        'SESSION_NAME' => "yioopbiscuit",
-                        'CSRF_TOKEN' => "YIOOP_TOKEN"
-                    );
-                    foreach($not_null_fields as $field => $default) {
-                        if(!$data[$field]) {
-                            $data[$field] = $default;
-                        }
-                    }
                     $data['SCRIPT'] =
                         "doMessage('<h1 class=\"red\" >". $data['MESSAGE'].
                         "</h1>');";
@@ -587,6 +574,19 @@ class SystemComponent extends Component
                     break;
                 }
             break;
+        }
+        $not_null_fields = array(
+            'LOGO' => "resources/yioop.png",
+            'M_LOGO' => "resources/m-yioop.png",
+            'FAVICON' => BASE_URL."favicon.ico",
+            'TIMEZONE' => 'America/Los_Angeles',
+            'SESSION_NAME' => "yioopbiscuit",
+            'CSRF_TOKEN' => "YIOOP_TOKEN"
+        );
+        foreach($not_null_fields as $field => $default) {
+            if(!$data[$field]) {
+                $data[$field] = $default;
+            }
         }
         $data = array_merge($data,
             $profile_model->getProfile(WORK_DIRECTORY));
