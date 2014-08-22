@@ -575,19 +575,6 @@ class SystemComponent extends Component
                 }
             break;
         }
-        $not_null_fields = array(
-            'LOGO' => "resources/yioop.png",
-            'M_LOGO' => "resources/m-yioop.png",
-            'FAVICON' => BASE_URL."favicon.ico",
-            'TIMEZONE' => 'America/Los_Angeles',
-            'SESSION_NAME' => "yioopbiscuit",
-            'CSRF_TOKEN' => "YIOOP_TOKEN"
-        );
-        foreach($not_null_fields as $field => $default) {
-            if(!$data[$field]) {
-                $data[$field] = $default;
-            }
-        }
         $data = array_merge($data,
             $profile_model->getProfile(WORK_DIRECTORY));
         $data['MEMCACHE_SERVERS'] = str_replace(
@@ -1005,9 +992,7 @@ EOD;
                         "</h1>');";
                     break;
                 }
-
             break;
-
             default:
                 if(isset($data['WORK_DIRECTORY']) &&
                     file_exists($data['WORK_DIRECTORY']."/profile.php")) {
@@ -1021,6 +1006,19 @@ EOD;
         $data['advanced'] = "false";
         if($data['PROFILE']) {
             $locale_tag = getLocaleTag();
+            $not_null_fields = array(
+                'LOGO' => "resources/yioop.png",
+                'M_LOGO' => "resources/m-yioop.png",
+                'FAVICON' => BASE_URL."favicon.ico",
+                'TIMEZONE' => 'America/Los_Angeles',
+                'SESSION_NAME' => "yioopbiscuit",
+                'CSRF_TOKEN' => "YIOOP_TOKEN"
+            );
+            foreach($not_null_fields as $field => $default) {
+                if(!$data[$field]) {
+                    $data[$field] = $default;
+                }
+            }
             if(isset($_REQUEST['ROBOT_DESCRIPTION'])) {
                 $robot_description =
                     $parent->clean($_REQUEST['ROBOT_DESCRIPTION'], "string");
