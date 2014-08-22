@@ -327,12 +327,6 @@ EOT;
             'SESSION_NAME' => "yioopbiscuit",
             'CSRF_TOKEN' => "YIOOP_TOKEN"
         );
-        foreach($not_null_fields as $field => $default) {
-            if(!isset($old_profile_data[$field]) ||
-                !$old_profile_data[$field]) {
-                $old_profile_data[$field] = $default;
-            }
-        }
         //now integrate the different profiles
         foreach($this->profile_fields as $field) {
             if(isset($new_profile_data[$field])) {
@@ -363,6 +357,9 @@ EOT;
             } else {
                     $profile[$field] = "";
             }
+            if(!$profile[$field] && in_array($field, $not_null_fields)) {
+                $profile[$field] = $not_null_fields[$default];
+            }
             if($field == "NEWS_MODE" && $profile[$field] == "") {
                 $profile[$field] = "news_off";
             }
@@ -374,7 +371,7 @@ EOT;
                     $profile[$field] = UrlParser::getPath(NAME_SERVER);
                 }
             }
-            if($field == "ROBOT_DESCRIPTION") continue;
+            if($field == "ROBOT_DESCRIPTION") {continue;}
             if($field != "DEBUG_LEVEL") {
                 $profile[$field] = "\"{$profile[$field]}\"";
             }
