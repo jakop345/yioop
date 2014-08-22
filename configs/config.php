@@ -222,7 +222,7 @@ if(!defined('LOGO')) {
     define('LOGO', "resources/yioop.png");
     define('M_LOGO', "resources/m-yioop.png");
     define('FAVICON', BASE_URL."favicon.ico");
-    define('TIME_ZONE', 'America/Los_Angeles');
+    define('TIMEZONE', 'America/Los_Angeles');
     /* name of the cookie used to manage the session
        (store language and perpage settings), define CSRF token
      */

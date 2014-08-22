@@ -323,7 +323,7 @@ EOT;
             'LOGO' => "resources/yioop.png",
             'M_LOGO' => "resources/m-yioop.png",
             'FAVICON' => BASE_URL."favicon.ico",
-            'TIME_ZONE' => 'America/Los_Angeles',
+            'TIMEZONE' => 'America/Los_Angeles',
             'SESSION_NAME' => "yioopbiscuit",
             'CSRF_TOKEN' => "YIOOP_TOKEN"
         );
@@ -357,7 +357,7 @@ EOT;
             } else {
                     $profile[$field] = "";
             }
-            if(!$profile[$field] && in_array($field, $not_null_fields)) {
+            if(!$profile[$field] && isset($not_null_fields[$field])) {
                 $profile[$field] = $not_null_fields[$field];
             }
             if($field == "NEWS_MODE" && $profile[$field] == "") {
