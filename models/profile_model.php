@@ -358,7 +358,7 @@ EOT;
                     $profile[$field] = "";
             }
             if(!$profile[$field] && in_array($field, $not_null_fields)) {
-                $profile[$field] = $not_null_fields[$default];
+                $profile[$field] = $not_null_fields[$field];
             }
             if($field == "NEWS_MODE" && $profile[$field] == "") {
                 $profile[$field] = "news_off";
