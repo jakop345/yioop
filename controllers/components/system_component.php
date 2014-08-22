@@ -931,7 +931,8 @@ EOD;
                 $old_profile =
                     $profile_model->getProfile($data['WORK_DIRECTORY']);
                 $folder = APP_DIR . "/resources";
-                if(!file_exists($folder) && !mkdir($folder)) {
+                if((!file_exists(APP_DIR) && !mkdir(APP_DIR)) ||
+                    (!file_exists($folder) && !mkdir($folder))) {
                     $data["MESSAGE"] =
                         tl('system_component_no_resource_folder');
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
