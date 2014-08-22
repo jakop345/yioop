@@ -318,6 +318,22 @@ class ProfileModel extends Model
  */
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 EOT;
+        //make sure certain fields are not null
+        $not_null_fields = array(
+            'LOGO' => "resources/yioop.png",
+            'M_LOGO' => "resources/m-yioop.png",
+            'FAVICON' => BASE_URL."favicon.ico",
+            'TIME_ZONE' => 'America/Los_Angeles',
+            'SESSION_NAME' => "yioopbiscuit",
+            'CSRF_TOKEN' => "YIOOP_TOKEN"
+        );
+        foreach($not_null_fields as $field => $default) {
+            if(!isset($old_profile_data[$field]) ||
+                !$old_profile_data[$field]) {
+                $old_profile_data[$field] = $default;
+            }
+        }
+        //now integrate the different profiles
         foreach($this->profile_fields as $field) {
             if(isset($new_profile_data[$field])) {
                 if(in_array($field, array('LOGO','M_LOGO', 'FAVICON',
