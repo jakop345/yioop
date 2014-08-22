@@ -194,8 +194,9 @@ class GroupfeedElement extends Element implements CrawlConstants
                 "";
             if($page["MEMBER_ACCESS"] == GROUP_READ_WRITE &&
                 !isset($data['JUST_GROUP_ID']) &&
-                $page['USER_ID'] != "" && isset($_SESSION['USER_ID']) &&
-                ($page['USER_ID'] == $_SESSION['USER_ID'] ||
+                isset($_SESSION['USER_ID']) &&
+                (($page['USER_ID'] != "" &&
+                $page['USER_ID'] == $_SESSION['USER_ID']) ||
                 $_SESSION['USER_ID'] == ROOT_ID) &&
                 $page['TYPE'] != WIKI_GROUP_ITEM) {
                 ?>

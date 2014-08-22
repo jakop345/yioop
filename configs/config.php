@@ -212,16 +212,22 @@ if(file_exists(WORK_DIRECTORY.PROFILE_FILE_NAME)) {
         server_alpha*total_num/num_servers will be returned any a given
         queue server machine*/
     define ('SERVER_ALPHA', 1.6);
+    $INDEXING_PLUGINS = array();
+}
+if(!defined('LOGO')) { 
+    /*  these defines were added to the profile at same. So we add them all in 
+        one go to both the case where we have no profile and in the older 
+        profile case where they were not defined.
+     */
     define('LOGO', "resources/yioop.png");
     define('M_LOGO', "resources/m-yioop.png");
     define('FAVICON', BASE_URL."favicon.ico");
     define('TIME_ZONE', 'America/Los_Angeles');
-    /** name of the cookie used to manage the session
-     * (store language and perpage settings), define CSRF token
+    /* name of the cookie used to manage the session
+       (store language and perpage settings), define CSRF token
      */
     define('SESSION_NAME', "yioopbiscuit");
     define('CSRF_TOKEN', "YIOOP_TOKEN");
-    $INDEXING_PLUGINS = array();
 }
 date_default_timezone_set(TIMEZONE);
 if((DEBUG_LEVEL & ERROR_INFO) == ERROR_INFO) {
