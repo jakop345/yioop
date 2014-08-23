@@ -317,35 +317,6 @@ class EnTokenizer
         return $page;
     }
     /**
-     * Computes the stem of an English word
-     *
-     * For example, jumps, jumping, jumpy, all have jump as a stem
-     *
-     * @param string $word the string to stem
-     * @return string the stem of $words
-     */
-    static function stem($word)
-    {
-        if(in_array($word, self::$no_stem_list)) {
-            return $word;
-        }
-
-        self::$buffer = $word;
-
-        self::$k = strlen($word) - 1;
-        self::$j = self::$k;
-        if(self::$k <= 1) return $word;
-
-        self::step1ab();
-        self::step1c();
-        self::step2();
-        self::step3();
-        self::step4();
-        self::step5();
-
-        return substr(self::$buffer, 0, self::$k + 1);
-    }
-    /**
      * Takes a phrase and tags each term in it with its part of speech.
      * So each term in the original phrase gets mapped to term~part_of_speech
      * This tagger is based on a Brill tagger. It makes uses a lexicon
@@ -367,6 +338,32 @@ class EnTokenizer
         $tagged_phrase  = self::taggedPartOfSpeechTokensToString(
             $tagged_tokens);
         return $tagged_phrase;
+    }
+    /**
+     * Computes the stem of an English word
+     *
+     * For example, jumps, jumping, jumpy, all have jump as a stem
+     *
+     * @param string $word the string to stem
+     * @return string the stem of $words
+     */
+    static function stem($word)
+    {
+        if(in_array($word, self::$no_stem_list)) {
+            return $word;
+        }
+
+        self::$buffer = $word;
+        self::$k = strlen($word) - 1;
+        self::$j = self::$k;
+        if(self::$k <= 1) { return $word; }
+        self::step1ab();
+        self::step1c();
+        self::step2();
+        self::step3();
+        self::step4();
+        self::step5();
+        return substr(self::$buffer, 0, self::$k + 1);
     }
     /**
      * Checks to see if the ith character in the buffer is a consonant
@@ -451,8 +448,8 @@ class EnTokenizer
      */
     private static function doublec($j)
     {
-        if ($j < 1) return false;
-        if (self::$buffer[$j] != self::$buffer[$j - 1]) return false;
+        if($j < 1) { return false; }
+        if(self::$buffer[$j] != self::$buffer[$j - 1]) { return false; }
         return self::cons($j);
     }
     /**
@@ -485,12 +482,11 @@ class EnTokenizer
     {
         $len = strlen($s);
         $loc = self::$k - $len + 1;
-
         if($loc < 0 ||
-            substr_compare(self::$buffer, $s, $loc, $len) != 0) return false;
-
+            substr_compare(self::$buffer, $s, $loc, $len) != 0) {
+            return false;
+        }
         self::$j = self::$k - $len;
-
         return true;
     }
     /**
@@ -540,7 +536,7 @@ class EnTokenizer
      */
     private static function step1ab()
     {
-        if (self::$buffer[self::$k] == 's') {
+        if(self::$buffer[self::$k] == 's') {
             if (self::ends("sses")) {
                 self::$k -= 2;
             } else if (self::ends("ies")) {
@@ -574,7 +570,7 @@ class EnTokenizer
      */
     private static function step1c()
     {
-        if (self::ends("y") && self::vowelinstem()) {
+        if(self::ends("y") && self::vowelinstem()) {
             self::$buffer[self::$k] = 'i';
         }
     }
@@ -600,7 +596,7 @@ class EnTokenizer
                 if (self::ends("izer")) { self::r("ize"); break; }
                 break;
             case 'l':
-                if (self::ends("bli")) { self::r("ble"); break; }
+                if (self::ends("abli")) { self::r("able"); break; }
                 if (self::ends("alli")) { self::r("al"); break; }
                 if (self::ends("entli")) { self::r("ent"); break; }
                 if (self::ends("eli")) { self::r("e"); break; }
@@ -622,8 +618,6 @@ class EnTokenizer
                 if (self::ends("iviti")) { self::r("ive"); break; }
                 if (self::ends("biliti")) { self::r("ble"); break; }
                 break;
-            case 'g':
-                if (self::ends("logi")) { self::r("log"); break; }
         }
     }
     /**

@@ -39,7 +39,13 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @subpackage locale
  */
 class ItTokenizer
-{   /**
+{
+    /**
+     * Words we don't want to be stemmed
+     * @var array
+     */
+    static $no_stem_list = array();
+    /**
      * Storage used in computing the stem
      * @var string
      */

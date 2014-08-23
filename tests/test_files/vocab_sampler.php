@@ -44,7 +44,7 @@ if(isset($_SERVER['DOCUMENT_ROOT']) && strlen($_SERVER['DOCUMENT_ROOT']) > 0) {
  * stems so that unit test for stems can be of a manageable size
  */
  $num_samples = 1000;
-$locale = 'french_stemmer';
+$locale = 'english_stemmer';
 $words = file("$locale/input_vocabulary.txt");
 $stems = file("$locale/stemmed_result.txt");
 $num_words = count($words);

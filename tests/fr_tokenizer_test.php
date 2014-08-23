@@ -53,7 +53,7 @@ require_once BASE_DIR.'lib/unit_test.php';
 class FrTokenizerTest extends UnitTest
 {
     /**
-     * Each test we set up a new Italian Tokenizer object
+     * Each test we set up a new French Tokenizer object
      */
     function setUp()
     {
@@ -66,12 +66,12 @@ class FrTokenizerTest extends UnitTest
     {
     }
     /**
-     * Tests whether the stem funtion for the Italian stemming algorithm
+     * Tests whether the stem funtion for the French stemming algorithm
      * stems words according to the rules of stemming. The function tests stem
      * by calling stem with the words in $test_words and compares the results
      * with the stem words in $stem_words
      *
-     * $test_words is an array containing a set of words in Italian provided in
+     * $test_words is an array containing a set of words in French provided in
      * the snowball web page
      * $stem_words is an array containing the stems for words in $test_words
      */
@@ -88,12 +88,10 @@ class FrTokenizerTest extends UnitTest
          */
         for($i = 0; $i < count($test_words); $i++) {
             $word = trim($test_words[$i]);
+            if(in_array($word, FrTokenizer::$no_stem_list) ||
+                strlen($word) < 3) { continue; }
             $stem = trim($stem_words[$i]);
             $word_stem = $this->test_objects['FILE1']->stem($word);
-            if($word_stem != $stem ) {
-                echo $word." output:".$word_stem." stem:".$stem;
-                exit();
-            }
             $this->assertEqual($word_stem,
                     $stem,"function stem correctly stems
                     $word to $stem");

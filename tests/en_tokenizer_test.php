@@ -32,7 +32,7 @@
  */
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 /**
- * Load the Italian Tokenizer via phrase_parser (5.4 hack)
+ * Load the German Tokenizer via phrase_parser (5.4 hack)
  */
 require_once BASE_DIR."/lib/phrase_parser.php";
 /**
@@ -40,24 +40,25 @@ require_once BASE_DIR."/lib/phrase_parser.php";
  */
 require_once BASE_DIR.'lib/unit_test.php';
 /**
- * My code for testing the Italian stemming algorithm. The inputs for the
+ * Code used to test the English stemming algorithm. The inputs for the
  * algorithm are words in
- * http://snowball.tartarus.org/algorithms/italian/voc.txt and the resulting
+ * http://snowball.tartarus.org/algorithms/porter/voc.txt and the resulting
  * stems are compared with the stem words in
- * http://snowball.tartarus.org/algorithms/italian/output.txt
+ * http://snowball.tartarus.org/algorithms/porter/output.txt
+ * Code uses orginal Porter stemmer, not Porter 2
  *
- * @author Akshat Kukreti
+ * @author Chris Pollett
  * @package seek_quarry
  * @subpackage test
  */
-class ItTokenizerTest extends UnitTest
+class EnTokenizerTest extends UnitTest
 {
     /**
-     * Each test we set up a new Italian Tokenizer object
+     * Each test we set up a new English Tokenizer object
      */
     function setUp()
     {
-        $this->test_objects['FILE1'] = new ItTokenizer();
+        $this->test_objects['FILE1'] = new EnTokenizer();
     }
     /**
      * Nothing done for unit test tear done
@@ -66,37 +67,38 @@ class ItTokenizerTest extends UnitTest
     {
     }
     /**
-     * Tests whether the stem funtion for the Italian stemming algorithm
+     * Tests whether the stem funtion for the English stemming algorithm
      * stems words according to the rules of stemming. The function tests stem
      * by calling stem with the words in $test_words and compares the results
      * with the stem words in $stem_words
      *
-     * $test_words is an array containing a set of words in Italian provided in
+     * $test_words is an array containing a set of words in English provided in
      * the snowball web page
      * $stem_words is an array containing the stems for words in $test_words
      */
     function stemmerTestCase()
     {
-        $stem_dir = BASE_DIR.'/tests/test_files/italian_stemmer';
-
+        $stem_dir = BASE_DIR.'/tests/test_files/english_stemmer';
         //Test word set from snowball
         $test_words = file("$stem_dir/input_vocabulary.txt");
         //Stem word set from snowball for comparing results
         $stem_words = file("$stem_dir/stemmed_result.txt");
-
         /**
          * check if function stem correctly stems the words in $test_words by
          * comparing results with stem words in $stem_words
          */
-        for($i = 0; $i < count($test_words); $i++){
+        for($i = 0; $i < count($test_words); $i++) {
             $word = trim($test_words[$i]);
-            if(in_array($word, ItTokenizer::$no_stem_list) ||
-                strlen($word) < 3) { continue; }
             $stem = trim($stem_words[$i]);
-            $this->assertEqual(
-                $this->test_objects['FILE1']->stem($word),
-                    $stem,"function stem correctly stems
-                    $word to $stem");
+            if(in_array($word, EnTokenizer::$no_stem_list) ||
+                strlen($word) < 3) { continue; }
+            $word_stem = $this->test_objects['FILE1']->stem($word);
+            if($word_stem != $stem ) {
+                echo $word." output:".$word_stem." stem:".$stem;
+                exit();
+            }
+            $this->assertEqual($word_stem, $stem,
+                "function stem correctly stems $word to $stem");
         }
     }
 }
