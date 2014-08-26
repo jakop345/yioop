@@ -32,7 +32,7 @@
  */
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 /**
- * Load the German Tokenizer via phrase_parser (5.4 hack)
+ * Load the Russian Tokenizer via phrase_parser (5.4 hack)
  */
 require_once BASE_DIR."/lib/phrase_parser.php";
 /**

@@ -43,8 +43,8 @@ if(isset($_SERVER['DOCUMENT_ROOT']) && strlen($_SERVER['DOCUMENT_ROOT']) > 0) {
  * http://snowball.tartarus.org/algorithms/ and output only a 1000 words and
  * stems so that unit test for stems can be of a manageable size
  */
- $num_samples = 1000;
-$locale = 'english_stemmer';
+$num_samples = 1000;
+$locale = 'spanish_stemmer';
 $words = file("$locale/input_vocabulary.txt");
 $stems = file("$locale/stemmed_result.txt");
 $num_words = count($words);

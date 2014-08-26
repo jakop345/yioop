@@ -32,7 +32,7 @@
  */
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 /**
- * Load the French Tokenizer via phrase_parser (5.4 hack)
+ * Load the Spanish Tokenizer via phrase_parser (5.4 hack)
  */
 require_once BASE_DIR."/lib/phrase_parser.php";
 /**
@@ -42,22 +42,22 @@ require_once BASE_DIR.'lib/unit_test.php';
 /**
  * Code used to test the French stemming algorithm. The inputs for the
  * algorithm are words in
- * http://snowball.tartarus.org/algorithms/french/voc.txt and the resulting
+ * http://snowball.tartarus.org/algorithms/spanish/voc.txt and the resulting
  * stems are compared with the stem words in
- * http://snowball.tartarus.org/algorithms/french/output.txt
+ * http://snowball.tartarus.org/algorithms/spanish/output.txt
  *
  * @author Chris Pollett
  * @package seek_quarry
  * @subpackage test
  */
-class FrTokenizerTest extends UnitTest
+class EsTokenizerTest extends UnitTest
 {
     /**
-     * Each test we set up a new French Tokenizer object
+     * Each test we set up a new Spanish Tokenizer object
      */
     function setUp()
     {
-        $this->test_objects['FILE1'] = new FrTokenizer();
+        $this->test_objects['FILE1'] = new EsTokenizer();
     }
     /**
      * Nothing done for unit test tear done
@@ -66,18 +66,18 @@ class FrTokenizerTest extends UnitTest
     {
     }
     /**
-     * Tests whether the stem funtion for the French stemming algorithm
+     * Tests whether the stem function for the Spanish stemming algorithm
      * stems words according to the rules of stemming. The function tests stem
      * by calling stem with the words in $test_words and compares the results
      * with the stem words in $stem_words
      *
-     * $test_words is an array containing a set of words in French provided in
+     * $test_words is an array containing a set of words in Spanish provided in
      * the snowball web page
      * $stem_words is an array containing the stems for words in $test_words
      */
     function stemmerTestCase()
     {
-        $stem_dir = BASE_DIR.'/tests/test_files/french_stemmer';
+        $stem_dir = BASE_DIR.'/tests/test_files/spanish_stemmer';
         //Test word set from snowball
         $test_words = file("$stem_dir/input_vocabulary.txt");
         //Stem word set from snowball for comparing results
@@ -88,10 +88,14 @@ class FrTokenizerTest extends UnitTest
          */
         for($i = 0; $i < count($test_words); $i++) {
             $word = trim($test_words[$i]);
-            if(in_array($word, FrTokenizer::$no_stem_list) ||
+            if(in_array($word, EsTokenizer::$no_stem_list) ||
                 strlen($word) < 3) { continue; }
             $stem = trim($stem_words[$i]);
             $word_stem = $this->test_objects['FILE1']->stem($word);
+            if($stem != $word_stem) {
+                echo "Fail: correct: $stem, output: $word_stem<br />";
+                exit();
+            }
             $this->assertEqual($word_stem,
                     $stem,"function stem correctly stems
                     $word to $stem");

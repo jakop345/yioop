@@ -115,6 +115,22 @@ function preg_search($pattern, $subject, $offset = 0)
     return $pos;
 }
 /**
+ *  Replaces a pcre pattern with a replacement in $subject starting from
+ *  some offset.
+ *
+ *  @param string $pattern a Perl compatible regular expression
+ *  @param string what to replace the pattern with
+ *  @param string $subject to search for pattern in
+ *  @param int $offset character offset into $subject to begin searching from
+ *  @return string result of the replacements
+ */
+function preg_offset_replace($pattern, $replacement, $subject, $offset = 0)
+{
+    $start =  substr($subject, 0 , $offset);
+    $end = substr($subject, $offset);
+    return $start . preg_replace($pattern, $replacement, $end);
+}
+/**
  * Yioop replacement for parse_ini_file($name, true) in case
  * parse_ini_file is on the disable_functions list. Name has underscores
  * to match original function. This function

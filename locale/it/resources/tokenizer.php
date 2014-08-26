@@ -104,6 +104,60 @@ class ItTokenizer
         return $pre_segment;
     }
     /**
+     * Removes the stop words from the page (used for Word Cloud generation)
+     *
+     * @param string $page the page to remove stop words from.
+     * @return string $page with no stop words
+     */
+    static function stopwordsRemover($page)
+    {
+        $stop_words = array(
+            "ad", "al", "allo", "ai", "agli", "all", "agl", "alla",
+            "alle", "con", "col", "coi", "da", "dal", "dallo", "dai",
+            "dagli", "dall", "dagl", "dalla", "dalle", "di", "del",
+            "dello", "dei", "degli", "dell", "degl", "della", "delle",
+            "in", "nel", "nello", "nei", "negli", "nell", "negl", "nella",
+            "nelle", "su", "sul", "sullo", "sui", "sugli", "sull", "sugl",
+            "sulla", "sulle", "per", "tra", "contro", "io", "tu", "lui",
+            "lei", "noi", "voi", "loro", "mio", "mia", "miei", "mie", "tuo",
+            "tua", "tuoi", "tue", "suo", "sua", "suoi", "sue", "nostro",
+            "nostra", "nostri", "nostre", "vostro", "vostra", "vostri",
+            "vostre", "mi", "ti", "ci", "vi", "lo", "la", "li", "le", "gli",
+            "ne", "il", "un", "uno", "una", "ma", "ed", "se", "perché",
+            "anche", "come", "dov", "dove", "che", "chi", "cui", "non", "più",
+            "quale", "quanto", "quanti", "quanta", "quante", "quello", "quelli",
+            "quella", "quelle", "questo", "questi", "questa", "queste", "si",
+            "tutto", "tutti", "a", "c", "e", "i", "l", "o", "ho", "hai", "ha",
+            "abbiamo", "avete", "hanno", "abbia", "abbiate", "abbiano", "avrò",
+            "avrai", "avrà", "avremo", "avrete", "avranno", "avrei", "avresti",
+            "avrebbe", "avremmo", "avreste", "avrebbero", "avevo", "avevi",
+            "aveva", "avevamo", "avevate", "avevano", "ebbi", "avesti", "ebbe",
+            "avemmo", "aveste", "ebbero", "avessi", "avesse", "avessimo", 
+            "avessero", "avendo", "avuto", "avuta", "avuti", "avute", "sono",
+            "sei", "è", "siamo", "siete", "sia", "siate", "siano", "sarò",
+            "sarai", "sarà", "saremo", "sarete", "saranno", "sarei", "saresti",
+            "sarebbe", "saremmo", "sareste", "sarebbero", "ero", "eri", "era",
+            "eravamo", "eravate", "erano", "fui", "fosti", "fu", "fummo",
+            "foste", "furono", "fossi", "fosse", "fossimo", "fossero",
+            "essendo", "faccio", "fai", "facciamo", "fanno", "faccia",
+            "facciate", "facciano", "farò", "farai", "farà", "faremo",
+            "farete", "faranno", "farei", "faresti", "farebbe", "faremmo",
+            "fareste", "farebbero", "facevo", "facevi", "faceva", "facevamo",
+            "facevate", "facevano", "feci", "facesti", "fece", "facemmo",
+            "faceste", "fecero", "facessi", "facesse", "facessimo", "facessero",
+            "facendo", "sto", "stai", "sta", "stiamo", "stanno", "stia",
+            "stiate", "stiano", "starò", "starai", "starà", "staremo",
+            "starete", "staranno", "starei", "staresti", "starebbe", "staremmo",
+            "stareste", "starebbero", "stavo", "stavi", "stava", "stavamo",
+            "stavate", "stavano", "stetti", "stesti", "stette", "stemmo",
+            "steste", "stettero", "stessi", "stesse", "stessimo", "stessero",
+            "stando"
+        );
+        $page = preg_replace('/\b('.implode('|',$stop_words).')\b/', '',
+            mb_strtolower($page));
+        return $page;
+    }
+    /**
      * Computes the stem of an Italian word
      * Example guardando,guardandogli,guardandola,guardano all stem to guard
      *
@@ -194,12 +248,12 @@ class ItTokenizer
     {
         $r2_start = -1;
         $r1_start = self::r1($string);
-
-        if($r1_start !== -1){
-            for($i = $r1_start; $i < strlen($string); $i++){
+        if($r1_start !== -1) {
+            $len = strlen($string);
+            for($i = $r1_start; $i < $len; $i++) {
                 if($i >= $r1_start + 1){
-                    if(self::isVowel($string[$i-1]) &&
-                       !self::isVowel($string[$i])){
+                    if(self::isVowel($string[$i - 1]) &&
+                       !self::isVowel($string[$i])) {
                         $r2_start = $i + 1;
                         break;
                     }
@@ -207,11 +261,12 @@ class ItTokenizer
             }
         }
         if($r2_start != -1){
-            if($r2_start > strlen($string) - 1)
+            if($r2_start > strlen($string) - 1) {
                 $r2_start = -1;
-            else{
-                if($string[$r2_start] == "`")
+            } else {
+                if($string[$r2_start] == "`") {
                     $r2_start += 1;
+                }
             }
         }
 
@@ -632,12 +687,12 @@ class ItTokenizer
         self::getRegions();
 
         //If a character from the above is found in RV, delete it
-        foreach($vowels as $character){
+        foreach($vowels as $character) {
             $pos = self::checkForSuffix(self::$buffer,$character);
             if($pos !== false){
                 if(self::in(self::$rv_string,$character)){
-                    self::$buffer = substr_replace(self::$buffer,"",$pos,
-                                    strlen($character));
+                    self::$buffer = substr_replace(self::$buffer, "", $pos,
+                        strlen($character));
                     break;
                 }
             }
@@ -690,9 +745,9 @@ class ItTokenizer
         $replacement_array_1 = array("u","i");
         $pattern_array_2 = array("/a`/","/e`/","/i`/","/o`/","/u`/");
         $replacement_array_2 = array("à","è","ì","ò","ù");
-        self::$buffer = preg_replace($pattern_array_1,$replacement_array_1,
+        self::$buffer = preg_replace($pattern_array_1, $replacement_array_1,
             self::$buffer);
-        self::$buffer = preg_replace($pattern_array_2,$replacement_array_2,
+        self::$buffer = preg_replace($pattern_array_2, $replacement_array_2,
             self::$buffer);
     }
 }
