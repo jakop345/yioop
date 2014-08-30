@@ -123,7 +123,7 @@ class ManagegroupsElement extends Element
                 "VOTE_ACCESS" =>  array("VOTING_CODES", "voteaccess"),
                 "POST_LIFETIME" =>  array("POST_LIFETIMES", "postlifetime"),
             );
-            $stretch = (MOBILE) ? 1 : 2;
+            $stretch = (MOBILE) ? 1 : 1.5;
             foreach($data['GROUPS'] as $group) {
                 e("<tr>");
                 foreach($group as $col_name => $group_column) {

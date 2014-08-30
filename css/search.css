@@ -2309,7 +2309,9 @@ div.group-result
 .role-table select,
 .role-table option
 {
-    font-size:10pt;
+    font-size:11pt;
+    padding:0;
+    margin:0pt;
 }
 
 .html-ltr .locale-table,
