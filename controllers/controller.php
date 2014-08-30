@@ -442,7 +442,7 @@ abstract class Controller
             strlen($_REQUEST[$token_name]) == 22) {
             $token_parts = explode("|", $_REQUEST[$token_name]);
             if(isset($token_parts[1]) &&
-                $token_parts[1] + Model::ONE_HOUR > time() &&
+                $token_parts[1] + ONE_HOUR > time() &&
                 crawlHash($user.$token_parts[1].AUTH_KEY) == $token_parts[0]) {
                 $token_okay = true;
             }
@@ -642,7 +642,7 @@ abstract class Controller
             !in_array($_REQUEST['a'], $this->activities)) { return; }
         $time = $_REQUEST['time'];
             // request must be within an hour of this machine's clock
-        if(abs(time() - $time) > Model::ONE_HOUR) { return false;}
+        if(abs(time() - $time) > ONE_HOUR) { return false;}
         $session = $_REQUEST['session'];
         if(md5($time . AUTH_KEY) != $session) { return false; }
         return true;

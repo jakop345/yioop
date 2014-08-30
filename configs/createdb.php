@@ -115,7 +115,7 @@ $db->execute($sql);
 $creation_time = microTimestamp();
 $sql = "INSERT INTO GROUPS VALUES(".PUBLIC_GROUP_ID.",'Public','".
     $creation_time."','".ROOT_ID."', '".PUBLIC_JOIN."', '".GROUP_READ.
-    "', ".NON_VOTING_GROUP.")";
+    "', ".NON_VOTING_GROUP.", " . FOREVER . ")";
 $db->execute($sql);
 $now = time();
 $db->execute("INSERT INTO ROLE VALUES (".ADMIN_ROLE.", 'Admin' )");

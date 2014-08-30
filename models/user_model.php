@@ -60,7 +60,7 @@ class UserModel extends Model
         "status"=>"STATUS");
     /**
      * These fields if present in $search_array (used by @see getRows() ),
-     * but with value "0", will be skipped as part of the where clause
+     * but with value "-1", will be skipped as part of the where clause
      * but will be used for order by clause
      * @var array
      */

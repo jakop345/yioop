@@ -851,10 +851,10 @@ class QueueServer implements CrawlConstants, Join
         }
         $now = time();
         if($for_reschedule) {
-            $day = floor($now/self::ONE_DAY);
+            $day = floor($now/ONE_DAY);
             $note_string = "Reschedule";
         } else {
-            $day = floor($this->crawl_time/self::ONE_DAY) - 1;
+            $day = floor($this->crawl_time/ONE_DAY) - 1;
                 //want before all other schedules, so will be reloaded first
             $note_string = "";
         }
@@ -1754,11 +1754,11 @@ class QueueServer implements CrawlConstants, Join
                     crawlTimeoutLog(
                         "..still scheduler removing waiting hosts..");
                     if(is_array($value)) {
-                        if(intval($key) + self::ONE_HOUR < $now) {
+                        if(intval($key) + ONE_HOUR < $now) {
                             unset($this->waiting_hosts[$key]);
                         }
                     } else {
-                        if(intval($value) + self::ONE_HOUR < $now) {
+                        if(intval($value) + ONE_HOUR < $now) {
                             unset($this->waiting_hosts[$key]);
                         }
                     }
@@ -1798,7 +1798,7 @@ class QueueServer implements CrawlConstants, Join
                url filter*/
             if($this->page_recrawl_frequency > 0 &&
                 $this->web_queue->getUrlFilterAge() >
-                self::ONE_DAY * $this->page_recrawl_frequency) {
+                ONE_DAY * $this->page_recrawl_frequency) {
                 crawlLog("Emptying queue page url filter!!!!!!");
                 $this->web_queue->emptyUrlFilter();
             }
@@ -1890,14 +1890,14 @@ class QueueServer implements CrawlConstants, Join
         $index_archive_info = unserialize($info_bundle['DESCRIPTION']);
         $crawl_status['COUNT'] = $info_bundle['COUNT'];
         $now = time();
-        $change_in_time = self::ONE_HOUR + 1;
+        $change_in_time = ONE_HOUR + 1;
         while (count($this->hourly_crawl_data) > 0 &&
-            $change_in_time > self::ONE_HOUR) {
+            $change_in_time > ONE_HOUR) {
             $least_recent_hourly_pair = array_pop($this->hourly_crawl_data);
             $change_in_time =
                 ($now - $least_recent_hourly_pair[0]);
         }
-        if($change_in_time <= self::ONE_HOUR) {
+        if($change_in_time <= ONE_HOUR) {
             $this->hourly_crawl_data[] = $least_recent_hourly_pair;
         }
         array_unshift($this->hourly_crawl_data,
@@ -2369,7 +2369,7 @@ class QueueServer implements CrawlConstants, Join
         } else {
             $flag = false;
         }
-        if($this->quota_clear_time + self::ONE_HOUR < time()) {
+        if($this->quota_clear_time + ONE_HOUR < time()) {
             $this->quota_clear_time = time();
             foreach ($this->quota_sites as $site => $info) {
                 list($quota,) = $info;

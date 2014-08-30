@@ -64,14 +64,15 @@ class GroupModel extends Model
         "name"=>"G.GROUP_NAME", "owner"=>"O.USER_NAME",
         "pub_date" => "GI.PUBDATE", "parent_id"=>"GI.PARENT_ID",
         "register"=>"G.REGISTER_TYPE", "status"=>"UG.STATUS",
-        "user_id"=>"P.USER_ID", "voting" => "G.VOTE_ACCESS");
+        "user_id"=>"P.USER_ID", "voting" => "G.VOTE_ACCESS",
+        "lifetime" => "G.POST_LIFETIME");
     /**
      * These fields if present in $search_array (used by @see getRows() ),
-     * but with value "0", will be skipped as part of the where clause
+     * but with value "-1", will be skipped as part of the where clause
      * but will be used for order by clause
      * @var array
      */
-    var $any_fields = array("access", "register");
+    var $any_fields = array("access", "register", "voting", "lifetime");
     /**
      * Used to determine the select clause for GROUPS table when do query
      * to marshal group objects for the controller mainly in mangeGroups
@@ -95,7 +96,7 @@ class GroupModel extends Model
         $select = "DISTINCT G.GROUP_ID AS GROUP_ID,
             G.GROUP_NAME AS GROUP_NAME, G.OWNER_ID AS OWNER_ID,
             O.USER_NAME AS OWNER, REGISTER_TYPE, $status
-            G.MEMBER_ACCESS, VOTE_ACCESS $join_date";
+            G.MEMBER_ACCESS, VOTE_ACCESS, POST_LIFETIME $join_date";
         return $select;
     }
     /**
@@ -213,17 +214,20 @@ class GroupModel extends Model
      *      on threads but not start. i.e., a blog), GROUP_READ_WRITE
      * @param int $voting flag that says how members can vote on each others
      *      posts: NON_VOTING_GROUP, UP_VOTING_GROUP, UP_DOWN_VOTING_GROUP
+     * @param int $post_lifetime specifies the time in seconds that posts should
+     *      live before they expire and are deleted
      */
     function addGroup($group_name, $user_id, $register = REQUEST_JOIN,
-        $member = GROUP_READ, $voting = NON_VOTING_GROUP)
+        $member = GROUP_READ, $voting = NON_VOTING_GROUP,
+        $post_lifetime = FOREVER)
     {
         $db = $this->db;
         $timestamp = microTimestamp();
         $sql = "INSERT INTO GROUPS (GROUP_NAME, CREATED_TIME, OWNER_ID,
-            REGISTER_TYPE, MEMBER_ACCESS, VOTE_ACCESS)
-            VALUES (?, ?, ?, ?, ?, ?);";
+            REGISTER_TYPE, MEMBER_ACCESS, VOTE_ACCESS, POST_LIFETIME)
+            VALUES (?, ?, ?, ?, ?, ?, ?);";
         $db->execute($sql, array($group_name, $timestamp, $user_id,
-            $register, $member, $voting));
+            $register, $member, $voting, $post_lifetime));
         $sql = "SELECT G.GROUP_ID AS GROUP_ID FROM ".
             " GROUPS G WHERE G.GROUP_NAME = ?";
         $result = $db->execute($sql, array($group_name));
@@ -234,7 +238,7 @@ class GroupModel extends Model
         $now = time();
         $sql= "INSERT INTO USER_GROUP (USER_ID, GROUP_ID, STATUS,
             JOIN_DATE) VALUES
-            ($user_id, $last_id, ".ACTIVE_STATUS.", $now)";
+            ($user_id, $last_id, " . ACTIVE_STATUS . ", $now)";
         $db->execute($sql);
         return $last_id;
     }
@@ -391,7 +395,7 @@ class GroupModel extends Model
             G.GROUP_NAME AS GROUP_NAME, G.OWNER_ID AS OWNER_ID,
             O.USER_NAME AS OWNER, REGISTER_TYPE, UG.STATUS,
             G.MEMBER_ACCESS AS MEMBER_ACCESS, G.VOTE_ACCESS AS VOTE_ACCESS,
-            UG.JOIN_DATE AS JOIN_DATE
+            G.POST_LIFETIME AS POST_LIFETIME, UG.JOIN_DATE AS JOIN_DATE
             FROM GROUPS G, USERS O, USER_GROUP UG $where " .
             $db->limitOffset(1);
         $result = $db->execute($sql, $params);
@@ -670,9 +674,9 @@ class GroupModel extends Model
             $add_where = " AND ";
         }
         $user_id = $db->escapeString($user_id);
-        $non_public_where = ($user_id != PUBLIC_GROUP_ID) ?
-            " UG.USER_ID='$user_id' AND " :
-            " G.REGISTER_TYPE='".PUBLIC_JOIN."' AND ";
+        $non_public_where = " (UG.USER_ID='$user_id' OR ".
+            " G.REGISTER_TYPE IN ('".PUBLIC_JOIN."','".
+                PUBLIC_BROWSE_REQUEST_JOIN."') ) AND ";
         $non_public_status = ($user_id != PUBLIC_GROUP_ID) ?
             " UG.STATUS='".ACTIVE_STATUS."' AND " : "";
         $where .= $add_where. $non_public_where .
@@ -764,9 +768,9 @@ class GroupModel extends Model
             $add_where = " AND ";
         }
         $user_id = $db->escapeString($user_id);
-        $non_public_where = ($user_id != PUBLIC_GROUP_ID) ?
-            " UG.USER_ID='$user_id' AND " :
-            " G.REGISTER_TYPE='".PUBLIC_JOIN."' AND ";
+        $non_public_where = " (UG.USER_ID='$user_id' OR ".
+            " G.REGISTER_TYPE IN ('".PUBLIC_JOIN."','".
+                PUBLIC_BROWSE_REQUEST_JOIN."') ) AND ";
         $non_public_status = ($user_id != PUBLIC_GROUP_ID) ?
             " UG.STATUS='".ACTIVE_STATUS."' AND " : "";
         $where .= $add_where. $non_public_where .
@@ -786,6 +790,19 @@ class GroupModel extends Model
         $result = $db->execute($sql);
         $row = $db->fetchArray($result);
         return $row['NUM'];
+    }
+    /**
+     * Deletes Group Items which are older than the expiry date for posts
+     * for that group
+     */
+    function cullExpiredGroupItems()
+    {
+        $time = time();
+        $sql = "DELETE FROM GROUP_ITEM WHERE ID IN (
+            SELECT GI.ID AS ID FROM GROUP_ITEM GI, GROUPS G
+            WHERE GI.GROUP_ID=G.GROUP_ID AND G.POST_LIFETIME > 0
+            AND ($time - GI.PUBDATE) > G.POST_LIFETIME)";
+        $this->db->execute($sql);
     }
     /**
      * Increments the count of the number of times a group thread has been

@@ -579,7 +579,7 @@ class RegisterController extends Controller implements CrawlConstants
                     $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
                         tl('register_controller_recovered_already')."</h1>');";
                     return $data;
-                } else if(time() - $data["time"] > CrawlConstants::ONE_DAY) {
+                } else if(time() - $data["time"] > ONE_DAY) {
                     $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
                         tl('register_controller_recovery_expired')."</h1>');";
                     return $data;
@@ -611,7 +611,7 @@ class RegisterController extends Controller implements CrawlConstants
                 $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
                     tl('register_controller_recovered_already')."</h1>');";
                 return $data;
-            } else if(time() - $data["time"] > CrawlConstants::ONE_DAY) {
+            } else if(time() - $data["time"] > ONE_DAY) {
                 $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
                     tl('register_controller_recovery_expired')."</h1>');";
                 return $data;
@@ -815,7 +815,7 @@ class RegisterController extends Controller implements CrawlConstants
                 tl('register_controller_url_submitted')."</h1>');";
             $visitor_model->updateVisitor(
                 $_SERVER['REMOTE_ADDR'], "suggest_day_exceeded",
-                self::ONE_DAY, self::ONE_DAY, MAX_SUGGEST_URLS_ONE_DAY);
+                ONE_DAY, ONE_DAY, MAX_SUGGEST_URLS_ONE_DAY);
             $data['build_time'] = time();
             $_SESSION['BUILD_TIME'] = $data['build_time'];
             $data['url'] ="";

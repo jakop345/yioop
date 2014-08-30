@@ -179,11 +179,11 @@ class NewsUpdater implements CrawlConstants
 
         $delta = $time - $this->update_time;
         // every hour get items from twenty feeds whose newest items are oldest
-        if($delta > SourceModel::ONE_HOUR) {
+        if($delta > ONE_HOUR) {
             $this->update_time = $time;
             crawlLog("Performing news feeds update");
             if(!$this->sourceModel->updateFeedItems(
-                SourceModel::ONE_WEEK, false)) {
+                ONE_WEEK, false)) {
                 crawlLog("News feeds item update failed.");
             }
             $something_updated = true;
@@ -193,7 +193,7 @@ class NewsUpdater implements CrawlConstants
          */
         if($something_updated) {
             crawlLog("Deleting feed items and rebuild shard...");
-            $this->sourceModel->rebuildFeedShard(SourceModel::ONE_WEEK);
+            $this->sourceModel->rebuildFeedShard(ONE_WEEK);
             crawlLog("... delete complete, shard rebuilt");
         } else {
             crawlLog("No updates needed.");

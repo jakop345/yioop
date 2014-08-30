@@ -109,7 +109,7 @@ class VisitorModel extends Model
      *     double the delay
      */
     function updateVisitor($ip_address, $page_name, $start_delay = 1,
-        $forget_age = self::ONE_WEEK, $count_till_double = 1)
+        $forget_age = ONE_WEEK, $count_till_double = 1)
     {
         $visitor = $this->getVisitor($ip_address, $page_name);
         if(!$visitor) {

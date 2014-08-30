@@ -85,6 +85,7 @@ class ManagegroupsElement extends Element
                 <th><?php e(tl('managegroups_element_registertype'));?></th>
                 <th><?php e(tl('managegroups_element_memberaccess'));?></th>
                 <th><?php e(tl('managegroups_element_voting'));?></th>
+                <th><?php e(tl('managegroups_element_post_lifetime'));?></th>
                 <?php } ?>
                 <th colspan='2'><?php
                     e(tl('managegroups_element_actions'));?></th>
@@ -115,11 +116,12 @@ class ManagegroupsElement extends Element
             }
             $access_columns = array("MEMBER_ACCESS");
             $dropdown_columns = array("MEMBER_ACCESS", "REGISTER_TYPE",
-                "VOTE_ACCESS");
+                "VOTE_ACCESS", "POST_LIFETIME");
             $choice_arrays = array(
                 "MEMBER_ACCESS" => array("ACCESS_CODES", "memberaccess"),
                 "REGISTER_TYPE" =>  array("REGISTER_CODES", "registertype"),
                 "VOTE_ACCESS" =>  array("VOTING_CODES", "voteaccess"),
+                "POST_LIFETIME" =>  array("POST_LIFETIMES", "postlifetime"),
             );
             $stretch = (MOBILE) ? 1 : 2;
             foreach($data['GROUPS'] as $group) {
@@ -191,7 +193,9 @@ class ManagegroupsElement extends Element
                                 "</a></b></td>");
                         }
                     } else if($col_name == 'GROUP_NAME' &&
-                        (!isset($data['browse']) || !$data['browse']) &&
+                        (!isset($data['browse']) || !$data['browse']
+                            || in_array($group['REGISTER_TYPE'], array(
+                            PUBLIC_JOIN, PUBLIC_BROWSE_REQUEST_JOIN) ) ) &&
                         ($group['MEMBER_ACCESS'] != GROUP_PRIVATE ||
                         $group["OWNER_ID"] == $_SESSION['USER_ID'])) {
                         e("<td><a href='".$group_url.$group['GROUP_ID']."' >".
@@ -339,6 +343,14 @@ class ManagegroupsElement extends Element
                     $this->view->helper("options")->render(
                         "vote-access", "vote_access", $data["VOTING_CODES"],
                         $data['CURRENT_GROUP']['vote_access']);
+                    ?></td></tr>
+            <tr><th class="table-label"><label for="post-lifetime"><?php
+                e(tl('managegroups_element_post_lifetime'))?></label>:</th>
+                <td><?php
+                    $this->view->helper("options")->render(
+                        "post-lifetime", "post_lifetime", 
+                        $data["POST_LIFETIMES"],
+                        $data['CURRENT_GROUP']['post_lifetime']);
                     ?></td></tr>
         <?php
         }
@@ -602,13 +614,14 @@ class ManagegroupsElement extends Element
                 array("register", $data['EQUAL_COMPARISON_TYPES']),
             tl('managegroups_element_memberaccess') =>
                 array("access", $data['EQUAL_COMPARISON_TYPES']),
-            tl('managegroups_element_voting') =>
-                array("voting", $data['EQUAL_COMPARISON_TYPES'])
+            tl('managegroups_element_post_lifetime') =>
+                array("lifetime", $data['EQUAL_COMPARISON_TYPES'])
         );
         $dropdowns = array(
             "register" => $data['REGISTER_CODES'],
             "access" => $data['ACCESS_CODES'],
-            "voting" => $data['VOTING_CODES']
+            "voting" => $data['VOTING_CODES'],
+            "lifetime" => $data['POST_LIFETIMES']
         );
         $view->helper("searchform")->render($data, $controller, $activity,
             $view, $title, $return_form_name, $fields, $dropdowns);

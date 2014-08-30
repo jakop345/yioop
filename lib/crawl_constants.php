@@ -83,14 +83,6 @@ interface CrawlConstants
     const NO_DATA_STATE = 2;
     const WAITING_START_MESSAGE_STATE = 3;
     const REDO_STATE = 4;
-    /** Number of seconds in a day*/
-    const ONE_DAY = 86400;
-    /** Number of seconds in a week*/
-    const ONE_WEEK = 604800;
-    /** Number of seconds in an hour */
-    const ONE_HOUR = 3600;
-    /** Number of seconds in a minute */
-    const ONE_MINUTE = 60;
     const STATUS = 'a';
     const CRAWL_TIME = 'b';
     const HTTP_CODE = 'c';

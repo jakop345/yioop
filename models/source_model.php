@@ -334,7 +334,7 @@ class SourceModel extends Model
      * @param int $age how many seconds old records should be ignored
      * @return bool whether feed item update was successful
      */
-    function updateFeedItems($age = self::ONE_WEEK)
+    function updateFeedItems($age = ONE_WEEK)
     {
         $db = $this->db;
         $time = time();

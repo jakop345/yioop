@@ -1238,7 +1238,7 @@ EOT;
             $oldest = array_pop($data['VISITED_COUNT_HISTORY']);
             unset($data['VISITED_COUNT_HISTORY']);
             $change_in_time_hours = floatval(time() - $oldest[0]) /
-                floatval(self::ONE_HOUR);
+                floatval(ONE_HOUR);
             $change_in_urls = $recent[1] - $oldest[1];
             $data['VISITED_URLS_COUNT_PER_HOUR'] = ($change_in_time_hours > 0) ?
                 $change_in_urls/$change_in_time_hours : 0;
@@ -1378,7 +1378,7 @@ EOT;
             mkdir($dir);
             chmod($dir, 0777);
         }
-        $day = floor($timestamp/self::ONE_DAY) - 1;
+        $day = floor($timestamp/ONE_DAY) - 1;
             /* want before all other schedules,
                execute next */
         $dir .= "/$day";

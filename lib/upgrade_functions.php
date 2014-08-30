@@ -805,6 +805,17 @@ function upgradeDatabaseVersion22(&$db)
     $db->execute("ALTER TABLE LOCALE ADD ACTIVE INTEGER DEFAULT 1");
 }
 /**
+ * Upgrades a Version 23 version of the Yioop! database to a Version 21 version
+ * @param object $db datasource to use to upgrade
+ */
+function upgradeDatabaseVersion23(&$db)
+{
+    $db->execute("DELETE FROM VERSION WHERE ID < 22");
+    $db->execute("UPDATE VERSION SET ID=23 WHERE ID=22");
+    $db->execute("ALTER TABLE GROUPS ADD POST_LIFETIME INTEGER DEFAULT ".
+        FOREVER);
+}
+/**
  * Used to insert a new activity into the database at a given acitivity_id
  *
  * Inserting at an ID rather than at the end is useful since activities are

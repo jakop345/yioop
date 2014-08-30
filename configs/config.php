@@ -37,7 +37,7 @@ if(!defined('BASE_DIR') ||
 /** Version number for upgrade function
  * @var int
  */
-define('YIOOP_VERSION', 22);
+define('YIOOP_VERSION', 23);
 /*
     pcre is an external library to php which can cause Yioop
     to seg fault if given instances of reg expressions with
@@ -614,10 +614,16 @@ define('NO_JOIN', 1);
  */
 define('REQUEST_JOIN', 2);
 /**
- * Group registration type that only allows anyone to obtain membership
+ * Group registration type that only allows people to request a membership
+ * in a group from the group's owner, but allows people to browse the groups
+ * content without join
+ */
+define('PUBLIC_BROWSE_REQUEST_JOIN', 3);
+/**
+ * Group registration type that allows anyone to obtain membership
  * in the group
  */
-define('PUBLIC_JOIN', 3);
+define('PUBLIC_JOIN', 4);
 /**
  *  Group access code signifying only the group owner can
  *  read items posted to the group or post new items
@@ -670,4 +676,16 @@ define('MAX_GROUP_POST_LEN', 8192);
  * Maximum length of a group wiki page
  */
 define('MAX_GROUP_PAGE_LEN', 32768);
+/** Constant used to indicate lasting an arbitrary number of seconds */
+define('FOREVER', -2);
+/** Number of seconds in a day*/
+define('ONE_DAY', 86400);
+/** Number of seconds in a week*/
+define('ONE_WEEK', 604800);
+/** Number of seconds in a 30 day month */
+define('ONE_MONTH', 2592000);
+/** Number of seconds in an hour */
+define('ONE_HOUR', 3600);
+/** Number of seconds in a minute */
+define('ONE_MINUTE', 60);
 ?>

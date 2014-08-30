@@ -2306,6 +2306,11 @@ div.group-result
     margin-right: 0.2in;
     padding: 1px;
 }
+.role-table select,
+.role-table option
+{
+    font-size:12pt;
+}
 
 .html-ltr .locale-table,
 .html-ltr .locale-table td,

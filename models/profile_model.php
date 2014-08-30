@@ -153,7 +153,8 @@ class ProfileModel extends Model
                 GROUP_NAME VARCHAR(128), CREATED_TIME VARCHAR(20),
                 OWNER_ID INTEGER, REGISTER_TYPE INTEGER,
                 MEMBER_ACCESS INTEGER, VOTE_ACCESS INTEGER DEFAULT ".
-                NON_VOTING_GROUP.")",
+                NON_VOTING_GROUP.", POST_LIFETIME INTEGER DEFAULT ".
+                FOREVER . ")",
             /* NOTE: We are not using singular name GROUP for GROUPS as
                GROUP is a reserved SQL keyword
              */
@@ -318,11 +319,15 @@ class ProfileModel extends Model
  */
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 EOT;
+        $base_url = NAME_SERVER;
+        if(defined("BASE_URL")) {
+            $base_url = BASE_URL;
+        }
         //make sure certain fields are not null
         $not_null_fields = array(
             'LOGO' => "resources/yioop.png",
             'M_LOGO' => "resources/m-yioop.png",
-            'FAVICON' => BASE_URL."favicon.ico",
+            'FAVICON' => $base_url . "favicon.ico",
             'TIMEZONE' => 'America/Los_Angeles',
             'SESSION_NAME' => "yioopbiscuit",
             'CSRF_TOKEN' => "YIOOP_TOKEN"

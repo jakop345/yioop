@@ -148,14 +148,14 @@ class FeedsHelper extends Helper implements CrawlConstants
     function getPubdateString($time, $pub_date)
     {
         $delta = $time - $pub_date;
-        if($delta < self::ONE_DAY) {
-            $num_hours = ceil($delta/self::ONE_HOUR);
+        if($delta < ONE_DAY) {
+            $num_hours = ceil($delta/ONE_HOUR);
             if($num_hours <= 2) {
                 if($num_hours > 1) {
                     $pub_date = tl('feeds_helper_view_onehour');
                 } else {
-                    $num_minutes = floor($delta/self::ONE_MINUTE);
-                    $remainder_seconds = $delta % self::ONE_MINUTE;
+                    $num_minutes = floor($delta/ONE_MINUTE);
+                    $remainder_seconds = $delta % ONE_MINUTE;
                     $pub_date =
                         tl('feeds_helper_view_minsecs', $num_minutes,
                             $remainder_seconds);
