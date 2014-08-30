@@ -2289,6 +2289,11 @@ div.group-result
     top: 0.1in;
 }
 
+.role-table,
+.locale-table
+{
+    font-size:14pt;
+}
 .html-ltr .role-table,
 .html-ltr .role-table td,
 .html-ltr .role-table th
