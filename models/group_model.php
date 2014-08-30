@@ -375,10 +375,12 @@ class GroupModel extends Model
      *
      * @param int $group_id id of group to look up
      * @param int $user_id user asking for group info
+     * @param bool $require_root_or_member require the $user_id to be in the
+     *      group or root
      * @return array row from group table or false (if no access or doesn't
      *     exists)
      */
-    function getGroupById($group_id, $user_id)
+    function getGroupById($group_id, $user_id, $require_root_or_member = false)
     {
         $db = $this->db;
         $group = $this->getRows(0, 1,
@@ -386,7 +388,12 @@ class GroupModel extends Model
         $where = " WHERE ";
         $params = array(":group_id" => $group_id);
         if($user_id != ROOT_ID) {
-            $where .= " UG.USER_ID = :user_id AND ";
+            if($require_root_or_member) {
+                $where .= " UG.USER_ID = :user_id  AND ";
+            } else {
+                $where .= " (UG.USER_ID = :user_id OR G.REGISTER_TYPE IN (".
+                    PUBLIC_BROWSE_REQUEST_JOIN. ",". PUBLIC_JOIN .")) AND ";
+            }
             $params[":user_id"] = $user_id;
         }
         $where .= " UG.GROUP_ID= :group_id".

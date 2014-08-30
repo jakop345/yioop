@@ -107,6 +107,7 @@ class SocialComponent extends Component implements CrawlConstants
         $data['PAGING'] = "";
         $name = "";
         $data['visible_users'] = "";
+        $is_owner = false;
         /* start owner verify code / get current group
            $group_id is only set in this block (except creategroup) and it
            is only not NULL if $group['OWNER_ID'] == $_SESSION['USER_ID'] where
@@ -131,6 +132,7 @@ class SocialComponent extends Component implements CrawlConstants
                     $group['VOTE_ACCESS'];
                 $data['CURRENT_GROUP']['post_lifetime'] =
                     $group['POST_LIFETIME'];
+                $is_owner = true;
             } else if(!in_array($_REQUEST['arg'], array("deletegroup",
                 "joingroup", "unsubscribe"))) {
                 $group_id = NULL;
@@ -147,7 +149,6 @@ class SocialComponent extends Component implements CrawlConstants
         }
         /* end ownership verify */
         $data['USER_FILTER'] = "";
-
         if(isset($_REQUEST['arg']) &&
             in_array($_REQUEST['arg'], $possible_arguments)) {
             switch($_REQUEST['arg'])
@@ -156,9 +157,9 @@ class SocialComponent extends Component implements CrawlConstants
                     $data['FORM_TYPE'] = "editgroup";
                     $user_id = (isset($_REQUEST['user_id'])) ?
                         $parent->clean($_REQUEST['user_id'], 'int'): 0;
-                    if($user_id && $group_id &&
+                    if($user_id && $group_id && $is_owner &&
                         $group_model->checkUserGroup($user_id,
-                        $group_id)) {
+                            $group_id)) {
                         $group_model->updateStatusUserGroup($user_id,
                             $group_id, ACTIVE_STATUS);
                         $this->getGroupUsersData($data);
@@ -179,7 +180,8 @@ class SocialComponent extends Component implements CrawlConstants
                             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                                 tl('social_component_group_joined').
                                 "</h1>')";
-                            $join_type = ($register == REQUEST_JOIN &&
+                            $join_type = (($register == REQUEST_JOIN ||
+                                $register == PUBLIC_BROWSE_REQUEST_JOIN) &&
                                 $_SESSION['USER_ID'] != ROOT_ID) ?
                                 INACTIVE_STATUS : ACTIVE_STATUS;
                             $group_model->addUserGroup(
@@ -203,9 +205,9 @@ class SocialComponent extends Component implements CrawlConstants
                     $data['FORM_TYPE'] = "editgroup";
                     $user_id = (isset($_REQUEST['user_id'])) ?
                         $parent->clean($_REQUEST['user_id'], 'int'): 0;
-                    if($user_id && $group_id &&
+                    if($user_id && $is_owner &&
                         $group_model->checkUserGroup($user_id,
-                        $group_id)) {
+                            $group_id)) {
                         $group_model->updateStatusUserGroup($user_id,
                             $group_id, BANNED_STATUS);
                         $this->getGroupUsersData($data, $group_id);
@@ -220,7 +222,7 @@ class SocialComponent extends Component implements CrawlConstants
                 break;
                 case "changeowner":
                     $data['FORM_TYPE'] = "changeowner";
-                    if(isset($_REQUEST['new_owner'])) {
+                    if(isset($_REQUEST['new_owner']) && $is_owner) {
                         $new_owner_name = $parent->clean($_REQUEST['new_owner'],
                             'string');
                         $new_owner = $parent->model("user")->getUser(
@@ -249,6 +251,10 @@ class SocialComponent extends Component implements CrawlConstants
                                 tl('social_component_not_a_user').
                                 "</h1>')";
                         }
+                    } else {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('social_component_bad_request').
+                            "</h1>')";
                     }
                 break;
                 case "creategroup":
@@ -311,7 +317,7 @@ class SocialComponent extends Component implements CrawlConstants
                     $data['FORM_TYPE'] = "editgroup";
                     $user_id = (isset($_REQUEST['user_id'])) ?
                         $parent->clean($_REQUEST['user_id'], 'int'): 0;
-                    if($group_model->deletableUser(
+                    if($is_owner && $group_model->deletableUser(
                         $user_id, $group_id)) {
                         $group_model->deleteUserGroup(
                             $user_id, $group_id);
@@ -326,7 +332,7 @@ class SocialComponent extends Component implements CrawlConstants
                     $this->getGroupUsersData($data, $group_id);
                 break;
                 case "editgroup":
-                    if(!$group_id) { break;}
+                    if(!$group_id || !$is_owner) { break;}
                     $data['FORM_TYPE'] = "editgroup";
                     $update_fields = array(
                         array('register', 'REGISTER_TYPE','REGISTER_CODES'),
@@ -348,7 +354,7 @@ class SocialComponent extends Component implements CrawlConstants
                 break;
                 case "inviteusers":
                     $data['FORM_TYPE'] = "inviteusers";
-                    if(isset($_REQUEST['users_names'])) {
+                    if(isset($_REQUEST['users_names']) && $is_owner) {
                         $users_string = $parent->clean($_REQUEST['users_names'],
                             "string");
                         $pre_user_names = preg_split("/\s+|\,/", $users_string);
@@ -384,7 +390,7 @@ class SocialComponent extends Component implements CrawlConstants
                         $parent->clean($_REQUEST['user_id'], 'int'): 0;
                     if($user_id && $group_id &&
                         $group_model->checkUserGroup($user_id,
-                        $group_id, INVITED_STATUS)) {
+                            $group_id, INVITED_STATUS)) {
                         $group_model->updateStatusUserGroup($user_id,
                             $group_id, ACTIVE_STATUS);
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
@@ -426,7 +432,7 @@ class SocialComponent extends Component implements CrawlConstants
                     $data['FORM_TYPE'] = "editgroup";
                     $user_id = (isset($_REQUEST['user_id'])) ?
                         $parent->clean($_REQUEST['user_id'], 'int'): 0;
-                    if($user_id && $group_id &&
+                    if($user_id && $group_id && $is_owner &&
                         $group_model->checkUserGroup($user_id,
                         $group_id)) {
                         $group_model->updateStatusUserGroup($user_id,
@@ -667,7 +673,7 @@ class SocialComponent extends Component implements CrawlConstants
                     $group_id = $parent->clean($_REQUEST['group_id'], "int");
                     $group =
                         $group_model->getGroupById($group_id,
-                        $user_id);
+                        $user_id, true);
                     if(!$group || ($group["OWNER_ID"] != $user_id &&
                         $group["MEMBER_ACCESS"] != GROUP_READ_COMMENT &&
                         $group["MEMBER_ACCESS"] != GROUP_READ_WRITE &&
@@ -753,7 +759,7 @@ class SocialComponent extends Component implements CrawlConstants
                     $post_id = $parent->clean($_REQUEST['post_id'], "int");
                     $group_id = $parent->clean($_REQUEST['group_id'], "int");
                     $group = $group_model->getGroupById($group_id,
-                        $user_id);
+                        $user_id, true);
                     if(!$group || (!in_array($group["VOTE_ACCESS"],
                         array(UP_DOWN_VOTING_GROUP) ) ) ) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
@@ -796,7 +802,7 @@ class SocialComponent extends Component implements CrawlConstants
                     $group_id = $parent->clean($_REQUEST['group_id'], "int");
                     $group =
                         $group_model->getGroupById($group_id,
-                        $user_id);
+                        $user_id, true);
                     if(!$group || ($group["OWNER_ID"] != $user_id &&
                         $group["MEMBER_ACCESS"] != GROUP_READ_WRITE &&
                         $user_id != ROOT_ID)) {
@@ -845,7 +851,8 @@ class SocialComponent extends Component implements CrawlConstants
                         break;
                     }
                     $group_id = $item['GROUP_ID'];
-                    $group =  $group_model->getGroupById($group_id, $user_id);
+                    $group =  $group_model->getGroupById($group_id, $user_id,
+                        true);
                     if(!$group || ($group["OWNER_ID"] != $user_id &&
                         $group["MEMBER_ACCESS"] != GROUP_READ_WRITE &&
                         $user_id != ROOT_ID)) {
@@ -870,7 +877,8 @@ class SocialComponent extends Component implements CrawlConstants
                     }
                     $post_id = $parent->clean($_REQUEST['post_id'], "int");
                     $group_id = $parent->clean($_REQUEST['group_id'], "int");
-                    $group = $group_model->getGroupById($group_id, $user_id);
+                    $group = $group_model->getGroupById($group_id, $user_id,
+                        true);
                     if(!$group || (!in_array($group["VOTE_ACCESS"],
                         array(UP_VOTING_GROUP, UP_DOWN_VOTING_GROUP) ) ) ) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
@@ -1122,6 +1130,7 @@ EOD;
         } else {
             $group_id = PUBLIC_GROUP_ID;
         }
+        echo $group_id;
         $group = $group_model->getGroupById($group_id, $user_id);
         $data["CAN_EDIT"] = false;
         $data["MODE"] = "read";
@@ -1660,7 +1669,7 @@ EOD;
                     if($group_id) {
                         $group =
                             $group_model->getGroupById($group_id,
-                            $user_id);
+                                $user_id, true);
                     }
                     if(!$group || ($group["OWNER_ID"] != $user_id &&
                         $group["MEMBER_ACCESS"] != GROUP_READ_WRITE &&

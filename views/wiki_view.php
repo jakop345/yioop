@@ -61,8 +61,13 @@ class WikiView extends View
         $base_query = "?c=group&amp;".CSRF_TOKEN."=".
             $data[CSRF_TOKEN] . "&amp;group_id=".
                 $data["GROUP"]["GROUP_ID"];
+        $feed_base_query = "?c=group&amp;".CSRF_TOKEN."=".
+            $data[CSRF_TOKEN] . "&amp;just_group_id=".
+                $data["GROUP"]["GROUP_ID"];
         if(!$logged_in) {
             $base_query = "?c=group&amp;group_id=". $data["GROUP"]["GROUP_ID"];
+            $feed_base_query = 
+                "?c=group&amp;just_group_id=". $data["GROUP"]["GROUP_ID"];
         }
         if(MOBILE) {
             $logo = M_LOGO;
@@ -113,7 +118,8 @@ class WikiView extends View
             } ?>"><img
             src="<?php e($logo); ?>" alt="<?php e($this->logo_alt_text);
                 ?>" /></a><small> - <?php e($data["GROUP"]["GROUP_NAME"].
-                "[<a href='$base_query&amp;a=groupFeeds'>".tl('wiki_view_feed').
+                "[<a href='$feed_base_query&amp;a=groupFeeds'>".
+                tl('wiki_view_feed').
                 "</a>|".tl('wiki_view_wiki')."]");
             ?></small>
         </h1>
