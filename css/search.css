@@ -2277,7 +2277,7 @@ div.group-result
 {
     position:relative;
     margin-right: 0.5in;
-    padding:2px;
+    padding:1px;
     top: 0.1in;
 }
 
@@ -2285,7 +2285,7 @@ div.group-result
 {
     position:relative;
     margin-left: 0.5in;
-    padding:2px;
+    padding:1px;
     top: 0.1in;
 }
 
@@ -2294,7 +2294,7 @@ div.group-result
 .html-ltr .role-table th
 {
     border: 1px solid black;
-    margin-left: 0.2in;
+    margin-left: 0.1in;
     padding: 1px;
 }
 
@@ -2303,15 +2303,15 @@ div.group-result
 .html-rtl .role-table th
 {
     border: 1px solid black;
-    margin-right: 0.2in;
+    margin-right: 0.1in;
     padding: 1px;
 }
 .role-table select,
 .role-table option
 {
-    font-size:11pt;
+    font-size:10pt;
     padding:0;
-    margin:0pt;
+    margin:0;
 }
 
 .html-ltr .locale-table,
