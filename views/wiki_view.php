@@ -66,7 +66,7 @@ class WikiView extends View
                 $data["GROUP"]["GROUP_ID"];
         if(!$logged_in) {
             $base_query = "?c=group&amp;group_id=". $data["GROUP"]["GROUP_ID"];
-            $feed_base_query = 
+            $feed_base_query =
                 "?c=group&amp;just_group_id=". $data["GROUP"]["GROUP_ID"];
         }
         if(MOBILE) {

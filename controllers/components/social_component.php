@@ -1071,7 +1071,7 @@ class SocialComponent extends Component implements CrawlConstants
             $user_id = $_SESSION['USER_ID'];
             $data['ADMIN'] = 1;
         } else {
-            $user_id = $_SERVER['REMOTE_ADDR'];
+            $user_id = PUBLIC_USER_ID;
         }
         $additional_substitutions = array();
         $search_translation = tl('social_component_search');
@@ -1130,7 +1130,6 @@ EOD;
         } else {
             $group_id = PUBLIC_GROUP_ID;
         }
-        echo $group_id;
         $group = $group_model->getGroupById($group_id, $user_id);
         $data["CAN_EDIT"] = false;
         $data["MODE"] = "read";
