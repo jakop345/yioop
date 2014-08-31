@@ -154,7 +154,9 @@ class GroupfeedElement extends Element implements CrawlConstants
         <?php
         $open_in_tabs = $data['OPEN_IN_TABS'];
         $time = time();
-        $can_comment = array(GROUP_READ_COMMENT, GROUP_READ_WRITE);
+        $can_comment = array(GROUP_READ_COMMENT, GROUP_READ_WRITE,
+            GROUP_READ_WIKI);
+        $start_thread = array(GROUP_READ_WRITE, GROUP_READ_WIKI);
         if(isset($data['PAGES'][0]["MEMBER_ACCESS"]) &&
             in_array($data['PAGES'][0]["MEMBER_ACCESS"], $can_comment)) {
             if(isset($data['JUST_THREAD'])) {
@@ -169,7 +171,7 @@ class GroupfeedElement extends Element implements CrawlConstants
                 </div>
                 <?php
             } else if(isset($data['JUST_GROUP_ID']) &&
-                $data['PAGES'][0]["MEMBER_ACCESS"] == GROUP_READ_WRITE) {
+                in_array($data['PAGES'][0]["MEMBER_ACCESS"], $start_thread)) {
                 ?>
                 <div class='button-group-result'>
                 <button class="button-box" onclick='start_thread_form(<?php
@@ -197,7 +199,7 @@ class GroupfeedElement extends Element implements CrawlConstants
             <?php
             $subsearch = (isset($data["SUBSEARCH"])) ? $data["SUBSEARCH"] :
                 "";
-            if($page["MEMBER_ACCESS"] == GROUP_READ_WRITE &&
+            if(in_array($page["MEMBER_ACCESS"], $start_thread) &&
                 !isset($data['JUST_GROUP_ID']) &&
                 isset($_SESSION['USER_ID']) &&
                 (($page['USER_ID'] != "" &&

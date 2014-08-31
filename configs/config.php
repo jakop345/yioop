@@ -647,6 +647,12 @@ define('GROUP_READ_COMMENT', 3);
  */
 define('GROUP_READ_WRITE', 4);
 /**
+ *  Group access code signifying members of the group can both
+ *  read items posted to the group as well as post new items
+ *  and can edit the group's wiki
+ */
+define('GROUP_READ_WIKI', 5);
+/**
  * Indicates a group where people can't up and down vote threads
  */
 define("NON_VOTING_GROUP", 0);

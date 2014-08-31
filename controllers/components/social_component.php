@@ -86,7 +86,8 @@ class SocialComponent extends Component implements CrawlConstants
             GROUP_PRIVATE => tl('social_component_private'),
             GROUP_READ => tl('social_component_read'),
             GROUP_READ_COMMENT => tl('social_component_read_comment'),
-            GROUP_READ_WRITE => tl('social_component_read_write')
+            GROUP_READ_WRITE => tl('social_component_read_write'),
+            GROUP_READ_WIKI => tl('social_component_read_wiki'),
         );
         $data['VOTING_CODES'] = array(
             NON_VOTING_GROUP => tl('social_component_no_voting'),
@@ -675,9 +676,10 @@ class SocialComponent extends Component implements CrawlConstants
                     $group =
                         $group_model->getGroupById($group_id,
                         $user_id, true);
+                    $read_comment = array(GROUP_READ_COMMENT, GROUP_READ_WRITE,
+                        GROUP_READ_WIKI);
                     if(!$group || ($group["OWNER_ID"] != $user_id &&
-                        $group["MEMBER_ACCESS"] != GROUP_READ_COMMENT &&
-                        $group["MEMBER_ACCESS"] != GROUP_READ_WRITE &&
+                        !in_array($group["MEMBER_ACCESS"], $read_comment) &&
                         $user_id != ROOT_ID)) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('social_component_no_post_access').
@@ -804,8 +806,9 @@ class SocialComponent extends Component implements CrawlConstants
                     $group =
                         $group_model->getGroupById($group_id,
                         $user_id, true);
+                    $new_thread = array(GROUP_READ_WRITE, GROUP_READ_WIKI);
                     if(!$group || ($group["OWNER_ID"] != $user_id &&
-                        $group["MEMBER_ACCESS"] != GROUP_READ_WRITE &&
+                        !in_array($group["MEMBER_ACCESS"], $new_thread) &&
                         $user_id != ROOT_ID)) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('social_component_no_post_access').
@@ -854,8 +857,9 @@ class SocialComponent extends Component implements CrawlConstants
                     $group_id = $item['GROUP_ID'];
                     $group =  $group_model->getGroupById($group_id, $user_id,
                         true);
+                    $update_thread = array(GROUP_READ_WRITE, GROUP_READ_WIKI);
                     if(!$group || ($group["OWNER_ID"] != $user_id &&
-                        $group["MEMBER_ACCESS"] != GROUP_READ_WRITE &&
+                        in_array($group["MEMBER_ACCESS"], $update_thread) &&
                         $user_id != ROOT_ID)) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('social_component_no_update_access').
@@ -935,7 +939,7 @@ class SocialComponent extends Component implements CrawlConstants
                 $page[self::SOURCE_NAME] = $group['GROUP_NAME'];
                 $page['MEMBER_ACCESS'] = $group['MEMBER_ACCESS'];
                 if($group['OWNER_ID'] == $user_id || $user_id == ROOT_ID) {
-                    $page['MEMBER_ACCESS'] = GROUP_READ_WRITE;
+                    $page['MEMBER_ACCESS'] = GROUP_READ_WIKI;
                 }
                 $page['PUBDATE'] = $group['JOIN_DATE'];
                 $pages[$group['JOIN_DATE']] = $page;
@@ -1007,7 +1011,7 @@ class SocialComponent extends Component implements CrawlConstants
             $page[self::SOURCE_NAME] = $page['GROUP_NAME'];
             unset($page['GROUP_NAME']);
             if($item['OWNER_ID'] == $user_id || $user_id == ROOT_ID) {
-                $page['MEMBER_ACCESS'] = GROUP_READ_WRITE;
+                $page['MEMBER_ACCESS'] = GROUP_READ_WIKI;
             }
             if(!$recent_found && $time - $item["PUBDATE"] <
                 5 * ONE_MINUTE) {
@@ -1148,7 +1152,7 @@ EOD;
         } else {
             if($group["OWNER_ID"] == $user_id ||
                 ($group["STATUS"] == ACTIVE_STATUS &&
-                $group["MEMBER_ACCESS"] == GROUP_READ_WRITE)) {
+                $group["MEMBER_ACCESS"] == GROUP_READ_WIKI)) {
                 $data["CAN_EDIT"] = true;
             }
         }
@@ -1676,9 +1680,11 @@ EOD;
                             $group_model->getGroupById($group_id,
                                 $user_id, true);
                     }
+                    $share = array(GROUP_READ_WRITE, GROUP_READ_WIKI);
                     if(!$group || ($group["OWNER_ID"] != $user_id &&
-                        $group["MEMBER_ACCESS"] != GROUP_READ_WRITE &&
+                        !in_array($group["MEMBER_ACCESS"], $share) &&
                         $user_id != ROOT_ID)) {
+                        print_r($group);exit();
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('social_component_no_post_access').
                             "</h1>');";

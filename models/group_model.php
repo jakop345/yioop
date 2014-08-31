@@ -211,7 +211,9 @@ class GroupModel extends Model
      *      allowed for this group NO_JOIN, REQUEST_JOIN, PUBLIC_JOIN
      * @param int $member flag that says how members other than the owner can
      *      access this group GROUP_READ, GROUP_READ_COMMENT (can comment
-     *      on threads but not start. i.e., a blog), GROUP_READ_WRITE
+     *      on threads but not start. i.e., a blog), GROUP_READ_WRITE,
+     *      (can read, comment, start threads), GROUP_READ_WIKI, (can read, 
+     *      comment, start threads, and edit the wiki)
      * @param int $voting flag that says how members can vote on each others
      *      posts: NON_VOTING_GROUP, UP_VOTING_GROUP, UP_DOWN_VOTING_GROUP
      * @param int $post_lifetime specifies the time in seconds that posts should
@@ -385,14 +387,14 @@ class GroupModel extends Model
         $db = $this->db;
         $group = $this->getRows(0, 1,
             $total_rows, array(array("group_id","=", $group_id, "")), $user_id);
-        if(!is_int($user_id)) { //Postgres strict about types so being safe
+        if(!is_numeric($user_id)) { //Postgres strict about types so being safe
             $user_id = PUBLIC_USER_ID;
         }
         $where = " WHERE ";
         $params = array(":group_id" => $group_id);
         if($user_id != ROOT_ID) {
             if($require_root_or_member) {
-                $where .= " UG.USER_ID = :user_id  AND ";
+                $where .= " (UG.USER_ID = :user_id) AND ";
             } else {
                 $where .= " (UG.USER_ID = :user_id OR G.REGISTER_TYPE IN (".
                     PUBLIC_BROWSE_REQUEST_JOIN. ",". PUBLIC_JOIN .")) AND ";
@@ -693,7 +695,7 @@ class GroupModel extends Model
             "GI.GROUP_ID=G.GROUP_ID AND GI.GROUP_ID=UG.GROUP_ID AND ((
             $non_public_status
             G.MEMBER_ACCESS IN ('".GROUP_READ."','".GROUP_READ_COMMENT.
-            "','".GROUP_READ_WRITE."'))OR
+            "','".GROUP_READ_WRITE."', '". GROUP_READ_WIKI ."'))OR
             (G.OWNER_ID = UG.USER_ID))";
         if($for_group >= 0) {
             $group_by = " GROUP BY GI.PARENT_ID";
@@ -788,7 +790,7 @@ class GroupModel extends Model
             GI.GROUP_ID=G.GROUP_ID AND GI.GROUP_ID=UG.GROUP_ID AND ((
             $non_public_status
             G.MEMBER_ACCESS IN ('".GROUP_READ."','".GROUP_READ_COMMENT.
-            "','".GROUP_READ_WRITE."'))OR
+            "','".GROUP_READ_WRITE."', '" . GROUP_READ_WIKI . "')) OR
             (G.OWNER_ID = UG.USER_ID))";
         if($for_group >= 0) {
             $count_col = " COUNT(DISTINCT GI.PARENT_ID) ";
