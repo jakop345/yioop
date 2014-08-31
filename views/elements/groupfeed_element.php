@@ -184,6 +184,18 @@ class GroupfeedElement extends Element implements CrawlConstants
             }
         }
         if(isset($data['NO_POSTS_YET'])) {
+            if(isset($data['NO_POSTS_START_THREAD'])) {
+                //no read case where no posts yet
+                ?>
+                <div class='button-group-result'>
+                <button class="button-box" onclick='start_thread_form(<?php
+                        e("\"add-comment\", ".
+                            "{$data['JUST_GROUP_ID']}"); ?>)'><?php
+                        e(tl('groupfeed_element_start_thread'));?></button>
+                <div id='add-comment'></div>
+                </div>
+                <?php
+            }
             ?>
             <p class="red"><?php e(tl('groupfeed_element_no_posts_yet'))?></p>
             <?php

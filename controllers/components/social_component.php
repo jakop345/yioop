@@ -1034,6 +1034,10 @@ class SocialComponent extends Component implements CrawlConstants
                 $group = $group_model->getGroupById($just_group_id, $user_id);
                 $page[self::SOURCE_NAME] = $group['GROUP_NAME'];
                 $data['NO_POSTS_YET'] = true;
+                if($user_id == $group['OWNER_ID'] || $user_id == ROOT_ID) {
+                        // this case happens when a group is no read
+                        $data['NO_POSTS_START_THREAD'] = true;
+                }
             }
             $data['SUBTITLE'] = $page[self::SOURCE_NAME];
             $data['ADD_PAGING_QUERY'] = "&amp;just_group_id=$just_group_id";
