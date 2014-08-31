@@ -92,11 +92,11 @@ class GroupView extends View implements CrawlConstants
                     $data['JUST_THREAD']."'>RSS</a>]");
             }
         } else if(isset($data['JUST_GROUP_ID'])){
-            e($data['PAGES'][0][self::SOURCE_NAME]);
+            e($data['SUBTITLE']);
             e(" [".tl('group_view_feed'));
             if(!MOBILE && !$logged_in) {
                 e("|<a href='$base_query&a=groupFeeds&just_group_id=".
-                    $data['PAGES'][0]["GROUP_ID"]."&f=rss' >RSS</a>");
+                    $data['JUST_GROUP_ID']."&f=rss' >RSS</a>");
             }
             e("|<a href='$base_query&a=wiki&group_id=".
                 $data['JUST_GROUP_ID']."'>" .

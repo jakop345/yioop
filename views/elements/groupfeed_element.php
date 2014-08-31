@@ -181,6 +181,11 @@ class GroupfeedElement extends Element implements CrawlConstants
                 <?php
             }
         }
+        if(isset($data['NO_POSTS_YET'])) {
+            ?>
+            <p class="red"><?php e(tl('groupfeed_element_no_posts_yet'))?></p>
+            <?php
+        }
         foreach($data['PAGES'] as $page) {
             $pub_date = $page['PUBDATE'];
             $pub_date = $this->view->helper("feeds")->getPubdateString(

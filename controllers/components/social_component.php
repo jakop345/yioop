@@ -50,8 +50,9 @@ class SocialComponent extends Component implements CrawlConstants
      * Used to handle the manage group activity.
      *
      * This activity allows new groups to be created out of a set of users.
-     * It allows admin rights for the group to be transfered and it allows roles
-     * to be added to a group. One can also delete groups and roles from groups.
+     * It allows admin rights for the group to be transferred and it allows
+     * roles to be added to a group. One can also delete groups and roles from
+     * groups.
      *
      * @return array $data information about groups in the system
      */
@@ -1024,7 +1025,12 @@ class SocialComponent extends Component implements CrawlConstants
             $data['ADD_PAGING_QUERY'] = "&amp;just_thread=$just_thread";
             $data['JUST_THREAD'] = $just_thread;
         }
-        if($just_group_id && isset($page[self::SOURCE_NAME])) {
+        if($just_group_id) {
+            if(!isset($page[self::SOURCE_NAME])) {
+                $group = $group_model->getGroupById($just_group_id, $user_id);
+                $page[self::SOURCE_NAME] = $group['GROUP_NAME'];
+                $data['NO_POSTS_YET'] = true;
+            }
             $data['SUBTITLE'] = $page[self::SOURCE_NAME];
             $data['ADD_PAGING_QUERY'] = "&amp;just_group_id=$just_group_id";
             $data['JUST_GROUP_ID'] = $just_group_id;

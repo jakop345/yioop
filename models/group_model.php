@@ -385,6 +385,9 @@ class GroupModel extends Model
         $db = $this->db;
         $group = $this->getRows(0, 1,
             $total_rows, array(array("group_id","=", $group_id, "")), $user_id);
+        if(!is_int($user_id)) { //Postgres strict about types so being safe
+            $user_id = PUBLIC_USER_ID;
+        }
         $where = " WHERE ";
         $params = array(":group_id" => $group_id);
         if($user_id != ROOT_ID) {
