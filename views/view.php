@@ -32,7 +32,7 @@
  */
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 if(php_sapi_name() != 'cli') {
-    $locale_version = tl('view_locale_version7');
+    $locale_version = tl('view_locale_version8');
 }
 //base class for Element's needed for this View
 require_once BASE_DIR."/views/elements/element.php";
