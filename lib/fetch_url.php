@@ -189,6 +189,8 @@ class FetchUrl implements CrawlConstants
         $start_time = microtime();
         //Process returned pages
         for($i = 0; $i < $num_sites; $i++) {
+            crawlTimeoutLog("fetch_url initial processing of page %s of %s",
+                $i, $num_sites);
             if(!$minimal && isset($ip_holder[$i]) ) {
                 rewind($ip_holder[$i]);
                 $header = fread($ip_holder[$i], 8192);

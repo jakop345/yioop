@@ -720,7 +720,7 @@ class Fetcher implements CrawlConstants
             $can_schedule_again = true;
         }
         $sites = $this->getFetchSites();
-        crawlLog("Downloading list of urls...");
+        crawlLog("Done getting list of ".count($sites)." to download...");
         if(!$sites) {
             crawlLog("No seeds to fetch...");
             sleep(max(0, ceil(
@@ -1077,8 +1077,7 @@ class Fetcher implements CrawlConstants
             "&crawl_time=".$this->crawl_time."&check_crawl_time=".
             $this->check_crawl_time;
         $info_string = FetchUrl::getPage($request, NULL, true);
-        crawlLog("Making request: ");
-        crawlLog($request);
+        crawlLog("Making schedule request: ". $request);
         if($info_string === false) {
             crawlLog("The request failed!!!!");
             return false;
@@ -1423,12 +1422,9 @@ class Fetcher implements CrawlConstants
         if($num_items > NUM_MULTI_CURL_PAGES) {
             $num_items = NUM_MULTI_CURL_PAGES;
         }
-
         $i = 0;
         $site_pair = each($crawl_source);
-
         while ($site_pair !== false && $i < $num_items) {
-
             $delete_indices[] = $site_pair['key'];
             if($site_pair['value'][0] != self::DUMMY) {
                 $host = UrlParser::getHost($site_pair['value'][0]);
@@ -1475,18 +1471,23 @@ class Fetcher implements CrawlConstants
             $site_pair = each($crawl_source);
         } //end while
         foreach($delete_indices as $delete_index) {
-            $extension = UrlParser::getDocumentType(
-                $this->to_crawl[$delete_index][0]);
-            $repository_type = FetchGitRepositoryUrls::checkForRepository(
-                $extension);
             $git_set = false;
             if($to_crawl_flag == true) {
+                $extension = UrlParser::getDocumentType(
+                    $this->to_crawl[$delete_index][0]);
+                $repository_type = FetchGitRepositoryUrls::checkForRepository(
+                    $extension);
                 if($repository_type != self::REPOSITORY_GIT) {
                     unset($this->to_crawl[$delete_index]);
                 }
             } else {
+                $extension = UrlParser::getDocumentType(
+                    $this->to_crawl_again[$delete_index][0]);
+                $repository_type = FetchGitRepositoryUrls::checkForRepository(
+                    $extension);
                 unset($this->to_crawl_again[$delete_index]);
             }
+
             if($repository_type == self::REPOSITORY_GIT) {
                 if(!$git_set) {
                     $next_url_start = $url_to_check . self::GIT_URL_CONTINUE.
@@ -1521,9 +1522,12 @@ class Fetcher implements CrawlConstants
         $not_downloaded = array();
 
         foreach($site_pages as $site) {
-            if( isset($site[self::ROBOT_PATHS]) || isset($site[self::PAGE])) {
+            if( (isset($site[self::ROBOT_PATHS]) || isset($site[self::PAGE]))
+                && (is_numeric($site[self::HTTP_CODE] ) &&
+                $site[self::HTTP_CODE] > 0) ) {
                 $downloaded[] = $site;
             }  else {
+                crawlLog("Rescheduling ". $site[self::URL]);
                 $not_downloaded[] = $site;
             }
         }
@@ -1572,11 +1576,20 @@ class Fetcher implements CrawlConstants
                 */
             }
             // text/robot is my made up mimetype for robots.txt files
+            $was_robot_error = false;
             if(isset($site[self::ROBOT_PATHS])) {
                 if(!$was_error) {
                     $type = "text/robot";
                 } else {
                     $type = $site[self::TYPE];
+                    if($response_code != 404) {
+                        /* 
+                            disallow crawling if robots.txt was any error other
+                            that not found
+                         */
+                        $was_robot_error = true;
+                        $site[self::ROBOT_PATHS][] = "/";
+                     }
                 }
             } else if(isset($site[self::FILE_NAME])) {
                 $extension = UrlParser::getDocumentType($site[self::FILE_NAME]);
@@ -1774,6 +1787,13 @@ class Fetcher implements CrawlConstants
                     // stripping html to be on the safe side
                 }
                 if(!isset($site[self::REPOSITORY_TYPE])) {
+                    if($was_robot_error) {
+                        $site[self::DOC_INFO][self::DESCRIPTION] =
+                            "There was an HTTP error in trying to download ".
+                            "this robots.txt file, so all paths to this site ".
+                            "were dsallowed by Yioop.\n".
+                            $site[self::DOC_INFO][self::DESCRIPTION];
+                    }
                     $summarized_site_pages[$i][self::DESCRIPTION] =
                         strip_tags($site[self::DOC_INFO][self::DESCRIPTION]);
                 } else {
@@ -2391,7 +2411,7 @@ class Fetcher implements CrawlConstants
             $i = 0;
             while($this->found_sites[self::SEEN_URLS] != array()) {
                 crawlTimeoutLog("..compressing seen url %s of %s",
-                $i, $num_seen);
+                    $i, $num_seen);
                 $i++;
                 $site = array_shift($this->found_sites[self::SEEN_URLS]);
                 if(!isset($site[self::ROBOT_METAS]) ||
