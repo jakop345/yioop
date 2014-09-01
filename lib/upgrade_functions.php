@@ -62,9 +62,10 @@ function upgradeLocales()
     /*
         if we're upgrading version2 to 3 we want to make sure stemmer becomes
         tokenizer, version3 to 4 pushes out stopwordsRemover used for
-        summarization. version 6 to 7 adds stemmers for french, english, german
+        summarization. version 6 to 7 adds stemmers for french, english, german.
+        version 7 to 8 adds stemmers for russian and spanish
     */
-    if(!isset($locale->configure['strings']["view_locale_version7"])) {
+    if(!isset($locale->configure['strings']["view_locale_version8"])) {
         $force_folders = array("resources");
     }
     $locale->extractMergeLocales($force_folders);
