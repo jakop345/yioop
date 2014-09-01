@@ -756,6 +756,7 @@ class Fetcher implements CrawlConstants
             FetchUrl::getPages($filtered_sites, true,
                 $this->page_range_request, $tmp_dir, self::URL, self::PAGE,
                 false, NULL, false, $this->tor_proxy, $this->proxy_servers) );
+        crawlLog("..getPages call complete..");
         for($j = 0; $j < count($site_pages); $j++) {
             if(isset($site_pages[$j][self::REPOSITORY_TYPE])) {
                 $git_repository_url = $site_pages[$j][self::URL];
