@@ -1422,12 +1422,19 @@ class Fetcher implements CrawlConstants
         if($num_items > NUM_MULTI_CURL_PAGES) {
             $num_items = NUM_MULTI_CURL_PAGES;
         }
+        //DNS lookups take longer so try to get fewer in one go
+        $num_ip_lookups = max($num_items/3, 2);
         $i = 0;
+        $ip_lookup_cnt = 0;
         $site_pair = each($crawl_source);
-        while ($site_pair !== false && $i < $num_items) {
+        while ($site_pair !== false && $i < $num_items &&
+            $ip_lookup_cnt < $num_ip_lookups) {
             $delete_indices[] = $site_pair['key'];
             if($site_pair['value'][0] != self::DUMMY) {
                 $host = UrlParser::getHost($site_pair['value'][0]);
+                if(!strpos($site_pair['value'][0], "###")) {
+                    $ip_lookup_cnt++;
+                }
                 // only download if host doesn't seem congested
                 if(!isset($this->hosts_with_errors[$host]) ||
                     $this->hosts_with_errors[$host] < DOWNLOAD_ERROR_THRESHOLD){

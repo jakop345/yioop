@@ -925,7 +925,6 @@ EOT;
             0777);
         if($seed_info != NULL) {
             $scheduler_info[self::HASH_SEEN_URLS] = array();
-
             foreach ($seed_info['seed_sites']['url'] as $site) {
                 if($site[0] == "#") { continue; } //ignore comments in file
                 $site_parts = preg_split("/\s+/", $site);
