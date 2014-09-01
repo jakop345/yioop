@@ -1331,6 +1331,18 @@ class GroupModel extends Model
             "&amp;g=$group_id&amp;p=$page_id&amp;n=$resource_name";
     }
     /**
+     *
+     */
+    function getGroupPageCount($group_id)
+    {
+        $sql = "SELECT COUNT(*) AS TOTAL
+            FROM GROUP_PAGE WHERE GROUP_ID = ? AND LENGTH(PAGE) > 0";
+        $result = $this->db->execute($sql, array($group_id));
+        $row = $this->db->fetchArray($result);
+        $total = ($row) ? $row["TOTAL"] : 0;
+        return $total;
+    }
+    /**
      * Returns a list of applicable wiki pages of a group
      *
      * @param int $group_id of group want list of wiki pages for

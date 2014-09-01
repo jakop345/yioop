@@ -53,6 +53,7 @@ class ManageaccountElement extends Element
         $token = CSRF_TOKEN . "=". $data[CSRF_TOKEN];
         $settings_url = "?c=settings&amp;$token&amp;return=manageAccount";
         $feed_url = "?c=admin&amp;a=groupFeeds&amp;$token";
+        $wiki_url = "?c=admin&amp;a=wiki&amp;$token";
         $group_url = "?c=admin&amp;a=manageGroups&amp;$token";
         $mix_url = "?c=admin&amp;a=mixCrawls&amp;$token";
         $crawls_url = "?c=admin&amp;a=manageCrawls&amp;$token";
@@ -198,7 +199,10 @@ class ManageaccountElement extends Element
                     <div><b><a href="<?php
                     e($feed_url.'&amp;just_group_id='.$group['GROUP_ID']); ?>"
                     rel="nofollow"><?php e($group['GROUP_NAME']);
-                    ?></a> (<?php e(tl('manageaccount_element_group_stats',
+                    ?></a> [<a href="<?php e($wiki_url.'&amp;group_id='.
+                        $group['GROUP_ID']); ?>"><?php
+                        e(tl('manageaccount_element_group_wiki'))?></a>] (<?php
+                        e(tl('manageaccount_element_group_stats',
                         $group['NUM_POSTS'], $group['NUM_THREADS']) ); ?>)</b>
                     </div>
                     <div class="slight-pad">

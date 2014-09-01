@@ -124,6 +124,9 @@ class AccountaccessComponent extends Component
             $data['GROUPS'][$i]['NUM_THREADS'] =
                 $group_model->getGroupItemCount($search_array, $user_id,
                 $data['GROUPS'][$i]['GROUP_ID']);
+            $data['GROUPS'][$i]['NUM_PAGES'] =
+                $group_model->getGroupPageCount(
+                $data['GROUPS'][$i]['GROUP_ID']);
             if(isset($item[0]['TITLE'])) {
                 $data['GROUPS'][$i]["ITEM_TITLE"] = $item[0]['TITLE'];
                 $data['GROUPS'][$i]["THREAD_ID"] = $item[0]['PARENT_ID'];
