@@ -55,7 +55,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 class EsTokenizer
 {
     /**
-     * French vowels
+     * Spanish vowels
      * @var string
      */
     static $vowel = 'aeiouáéíóúü';
