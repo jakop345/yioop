@@ -39,7 +39,7 @@ define("BASE_DIR", substr(
     dirname(realpath($_SERVER['PHP_SELF'])), 0,
     -strlen("/bin")));
 
-ini_set("memory_limit", "1000M"); //so have enough memory to crawl sitemaps
+ini_set("memory_limit", "1200M"); //so have enough memory to crawl sitemaps
 
 /** Load in global configuration settings */
 require_once BASE_DIR.'/configs/config.php';

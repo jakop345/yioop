@@ -448,11 +448,13 @@ class HtmlProcessor extends TextProcessor
         //Look for Refresh or Location
         $links = $xpath->evaluate("/html/head/link");
         foreach($links as $link) {
+            // levenshtein gives notices on strings longer than 255
             if(stristr($link->getAttribute('rel'), "canonical") ) {
                 $canonical_url = trim($link->getAttribute('href'));
                 if(!UrlParser::checkRecursiveUrl($canonical_url) &&
-                    strlen($canonical_url) < MAX_URL_LENGTH &&
-                    levenshtein($canonical_url, $url) > 3) {
+                    strlen($canonical_url) < min(252, MAX_URL_LENGTH) &&
+                    (strlen($url) > min(255, MAX_URL_LENGTH + 3) ||
+                    levenshtein($canonical_url, $url) > 3)) {
                     //ignore canonical if points to same place
                     return $canonical_url;
                 }

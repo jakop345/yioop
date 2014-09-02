@@ -504,8 +504,11 @@ class FetchUrl implements CrawlConstants
             }
             $canonical_regex = "/Link\:\s*\<\s*(http.*)\s*\>\s*\;\s*".
                 "rel\s*\=\s*(\"|')?canonical(\"|')?/";
+            // levenshtein gives notices on strings longer than 255
             if(preg_match($canonical_regex, $line, $matches) &&
-                levenshtein($matches[1], $site[CrawlConstants::URL]) > 3) {
+                isset($site[CrawlConstants::URL]) && strlen($matches[1]) < 252
+                && (strlen($site[CrawlConstants::URL]) >= 255 ||
+                levenshtein($matches[1], $site[CrawlConstants::URL]) > 3)) {
                 // for rel canonical headers
                 $site[CrawlConstants::LOCATION][] = $matches[1];
                 $site[CrawlConstants::ROBOT_METAS][] = 'NOFOLLOW';
