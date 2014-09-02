@@ -221,7 +221,7 @@ class WikiElement extends Element implements CrawlConstants
             $data['GROUP']['GROUP_ID'];
         ?>
         <div class="float-opposite" style="position:relative; top:35px;">
-        [<a href="?c=<?php e($base_url); ?>&amp;<?php
+        [<a href="<?php e($base_url); ?>&amp;<?php
             e('&amp;arg=history&amp;page_id='.$data['PAGE_ID']); ?>"
         ><?php e(tl('wiki_element_history'))?></a>]
         [<a href="?c=<?php e($data['CONTROLLER']); ?>&amp;a=groupFeeds&amp;<?php
