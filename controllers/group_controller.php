@@ -77,7 +77,7 @@ class GroupController extends Controller implements CrawlConstants
         $data[CSRF_TOKEN] = $this->generateCSRFToken($user_id);
         if(!$token_okay) {
             $keep_fields = array("a", "arg", "f", "group_id", "just_group_id",
-                "just_user_id", "just_thread", "limit", "n", "num", "page_id"
+                "just_user_id", "just_thread", "limit", "n", "num", "page_id",
                 "page_name"
                 );
             $request = $_REQUEST;
