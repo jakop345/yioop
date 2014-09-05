@@ -84,8 +84,8 @@ class GroupController extends Controller implements CrawlConstants
             $_REQUEST = array();
             foreach($keep_fields as $field) {
                 if(isset($request[$field])) {
-                    if($field == "arg" && ($request[$field] != "read"
-                        && $request[$field] != "pages")) {
+                    if($field == "arg" && (!in_array($request[$field], array(
+                        "read", "pages", "media")) )){
                         continue;
                     }
                     $_REQUEST[$field] =

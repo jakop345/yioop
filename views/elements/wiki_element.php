@@ -95,7 +95,16 @@ class WikiElement extends Element implements CrawlConstants
         } else {
             e('<div class="small-margin-current-activity">');
         }
-        if($is_admin) {
+        if(isset($data['MEDIA_NAME'])) {
+            ?>
+            <div class="top-margin"><b><a href="<?php e($base_query .
+                '&amp;arg=read&amp;a=wiki&amp;page_name='.
+                $data['PAGE_NAME']); ?>"><?php
+                e($data['PAGE_NAME']); ?></a></b> : <?php
+                e($data['MEDIA_NAME']);?>
+            </div>
+            <?php
+        } else if($is_admin) {
             ?>
             <h2><?php
             e($data['GROUP']['GROUP_NAME'].
@@ -103,53 +112,40 @@ class WikiElement extends Element implements CrawlConstants
                 "&amp;a=groupFeeds&amp;just_group_id=".
                 $data['GROUP']['GROUP_ID']."'>".tl('groupfeed_element_feed').
                 "</a>|".tl('wiki_view_wiki')."]" ); ?></h2>
+            <div class="top-margin"><b>
             <?php
-            if(isset($data['MEDIA_NAME'])) {
-                ?>
-                <div class="top-margin"><b><a href="<?php e($base_query .
-                    '&amp;arg=read&amp;a=wiki&amp;page_name='.
-                    $data['PAGE_NAME']); ?>"><?php
-                    e($data['PAGE_NAME']); ?></a></b> : <?php
-                    e($data['MEDIA_NAME']);?>
-                </div>
-                <?php
-            } else {
-                ?>
-                <div class="top-margin"><b>
-                <?php
-                e(tl('wiki_view_page', $data['PAGE_NAME']) . " - [");
-                $modes = array();
-                if($can_edit) {
-                    $modes = array(
-                        "read" => tl('wiki_view_read'),
-                        "edit" => tl('wiki_view_edit')
-                    );
-                }
-                $modes["pages"] = tl('wiki_view_pages');
-                $bar = "";
-                foreach($modes as $name => $translation) {
-                    if($data["MODE"] == $name) { 
-                        e($bar); ?><b><?php e($translation); ?></b><?php
-                    } else if(!isset($data["PAGE_NAME"]) ||
-                        $data["PAGE_NAME"]=="")
-                        {
-                        e($bar); ?><span class="gray"><?php e($translation);
-                        ?></span><?php
-                    } else {
-                        $append = "";
-                        if($name != 'pages') {
-                            $append = '&amp;page_name='. $data['PAGE_NAME'];
-                        }
-                        e($bar); ?><a href="<?php e($base_query .
-                            '&amp;arg='.$name.'&amp;a=wiki'.$append); ?>"><?php
-                            e($translation); ?></a><?php
-                    }
-                    $bar = "|";
-                }
-                ?>]</b>
-                </div>
-                <?php
+            e(tl('wiki_view_page', $data['PAGE_NAME']) . " - [");
+            $modes = array();
+            if($can_edit) {
+                $modes = array(
+                    "read" => tl('wiki_view_read'),
+                    "edit" => tl('wiki_view_edit')
+                );
             }
+            $modes["pages"] = tl('wiki_view_pages');
+            $bar = "";
+            foreach($modes as $name => $translation) {
+                if($data["MODE"] == $name) { 
+                    e($bar); ?><b><?php e($translation); ?></b><?php
+                } else if(!isset($data["PAGE_NAME"]) ||
+                    $data["PAGE_NAME"]=="")
+                    {
+                    e($bar); ?><span class="gray"><?php e($translation);
+                    ?></span><?php
+                } else {
+                    $append = "";
+                    if($name != 'pages') {
+                        $append = '&amp;page_name='. $data['PAGE_NAME'];
+                    }
+                    e($bar); ?><a href="<?php e($base_query .
+                        '&amp;arg='.$name.'&amp;a=wiki'.$append); ?>"><?php
+                        e($translation); ?></a><?php
+                }
+                $bar = "|";
+            }
+            ?>]</b>
+            </div>
+            <?php
         }
         switch($data["MODE"])
         {
