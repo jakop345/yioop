@@ -134,13 +134,13 @@ END_HEAD_VARS
 EOD;
 $public_pages["409"] = <<<EOD
 title=Conflict
+
 description=Your request would result in an edit conflict.
 END_HEAD_VARS
 ==Your request would result in an edit conflict, so will not be processed.==
 EOD;
 $public_pages["captcha_time_out"] = <<<EOD
 title=Captcha/Recover Time Out
-
 END_HEAD_VARS
 ==Account Timeout==
 

@@ -647,5 +647,44 @@ abstract class Controller
         if(md5($time . AUTH_KEY) != $session) { return false; }
         return true;
     }
+    /**
+     *  Used to parse head meta variables out of a data string provided either
+     *  from a wiki page or a static page. Meta data is stored in lines
+     *  before the first occurrence of END_HEAD_VARS. Head variables
+     *  are name=value pairs. An example of head 
+     *  variable might be:
+     *  title = This web page's title
+     *  Anything after a semi-colon on a line in the head section is treated as
+     *  a comment
+     *
+     *  @param object $view View on which page data will be rendered
+     *  @param string $page_name a string name/id to associate with page. For
+     *      example, might have 404 for a page about 404 errors
+     *  @param string $page_data this is the actual content of a wiki or
+     *      static page
+     */
+    function parsePageHeadVars($view, $page_name, $page_data)
+    {
+        $page_parts = explode("END_HEAD_VARS", $page_data);
+        $view->head_objects[$page_name] = array();
+        if(count($page_parts) > 1) {
+            $head_lines = preg_split("/\n\n/", array_shift($page_parts));
+            $view->page_objects[$page_name] = implode("END_HEAD_VARS",
+                $page_parts);
+            foreach($head_lines as $line) {
+                $semi_pos =  (strpos($line, ";")) ? strpos($line, ";"):
+                    strlen($line);
+                $line = substr($line, 0, $semi_pos);
+                $line_parts = explode("=",$line);
+                if(count($line_parts) == 2) {
+                    $view->head_objects[$page_name][
+                         trim(addslashes($line_parts[0]))] =
+                            addslashes(trim($line_parts[1]));
+                }
+            }
+        } else {
+            $view->page_objects[$page_name] = $page_parts[0];
+        }
+    }
 }
 ?>

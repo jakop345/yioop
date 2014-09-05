@@ -223,6 +223,10 @@ function filterButtons(id)
         if (wiki_buttons_array[0].trim() === 'all') {
             exc = true;
         }
+        if (wiki_buttons_array[0].trim() === 'none') {
+            editor_buttons[id] = [];
+            return;
+        }
         for (var i = 0; i < buttons_array_length; i++) {
             wiki_buttons_array[i] = wiki_buttons_array[i].trim();
             var firstChar = wiki_buttons_array[i].charAt(0);

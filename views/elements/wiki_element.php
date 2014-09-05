@@ -103,39 +103,53 @@ class WikiElement extends Element implements CrawlConstants
                 "&amp;a=groupFeeds&amp;just_group_id=".
                 $data['GROUP']['GROUP_ID']."'>".tl('groupfeed_element_feed').
                 "</a>|".tl('wiki_view_wiki')."]" ); ?></h2>
-            <div class="top-margin"><b>
             <?php
-            e(tl('wiki_view_page', $data['PAGE_NAME']) . " - [");
-            $modes = array();
-            if($can_edit) {
-                $modes = array(
-                    "read" => tl('wiki_view_read'),
-                    "edit" => tl('wiki_view_edit')
-                );
-            }
-            $modes["pages"] = tl('wiki_view_pages');
-            $bar = "";
-            foreach($modes as $name => $translation) {
-                if($data["MODE"] == $name) { 
-                    e($bar); ?><b><?php e($translation); ?></b><?php
-                } else if(!isset($data["PAGE_NAME"]) || $data["PAGE_NAME"]=="")
-                    {
-                    e($bar); ?><span class="gray"><?php e($translation);
-                    ?></span><?php
-                } else {
-                    $append = "";
-                    if($name != 'pages') {
-                        $append = '&amp;page_name='. $data['PAGE_NAME'];
-                    }
-                    e($bar); ?><a href="<?php e($base_query .
-                        '&amp;arg='.$name.'&amp;a=wiki'.$append); ?>"><?php
-                        e($translation); ?></a><?php
+            if(isset($data['MEDIA_NAME'])) {
+                ?>
+                <div class="top-margin"><b><a href="<?php e($base_query .
+                    '&amp;arg=read&amp;a=wiki&amp;page_name='.
+                    $data['PAGE_NAME']); ?>"><?php
+                    e($data['PAGE_NAME']); ?></a></b> : <?php
+                    e($data['MEDIA_NAME']);?>
+                </div>
+                <?php
+            } else {
+                ?>
+                <div class="top-margin"><b>
+                <?php
+                e(tl('wiki_view_page', $data['PAGE_NAME']) . " - [");
+                $modes = array();
+                if($can_edit) {
+                    $modes = array(
+                        "read" => tl('wiki_view_read'),
+                        "edit" => tl('wiki_view_edit')
+                    );
                 }
-                $bar = "|";
+                $modes["pages"] = tl('wiki_view_pages');
+                $bar = "";
+                foreach($modes as $name => $translation) {
+                    if($data["MODE"] == $name) { 
+                        e($bar); ?><b><?php e($translation); ?></b><?php
+                    } else if(!isset($data["PAGE_NAME"]) ||
+                        $data["PAGE_NAME"]=="")
+                        {
+                        e($bar); ?><span class="gray"><?php e($translation);
+                        ?></span><?php
+                    } else {
+                        $append = "";
+                        if($name != 'pages') {
+                            $append = '&amp;page_name='. $data['PAGE_NAME'];
+                        }
+                        e($bar); ?><a href="<?php e($base_query .
+                            '&amp;arg='.$name.'&amp;a=wiki'.$append); ?>"><?php
+                            e($translation); ?></a><?php
+                    }
+                    $bar = "|";
+                }
+                ?>]</b>
+                </div>
+                <?php
             }
-            ?>]</b>
-            </div>
-            <?php
         }
         switch($data["MODE"])
         {
@@ -171,7 +185,10 @@ class WikiElement extends Element implements CrawlConstants
      */
     function renderReadPage($data, $can_edit, $logged_in)
     {
-        if($data["PAGE"]) {
+        if(isset($data["HEAD"]['page_type']) && $data["HEAD"]['page_type'] ==
+            'media_list') {
+            $this->renderResources($data, true, $logged_in);
+        } else if($data["PAGE"]) {
             e($data["PAGE"]);
         } else if($can_edit) {
             e("<h2>".tl("wiki_view_page_no_exist", $data["PAGE_NAME"]).
@@ -247,6 +264,8 @@ class WikiElement extends Element implements CrawlConstants
                 e($data['PAGE_NAME']); ?>" />
             <input type="hidden" name="caret" id="caret-pos"/>
             <input type="hidden" name="scroll_top" id="scroll-top"/>
+            <input type="hidden" id="p-settings" name="settings" value="<?php
+                e($data['settings']); ?>"/>
             <div class="top-margin">
                 <b><?php
                 e(tl('wiki_element_locale_name',
@@ -254,9 +273,51 @@ class WikiElement extends Element implements CrawlConstants
                 ?></b><br />
                 <label for="page-data"><b><?php
                 e(tl('wiki_element_page', $data['PAGE_NAME']));
-                ?></b></label>
+                ?></b></label> [<a href="javascript:toggleSettings()"><?php
+            e(tl('configure_element_toggle_page_settings')); ?></a>]
             </div>
-            <textarea id="wiki-page" class="tall-text-area" name="page"
+            <div id='page-settings'>
+            <div class="top-margin">
+            <label for="page-type"><b><?php
+            e(tl('wiki_element_page_type'));
+            ?></b></label><?php
+            $this->view->helper("options")->render("page-type","page_type",
+                $data['page_types'], $data['current_page_type']);
+            ?>
+            </div>
+            <div class="top-margin">
+            <label for="page-title"><b><?php
+            e(tl('wiki_element_title'));
+            ?></b></label><input type="text" id='page-title'
+                name="title" value="<?php e($data['title']);?>"
+                maxlength="80" class="wide-field"/>
+            </div>
+            <div class="top-margin">
+            <label for="meta-author"><b><?php
+            e(tl('wiki_element_meta_author'));
+            ?></b></label><input type="text" id='meta-author'
+                name="author" value="<?php e($data['author']);?>"
+                maxlength="80" class="wide-field"/>
+            </div>
+            <div class="top-margin">
+            <label for="meta-robots"><b><?php
+            e(tl('wiki_element_meta_robots'));
+            ?></b></label><input type="text" id='meta-robots'
+                name="robots" value="<?php e($data['robots']);?>"
+                maxlength="80" class="wide-field"/>
+            </div>
+            <div class="top-margin">
+            <label for="meta-description"><b><?php
+            e(tl('wiki_element_meta_description'));
+            ?></b></label>
+            </div>
+            <textarea id="meta-description" class="short-text-area"
+                name="description" data-buttons='none'><?php
+                e($data['description']);
+            ?></textarea>
+            </div>
+            <div id='page-container'><textarea id="wiki-page"
+                class="tall-text-area" name="page"
                 data-buttons='all' ><?php
                 e($data['PAGE']);
             ?></textarea>
@@ -270,11 +331,16 @@ class WikiElement extends Element implements CrawlConstants
                 name="edit_reason" value=""
                 maxlength="80" class="wide-field"/>
             </div>
-            <div class="top-margin center">
+            </div>
+            <div id="save-container" class="top-margin center">
             <button class="button-box" type="submit"><?php
                 e(tl('wiki_element_savebutton')); ?></button>
             </div>
         </form>
+        <div class="top-margin" id="media-list-page">
+        <h2><?php e(tl('wiki_element_media_list'))?></h2>
+        <p><?php e(tl('wiki_element_ml_description'))?></p>
+        </div>
         <div>
         <form id="resourceUploadForm" method="post" action='./'
             enctype="multipart/form-data">
@@ -288,6 +354,8 @@ class WikiElement extends Element implements CrawlConstants
             e($data['GROUP']['GROUP_ID']); ?>" />
         <input type="hidden" name="page_name" value="<?php
             e($data['PAGE_NAME']); ?>" />
+        <input type="hidden" name="settings" value="<?php
+            e($data['settings']); ?>" />
         <h3><?php e(tl('wiki_view_page_resources'));?></h3>
         <p><?php e(tl('wiki_view_resources_info'));?></p>
         <div><input type="file" class="slight-pad wide-field"
@@ -296,32 +364,8 @@ class WikiElement extends Element implements CrawlConstants
             e(tl('wiki_view_upload')); ?></button></div>
         </form>
         <h3 id="progress-bar" class="red indent"></h3>
-        <?php if(isset($data['RESOURCES_INFO']) && $data['RESOURCES_INFO']) {
-            $url_prefix = $data['RESOURCES_INFO']['url_prefix'];
-            $thumb_prefix = $data['RESOURCES_INFO']['thumb_prefix'];
-            $default_thumb = $data['RESOURCES_INFO']['default_thumb'];
-            if(count($data['RESOURCES_INFO']['resources']) > 0) {
-                e('<table >');
-                foreach($data['RESOURCES_INFO']['resources'] as $resource) {
-                    $name = $resource['name'];
-                    e("<tr class='resource-list' >");
-                    if($resource['has_thumb']) {
-                        e("<td><img src='$thumb_prefix&amp;n=$name' alt='' />".
-                            "</td>");
-                    } else {
-                        e("<td><img src='".$default_thumb."'  alt='' /></td>");
-                    }
-                    e("<td><a href='$url_prefix&amp;n=$name'>$name</a></td>");
-                    e("<td><button onclick='javascript:addToPage(\"".
-                        $name."\")'>".tl('wiki_element_add_to_page').
-                        "</button></td>");
-                    e("<td>[<a href='$base_url&amp;arg=edit&amp;page_name=".
-                        $data['PAGE_NAME']."&amp;delete=$name'>X</a>]</td>");
-                    e("</tr>");
-                }
-                e('</table>');
-            }
-        }
+        <?php
+            $this->renderResources($data, false);
         ?>
         </div>
         <script type="text/javascript">
@@ -399,6 +443,59 @@ class WikiElement extends Element implements CrawlConstants
         resource_form.addEventListener('submit', uploadForm);
         </script>
         <?php
+    }
+    /**
+     *  Draws a list of media resources associated with a wiki page
+     *
+     *  @param array $data fields RESOURCES_INFO contains info on resources
+     *  @param bool $read_mode whether the readering should be for a media
+     *      list in read mode or for use on the edit task of any wiki page
+     *  @param bool $logged_in whether the user is currently logged in or not
+     */
+    function renderResources($data, $read_mode, $logged_in = true)
+    {
+        if(isset($data['RESOURCES_INFO']) && $data['RESOURCES_INFO']) {
+            $base_url = "?c=".$data['CONTROLLER']."&amp;a=wiki".
+               "&amp;group_id=".$data['GROUP']['GROUP_ID'];
+            if($logged_in) {
+                $base_url .= "&amp;".CSRF_TOKEN.'='.$data[CSRF_TOKEN];
+            }
+            $url_prefix = $data['RESOURCES_INFO']['url_prefix'];
+            if($read_mode) {
+                $url_prefix = $base_url. "&amp;arg=media&amp;page_id=".
+                    $data["PAGE_ID"];
+            } else {
+                $base_url .= "&amp;settings=".$data['settings'];
+            }
+            $thumb_prefix = $data['RESOURCES_INFO']['thumb_prefix'];
+            $default_thumb = $data['RESOURCES_INFO']['default_thumb'];
+            if(count($data['RESOURCES_INFO']['resources']) > 0) {
+                e('<table >');
+                foreach($data['RESOURCES_INFO']['resources'] as $resource) {
+                    $name = $resource['name'];
+                    e("<tr class='resource-list' >");
+                    if($resource['has_thumb']) {
+                        e("<td><img src='$thumb_prefix&amp;n=$name' alt='' />".
+                            "</td>");
+                    } else {
+                        e("<td><img src='".$default_thumb."'  alt='' /></td>");
+                    }
+                    e("<td><a href='$url_prefix&amp;n=$name'>$name</a></td>");
+                    if($data['page_type'] != 'media_list') {
+                        e("<td><button onclick='javascript:addToPage(\"".
+                            $name."\")'>".tl('wiki_element_add_to_page').
+                            "</button></td>");
+                    }
+                    if(!$read_mode) {
+                        e("<td>[<a href='$base_url&amp;arg=edit&amp;page_name=".
+                            $data['PAGE_NAME'].
+                            "&amp;delete=$name'>X</a>]</td>");
+                    }
+                    e("</tr>");
+                }
+                e('</table>');
+            }
+        }
     }
     /**
      * Used to draw a list of Wiki Pages for the current group. It also

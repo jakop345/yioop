@@ -121,26 +121,8 @@ class StaticController extends Controller
             $data["INCLUDE_SCRIPTS"][] = "math";
         }
         $data['page'] = $page;
-        $page_parts = explode("END_HEAD_VARS", $page_string);
         $static_view = $this->view("static");
-        $static_view->head_objects[$page] = array();
-        if(count($page_parts) > 1) {
-            $static_view->page_objects[$page]  = $page_parts[1];
-            $head_lines = preg_split("/\s\n/", $page_parts[0]);
-            foreach($head_lines as $line) {
-                $semi_pos =  (strpos($line, ";")) ? strpos($line, ";"):
-                    strlen($line);
-                $line = substr($line, 0, $semi_pos);
-                $line_parts = explode("=",$line);
-                if(count($line_parts) == 2) {
-                    $static_view->head_objects[$page][
-                         trim(addslashes($line_parts[0]))] =
-                            addslashes(trim($line_parts[1]));
-                }
-            }
-        } else {
-            $static_view->page_objects[$page] = $page_parts[0];
-        }
+        $this->parsePageHeadVars($static_view, $page, $page_string);
         if(isset($_SESSION['value'])) {
             $data['value'] = $this->clean($_SESSION['value'], "string");
         }

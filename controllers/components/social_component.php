@@ -1160,6 +1160,18 @@ EOD;
                 $data["CAN_EDIT"] = true;
             }
         }
+        $page_defaults = array(
+            'page_type' => 'standard',
+            'title' => '',
+            'author' => '',
+            'robots' => '',
+            'description' => ''
+        );
+        $data['page_types'] = array(
+            "standard" => tl('social_component_standard_page'),
+            "media_list" => tl('social_component_media_list'),
+            "presentation" => tl('social_component_presentation')
+        );
         $read_address = "?c={$data['CONTROLLER']}&amp;a=wiki&amp;".
             "arg=read&amp;group_id=$group_id&amp;page_name=";
         if(isset($_REQUEST["arg"])) {
@@ -1200,6 +1212,37 @@ EOD;
                                 "</h1>');";
                             break;
                         }
+                        $write_head = false;
+                        $head_vars = array();
+                        $page_types = array_keys($data['page_types']);
+                        foreach($page_defaults as $key => $default) {
+                            $head_vars[$key] = $default;
+                            if(isset($_REQUEST[$key])) {
+                                $head_vars[$key] =  trim(
+                                    $parent->clean($_REQUEST[$key], "string"));
+                                if($key == 'page_type') {
+                                    if(!in_array($head_vars[$key],
+                                        $page_types)) {
+                                        $head_vars[$key] = $default;
+                                    }
+                                } else {
+                                    $head_vars[$key] = 
+                                        trim(preg_replace("/\n+/", "\n",
+                                        $head_vars[$key]));
+                                }
+                                if($head_vars[$key] != $default) {
+                                    $write_head = true;
+                                }
+                            }
+                        }
+                        if($write_head) {
+                            $head_string = "";
+                            foreach($page_defaults as $key => $default) {
+                                $head_string .= $key."=".$head_vars[$key].
+                                    "\n\n";
+                            }
+                            $page = $head_string."END_HEAD_VARS".$page;
+                        }
                         $group_model->setPageName($user_id,
                             $group_id, $page_name, $page,
                             $locale_tag, $edit_reason,
@@ -1216,7 +1259,7 @@ EOD;
                         if(!isset($page_info['ID'])) {
                             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                                 tl('social_component_resource_save_first').
-                                "</h1>')";
+                                "</h1>');";
                         } else {
                             $upload_parts = array('name', 'type', 'tmp_name');
                             $file = array();
@@ -1238,12 +1281,12 @@ EOD;
                                 $group_id, $page_info['ID']);
                             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                                 tl('social_component_resource_uploaded').
-                                "</h1>')";
+                                "</h1>');";
                         } else {
                             $data['SCRIPT'] .= 
                                 "doMessage('<h1 class=\"red\" >".
                                 tl('social_component_upload_error').
-                                "</h1>')";
+                                "</h1>');";
                         }
                     } else if(!$missing_fields && isset($_REQUEST['delete'])) {
                         $resource_name = $parent->clean($_REQUEST['delete'],
@@ -1253,11 +1296,11 @@ EOD;
                             $group_id, $page_info['ID'])) {
                             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                                 tl('social_component_resource_deleted').
-                                "</h1>')";
+                                "</h1>');";
                         } else {
                             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                                 tl('social_component_resource_not_deleted').
-                                "</h1>')";
+                                "</h1>');";
                         }
                     }
                     if(isset($page_info['ID'])) {
@@ -1389,6 +1432,17 @@ EOD;
                     }
                     $data['page_id'] = $page_id;
                 break;
+                case "media":
+                    if(!isset($page_id) || !isset($_REQUEST['n'])) { break; }
+                    $media_name = $parent->clean($_REQUEST['n'], "string");
+                    $page_info = $group_model->getPageInfoByPageId($page_id);
+                    $data['PAGE_NAME'] = $page_info['PAGE_NAME'];
+                    $data['MEDIA_NAME'] = $media_name;
+                    $page_string = "{{resource:$media_name|$media_name}}";
+                    $data["PAGE"] = $group_model->insertResourcesParsePage(
+                        $group_id, $page_id, $page_string);
+                    $data["PAGE_ID"] = $page_id;
+                break;
                 case "pages":
                     $data["MODE"] = "pages";
                     $limit =isset($limit) ? $limit : 0;
@@ -1429,7 +1483,7 @@ EOD;
             $page_name = tl('group_controller_main');
         }
         $data["GROUP"] = $group;
-        if(in_array($data["MODE"], array("read", "edit"))) {
+        if(in_array($data["MODE"], array("read", "edit", "media"))) {
             if(!isset($data["PAGE"]) || !$data['PAGE']) {
                 $data["PAGE_NAME"] = $page_name;
                 if(isset($search_page_info) && $search_page_info) {
@@ -1450,18 +1504,70 @@ EOD;
                 $data["PAGE_ID"] = $page_info["ID"];
                 $data["DISCUSS_THREAD"] = $page_info["DISCUSS_THREAD"];
             }
-            $document_parts = explode("\nEND_HEAD_VARS\n", $data["PAGE"]);
-            if(count($document_parts) > 1) {
-                $head = $document_parts[0];
-                $data["PAGE"] = $document_parts[1];
-            }
+            $view = $parent->view($data['VIEW']);
+            $parent->parsePageHeadVars($view, $data["PAGE_ID"], $data["PAGE"]);
+            $data["PAGE"] = $view->page_objects[$data["PAGE_ID"]];
+            $data["HEAD"] = $view->head_objects[$data["PAGE_ID"]];
             if($data['MODE'] == "read" && strpos($data["PAGE"], "`") !== false){
                 if(isset($data["INCLUDE_SCRIPTS"])) {
                     $data["INCLUDE_SCRIPTS"] = array();
                 }
                 $data["INCLUDE_SCRIPTS"][] = "math";
             }
+            if($data['MODE'] == "read" && isset($data["HEAD"]['page_type'])
+                && $data["HEAD"]['page_type'] == 'media_list') {
+                $data['RESOURCES_INFO'] =
+                    $group_model->getGroupPageResourceUrls($group_id,
+                        $data['PAGE_ID']);
+                $data['page_type'] = 'media_list';
+            }
             if($data['MODE'] == "edit") {
+                foreach($page_defaults as $key => $default) {
+                    $data[$key] = $default;
+                    if(isset($data["HEAD"][$key])) {
+                        $data[$key] = $data["HEAD"][$key];
+                    }
+                }
+                $data['settings'] = "false";
+                if(isset($_REQUEST['settings']) &&
+                    $_REQUEST['settings']=='true') {
+                    $data['settings'] = "true";
+                }
+                $data['current_page_type'] = $data["page_type"];
+                $data['SCRIPT'] .= <<< EOD
+                setDisplay('page-settings', {$data['settings']});
+                function toggleSettings() 
+                {
+                    var settings = elt('p-settings');
+                    settings.value = (settings.value =='true')
+                        ? 'false' : 'true';
+                    var value = (settings.value == 'true') ? true : false;
+                    setDisplay('page-settings', value);
+                    var page_type = elt("page-type");
+                    var cur_type = page_type.options[
+                        page_type.selectedIndex].value;
+                    if(cur_type == "media_list") {
+                        setDisplay('save-container', value);
+                    }
+                }
+                ptype = document.getElementById("page-type");
+                is_media_list = ('media_list'=='{$data['current_page_type']}');
+                is_settings = {$data['settings']};
+                setDisplay('page-settings', is_settings);
+                setDisplay("media-list-page", is_media_list);
+                setDisplay("page-container", !is_media_list);
+                setDisplay('save-container', !is_media_list || is_settings);
+                ptype.onchange = function() {
+                    var cur_type = ptype.options[ptype.selectedIndex].value;
+                    if(cur_type == "media_list") {
+                        setDisplay("media-list-page", true);
+                        setDisplay("page-container", false);
+                    } else {
+                        setDisplay("page-container", true);
+                        setDisplay("media-list-page", false);
+                    }
+                }
+EOD;
                 $this->initializeWikiEditor($data);
             }
         }
