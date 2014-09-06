@@ -101,7 +101,8 @@ class WikiElement extends Element implements CrawlConstants
                 '&amp;arg=read&amp;a=wiki&amp;page_name='.
                 $data['PAGE_NAME']); ?>"><?php
                 e($data['PAGE_NAME']); ?></a></b> : <?php
-                e($data['MEDIA_NAME']);?>
+                $name_parts = pathinfo($data['MEDIA_NAME']);
+                e($name_parts['filename']);?>
             </div>
             <?php
         } else if($is_admin) {
@@ -467,8 +468,18 @@ class WikiElement extends Element implements CrawlConstants
             $default_thumb = $data['RESOURCES_INFO']['default_thumb'];
             if(count($data['RESOURCES_INFO']['resources']) > 0) {
                 e('<table >');
+                $seen_resources = array();
                 foreach($data['RESOURCES_INFO']['resources'] as $resource) {
                     $name = $resource['name'];
+                    $name_parts = pathinfo($name);
+                    $file_name = $name_parts['filename'];
+                    if($read_mode && isset($seen_resources[$file_name])) {
+                        continue;
+                    }
+                    $seen_resources[$file_name] = true;
+                    if(!$read_mode) {
+                        $file_name = $name;
+                    }
                     e("<tr class='resource-list' >");
                     if($resource['has_thumb']) {
                         e("<td><img src='$thumb_prefix&amp;n=$name' alt='' />".
@@ -476,7 +487,8 @@ class WikiElement extends Element implements CrawlConstants
                     } else {
                         e("<td><img src='".$default_thumb."'  alt='' /></td>");
                     }
-                    e("<td><a href='$url_prefix&amp;n=$name'>$name</a></td>");
+                    e("<td><a href='$url_prefix&amp;n=$name'>".
+                        "$file_name</a></td>");
                     if($data['page_type'] != 'media_list') {
                         e("<td><button onclick='javascript:addToPage(\"".
                             $name."\")'>".tl('wiki_element_add_to_page').

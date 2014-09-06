@@ -1437,8 +1437,10 @@ EOD;
                     $media_name = $parent->clean($_REQUEST['n'], "string");
                     $page_info = $group_model->getPageInfoByPageId($page_id);
                     $data['PAGE_NAME'] = $page_info['PAGE_NAME'];
+                    $name_parts = pathinfo($media_name);
+                    $file_name = $name_parts['filename'];
                     $data['MEDIA_NAME'] = $media_name;
-                    $page_string = "{{resource:$media_name|$media_name}}";
+                    $page_string = "{{resource:$media_name|$file_name}}";
                     $data["PAGE"] = $group_model->insertResourcesParsePage(
                         $group_id, $page_id, $page_string);
                     $data["PAGE_ID"] = $page_id;
