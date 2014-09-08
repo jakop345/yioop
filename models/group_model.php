@@ -1268,6 +1268,16 @@ class GroupModel extends Model
                 $thumb_string);
             clearstatcache("$thumb_folder/$file_name.jpg");
         }
+        if(defined('FFMPEG') && in_array($mime_type, array(
+            'video/mp4', 'video/webm', 'video/ogg', 'video/avi',
+            'video/quicktime')) ) {
+            $make_thumb_string =
+                FFMPEG." -i \"$folder/$file_name\" -vframes 1 -map 0:v:0".
+                " -vf \"scale=".THUMB_DIM.":".THUMB_DIM."\" ".
+                "\"$thumb_folder/$file_name.jpg\" 2>&1";
+            exec($make_thumb_string); 
+            clearstatcache("$thumb_folder/$file_name.jpg");
+        }
     }
     /**
      * Gets all the urls of resources belonging to a particular groups wiki
