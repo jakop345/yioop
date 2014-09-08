@@ -65,7 +65,7 @@ function upgradeLocales()
         summarization. version 6 to 7 adds stemmers for french, english, german.
         version 7 to 8 adds stemmers for russian and spanish
     */
-    if(!isset($locale->configure['strings']["view_locale_version8"])) {
+    if(!isset($locale->configure['strings']["view_locale_version10"])) {
         $force_folders = array("resources");
     }
     $locale->extractMergeLocales($force_folders);
