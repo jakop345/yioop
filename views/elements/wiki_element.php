@@ -73,7 +73,8 @@ class WikiElement extends Element implements CrawlConstants
             $other_base_query .= $csrf_token;
             $csrf_token = "&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN];
         }
-        if($is_admin || $logged_in) { ?>
+        if(($is_admin || $logged_in) && (!isset($data['page_type']) ||
+            $data['page_type'] != 'presentation')) { ?>
             <div class="float-same admin-collapse">[<a id='arrows-link'
             href="<?php e($other_base_query) ?>" onclick="
             arrows=elt('arrows-link');
@@ -92,6 +93,9 @@ class WikiElement extends Element implements CrawlConstants
         <?php
         if($is_admin) {
             e('<div class="current-activity">');
+        } else if(isset($data['page_type']) && $data['page_type']
+            == 'presentation') {
+            e('<div class="presentation-activity">');
         } else {
             e('<div class="small-margin-current-activity">');
         }
@@ -489,7 +493,8 @@ class WikiElement extends Element implements CrawlConstants
                     }
                     e("<td><a href='$url_prefix&amp;n=$name'>".
                         "$file_name</a></td>");
-                    if($data['page_type'] != 'media_list') {
+                    if(!$read_mode && (!isset($data['page_type']) ||
+                        $data['page_type'] != 'media_list')) {
                         e("<td><button onclick='javascript:addToPage(\"".
                             $name."\")'>".tl('wiki_element_add_to_page').
                             "</button></td>");

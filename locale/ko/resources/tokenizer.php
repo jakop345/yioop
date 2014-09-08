@@ -38,6 +38,5 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @package seek_quarry
  * @subpackage locale
  */
-
-$CHARGRAMS['ko'] = 3;
+$GLOBALS['CHARGRAMS']['ko'] = 3;
 ?>

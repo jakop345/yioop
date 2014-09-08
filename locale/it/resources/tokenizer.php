@@ -112,6 +112,7 @@ class ItTokenizer
     static function stopwordsRemover($page)
     {
         $stop_words = array(
+            'http', 'https',
             "ad", "al", "allo", "ai", "agli", "all", "agl", "alla",
             "alle", "con", "col", "coi", "da", "dal", "dallo", "dai",
             "dagli", "dall", "dagl", "dalla", "dalle", "di", "del",

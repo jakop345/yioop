@@ -44,12 +44,6 @@ require_once BASE_DIR."/lib/processors/page_processor.php";
  */
 require_once BASE_DIR."/lib/phrase_parser.php";
 /**
- * Load in locale specific tokenizing code
- */
-foreach(glob(LOCALE_DIR."/*/resources/tokenizer.php") as $filename) {
-    require_once $filename;
-}
-/**
  * Class which may be used by TextProcessors to get a summary for a text
  * document that may later be used for indexing. It does this by doing
  * centroid-based clustering. It also generates a word cloud for a document

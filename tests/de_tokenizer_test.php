@@ -57,7 +57,7 @@ class DeTokenizerTest extends UnitTest
      */
     function setUp()
     {
-        $this->test_objects['FILE1'] = new DeTokenizer();
+        $this->test_objects['FILE1'] = PhraseParser::getTokenizer("de");
     }
     /**
      * Nothing done for unit test tear done
@@ -92,6 +92,9 @@ class DeTokenizerTest extends UnitTest
                 strlen($word) < 3) { continue; }
             $stem = trim($stem_words[$i]);
             $word_stem = $this->test_objects['FILE1']->stem($word);
+            if($stem != $word_stem) {
+                echo "Stemming $word to $word_stem should be $stem\n"; exit();
+            }
             $this->assertEqual($word_stem,
                     $stem,"function stem correctly stems
                     $word to $stem");

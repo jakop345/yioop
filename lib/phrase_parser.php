@@ -32,14 +32,6 @@
  */
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 /**
- * Load in locale specific tokenizing code
- */
-foreach(glob(LOCALE_DIR."/*/resources/tokenizer.php")
-    as $filename) {
-    require_once $filename;
-}
-$GLOBALS["CHARGRAMS"] = $CHARGRAMS;
-/**
  * Load the n word grams file used by reverseMaximalMatch
  */
 require_once BASE_DIR."/lib/nword_grams.php";
@@ -100,6 +92,11 @@ class PhraseParser
      */
     static $programming_language_map = array('java' => 'java',
             'py' => 'python');
+    /**
+     *  Tokenizer objects that have been loaded so far
+     *  @var array
+     */
+    static $tokenizers = array();
     /**
      * Constant storing the string
      */
@@ -630,9 +627,10 @@ class PhraseParser
     {
         global $CHARGRAMS;
         mb_internal_encoding("UTF-8");
-
         if($pre_terms == array()) { return array();}
         $terms = array();
+        $tokenizer = PhraseParser::getTokenizer($lang);
+        print_r($CHARGRAMS);
         if(isset($CHARGRAMS[$lang])) {
             foreach($pre_terms as $pre_term) {
                 if($pre_term == "") { continue; }
@@ -750,14 +748,18 @@ class PhraseParser
      */
     static function getTokenizer($lang)
     {
-        static $tokenizers = array();
-        if(isset($tokenizers[$lang])) {
-            return $tokenizers[$lang];
+        global $CHARGRAMS;
+        if(isset(self::$tokenizers[$lang])) {
+            return self::$tokenizers[$lang];
         }
         mb_regex_encoding('UTF-8');
         mb_internal_encoding("UTF-8");
         $lower_lang = strtolower($lang); //try to avoid case sensitivity issues
         $lang_parts = explode("-", $lang);
+        $tokenizer_list = glob(LOCALE_DIR . "/$lang*/resources/tokenizer.php");
+        foreach($tokenizer_list as $tokenizer_file) {
+            require_once $tokenizer_file;
+        }
         if(isset($lang_parts[1])) {
             $tokenizer_class_name = ucfirst($lang_parts[0]).
                 ucfirst($lang_parts[1]) . "Tokenizer";
@@ -771,9 +773,9 @@ class PhraseParser
             $tokenizer_obj = new $tokenizer_class_name();
                 //for php 5.2 compatibility
         } else {
-            $tokenizer_obj = NULL;
+            $tokenizer_obj = 0;
         }
-        $tokenizers[$lang] = $tokenizer_obj;
+        self::$tokenizers[$lang] = $tokenizer_obj;
         return $tokenizer_obj;
     }
     /**

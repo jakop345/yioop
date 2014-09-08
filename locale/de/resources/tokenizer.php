@@ -135,7 +135,8 @@ class DeTokenizer
             'einiger', 'einiges', 'einmal', 'er', 'ihn', 'ihm', 'es', 'etwas',
             'euer', 'eure', 'eurem', 'euren', 'eurer', 'eures', 'für', 'gegen',
             'gewesen', 'hab', 'habe', 'haben', 'hat', 'hatte', 'hatten', 'hier',
-            'hin', 'hinter', 'ich', 'mich', 'mir', 'ihr', 'ihre', 'ihrem',
+            'hin', 'hinter', 'http', 'https', 'ich', 'mich', 'mir', 'ihr',
+            'ihre', 'ihrem',
             'ihren', 'ihrer', 'ihres', 'euch', 'im', 'in', 'indem', 'ins',
             'ist', 'jede', 'jedem', 'jeden', 'jeder', 'jedes', 'jene', 'jenem',
             'jenen', 'jener', 'jenes', 'jetzt', 'kann', 'kein', 'keine',
@@ -244,9 +245,8 @@ class DeTokenizer
         (c) s (preceded by a valid s-ending)
         */
         $word = self::$buffer;
-        $a1_index = preg_search('/(em|ern|er)$/u', $word);
-        $pattern = '/(e|en|es)$/u';
-        $b1_index = preg_search('/(e|en|es)$/u', $word);
+        $a1_index = preg_search('/(ern|er|em)$/u', $word);
+        $b1_index = preg_search('/(en|es|e)$/u', $word);
         $s_ending = self::$s_ending;
         $c1_index = preg_search("/([$s_ending]s)$/u", $word);
         if($c1_index != -1) { $c1_index++; }
@@ -274,7 +274,7 @@ class DeTokenizer
         */
         if($index1 != $infty && self::$r1_index != -1) {
             if($index1 >= self::$r1_index) {
-                $word = mb_substr($word, 0, $index1);
+                $word = substr($word, 0, $index1);
                 if($option_used1 == 'b') {
                     if(preg_search('/niss$/u', $word) != -1) {
                         $word = mb_substr($word, 0, mb_strlen($word) - 1);
@@ -318,7 +318,7 @@ class DeTokenizer
         */
         if($index2 != $infty && self::$r1_index != -1) {
             if($index2 >= self::$r1_index) {
-                $word = mb_substr($word, 0, $index2);
+                $word = substr($word, 0, $index2);
             }
         }
         /*

@@ -30,7 +30,7 @@
  */
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 /**
- * Persian specific tokenization code. Typically, tokenizer.php
+ * Telugu specific tokenization code. Typically, tokenizer.php
  * either contains a stemmer for the language in question or
  * it specifies how many characters in a char gram
  *
@@ -38,5 +38,5 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @package seek_quarry
  * @subpackage locale
  */
-$GLOBALS['CHARGRAMS']['fa'] = 5;
+$GLOBALS['CHARGRAMS']['te'] = 5;
 ?>

@@ -57,7 +57,7 @@ class ItTokenizerTest extends UnitTest
      */
     function setUp()
     {
-        $this->test_objects['FILE1'] = new ItTokenizer();
+        $this->test_objects['FILE1'] = PhraseParser::getTokenizer("it");
     }
     /**
      * Nothing done for unit test tear done

@@ -58,7 +58,7 @@ class EnTokenizerTest extends UnitTest
      */
     function setUp()
     {
-        $this->test_objects['FILE1'] = new EnTokenizer();
+        $this->test_objects['FILE1'] = PhraseParser::getTokenizer("en-US");
     }
     /**
      * Nothing done for unit test tear done

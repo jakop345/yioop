@@ -90,6 +90,14 @@ class WebLayout extends Layout
         <link rel="search" type="application/opensearchdescription+xml"
             href="<?php e(SEARCHBAR_PATH); ?>"
             title="Content search" />
+        <?php if(isset($data['INCLUDE_STYLES'])) {
+            foreach($data['INCLUDE_STYLES'] as $style_name) {
+                e('<link rel="stylesheet" type="text/css"
+                    href="'.$_SERVER["PATH_INFO"].'/css/'.
+                    $style_name.'.css" />');
+            }
+        }
+        ?>
         </head>
         <?php
             $data['MOBILE'] = (MOBILE) ? 'mobile': '';

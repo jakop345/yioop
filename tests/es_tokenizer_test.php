@@ -57,7 +57,7 @@ class EsTokenizerTest extends UnitTest
      */
     function setUp()
     {
-        $this->test_objects['FILE1'] = new EsTokenizer();
+        $this->test_objects['FILE1'] = PhraseParser::getTokenizer("es");
     }
     /**
      * Nothing done for unit test tear done

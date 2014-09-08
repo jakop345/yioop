@@ -57,7 +57,7 @@ class RuTokenizerTest extends UnitTest
      */
     function setUp()
     {
-        $this->test_objects['FILE1'] = new RuTokenizer();
+        $this->test_objects['FILE1'] = PhraseParser::getTokenizer("ru");
     }
     /**
      * Nothing done for unit test tear done

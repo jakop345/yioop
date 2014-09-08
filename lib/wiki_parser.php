@@ -250,23 +250,63 @@ class WikiParser implements CrawlConstants
     {
         $esc = $this->esc;
         $head = "";
+        $page_type = "standard";
+        $head_vars = array();
+        $draw_toc = true;
         if($parse_head_vars && !$this->minimal) {
             $document_parts = explode("END_HEAD_VARS", $document);
             if(count($document_parts) > 1) {
                 $head = $document_parts[0];
                 $document = $document_parts[1];
+                $head_lines = preg_split("/\n\n/", $head);
+                foreach($head_lines as $line) {
+                    $semi_pos =  (strpos($line, ";")) ? strpos($line, ";"):
+                        strlen($line);
+                    $line = substr($line, 0, $semi_pos);
+                    $line_parts = explode("=",$line);
+                    if(count($line_parts) == 2) {
+                        $head_vars[trim(addslashes($line_parts[0]))] =
+                                addslashes(trim($line_parts[1]));
+                    }
+                }
+                if(isset($head_vars['page_type'])) {
+                    $page_type = $head_vars['page_type'];
+                }
+                if(isset($head_vars['toc'])) {
+                    $draw_toc = $head_vars['toc'];
+                }
             }
         }
         $document = preg_replace_callback(
             "/&lt;nowiki&gt;(.+?)&lt;\/nowiki&gt;/s",
             "base64EncodeCallback", $document);
         if(!$this->minimal) {
-            $toc = $this->makeTableOfContents($document);
+            if($draw_toc && $page_type != "presentation") {
+                $toc = $this->makeTableOfContents($document);
+            }
             list($document, $references) = $this->makeReferences($document);
         }
         $document = preg_replace_callback('/(\A|\n){\|(.*?)\n\|}/s',
             "makeTableCallback", $document);
-        if($handle_big_files) {
+        if($page_type == "presentation") {
+            $lines = explode("\n", $document);
+            $out_document = "";
+            $slide = "";
+            $div = "<div class='slide'>";
+            foreach($lines as $line) {
+                if(trim($line) == "....") {
+                    $slide = preg_replace($this->matches, $this->replaces,
+                        $slide);
+                    $out_document .= $div .$this->cleanLinksAndParagraphs(
+                        $slide) ."</div>";
+                    $slide = "";
+                } else {
+                    $slide .= $line."\n";
+                }
+            }
+            $document = $out_document. $div .
+                preg_replace($this->matches, $this->replaces,$slide) ."</div>";
+        } else if($handle_big_files) {
             if(strlen($document) < MAX_GROUP_PAGE_LEN) {
                 $document = preg_replace($this->matches,
                     $this->replaces, $document);
@@ -278,13 +318,40 @@ class WikiParser implements CrawlConstants
                         $this->replaces[$i], $document);
                 }
             }
+            $document = $this->cleanLinksAndParagraphs($document);
         } else {
             if(strlen($document) > 0.9 * MAX_GROUP_PAGE_LEN) {
                 $document = substr($document, 0, 0.9*MAX_GROUP_PAGE_LEN);
             }
             $document = 
                 preg_replace($this->matches, $this->replaces, $document);
+            $document = $this->cleanLinksAndParagraphs($document);
         }
+        if(!$this->minimal) {
+            $document = $this->insertReferences($document, $references);
+            if($draw_toc && $page_type != "presentation") {
+                $document = $this->insertTableOfContents($document, $toc);
+            }
+        }
+        $document = preg_replace_callback(
+            "/&lt;nowiki&gt;(.+?)&lt;\/nowiki&gt;/s",
+            "base64DecodeCallback", $document);
+        if($head != "" && $parse_head_vars) {
+            $document = $head . "END_HEAD_VARS" . $document;
+        }
+        if(!$handle_big_files && strlen($document) > 0.9 * MAX_GROUP_PAGE_LEN) {
+            $document = substr($document, 0, 0.9 * MAX_GROUP_PAGE_LEN);
+            TextProcessor::closeDanglingTags($document);
+            $document .="...";
+        }
+        return $document;
+    }
+    /**
+     *
+     */
+    function cleanLinksAndParagraphs($document)
+    {
+        $esc = $this->esc;
         $document = preg_replace_callback("/((href=)\"([^\"]+)\")/",
             "fixLinksCallback", $document);
         $doc_parts = preg_split("/\n\n+/", $document);
@@ -306,21 +373,6 @@ class WikiParser implements CrawlConstants
             }
         }
         $document = str_replace(",[}", "", $document);
-        if(!$this->minimal) {
-            $document = $this->insertReferences($document, $references);
-            $document = $this->insertTableOfContents($document, $toc);
-        }
-        $document = preg_replace_callback(
-            "/&lt;nowiki&gt;(.+?)&lt;\/nowiki&gt;/s",
-            "base64DecodeCallback", $document);
-        if($head != "" && $parse_head_vars) {
-            $document = $head . "END_HEAD_VARS" . $document;
-        }
-        if(!$handle_big_files && strlen($document) > 0.9 * MAX_GROUP_PAGE_LEN) {
-            $document = substr($document, 0, 0.9 * MAX_GROUP_PAGE_LEN);
-            TextProcessor::closeDanglingTags($document);
-            $document .="...";
-        }
         return $document;
     }
     /**

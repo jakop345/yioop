@@ -151,6 +151,7 @@ class EsTokenizer
             "hayas", "hayamos", "hayáis", "hayan", "habré", "habrás", "habrá",
             "habremos", "habréis", "habrán", "habría", "habrías", "habríamos",
             "habríais", "habrían", "había", "habías", "habíamos", "habíais",
+            'http', 'https',
             "habían", "hube", "hubiste", "hubo", "hubimos", "hubisteis",
             "hubieron", "hubiera", "hubieras", "hubiéramos", "hubierais",
             "hubieran", "hubiese", "hubieses", "hubiésemos", "hubieseis",

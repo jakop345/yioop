@@ -72,58 +72,60 @@ class WikiView extends View
         if(MOBILE) {
             $logo = M_LOGO;
         }
-        ?>
-        <div class="top-bar">
-        <div class="subsearch">
-        <ul class="out-list">
-        <?php
-        $modes = array();
-        if($can_edit) {
-            $modes = array(
-                "read" => tl('wiki_view_read'),
-                "edit" => tl('wiki_view_edit')
-            );
-        }
-        $modes["pages"] = tl('wiki_view_pages');
-        foreach($modes as $name => $translation) { 
-            if($data["MODE"] == $name) { ?>
-                <li class="outer"><b><?php e($translation); ?></b></li>
-                <?php
-            } else if(!isset($data["PAGE_NAME"]) || $data["PAGE_NAME"]=="") { ?>
-                <li class="outer"><span class="gray"><?php e($translation);
-                ?></span></li>
-                <?php
-            } else {
-                $append = "";
-                if($name != 'pages') {
-                    $append = '&amp;page_name='. $data['PAGE_NAME'];
-                }
-                ?>
-                <li class="outer"><a href="<?php e($base_query .
-                    '&amp;arg='.$name.'&amp;a=wiki'.$append); ?>"><?php
-                    e($translation); ?></a></li>
-                <?php
+        if(!isset($data['page_type']) || $data['page_type'] != 'presentation') {
+            ?>
+            <div class="top-bar">
+            <div class="subsearch">
+            <ul class="out-list">
+            <?php
+            $modes = array();
+            if($can_edit) {
+                $modes = array(
+                    "read" => tl('wiki_view_read'),
+                    "edit" => tl('wiki_view_edit')
+                );
             }
-        }
-        ?>
-        </ul>
-        </div>
-        <?php
+            $modes["pages"] = tl('wiki_view_pages');
+            foreach($modes as $name => $translation) {
+                if($data["MODE"] == $name) { ?>
+                    <li class="outer"><b><?php e($translation); ?></b></li>
+                    <?php
+                } else if(!isset($data["PAGE_NAME"])||$data["PAGE_NAME"]==""){?>
+                    <li class="outer"><span class="gray"><?php e($translation);
+                    ?></span></li>
+                    <?php
+                } else {
+                    $append = "";
+                    if($name != 'pages') {
+                        $append = '&amp;page_name='. $data['PAGE_NAME'];
+                    }
+                    ?>
+                    <li class="outer"><a href="<?php e($base_query .
+                        '&amp;arg='.$name.'&amp;a=wiki'.$append); ?>"><?php
+                        e($translation); ?></a></li>
+                    <?php
+                }
+            }
+            ?>
+            </ul>
+            </div>
+            <?php
             $this->element("signin")->render($data);
-        ?>
-        </div>
-        <h1 class="group-heading logo"><a href="./<?php
-            if($logged_in) {
-                e("?".CSRF_TOKEN."=".$data[CSRF_TOKEN]);
-            } ?>"><img
-            src="<?php e($logo); ?>" alt="<?php e($this->logo_alt_text);
-                ?>" /></a><small> - <?php e($data["GROUP"]["GROUP_NAME"].
-                "[<a href='$feed_base_query&amp;a=groupFeeds'>".
-                tl('wiki_view_feed').
-                "</a>|".tl('wiki_view_wiki')."]");
-            ?></small>
-        </h1>
-        <?php
+            ?>
+            </div>
+            <h1 class="group-heading logo"><a href="./<?php
+                if($logged_in) {
+                    e("?".CSRF_TOKEN."=".$data[CSRF_TOKEN]);
+                } ?>"><img
+                src="<?php e($logo); ?>" alt="<?php e($this->logo_alt_text);
+                    ?>" /></a><small> - <?php e($data["GROUP"]["GROUP_NAME"].
+                    "[<a href='$feed_base_query&amp;a=groupFeeds'>".
+                    tl('wiki_view_feed').
+                    "</a>|".tl('wiki_view_wiki')."]");
+                ?></small>
+            </h1>
+            <?php
+        }
         $this->element("wiki")->render($data);
 
         if($logged_in) {

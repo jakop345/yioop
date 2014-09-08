@@ -57,7 +57,7 @@ class FrTokenizerTest extends UnitTest
      */
     function setUp()
     {
-        $this->test_objects['FILE1'] = new FrTokenizer();
+        $this->test_objects['FILE1'] = PhraseParser::getTokenizer("fr-FR");
     }
     /**
      * Nothing done for unit test tear done

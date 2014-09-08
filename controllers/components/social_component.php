@@ -1516,12 +1516,18 @@ EOD;
                 }
                 $data["INCLUDE_SCRIPTS"][] = "math";
             }
-            if($data['MODE'] == "read" && isset($data["HEAD"]['page_type'])
-                && $data["HEAD"]['page_type'] == 'media_list') {
-                $data['RESOURCES_INFO'] =
-                    $group_model->getGroupPageResourceUrls($group_id,
-                        $data['PAGE_ID']);
-                $data['page_type'] = 'media_list';
+            if($data['MODE'] == "read" && isset($data["HEAD"]['page_type'])) {
+                if($data["HEAD"]['page_type'] == 'media_list') {
+                    $data['RESOURCES_INFO'] =
+                        $group_model->getGroupPageResourceUrls($group_id,
+                            $data['PAGE_ID']);
+                }
+                if($data["HEAD"]['page_type'] == 'presentation' &&
+                    $data['CONTROLLER'] == 'group') {
+                    $data['page_type'] = 'presentation';
+                    $data['INCLUDE_SCRIPTS'][] =  "slidy";
+                    $data['INCLUDE_STYLES'][] =  "slidy";
+                }
             }
             if($data['MODE'] == "edit") {
                 foreach($page_defaults as $key => $default) {

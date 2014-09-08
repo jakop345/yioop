@@ -236,7 +236,7 @@ class EnTokenizer
         'have','havent','having','he','hed','hence','her','here','hereafter',
         'hereby','herein','heres','hereupon','hers','herself','hes','hi','hid',
         'him','himself','his','hither','home','how','howbeit',
-        'however','hundred','i','id','ie','if','ill',
+        'however', 'http', 'https', 'hundred','i','id','ie','if','ill',
         'im','immediate','immediately',
         'importance','important','in','inc','indeed','index','information',
         'instead','into','invention','inward','is','isnt','it','itd','itll',

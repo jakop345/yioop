@@ -466,6 +466,67 @@ Math can be included into a wiki document by either using the math tag:
 <math>
 \sum_{i=1}^{n} i = frac{(n+1)(n)}{2}
 </math>
+
+==Adding Resources to a Page==
+
+Yioop wiki syntax supports adding search bars, audio, images, and video to a
+page. The magnifying class edit tool icon can be used to add a search bar via
+the GUI. This can also be added by hand with the syntax:
+<nowiki>
+{{search:default|size:small|placeholder:Search Placeholder Text}}
+</nowiki>
+This syntax is split into three parts each separated by a vertical bar |. The
+first part search:default means results from searches should come from the
+default search index. You can replace default with the timestamp of a specific
+index or mix if you do not want to use the default. The second group size:small
+indicates the size of the search bar to be drawn. Choices of size are small,
+medium, and large. Finally, placeholder:Search Placeholder Text indicates the
+grayed out background text in the search input before typing is done should
+read: Search Placeholder Text. Here is what the above code outputs:
+
+{{search:default|size:small|placeholder:Search Placeholder Text}}
+
+In a given pages edit mode at the bottom of the page there is a form that allows
+one to upload resources such as audio, images, or video for that page. After
+uploading an item it will appear underneath this form with a link to preview
+what the item looks like followed by a button to add the resource to the page,
+followed by a link [X] to delete the item. Clinking on the add button will
+insert into the wiki page a line like:
+
+<pre>
+`{`{resource:myphoto.jpg|Resource Description}}
+</pre>
+
+Here  myphoto.jpg is the resource that will be inserted and Resource Description
+is the alternative text to use in case the viewing browser can't display jpg
+files.
+
+==Page Settings, Page Type==
+
+In edit mode for a wiki page, next to the page name, is a link [Settings].
+Clicking this link expands a form which can be used to control global settings
+for a wiki page. This form contains a drop down for the page type and then text
+fields or areas for the page title, author, meta robots, and page description.
+Page title is displayed in the browser title base when the wiki page is accessed
+with the  Activity Panel collapsed or when not logged. Similar, in this mode,
+if one looks as the HTML page source for the page, in the head of document,
+<meta> tags for author, robots, and description are set according to these
+fields. The robots meta tag. Wikipedia has more information on
+[[https://en.wikipedia.org/wiki/Meta_element|Meta Elements]].
+
+The default page
+type is Standard which means treat the page as a usual wiki page.
+The type Media List means that the page when read should just display the
+resources in the page and the links for the resources go to a separate page
+used to display this resource. This kind of page is useful for a gallery of
+images or a collection of audio or video files. Presentation
+mode is for a wiki page whose purpose is a slide presentation. In this mode,
+....
+on a line by itself is used to separate one slide. When the Activity panel is
+not collapse and you are reading a presentation, it just displays as a single
+page with all slides visible. Collapsing the Activity panel presents the slides
+as a typical slide presentation using the
+[[www.w3.org/Talks/Tools/Slidy2/Overview.html|Slidy]] javascript.
 EOD;
 $group_model = new GroupModel(DB_NAME, false);
 $group_model->db = $db;
