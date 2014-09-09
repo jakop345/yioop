@@ -59,14 +59,14 @@ function makeRequest()
 {
     try {
         request = new XMLHttpRequest();
-    } catch(e) {
+    } catch (e) {
         try {
             request = new ActiveXObject('MSXML2.XMLHTTP');
-        } catch(e) {
+        } catch (e) {
             try {
-            request = new ActiveXObject('Microsoft.XMLHTTP');
-            } catch(e) {
-            return false;
+                request = new ActiveXObject('Microsoft.XMLHTTP');
+            } catch (e) {
+                return false;
             }
         }
     }
@@ -82,13 +82,13 @@ function makeRequest()
 function getPage(tag, url)
 {
     var request = makeRequest();
-    if(request) {
+    if (request) {
 
         var self = this;
         request.onreadystatechange = function()
         {
-            if(self.request.readyState == 4) {
-                    tag.innerHTML = self.request.responseText;
+            if (self.request.readyState == 4) {
+                tag.innerHTML = self.request.responseText;
             }
         }
         request.open("GET", url, true);
@@ -109,14 +109,14 @@ function caret(node)
     }
     // old ie hack
     var insert_char = "\001",
-    sel = document.selection.createRange(),
-    dul = sel.duplicate(),
-    len = 0;
+            sel = document.selection.createRange(),
+            dul = sel.duplicate(),
+            len = 0;
 
     dul.moveToElementText(node);
     sel.text = insert_char;
     len = dul.text.indexOf(insert_char);
-    sel.moveStart('character',-1);
+    sel.moveStart('character', -1);
     sel.text = "";
     return len;
 }
@@ -158,10 +158,10 @@ function tag(name)
 function setDisplay(id, value)
 {
     obj = elt(id);
-    if(value == true)  {
+    if (value == true) {
         value = "block";
     }
-    if(value == false) {
+    if (value == false) {
         value = "none";
     }
     obj.style.display = value;
@@ -173,10 +173,34 @@ function setDisplay(id, value)
 function toggleDisplay(id)
 {
     obj = elt(id);
-    if(obj.style.display == "block")  {
+    if (obj.style.display == "block") {
         value = "none";
     } else {
         value = "block";
     }
     obj.style.display = value;
+}
+
+/*
+ * Toggles Help element from display:none and display block. 
+ * Also changes the width of the Current activity accordingly.
+ * @param String id  the id of the DOM element for the help div
+ */
+function toggleHelp(id) {
+    var all_help_elements = document.getElementsByClassName('current-activity');
+    var help_node = all_help_elements[0];
+    toggleDisplay(id);
+    obj = elt(id);
+    var new_width;
+    
+    //Calculate pixel to inch. clientWidth only returns in pixels.
+    if (obj.style.display === "none") {
+        new_width = Math.floor(help_node.clientWidth/96) + 1;
+    } else if (obj.style.display === "block") {
+        new_width = Math.floor(help_node.clientWidth/96) - 1;
+    }
+
+    if (new_width !== undefined) {
+        help_node.style.maxWidth = new_width + "in";
+    }
 }

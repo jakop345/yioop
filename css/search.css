@@ -2182,7 +2182,7 @@ div.group-result
     font-size: 16pt;
     max-width: 9in;
     min-height: 6.5in;
-    min-width: 9in;
+    min-width: 7in;
     padding-left: 0.1in;
     padding-right: 0.1in;
     padding-bottom: 0.1in;
@@ -2729,3 +2729,35 @@ table.wikitable > caption
     z-index: 200;
 }
 
+.html-ltr #help
+{
+    float: left;
+    width: 4.0in;
+    position: absolute;
+    left: 11.5in;
+    /*top: 121px;*/
+}
+
+.html-rtl #help
+{
+    float: left;
+    width: 4.0in;
+    position: absolute;
+    right: 10.5in;
+}
+
+.help-pane{
+    display : none;
+    width: 300px;
+    border:2px solid #0094ff;
+}
+
+.help-pane h2 {
+    background:#0094ff;
+    color:white;
+    padding:10px;
+}
+.help-pane p {
+    color:#333;
+    padding:10px;
+}
