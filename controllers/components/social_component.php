@@ -188,6 +188,29 @@ class SocialComponent extends Component implements CrawlConstants
                                 INACTIVE_STATUS : ACTIVE_STATUS;
                             $group_model->addUserGroup(
                                 $_SESSION['USER_ID'], $add_id, $join_type);
+                            if(!in_array($join_type, array(REQUEST_JOIN,
+                                PUBLIC_BROWSE_REQUEST_JOIN) ) ){ break; }
+                            // if account needs to be activated email owner
+                            $group_info = $group_model->getGroupById($add_id,
+                                ROOT_ID);
+                            $owner_info = $parent->model("user")->getUser(
+                                $group_info['OWNER']);
+                            $server = new MailServer(MAIL_SENDER, MAIL_SERVER,
+                                MAIL_SERVERPORT, MAIL_USERNAME, MAIL_PASSWORD,
+                                MAIL_SECURITY);
+                            $subject = tl('social_component_activate_group',
+                                $group_info['GROUP_NAME']);
+                            $body = tl('social_component_activate_body',
+                                $_SESSION['USER_NAME'], 
+                                $group_info['GROUP_NAME'])."\n\n".
+                                tl('social_component_notify_closing')."\n".
+                                tl('social_component_notify_signature');
+                            $message = tl(
+                                'social_component_notify_salutation',
+                                $owner_info['USER_NAME'])."\n\n";
+                            $message .= $body;
+                            $server->send($subject, MAIL_SENDER,
+                                $owner_info['EMAIL'], $message);
                         } else {
                             $data['CURRENT_GROUP'] = array("name" => "",
                                 "id" => "", "owner" =>"", "register" => -1,
