@@ -49,6 +49,7 @@
  * "wikibtn-heading"
  * "wikibtn-search"
  * "wikibtn-table"
+ * "wikibtn-slide"
  * }
  */
 /**
@@ -187,7 +188,8 @@ function getStandardButtonsObject()
         'wikibtn-hyperlink': ['[[', ']]'],
         'wikibtn-bullets': ['* ' + tl['wiki_js_bullet'] + ' \n'],
         'wikibtn-numbers': ['# ' + tl['wiki_js_enum'] + ' \n'],
-        'wikibtn-hr': ['---- \n']
+        'wikibtn-hr': ['---- \n'],
+        'wikibtn-slide': ['=Slide One Title here=\n* Add Text here \n* And here \n* Also here \n....\n']
     };
 }
 /**

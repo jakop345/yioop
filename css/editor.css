@@ -170,6 +170,11 @@
         ../resources/wiki_button_images/wikibtn-search-widget.png)
         no-repeat;
 }
+
+.wikibtn-slide
+{
+    background: url(../resources/wiki_button_images/wikibtn-slide.png) no-repeat;
+}
 .wikibtn-bold:hover,
 .wikibtn-bullets:hover,
 .wikibtn-heading:hover,
@@ -181,7 +186,8 @@
 .wikibtn-search-widget:hover,
 .wikibtn-strike:hover,
 .wikibtn-table:hover,
-.wikibtn-underline:hover
+.wikibtn-underline:hover,
+.wikibtn-slide:hover
 {
     background-position: 0 -36px;
 }
