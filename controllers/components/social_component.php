@@ -164,7 +164,7 @@ class SocialComponent extends Component implements CrawlConstants
                             $group_id)) {
                         $group_model->updateStatusUserGroup($user_id,
                             $group_id, ACTIVE_STATUS);
-                        $this->getGroupUsersData($data);
+                        $this->getGroupUsersData($data, $group_id);
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_user_activated').
                             "</h1>')";
@@ -518,7 +518,7 @@ class SocialComponent extends Component implements CrawlConstants
     }
 
     /**
-     * Uses $_REQUEST and $user_id to look up all the userss that a group
+     * Uses $_REQUEST and $user_id to look up all the users that a group
      * has to subject to $_REQUEST['user_limit'] and
      * $_REQUEST['user_filter']. Information about these roles is added as
      * fields to $data[NUM_USERS_GROUP'] and $data['GROUP_USERS']
