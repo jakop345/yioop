@@ -193,15 +193,18 @@ class SocialComponent extends Component implements CrawlConstants
                             // if account needs to be activated email owner
                             $group_info = $group_model->getGroupById($add_id,
                                 ROOT_ID);
-                            $owner_info = $parent->model("user")->getUser(
+                            $user_model = $parent->model("user");
+                            $owner_info = $user_model->getUser(
                                 $group_info['OWNER']);
                             $server = new MailServer(MAIL_SENDER, MAIL_SERVER,
                                 MAIL_SERVERPORT, MAIL_USERNAME, MAIL_PASSWORD,
                                 MAIL_SECURITY);
                             $subject = tl('social_component_activate_group',
                                 $group_info['GROUP_NAME']);
+                            $current_username = $user_model->getUserName(
+                                $_SESSION['USER_ID']);
                             $body = tl('social_component_activate_body',
-                                $_SESSION['USER_NAME'], 
+                                $current_username,
                                 $group_info['GROUP_NAME'])."\n\n".
                                 tl('social_component_notify_closing')."\n".
                                 tl('social_component_notify_signature');
