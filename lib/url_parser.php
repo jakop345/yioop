@@ -34,7 +34,6 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 /**
  * Library of functions used to manipulate and to extract components from urls
  *
- *
  * @author Chris Pollett
  *
  * @package seek_quarry
