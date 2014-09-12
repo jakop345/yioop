@@ -1606,7 +1606,12 @@ class QueueServer implements CrawlConstants, Join
         if(isset($sites)) {
             foreach($sites as $robot_host => $robot_info) {
                 $this->web_queue->addGotRobotTxtFilter($robot_host);
-                $robot_url = $robot_host."/robots.txt";
+                $scheme = UrlParser::getScheme($robot_host);
+                if($scheme == "gopher") {
+                    $robot_url = $robot_host."/0/robots.txt";
+                } else {
+                    $robot_url = $robot_host."/robots.txt";
+                }
                 if($this->web_queue->containsUrlQueue($robot_url)) {
                     crawlLog("Removing $robot_url from queue");
                     $this->web_queue->removeQueue($robot_url);
@@ -1821,7 +1826,12 @@ class QueueServer implements CrawlConstants, Join
                 if(strlen($host_url) < 7) { // strlen("http://")
                     continue;
                 }
-                $host_with_robots = $host_url."/robots.txt";
+                $scheme = UrlParser::getScheme($host_url);
+                if($scheme == "gopher") {
+                    $host_with_robots = $host_url."/0/robots.txt";
+                } else {
+                    $host_with_robots = $host_url."/robots.txt";
+                }
                 $robots_in_queue =
                     $this->web_queue->containsUrlQueue($host_with_robots);
                 if($this->web_queue->containsUrlQueue($url)) {
@@ -1833,7 +1843,6 @@ class QueueServer implements CrawlConstants, Join
                         $weight, false);
                 } else if($this->allowedToCrawlSite($url) &&
                     !$this->disallowedToCrawlSite($url)) {
-
                     if(!$this->web_queue->containsGotRobotTxt($host_url)
                         && !$robots_in_queue
                         && !isset($added_urls[$host_with_robots])
@@ -2026,7 +2035,14 @@ class QueueServer implements CrawlConstants, Join
                 } else {
                     $has_robots =
                         $this->web_queue->containsGotRobotTxt($host_url);
-                    $is_robot = (strcmp($host_url."/robots.txt", $url) == 0);
+                    $scheme = UrlParser::getScheme($host_url);
+                    if($scheme == "gopher") {
+                        $is_robot = 
+                            (strcmp($host_url."/0/robots.txt", $url) == 0);
+                    } else {
+                        $is_robot = 
+                            (strcmp($host_url."/robots.txt", $url) == 0);
+                    }
                 }
                 $no_flags = true;
             } else {

@@ -1828,7 +1828,6 @@ EOD;
                     if(!$group || ($group["OWNER_ID"] != $user_id &&
                         !in_array($group["MEMBER_ACCESS"], $share) &&
                         $user_id != ROOT_ID)) {
-                        print_r($group);exit();
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('social_component_no_post_access').
                             "</h1>');";

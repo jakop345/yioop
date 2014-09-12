@@ -619,7 +619,8 @@ abstract class Controller
                 if($line_type == "url") {
                     $start_line = substr($pre_line, 0, 6);
                     if(!in_array($start_line,
-                        array("file:/", "http:/", "domain", "https:")) &&
+                        array("file:/", "http:/", "domain", "https:",
+                            'gopher')) &&
                         $start_line[0] != "#") {
                         $pre_line = "http://". $pre_line;
                     }

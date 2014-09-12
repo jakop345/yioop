@@ -227,5 +227,6 @@ interface CrawlConstants
     const SUMMARIZER_OPTION = 'dm';
     const WORD_CLOUD = 'dn';
     const THESAURUS_SCORE ='do';
+    const IS_GOPHER_URL = "dp";
 }
 ?>

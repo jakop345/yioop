@@ -371,6 +371,7 @@ class IndexArchiveBundle implements CrawlConstants
      {
         $this->generation_info['DISK_BASED'] = $disk_based;
         if(isset($this->generation_info['CURRENT']) &&
+            isset($this->generation_info['ACTIVE']) &&
             ($i == $this->generation_info['CURRENT'] ||
             $i > $this->generation_info['ACTIVE'])) {
             return false;
