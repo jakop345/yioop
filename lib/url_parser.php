@@ -55,7 +55,7 @@ class UrlParser
         $url_parts = @parse_url($url);
         $scheme = (isset($url_parts['scheme'])) ? $url_parts['scheme'] :
             "no_crawl";
-        if(!in_array($url_parts['scheme'], array('http', 'https', 'gopher'))) {
+        if(!in_array($scheme, array('http', 'https', 'gopher'))) {
             return false;
         }
         return true;
