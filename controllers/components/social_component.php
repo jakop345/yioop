@@ -1689,7 +1689,11 @@ EOD;
                 'wiki_js_add_hyperlink :"'. tl('wiki_js_add_hyperlink').'",'.
                 'wiki_js_link_text :"'. tl('wiki_js_link_text').'",'.
                 'wiki_js_link_url :"'. tl('wiki_js_link_url').'",'.
-                'wiki_js_placeholder :"'. tl('wiki_js_placeholder').'"'.
+                'wiki_js_placeholder :"'. tl('wiki_js_placeholder').'",'.
+                'wiki_js_slide_sample_title :"'.
+                    tl('wiki_js_slide_sample_title').'",'.
+                'wiki_js_slide_sample_bullet :"'.
+                    tl('wiki_js_slide_sample_bullet').'"'.
                 '};';
         }
         if($id != -1) {

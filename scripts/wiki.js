@@ -189,7 +189,11 @@ function getStandardButtonsObject()
         'wikibtn-bullets': ['* ' + tl['wiki_js_bullet'] + ' \n'],
         'wikibtn-numbers': ['# ' + tl['wiki_js_enum'] + ' \n'],
         'wikibtn-hr': ['---- \n'],
-        'wikibtn-slide': ['=Slide One Title here=\n* Add Text here \n* And here \n* Also here \n....\n']
+        'wikibtn-slide': ['='+ tl['wiki_js_slide_sample_title'] +'=\n'
+                    + '* '+ tl['wiki_js_slide_sample_bullet'] +'\n'
+                    + '* '+ tl['wiki_js_slide_sample_bullet'] + '\n'
+                    + '* '+ tl['wiki_js_slide_sample_bullet'] + '\n'
+                    + '....' + '\n']
     };
 }
 /**
