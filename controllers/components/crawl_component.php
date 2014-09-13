@@ -1142,9 +1142,10 @@ class CrawlComponent extends Component implements CrawlConstants
             "application/xhtml+xml" => "html",
             "application/rss+xml" => "rss",
             "application/atom+xml" => "rss",
-            "text/rtf" => "rtf",
-            "text/plain" => "text",
             "text/csv" => "text",
+            "text/gopher" => "gopher",
+            "text/plain" => "text",
+            "text/rtf" => "rtf",
             "text/tab-separated-values" => "text",
         );
         $data['MIME_TYPES'] = array_keys($test_processors);

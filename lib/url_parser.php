@@ -34,7 +34,6 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 /**
  * Library of functions used to manipulate and to extract components from urls
  *
- *
  * @author Chris Pollett
  *
  * @package seek_quarry
@@ -43,18 +42,19 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 class UrlParser
 {
     /**
-     * Checks if the url scheme is either http or https.
+     * Checks if the url scheme is either http, https, or gopher (old protocol
+     * but somewhat geeky-cool to still support).
      *
      * @param string $url  the url to check
-     * @return bool returns true if it is either http or https and false
+     * @return bool returns true if it is either http,https, or gopher and false
      *     otherwise
      */
-    static function isSchemeHttpOrHttps($url)
+    static function isSchemeCrawlable($url)
     {
         $url_parts = @parse_url($url);
-
-        if(isset($url_parts['scheme']) && $url_parts['scheme'] != "http" &&
-            $url_parts['scheme'] != "https") {
+        $scheme = (isset($url_parts['scheme'])) ? $url_parts['scheme'] :
+            "no_crawl";
+        if(!in_array($scheme, array('http', 'https', 'gopher'))) {
             return false;
         }
         return true;
@@ -626,7 +626,7 @@ class UrlParser
     static function canonicalLink($link, $site, $no_fragment = true)
     {
         $link = trim($link);
-        if(!self::isSchemeHttpOrHttps($link)) {return NULL;}
+        if(!self::isSchemeCrawlable($link)) {return NULL;}
         if(isset($link[0]) &&
             $link[0] == "/" && isset($link[1]) && $link[1] == "/") {
             $http = ($site[4] == 's') ? "https:" : "http:";
@@ -907,7 +907,7 @@ class UrlParser
         return $out_links;
     }
     /**
-     * Guess mime type based on extension of the file in Git object
+     * Guess mime type based on extension of the file
      *
      * @param string $file_name name of the file
      * @return string $mime_type for the given file name

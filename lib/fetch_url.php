@@ -32,12 +32,16 @@
  */
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 /**
+ * Needed for guessMimeTypeFromFileName
+ */
+require_once BASE_DIR."/lib/url_parser.php";
+/**
  * Reads in constants used as enums used for storing web sites
  */
 require_once BASE_DIR."/lib/crawl_constants.php";
 /**
  *
- * Code used to manage HTTP requests from one or more URLS
+ * Code used to manage HTTP or Gopher requests from one or more URLS
  *
  * @author Chris Pollett
  *
@@ -88,10 +92,17 @@ class FetchUrl implements CrawlConstants
         //Set-up requests
         $num_sites = count($sites);
         for($i = 0; $i < $num_sites; $i++) {
+            $is_gopher = false;
+            $sites[$i][CrawlConstants::IS_GOPHER_URL] = $is_gopher;
             if(isset($sites[$i][$key])) {
                 list($sites[$i][$key], $url, $headers) =
                     self::prepareUrlHeaders($sites[$i][$key], $minimal,
                     $proxy_servers);
+                if($headers == "gopher") {
+                    $is_gopher = true;
+                    $sites[$i][CrawlConstants::IS_GOPHER_URL] = $is_gopher;
+                    $headers = array();
+                }
                 $sites[$i][0] = curl_init();
                 if(!$minimal) {
                     $ip_holder[$i] = fopen("$temp_dir/tmp$i.txt", 'w+');
@@ -121,7 +132,7 @@ class FetchUrl implements CrawlConstants
                     if($timer) {
                         crawlLog("Using Tor proxy for $url..");
                     }
-                } else if($proxy_servers != array()) {
+                } else if($proxy_servers != array() && !$is_gopher) {
                     $select_proxy = rand(0, count($proxy_servers) - 1);
                     $proxy_server = $proxy_servers[$select_proxy];
                     $proxy_parts = explode(":", $proxy_server);
@@ -151,8 +162,10 @@ class FetchUrl implements CrawlConstants
                     curl_setopt($sites[$i][0], CURLOPT_HEADER, true);
                 }
                 //make lighttpd happier
-                curl_setopt($sites[$i][0], CURLOPT_HTTPHEADER,
-                    $headers);
+                if(!$is_gopher) {
+                    curl_setopt($sites[$i][0], CURLOPT_HTTPHEADER,
+                        $headers);
+                }
                 curl_setopt($sites[$i][0], CURLOPT_ENCODING, "");
                    // ^ need to set for sites like att that use gzip
                 if($page_range_request > 0) {
@@ -197,9 +210,11 @@ class FetchUrl implements CrawlConstants
                 $ip_addresses = self::getCurlIp($header);
                 fclose($ip_holder[$i]);
             }
+            $is_gopher = false;
             if(isset($sites[$i][0]) && $sites[$i][0]) {
                 // Get Data and Message Code
                 $content = @curl_multi_getcontent($sites[$i][0]);
+                $is_gopher = $sites[$i][CrawlConstants::IS_GOPHER_URL];
                 /*
                     If the Transfer-encoding was chunked then the Range header
                     we sent was ignored. So we manually truncate the data
@@ -208,7 +223,7 @@ class FetchUrl implements CrawlConstants
                 if($page_range_request > 0) {
                     $content = substr($content, 0, $page_range_request);
                 }
-                if(isset($content) && !$minimal) {
+                if(isset($content) && !$minimal && !$is_gopher) {
                     $site = self::parseHeaderPage($content, $value);
                     $sites[$i] = array_merge($sites[$i], $site);
                     if(isset($header)) {
@@ -219,6 +234,11 @@ class FetchUrl implements CrawlConstants
                     }
                     $sites[$i][CrawlConstants::HEADER] =
                         $header . $sites[$i][CrawlConstants::HEADER];
+                    unset($header);
+                } else if(isset($content) && !$minimal && $is_gopher) {
+                    $sites[$i][CrawlConstants::HEADER] =
+                        $header;
+                    $sites[$i][$value] = $content;
                     unset($header);
                 } else {
                     $sites[$i][$value] = $content;
@@ -232,8 +252,10 @@ class FetchUrl implements CrawlConstants
                         CURLINFO_TOTAL_TIME);
                     $sites[$i][self::HTTP_CODE] =
                         curl_getinfo($sites[$i][0], CURLINFO_HTTP_CODE);
-                    if(!$sites[$i][self::HTTP_CODE]) {
+                    if(!$sites[$i][self::HTTP_CODE] && !$is_gopher) {
                         $sites[$i][self::HTTP_CODE] = curl_error($sites[$i][0]);
+                    } else {
+                        $sites[$i][self::HTTP_CODE] = 200;
                     }
                     if($ip_addresses) {
                         $sites[$i][self::IP_ADDRESSES] = $ip_addresses;
@@ -242,10 +264,45 @@ class FetchUrl implements CrawlConstants
                     }
                     //Get Time, Mime type and Character encoding
                     $sites[$i][self::TIMESTAMP] = time();
-                    $type_parts =
-                        explode(";", curl_getinfo($sites[$i][0],
-                            CURLINFO_CONTENT_TYPE));
-                    $sites[$i][self::TYPE] = strtolower(trim($type_parts[0]));
+                    if($is_gopher) {
+                        $path = UrlParser::getPath($sites[$i][self::URL]);
+                        $filename = 
+                            UrlParser::getDocumentFilename(
+                                $sites[$i][self::URL]);
+                        if(isset($path[1])) {
+                            $gopher_type = $path[1];
+                        } else {
+                            $gopher_type = 1;
+                        }
+                        if($gopher_type == 1) {
+                            $sites[$i][self::TYPE] = "text/gopher";
+                        } else if(in_array($gopher_type,
+                            array(0, 3, 6))) {
+                            $sites[$i][self::TYPE] = "text/plain";
+                            if($gopher_type == 6) {
+                                $sites[$i][$value] = convert_uudecode(
+                                    $content);
+                            }
+                        } else if($gopher_type == 'h') {
+                            $sites[$i][self::TYPE] = "text/html";
+                        } else if($gopher_type == 'g') {
+                            $sites[$i][self::TYPE] = "image/gif";
+                        }
+                        $path_info = pathinfo($filename);
+                        if(!isset($sites[$i][self::TYPE]) &&
+                            isset($path_info['extension'])) {
+                            $sites[$i][self::TYPE] =
+                                UrlParser::guessMimeTypeFromFileName($filename);
+                        } else if (!isset($sites[$i][self::TYPE])) {
+                            $sites[$i][self::TYPE] = "unknown";
+                        }
+                    } else {
+                        $type_parts =
+                            explode(";", curl_getinfo($sites[$i][0],
+                                CURLINFO_CONTENT_TYPE));
+                        $sites[$i][self::TYPE] =
+                            strtolower(trim($type_parts[0]));
+                    }
                 }
                 //curl_multi_remove_handle($agent_handler, $sites[$i][0]);
                 curl_close($sites[$i][0]);
@@ -300,6 +357,10 @@ class FetchUrl implements CrawlConstants
         $proxy_servers = array())
     {
         $url = str_replace("&amp;", "&", $url);
+        $is_gopher = false;
+        if(substr($url, 0, 6) == "gopher") {
+            $is_gopher = true;
+        }
         /*Check if an ETag was added by the queue server. If found, create
           If-None_Match header with the ETag and add it to the headers. Remove
           ETag from URL
@@ -362,6 +423,9 @@ class FetchUrl implements CrawlConstants
         if(USE_ETAG_EXPIRES && $etag !== NULL) {
             $etag_header = $if_none_match.": ".$etag;
             $headers[] = $etag_header;
+        }
+        if($is_gopher) {
+            $headers = "gopher";
         }
         $results = array($url, $url_with_ip_if_possible, $headers);
         return $results;

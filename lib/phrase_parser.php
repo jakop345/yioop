@@ -290,7 +290,7 @@ class PhraseParser
             $string);
 
         $url_or_email_pattern =
-            '@((http|https)://([^ \t\r\n\v\f\'\"\;\,<>])*)|'.
+            '@((gopher|http|https)://([^ \t\r\n\v\f\'\"\;\,<>])*)|'.
             '([A-Z0-9._%-]+\@[A-Z0-9.-]+\.[A-Z]{2,4})@i';
         if(!isset($replace_function2)) {
             $replace_function2 = create_function('$matches', '
@@ -630,7 +630,6 @@ class PhraseParser
         if($pre_terms == array()) { return array();}
         $terms = array();
         $tokenizer = PhraseParser::getTokenizer($lang);
-        print_r($CHARGRAMS);
         if(isset($CHARGRAMS[$lang])) {
             foreach($pre_terms as $pre_term) {
                 if($pre_term == "") { continue; }

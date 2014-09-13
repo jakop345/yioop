@@ -164,7 +164,7 @@ class SocialComponent extends Component implements CrawlConstants
                             $group_id)) {
                         $group_model->updateStatusUserGroup($user_id,
                             $group_id, ACTIVE_STATUS);
-                        $this->getGroupUsersData($data);
+                        $this->getGroupUsersData($data, $group_id);
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_user_activated').
                             "</h1>')";
@@ -188,6 +188,32 @@ class SocialComponent extends Component implements CrawlConstants
                                 INACTIVE_STATUS : ACTIVE_STATUS;
                             $group_model->addUserGroup(
                                 $_SESSION['USER_ID'], $add_id, $join_type);
+                            if(!in_array($join_type, array(REQUEST_JOIN,
+                                PUBLIC_BROWSE_REQUEST_JOIN) ) ){ break; }
+                            // if account needs to be activated email owner
+                            $group_info = $group_model->getGroupById($add_id,
+                                ROOT_ID);
+                            $user_model = $parent->model("user");
+                            $owner_info = $user_model->getUser(
+                                $group_info['OWNER']);
+                            $server = new MailServer(MAIL_SENDER, MAIL_SERVER,
+                                MAIL_SERVERPORT, MAIL_USERNAME, MAIL_PASSWORD,
+                                MAIL_SECURITY);
+                            $subject = tl('social_component_activate_group',
+                                $group_info['GROUP_NAME']);
+                            $current_username = $user_model->getUserName(
+                                $_SESSION['USER_ID']);
+                            $body = tl('social_component_activate_body',
+                                $current_username,
+                                $group_info['GROUP_NAME'])."\n\n".
+                                tl('social_component_notify_closing')."\n".
+                                tl('social_component_notify_signature');
+                            $message = tl(
+                                'social_component_notify_salutation',
+                                $owner_info['USER_NAME'])."\n\n";
+                            $message .= $body;
+                            $server->send($subject, MAIL_SENDER,
+                                $owner_info['EMAIL'], $message);
                         } else {
                             $data['CURRENT_GROUP'] = array("name" => "",
                                 "id" => "", "owner" =>"", "register" => -1,
@@ -495,7 +521,7 @@ class SocialComponent extends Component implements CrawlConstants
     }
 
     /**
-     * Uses $_REQUEST and $user_id to look up all the userss that a group
+     * Uses $_REQUEST and $user_id to look up all the users that a group
      * has to subject to $_REQUEST['user_limit'] and
      * $_REQUEST['user_filter']. Information about these roles is added as
      * fields to $data[NUM_USERS_GROUP'] and $data['GROUP_USERS']
@@ -1802,7 +1828,6 @@ EOD;
                     if(!$group || ($group["OWNER_ID"] != $user_id &&
                         !in_array($group["MEMBER_ACCESS"], $share) &&
                         $user_id != ROOT_ID)) {
-                        print_r($group);exit();
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('social_component_no_post_access').
                             "</h1>');";

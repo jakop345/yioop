@@ -349,7 +349,7 @@ class SearchController extends Controller implements CrawlConstants
      *
      * @param bool $web_flag whether this is a web based query or one from
      *     the search API
-     * @param int $raw and so should validate against list of known crawls or an
+     * @param int $raw should validate against list of known crawls or an
      *     internal (say network) query that doesn't require validation
      *     (faster without).
      * @param array& $data that will eventually be sent to the view. We set

@@ -210,6 +210,10 @@ class UrlParserTest extends UnitTest
                 "regex url positive 3"),
             array("http://test.ucla.edu", true,
                 "domain test positive"),
+            array("https://test.ucla.edu", true,
+                "domain https test positive"),
+            array("gopher://test.ucla.edu", true,
+                "domain gopher stest positive"),
             array("http://www.foodnetworkstore.com/small-appliances/", false,
                 "domain test negative"),
         );
