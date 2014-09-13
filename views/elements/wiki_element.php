@@ -166,7 +166,7 @@ class WikiElement extends Element implements CrawlConstants
             case "read":
             case "show":
             default:
-                $this->renderReadPage($data, $can_edit, $logged_in);
+                $this->renderReadPage($data, $can_edit, $logged_in, $is_admin);
             break;
             case "resources":
                 $this->renderResources($data);
@@ -184,8 +184,13 @@ class WikiElement extends Element implements CrawlConstants
      *     edit or create this page
      * @param bool $logged_in whethe current user is logged in or not
      */
-    function renderReadPage($data, $can_edit, $logged_in)
+    function renderReadPage($data, $can_edit, $logged_in, $is_admin)
     {
+        if($is_admin &&
+            isset($data['PAGE_HEADER']) && isset($data["HEAD"]['page_type']) &&
+            $data["HEAD"]['page_type'] != 'presentation') {
+            e($data['PAGE_HEADER']);
+        }
         if(isset($data["HEAD"]['page_type']) && $data["HEAD"]['page_type'] ==
             'media_list') {
             $this->renderResources($data, true, $logged_in);
@@ -223,6 +228,11 @@ class WikiElement extends Element implements CrawlConstants
         } else {
             e("<h2>".tl("wiki_view_page_no_exist", $data["PAGE_NAME"]).
                 "</h2>");
+        }
+        if($is_admin && 
+            isset($data['PAGE_FOOTER']) && isset($data["HEAD"]['page_type']) &&
+            $data["HEAD"]['page_type'] != 'presentation') {
+            e($data['PAGE_FOOTER']);
         }
     }
 
@@ -316,6 +326,20 @@ class WikiElement extends Element implements CrawlConstants
                 name="description" data-buttons='none'><?php
                 e($data['description']);
             ?></textarea>
+            <div class="top-margin">
+            <label for="page-header"><b><?php
+            e(tl('wiki_element_page_header'));
+            ?></b></label><input type="text" id='page-header'
+                name="page_header" value="<?php e($data['page_header']);?>"
+                maxlength="80" class="wide-field"/>
+            </div>
+            <div class="top-margin">
+            <label for="page-footer"><b><?php
+            e(tl('wiki_element_page_footer'));
+            ?></b></label><input type="text" id='page-footer'
+                name="page_footer" value="<?php e($data['page_footer']);?>"
+                maxlength="80" class="wide-field"/>
+            </div>
             </div>
             <div id='page-container'><textarea id="wiki-page"
                 class="tall-text-area" name="page"

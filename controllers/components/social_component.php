@@ -1191,7 +1191,9 @@ EOD;
             'title' => '',
             'author' => '',
             'robots' => '',
-            'description' => ''
+            'description' => '',
+            'page_header' => '',
+            'page_footer' => ''
         );
         $data['page_types'] = array(
             "standard" => tl('social_component_standard_page'),
@@ -1524,7 +1526,8 @@ EOD;
                 $data["PAGE_ID"] = $page_info["ID"];
                 $data["DISCUSS_THREAD"] = $page_info["DISCUSS_THREAD"];
             }
-            if(!$data["PAGE"] && $locale_tag != DEFAULT_LOCALE) {
+            if((!isset($data["PAGE"]) || !$data["PAGE"]) && 
+                $locale_tag != DEFAULT_LOCALE) {
                 //fallback to default locale for translation
                 $page_info = $group_model->getPageInfoByName(
                     $group_id, $page_name, DEFAULT_LOCALE, $data["MODE"]);
@@ -1536,6 +1539,28 @@ EOD;
             $parent->parsePageHeadVars($view, $data["PAGE_ID"], $data["PAGE"]);
             $data["PAGE"] = $view->page_objects[$data["PAGE_ID"]];
             $data["HEAD"] = $view->head_objects[$data["PAGE_ID"]];
+            if(isset($data["HEAD"]['page_header']) &&
+                $data["HEAD"]['page_type'] != 'presentation') {
+                $page_header = $group_model->getPageInfoByName($group_id,
+                    $data["HEAD"]['page_header'], $locale_tag, $data["MODE"]);
+                if(isset($page_header['PAGE'])) {
+                    $header_parts = 
+                        explode("END_HEAD_VARS", $page_header['PAGE']);
+                }
+                $data["PAGE_HEADER"] = (isset($header_parts[1])) ?
+                    $header_parts[1] : "".$header_page;
+            }
+            if(isset($data["HEAD"]['page_footer']) &&
+                $data["HEAD"]['page_type'] != 'presentation') {
+                $page_footer = $group_model->getPageInfoByName($group_id,
+                    $data["HEAD"]['page_footer'], $locale_tag, $data["MODE"]);
+                if(isset($page_footer['PAGE'])) {
+                    $footer_parts = 
+                        explode("END_HEAD_VARS", $page_footer['PAGE']);
+                }
+                $data['PAGE_FOOTER'] = (isset($footer_parts[1])) ?
+                    $footer_parts[1] : "" . $page_footer;
+            }
             if($data['MODE'] == "read" && strpos($data["PAGE"], "`") !== false){
                 if(isset($data["INCLUDE_SCRIPTS"])) {
                     $data["INCLUDE_SCRIPTS"] = array();
