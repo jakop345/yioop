@@ -391,12 +391,9 @@ function wikify(wiki_prefix, wiki_suffix, task_name, id)
         toggleDisplay('wiki-popup-prompt-'+id);
     }
 
-    if (!selection) {
+    if (!selection && wiki_prefix !== '[[') {
         br = '\n';
         selection = tl[task_name.replace('wikibtn-', 'wiki_js_')];
-    }
-    if(!selection) {
-        selection = task_name;
     }
     /*
      Now Add the wrap the selected text between the wiki stuff,
@@ -421,7 +418,6 @@ function wikify(wiki_prefix, wiki_suffix, task_name, id)
 function addWikiHyperlink(id)
 {
     toggleDisplay('wiki-popup-prompt-' + id);
-
     var title = elt('wikify-link-text-' + id).value;
     var link = elt('wikify-link-url-' + id).value;
     if(!link && !title) {
