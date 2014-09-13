@@ -345,11 +345,11 @@ class WikiElement extends Element implements CrawlConstants
                 class="tall-text-area" name="page"
                 <?php 
                 if((!isset($data['page_type']) || $data['page_type'] != 'presentation')){
-                    $dataButtons = 'all,!wikibtn-slide';
+                    $data_buttons = 'all,!wikibtn-slide';
                 }else{
-                    $dataButtons = 'all';
+                    $data_buttons = 'all';
                 }?>
-                data-buttons='<?php echo $dataButtons; ?>' >
+                data-buttons='<?php e($data_buttons); ?>' >
                     <?php
                 e($data['PAGE']);
             ?></textarea>
