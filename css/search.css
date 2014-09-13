@@ -2735,10 +2735,27 @@ table.wikitable > caption
     width: 4.0in;
     position: absolute;
     left: 11.5in;
-    /*top: 121px;*/
 }
 
 .html-rtl #help
+{
+    float: left;
+    width: 4.0in;
+    position: absolute;
+    right: 10.5in;
+}
+
+
+.html-ltr #mobile-help
+{
+	float: left;
+	width: 3.312in;
+	position: absolute;
+	left: 0.042in;    /*top: 121px;*/
+	top: 137px;
+}
+
+.html-rtl #mobile-help
 {
     float: left;
     width: 4.0in;

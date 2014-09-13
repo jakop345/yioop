@@ -186,21 +186,40 @@ function toggleDisplay(id)
  * Also changes the width of the Current activity accordingly.
  * @param String id  the id of the DOM element for the help div
  */
-function toggleHelp(id) {
+function toggleHelp(id, isMobile) {
     var all_help_elements = document.getElementsByClassName('current-activity');
     var help_node = all_help_elements[0];
     toggleDisplay(id);
     obj = elt(id);
-    var new_width;
-    
-    //Calculate pixel to inch. clientWidth only returns in pixels.
-    if (obj.style.display === "none") {
-        new_width = Math.floor(help_node.clientWidth/96) + 1;
-    } else if (obj.style.display === "block") {
-        new_width = Math.floor(help_node.clientWidth/96) - 1;
+    var help_height = 164;//obj.clientHeight;
+
+    if (isMobile === false) {
+        var new_width;
+        //Calculate pixel to inch. clientWidth only returns in pixels.
+        if (obj.style.display === "none") {
+            new_width = Math.floor(getCssProperty(help_node, 'width') / 96) + 1;
+        } else if (obj.style.display === "block") {
+            new_width = Math.floor(getCssProperty(help_node, 'width') / 96) - 1;
+        }
+
+        if (new_width !== undefined) {
+            help_node.style.maxWidth = new_width + "in";
+        }
+    } else {
+        //Calculate pixel to inch. clientWidth only returns in pixels.
+        if (obj.style.display === "none") {
+            help_node.style.top = getCssProperty(help_node, 'top') - help_height + "px";
+        } else if (obj.style.display === "block") {
+            help_node.style.top = getCssProperty(help_node, 'top') + help_height + "px";
+        }
     }
 
-    if (new_width !== undefined) {
-        help_node.style.maxWidth = new_width + "in";
+    /*
+     * gets the Css property given an element and property name. 
+     * @param element elm, Strin property
+     */
+    function getCssProperty(elm, property) {
+        //always returns in px
+        return parseInt(window.getComputedStyle(elm, null).getPropertyValue(property));
     }
 }
