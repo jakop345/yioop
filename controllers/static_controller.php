@@ -126,13 +126,39 @@ class StaticController extends Controller
         if(isset($_SESSION['value'])) {
             $data['value'] = $this->clean($_SESSION['value'], "string");
         }
-        if((isset($static_view->head_objects[$data['page']]['title']))) {
-            $data["subtitle"]=" - ".
-                $static_view->head_objects[$data['page']]['title'];
+        $head_info = $static_view->head_objects[$data['page']];
+        if((isset($head_info['title']))) {
+            if($head_info['title']) {
+                $data["subtitle"] = " - ". $head_info;
+            } else {
+                $data["subtitle"] = "";
+            }
             $static_view->head_objects[$data['page']]['title'] = "Yioop!".
                 $data["subtitle"];
         } else {
             $data["subtitle"] = "";
+        }
+        $locale_tag = getLocaleTag();
+        $group_model = $this->model("group");
+        if(isset($head_info['page_header']) && $head_info['page_header']) {
+            $page_header = $group_model->getPageInfoByName(PUBLIC_GROUP_ID,
+                $head_info['page_header'], $locale_tag, "read");
+            if(isset($page_header['PAGE'])) {
+                $header_parts = 
+                    explode("END_HEAD_VARS", $page_header['PAGE']);
+            }
+            $data["PAGE_HEADER"] = (isset($header_parts[1])) ?
+                $header_parts[1] : "".$header_page;
+        }
+        if(isset($head_info['page_footer']) && $head_info['page_footer']) {
+            $page_footer = $group_model->getPageInfoByName(PUBLIC_GROUP_ID,
+                $head_info['page_footer'], $locale_tag, "read");
+            if(isset($page_footer['PAGE'])) {
+                $footer_parts = 
+                    explode("END_HEAD_VARS", $page_footer['PAGE']);
+            }
+            $data['PAGE_FOOTER'] = (isset($footer_parts[1])) ?
+                $footer_parts[1] : "" . $page_footer;
         }
         return $data;
     }

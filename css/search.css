@@ -275,7 +275,6 @@ a.echo-link:hover
 
 .frame
 {
-    background-color: #FFF;
     border: 1px solid #CCC;
     position: relative;
 }
@@ -536,8 +535,6 @@ body.mobile
  */
 .top-bar
 {
-    background: #DDD;
-    background: linear-gradient(to top, #FFF 0%, #EEF 30%,#EEF 70%, #FFF 100%);
     height: 45px;
     left: 0;
     min-width: 12in;
@@ -548,8 +545,6 @@ body.mobile
 
 .landing-top-bar
 {
-    background: #DDD;
-    background: linear-gradient(to top, #FFF 0%, #EEF 30%,#EEF 70%, #FFF 100%);
     height: 45px;
     left: 0;
     position: absolute;
@@ -561,8 +556,6 @@ body.mobile
 .mobile .top-bar,
 .mobile .landing-top-bar
 {
-    background: #DDD;
-    background: linear-gradient(to top, #FFF 0%,#EEF 30%,#EEF 70%, #FFF 100%);
     height: 30px;
     left: 0px;
     position: absolute;
@@ -1209,7 +1202,6 @@ ul.in-list li
 }
 .icon-upload
 {
-    color:white;
     left:16px;
     padding-right:2px;
     position:relative;
@@ -1480,7 +1472,6 @@ div.group-result
  */
 .search-box
 {
-    background-color: #DDF;
     border-color: #AAA;
     border-radius: 0.07in;
     border-style: solid;
@@ -1701,7 +1692,6 @@ div.group-result
 
 .suggest-list
 {
-    background: #DDF;
     border: 0;
     font-size: 16pt;
     margin: 0;
@@ -1716,7 +1706,6 @@ div.group-result
 }
 .suggest-list li
 {
-    background: #DDF;
     cursor: pointer;
     font-size: 16pt;
     list-style:none;
@@ -1740,16 +1729,6 @@ div.group-result
     padding: 0;
     text-decoration: none;
     z-index: 5;
-}
-
-.suggest-list li span.unselected
-{
-    background-color: white;
-}
-
-.suggest-list li span.selected
-{
-    background-color: #AAE;
 }
 
 .mobile .suggest-list
@@ -2116,7 +2095,6 @@ div.group-result
 
 .activity-menu h2
 {
-    background-color: #8A4;
     border-top-right-radius: 8px;
     border-top-left-radius: 8px;
     color: #222;
@@ -2176,7 +2154,6 @@ div.group-result
 .current-activity,
 .small-margin-current-activity
 {
-    background-color: #fff;
     border: 1px solid #ccc;
     border-radius: 8px;
     font-size: 16pt;
@@ -2531,8 +2508,6 @@ div.group-result
 }
 .light-content
 {
-    background-color: white;
-    border: 16px solid #8A4;
     height: 4in;
     left: 20%;
     right: 20%;

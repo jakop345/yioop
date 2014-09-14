@@ -395,6 +395,9 @@ function wikify(wiki_prefix, wiki_suffix, task_name, id)
         br = '\n';
         selection = tl[task_name.replace('wikibtn-', 'wiki_js_')];
     }
+    if(!selection && wiki_prefix !== '[[') {
+        selection = task_name;
+    }
     /*
      Now Add the wrap the selected text between the wiki stuff,
      and then wrap the selected

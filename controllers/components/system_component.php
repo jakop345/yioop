@@ -919,7 +919,8 @@ EOD;
             break;
             case "profile":
                 $parent->updateProfileFields($data, $profile,
-                    array('WEB_ACCESS', 'RSS_ACCESS', 'API_ACCESS'));
+                    array('WEB_ACCESS', 'RSS_ACCESS', 'API_ACCESS',
+                        'LANDING_PAGE'));
                 $data['DEBUG_LEVEL'] = 0;
                 $data['DEBUG_LEVEL'] |=
                     (isset($_REQUEST["ERROR_INFO"])) ? ERROR_INFO : 0;
@@ -939,8 +940,8 @@ EOD;
                         $data["MESSAGE"]."</h1>')";
                     return $data;
                 }
-                foreach(array('LOGO','M_LOGO', 'FAVICON', 'SEARCHBAR_PATH') 
-                    as $field) {
+                foreach(array('BACKGROUND_IMAGE', 'LOGO','M_LOGO', 'FAVICON',
+                    'SEARCHBAR_PATH') as $field) {
                     if(isset($_FILES[$field]['name']) &&
                         $_FILES[$field]['name'] !="") {
                         if((!in_array($_FILES[$field]['type'],
@@ -983,6 +984,62 @@ EOD;
                                 "?c=admin&amp;a=configure&amp;".CSRF_TOKEN."=".
                                 $_REQUEST[CSRF_TOKEN]."\"', 3*sec);";
                         }
+                } else {
+                    $data['PROFILE'] = false;
+                    $data["MESSAGE"] =
+                        tl('system_component_configure_no_change_profile');
+                    $data['SCRIPT'] .=
+                        "doMessage('<h1 class=\"red\" >". $data["MESSAGE"].
+                        "</h1>');";
+                    break;
+                }
+            break;
+            case "reset":
+                $base_url = NAME_SERVER;
+                if(defined("BASE_URL")) {
+                    $base_url = BASE_URL;
+                }
+                $profile = array(
+                    'LANDING_PAGE' => false,
+                    'BACKGROUND_COLOR' => "#FFF",
+                    'BACKGROUND_IMAGE' => "",
+                    'FOREGROUND_COLOR' => "#FFF",
+                    'SIDEBAR_COLOR' => "#8A4",
+                    'TOPBAR_COLOR' => "#EEF",
+                    'LOGO' => "resources/yioop.png",
+                    'M_LOGO' => "resources/m-yioop.png",
+                    'FAVICON' => $base_url . "favicon.ico",
+                    'TIMEZONE' => 'America/Los_Angeles',
+                    'SESSION_NAME' => "yioopbiscuit",
+                    'CSRF_TOKEN' => "YIOOP_TOKEN"
+                );
+                $old_profile =
+                    $profile_model->getProfile($data['WORK_DIRECTORY']);
+                foreach($old_profile as $key => $value) {
+                    $data[$key] =$value;
+                }
+                $tmp_image = $old_profile['BACKGROUND_IMAGE'];
+                $old_profile['BACKGROUND_IMAGE'] = "";
+                if($profile_model->updateProfile(
+                    $data['WORK_DIRECTORY'], $profile, $old_profile)) {
+                    $old_profile['BACKGROUND_IMAGE'] = $tmp_image;
+                    foreach($profile as $key => $value) {
+                        $data[$key] = $value;
+                        if(in_array($key, array('BACKGROUND_IMAGE',
+                            'LOGO', 'M_LOGO', 'FAVICON', 'SEARCHBAR_PATH') ) 
+                            && $old_profile[$key] != "") {
+                            $resource_name = APP_DIR ."/resources/".
+                                $old_profile[$key];
+                            if(file_exists($resource_name)) {
+                                unlink($resource_name);
+                            }
+                        }
+                    }
+                    $data['MESSAGE'] =
+                        tl('system_component_configure_reset_completed');
+                    $data['SCRIPT'] =
+                        "doMessage('<h1 class=\"red\" >". $data['MESSAGE'].
+                        "</h1>');";
                 } else {
                     $data['PROFILE'] = false;
                     $data["MESSAGE"] =

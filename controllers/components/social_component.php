@@ -1548,7 +1548,7 @@ EOD;
                         explode("END_HEAD_VARS", $page_header['PAGE']);
                 }
                 $data["PAGE_HEADER"] = (isset($header_parts[1])) ?
-                    $header_parts[1] : "".$header_page;
+                    $header_parts[1] : "". $page_header['PAGE'];
             }
             if(isset($data["HEAD"]['page_footer']) &&
                 $data["HEAD"]['page_type'] != 'presentation') {
@@ -1559,7 +1559,7 @@ EOD;
                         explode("END_HEAD_VARS", $page_footer['PAGE']);
                 }
                 $data['PAGE_FOOTER'] = (isset($footer_parts[1])) ?
-                    $footer_parts[1] : "" . $page_footer;
+                    $footer_parts[1] : "" . $page_footer['PAGE'];
             }
             if($data['MODE'] == "read" && strpos($data["PAGE"], "`") !== false){
                 if(isset($data["INCLUDE_SCRIPTS"])) {

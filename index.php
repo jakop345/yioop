@@ -141,7 +141,7 @@ if(!isset($_REQUEST['c'])) {
     if(defined('LANDING_PAGE') && LANDING_PAGE && !isset($_REQUEST['q'])) {
         $controller_name = "static";
         $_REQUEST['c'] = "static";
-        $_REQUEST['p'] = LANDING_PAGE;
+        $_REQUEST['p'] = "Main";
     }
 } else {
     $controller_name = $_REQUEST['c'];

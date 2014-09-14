@@ -52,17 +52,20 @@ class ProfileModel extends Model
      * @var array
      */
     var $profile_fields = array('API_ACCESS', 'AUTH_KEY',
-        'AUTHENTICATION_MODE', 'CACHE_LINK', 'CAPTCHA_MODE', 'CSRF_TOKEN',
+        'AUTHENTICATION_MODE', 'BACKGROUND_COLOR', 'BACKGROUND_IMAGE',
+        'CACHE_LINK', 'CAPTCHA_MODE', 'CSRF_TOKEN',
         'DEBUG_LEVEL', 'DESCRIPTION_WEIGHT', 'DB_HOST', 'DBMS', 'DB_NAME',
         'DB_PASSWORD', 'DB_USER', 'DEFAULT_LOCALE', 'FAVICON',
-        'FIAT_SHAMIR_MODULUS', 'GROUP_ITEM', 'IN_LINK','IP_LINK', 'LINK_WEIGHT',
+        'FIAT_SHAMIR_MODULUS', 'FOREGROUND_COLOR',
+        'GROUP_ITEM', 'IN_LINK','IP_LINK', 'LANDING_PAGE', 'LINK_WEIGHT',
         'LOGO', 'M_LOGO', 'MAIL_PASSWORD',  'MAIL_SECURITY',
         'MAIL_SENDER', 'MAIL_SERVER', 'MAIL_SERVERPORT', 'MAIL_USERNAME',
         'MEMCACHE_SERVERS', 'MIN_RESULTS_TO_GROUP', 'NAME_SERVER', 'NEWS_MODE',
         'PROXY_SERVERS', 'REGISTRATION_TYPE', 'ROBOT_INSTANCE',
         'RSS_ACCESS', 'SEARCHBAR_PATH', 'SERVER_ALPHA', 'SESSION_NAME',
-        'SIGNIN_LINK', 'SIMILAR_LINK',
-        'SUBSEARCH_LINK', 'TIMEZONE', 'TITLE_WEIGHT', 'TOR_PROXY',
+        'SIDEBAR_COLOR', 'SIGNIN_LINK', 'SIMILAR_LINK',
+        'SUBSEARCH_LINK', 'TIMEZONE', 'TITLE_WEIGHT', 'TOPBAR_COLOR',
+        'TOR_PROXY',
         'USE_FILECACHE', 'USE_MAIL_PHP', 'USE_MEMCACHE', 'USE_PROXY',
         'USER_AGENT_SHORT', 'WEB_URI', 'WEB_ACCESS', 'WORD_SUGGEST'
         );
@@ -325,6 +328,10 @@ EOT;
         }
         //make sure certain fields are not null
         $not_null_fields = array(
+            'BACKGROUND_COLOR' => "#FFF",
+            'FOREGROUND_COLOR' => "#FFF",
+            'SIDEBAR_COLOR' => "#8A4",
+            'TOPBAR_COLOR' => "#EEF",
             'LOGO' => "resources/yioop.png",
             'M_LOGO' => "resources/m-yioop.png",
             'FAVICON' => $base_url . "favicon.ico",
@@ -332,11 +339,12 @@ EOT;
             'SESSION_NAME' => "yioopbiscuit",
             'CSRF_TOKEN' => "YIOOP_TOKEN"
         );
+        $not_null_keys = array_keys($not_null_fields);
         //now integrate the different profiles
         foreach($this->profile_fields as $field) {
             if(isset($new_profile_data[$field])) {
                 if(in_array($field, array('LOGO','M_LOGO', 'FAVICON',
-                    'SEARCHBAR_PATH'))) {
+                    'SEARCHBAR_PATH', 'BACKGROUND_IMAGE'))) {
                     if(isset($new_profile_data[$field]['name']) &&
                         isset($new_profile_data[$field]['tmp_name'])) {
                         move_uploaded_file(
