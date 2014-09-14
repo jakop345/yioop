@@ -221,6 +221,9 @@ if(!defined('LOGO')) {
      */
     define('LOGO', "resources/yioop.png");
     define('M_LOGO', "resources/m-yioop.png");
+    if(!defined(BASE_URL)) {
+        defined('BASE_URL', NAME_SERVER);
+    }
     define('FAVICON', BASE_URL."favicon.ico");
     define('TIMEZONE', 'America/Los_Angeles');
     /* name of the cookie used to manage the session
