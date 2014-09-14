@@ -344,13 +344,13 @@ class WikiElement extends Element implements CrawlConstants
             <div id='page-container'><textarea id="wiki-page"
                 class="tall-text-area" name="page"
                 <?php 
-                if((!isset($data['page_type']) || 
+                if((!isset($data['page_type']) ||
                         $data['page_type'] != 'presentation')){
                     $data_buttons = 'all,!wikibtn-slide';
                 }else{
                     $data_buttons = 'all';
                 }?>
-                data-buttons='<?php e($data_buttons); ?>'><?php 
+                data-buttons='<?php e($data_buttons); ?>' ><?php
                 e($data['PAGE']);
             ?></textarea>
             <div class="green"><?php

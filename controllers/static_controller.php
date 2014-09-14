@@ -148,7 +148,7 @@ class StaticController extends Controller
                     explode("END_HEAD_VARS", $page_header['PAGE']);
             }
             $data["PAGE_HEADER"] = (isset($header_parts[1])) ?
-                $header_parts[1] : "".$header_page;
+                $header_parts[1] : "".$page_header['PAGE'];
         }
         if(isset($head_info['page_footer']) && $head_info['page_footer']) {
             $page_footer = $group_model->getPageInfoByName(PUBLIC_GROUP_ID,
@@ -158,7 +158,7 @@ class StaticController extends Controller
                     explode("END_HEAD_VARS", $page_footer['PAGE']);
             }
             $data['PAGE_FOOTER'] = (isset($footer_parts[1])) ?
-                $footer_parts[1] : "" . $page_footer;
+                $footer_parts[1] : "" . $page_footer['PAGE'];
         }
         return $data;
     }
