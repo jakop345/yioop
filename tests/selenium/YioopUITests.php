@@ -50,7 +50,6 @@ class WebTest extends PHPUnit_Extensions_Selenium2TestCase {
      * Asserts correct Page title.
      */
     public function testTitle() {
-        $this->markTestSkipped('must be revisited.');
         $this->url($this->home_url);
         $this->assertEquals(
                 'PHP Search Engine - Yioop!', 
@@ -111,7 +110,7 @@ class WebTest extends PHPUnit_Extensions_Selenium2TestCase {
         //Now If the user is Logged in, The nav bar should display Settings, 
         //Admin, Sign Out
         $this->assertEquals('Settings', 
-                $this->byCssSelector('div.user-nav > ul > li:nth-of-type(2)')
+                $this->byCssSelector('div.user-nav > ul > li:nth-of-type(1)')
                 ->text());
         $this->assertEquals('Admin', 
                 $this->byCssSelector('div.user-nav > ul > li:nth-of-type(2)')
