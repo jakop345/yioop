@@ -524,9 +524,64 @@ abstract class Controller
                     $clean_value = false;
                 }
             break;
-            case "int":
+            case "color":
                 if(isset($value)) {
-                    $clean_value = intval($value);
+                    $colors = array("black", "silver", "gray", "white",
+                        "maroon", "red", "purple", "fuchsia", "green", "lime",
+                        "olive", "yellow", "navy", "blue", "teal", "aqua",
+                        "orange", "aliceblue", "antiquewhite", "aquamarine",
+                        "azure", "beige", "bisque", "blanchedalmond",
+                        "blueviolet", "brown", "burlywood", "cadetblue",
+                        "chartreuse", "chocolate", "coral", "cornflowerblue",
+                        "cornsilk", "crimson", "darkblue", "darkcyan",
+                        "darkgoldenrod", "darkgray", "darkgreen", "darkgrey",
+                        "darkkhaki", "darkmagenta", "darkolivegreen",
+                        "darkorange", "darkorchid", "darkred", "darksalmon",
+                        "darkseagreen", "darkslateblue", "darkslategray",
+                        "darkslategrey", "darkturquoise", "darkviolet",
+                        "deeppink", "deepskyblue", "dimgray", "dodgerblue",
+                        "firebrick", "floralwhite", "forestgreen", "gainsboro",
+                        "ghostwhite", "gold", "goldenrod", "greenyellow",
+                        "grey", "honeydew", "hotpink", "indianred", "indigo",
+                        "ivory", "khaki", "lavender", "lavenderblush",
+                        "lawngreen", "lemonchiffon", "lightblue", "lightcoral",
+                        "lightcyan", "lightgoldenrodyellow", "lightgray",
+                        "lightgreen", "lightgrey", "lightpink", "lightsalmon",
+                        "lightseagreen", "lightskyblue", "lightslategray",
+                        "lightslategrey", "lightsteelblue", "lightyellow",
+                        "limegreen", "linen", "mediumaquamarine",
+                        "mediumblue", "mediumorchid", "mediumpurple",
+                        "mediumseagreen", "mediumslateblue",
+                        "mediumspringgreen", "mediumturquoise",
+                        "mediumvioletred", "midnightblue", "mintcream",
+                        "mistyrose", "moccasin", "navajowhite", "oldlace",
+                        "olivedrab", "orangered", "orchid", "palegoldenrod",
+                        "palegreen", "paleturquoise", "palevioletred", 
+                        "papayawhip", "peachpuff", "peru", "pink", "plum",
+                        "powderblue", "rosybrown", "royalblue", "saddlebrown",
+                        "salmon", "sandybrown", "seagreen", "seashell",
+                        "sienna",  "skyblue", "slateblue", "slategray", 
+                        "slategrey", "snow", "springgreen", "steelblue",
+                        "tan", "thistle", "tomato", "turquoise", "violet",
+                        "wheat", "whitesmoke", "yellowgreen", "rebeccapurple"
+                    );
+                    if(in_array($value, $colors)
+                        || preg_match('/^#[a-fA-F0-9][a-fA-F0-9][a-fA-F0-9]'.
+                        '([a-fA-F0-9][a-fA-F0-9][a-fA-F0-9])?$/',
+                            trim($value))) {
+                        $clean_value = trim($value);
+                    } else {
+                        $clean_value = "#FFF";
+                    }
+                } else if ($default != NULL) {
+                    $clean_value = $default;
+                } else {
+                    $clean_value = "#FFF";
+                }
+            break;
+            case "double":
+                if(isset($value)) {
+                    $clean_value = doubleval($value);
                 } else if ($default != NULL) {
                     $clean_value = $default;
                 } else {
@@ -542,15 +597,6 @@ abstract class Controller
                     $clean_value = 0;
                 }
             break;
-            case "double":
-                if(isset($value)) {
-                    $clean_value = doubleval($value);
-                } else if ($default != NULL) {
-                    $clean_value = $default;
-                } else {
-                    $clean_value = 0;
-                }
-            break;
             case "hash";
                 if(isset($value)) {
                     if(strlen($value) == strlen(crawlHash("A")) &&
@@ -559,6 +605,15 @@ abstract class Controller
                     }
                 } else {
                     $clean_value = $default;
+                }
+            break;
+            case "int":
+                if(isset($value)) {
+                    $clean_value = intval($value);
+                } else if ($default != NULL) {
+                    $clean_value = $default;
+                } else {
+                    $clean_value = 0;
                 }
             break;
             case "string":

@@ -421,13 +421,20 @@ class AdminController extends Controller implements CrawlConstants
      */
     function updateProfileFields(&$data, &$profile, $check_box_fields = array())
     {
+        $color_fields = array('BACKGROUND_COLOR', 'FOREGROUND_COLOR',
+            'SIDEBAR_COLOR', 'TOPBAR_COLOR');
         foreach($this->model("profile")->profile_fields as $field) {
             if(isset($_REQUEST[$field])) {
                 if($field != "ROBOT_DESCRIPTION" &&
                     $field != "MEMCACHE_SERVERS" &&
                     $field != "PROXY_SERVERS") {
-                    $clean_field =
-                        $this->clean($_REQUEST[$field], "string");
+                    if(in_array($field, $color_fields)) {
+                        $clean_field =
+                            $this->clean($_REQUEST[$field], "color");
+                    } else {
+                        $clean_field =
+                            $this->clean($_REQUEST[$field], "string");
+                    }
                 } else {
                     $clean_field = $_REQUEST[$field];
                 }
