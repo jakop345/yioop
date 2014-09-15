@@ -922,7 +922,6 @@ class Fetcher implements CrawlConstants
             "&crawl_time=$crawl_time";
         $info_string = FetchUrl::getPage($request, NULL, true);
         $info = @unserialize(trim($info_string));
-
         if(isset($info[self::SAVED_CRAWL_TIMES])) {
             if(array_diff($info[self::SAVED_CRAWL_TIMES], $saved_crawl_times)
                 != array() ||
@@ -931,6 +930,25 @@ class Fetcher implements CrawlConstants
                 $saved_crawl_times = $info[self::SAVED_CRAWL_TIMES];
                 $this->deleteOldCrawls($saved_crawl_times);
             }
+        }
+        $check_cull_fields = array(
+            self::RESTRICT_SITES_BY_URL => "restrict_sites_by_url", 
+            self::ALLOWED_SITES => "allowed_sites",
+            self::DISALLOWED_SITES => "disallowed_sites");
+        $cull_now_non_crawlable = false;
+        foreach($check_cull_fields as $info_field => $field) {
+            if(isset($info[$info_field])) {
+                if(!isset($this->$field) || $this->$field !=
+                    $info[$info_field]) {
+                    $cull_now_non_crawlable = true;
+                }
+                $this->$field = $info[$info_field];
+            }
+        }
+        if($cull_now_non_crawlable) {
+            crawlLog("Allowed/Disallowed Urls have changed");
+            crawlLog("Checking if urls in to crawl lists need to be culled");
+            $this->cullNoncrawlableSites();
         }
         if(isset($info[self::CRAWL_TIME])
             && ($info[self::CRAWL_TIME] != $this->crawl_time
@@ -1300,10 +1318,23 @@ class Fetcher implements CrawlConstants
             self::RESTRICT_SITES_BY_URL => 'restrict_sites_by_url',
             self::SUMMARIZER_OPTION => "summarizer_option",
             self::TOR_PROXY => 'tor_proxy');
+        $check_cull_fields = array("restrict_sites_by_url", "allowed_sites",
+            "disallowed_sites");
+        $cull_now_non_crawlable = false;
         foreach($update_fields as $info_field => $field) {
             if(isset($info[$info_field])) {
+                if(in_array($info_field, $check_cull_fields) &&
+                    (!isset($this->$field) || $this->$field !=
+                    $info[$info_field]) ) {
+                    $cull_now_non_crawlable = true;
+                }
                 $this->$field = $info[$info_field];
             }
+        }
+        if($cull_now_non_crawlable) {
+            crawlLog("Allowed/Disallowed Urls have changed");
+            crawlLog("Checking if urls in to crawl lists need to be culled");
+            $this->cullNoncrawlableSites();
         }
         if(!empty($info[self::ACTIVE_CLASSIFIERS_DATA])){
             $this->active_classifiers = isset($info[self::ACTIVE_CLASSIFIERS])
@@ -1898,6 +1929,41 @@ class Fetcher implements CrawlConstants
         crawlLog("  Process pages time: ".(changeInMicrotime($start_time)).
              " Current Memory: ".memory_get_usage());
         return $summarized_site_pages;
+    }
+    /**
+     * Used to remove from the to_crawl urls those that are no longer crawlable
+     * because the allowed and disallowed sites have changed.
+     */
+    function cullNoncrawlableSites()
+    {
+        $count = count($this->to_crawl);
+        $count_again = count($this->to_crawl_again);
+        crawlLog("Culling noncrawlable urls after change in crawl parameters;".
+            " To Crawl Count: $count, To Crawl Again: $count_again");
+        $start_time = microtime();
+        $k = 0;
+        for($i = 0; $i < $count; $i++) {
+            crawlTimeoutLog("..still culling to crawl urls. Examining ".
+                "location %s in queue of %s.", $i, $count);
+            list($url, ) = $this->to_crawl[$i];
+            if(!$this->allowedToCrawlSite($url) ||
+                $this->disallowedToCrawlSite($url)) {
+                unset($this->to_crawl[$i]);
+                $k++;
+            }
+        }
+        for($i = 0; $i < $count_again; $i++) {
+            crawlTimeoutLog("..still culling to crawl again urls. Examining ".
+                "location %s in queue of %s.", $i, $count);
+            list($url, ) = $this->to_crawl_again[$i];
+            if(!$this->allowedToCrawlSite($url) ||
+                $this->disallowedToCrawlSite($url)) {
+                unset($this->to_crawl_again[$i]);
+                $k++;
+            }
+        }
+        crawlLog("...Removed $k cullable URLS  from to crawl lists in time: ".
+            (changeInMicrotime($start_time)));
     }
     /**
      * Page processors are allowed to extract up to MAX_LINKS_TO_EXTRACT
