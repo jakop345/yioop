@@ -1616,6 +1616,7 @@ class CrawlComponent extends Component implements CrawlConstants
                     $update = false;
                     $is_html_feed = false;
                     if($source['TYPE'] == 'html') {
+                        echo "yo";
                         $is_html_feed = true;
                         list($source['CHANNEL_PATH'],
                             $source['ITEM_PATH'], $source['TITLE_PATH'],
@@ -1642,12 +1643,12 @@ class CrawlComponent extends Component implements CrawlConstants
                             $source['TITLE_PATH'] . "###" .
                             $source['DESCRIPTION_PATH'] . "###".
                             $source['LINK_PATH'];
-                            unset($source['CHANNEL_PATH']);
-                            unset($source['ITEM_PATH']);
-                            unset($source['TITLE_PATH']);
-                            unset($source['DESCRIPTION_PATH']);
-                            unset($source['LINK_PATH']);
                         }
+                        unset($source['CHANNEL_PATH']);
+                        unset($source['ITEM_PATH']);
+                        unset($source['TITLE_PATH']);
+                        unset($source['DESCRIPTION_PATH']);
+                        unset($source['LINK_PATH']);
                         $source_model->updateMediaSource($source);
                         $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
                             tl('crawl_component_media_source_updated').
