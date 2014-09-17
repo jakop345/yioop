@@ -42,7 +42,7 @@ class WebTest extends PHPUnit_Extensions_Selenium2TestCase {
     private $home_url = "http://localhost/yioop/";
 
     protected function setUp() {
-        $this->setBrowser('/usr/local/bin/firefox');
+        $this->setBrowser('phantomjs');
         $this->setBrowserUrl('http://localhost/yioop/');
     }
 
@@ -61,7 +61,7 @@ class WebTest extends PHPUnit_Extensions_Selenium2TestCase {
      * using nav bar.
      */
     public function testUserNav() {
-        $this->markTestSkipped('must be revisited.');
+
         $this->url($this->home_url);
         $sign_in = $this
                 ->byCssSelector('div.user-nav > ul > li:nth-of-type(2)');
