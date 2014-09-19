@@ -111,7 +111,8 @@ class RecoverView extends View
                             </th>
                             <td class="table-input">
                                 <input id="password" type="password"
-                                    class="narrow-field" maxlength="80"
+                                    class="narrow-field" maxlength="<?php
+                                e(LONG_NAME_LEN);?>"
                                     name="password" value="" /></td>
                         </tr>
                         <tr>
@@ -122,7 +123,8 @@ class RecoverView extends View
                             </th>
                             <td class="table-input">
                                 <input id="repassword" type="password"
-                                    class="narrow-field" maxlength="80"
+                                    class="narrow-field" maxlength="<?php
+                                e(LONG_NAME_LEN);?>"
                                     name="repassword" value="" /></td>
                         </tr>
                         <?php
@@ -135,7 +137,8 @@ class RecoverView extends View
                         </th>
                         <td class="table-input">
                             <input id="username" type="text"
-                                class="narrow-field" maxlength="80"
+                                class="narrow-field" maxlength="<?php
+                                e(NAME_LEN);?>"
                                 name="user" autocomplete="off"
                                 value = "<?php e($data['USER']); ?>"/>
                             <?php echo in_array("user", $missing)
@@ -190,7 +193,8 @@ class RecoverView extends View
                             src="<?php
                             e($data['CAPTCHA_IMAGE']); ?>" alt="CAPTCHA">
                             </td></tr><tr><td>
-                            <input type="text" maxlength="6"
+                            <input type="text" maxlength="<?php
+                                e(CAPTCHA_LEN); ?>"
                             id="user-captcha-text" class="narrow-field"
                             name="user_captcha_text"/></td></tr>
                         <?php

@@ -112,26 +112,27 @@ class ManageaccountElement extends Element
             <th class="table-label"><label for="user-name"><?php
                 e(tl('manageusers_element_username'))?>:</label></th>
                 <td><input type="text" id="user-name"
-                    name="user_name"  maxlength="80"
+                    name="user_name"  maxlength="<?php e(NAME_LEN);?>"
                     value="<?php e($data['USER']['USER_NAME']); ?>"
                     class="narrow-field" disabled="disabled" /></td>
                     </tr>
             <tr><th class="table-label"><label for="first-name"><?php
                     e(tl('manageusers_element_firstname')); ?>:</label></th>
                 <td><input type="text" id="first-name"
-                    name="FIRST_NAME"  maxlength="80"
+                    name="FIRST_NAME"  maxlength="<?php e(NAME_LEN);?>"
                     value="<?php e($data['USER']['FIRST_NAME']); ?>"
                     class="narrow-field" <?php e($disabled);?> /></td></tr>
             <tr><th class="table-label"><label for="last-name"><?php
                     e(tl('manageusers_element_lastname')); ?>:</label></th>
                 <td><input type="text" id="last-name"
-                    name="LAST_NAME"  maxlength="80"
+                    name="LAST_NAME"  maxlength="<?php e(NAME_LEN);?>"
                     value="<?php e($data['USER']['LAST_NAME']); ?>"
                     class="narrow-field" <?php e($disabled);?> /></td></tr>
             <tr><th class="table-label"><label for="e-mail"><?php
                     e(tl('manageusers_element_email')); ?>:</label></th>
                 <td><input type="text" id="e-mail"
-                    name="EMAIL"  maxlength="80" <?php e($disabled);?>
+                    name="EMAIL"  maxlength="<?php e(LONG_NAME_LEN);?>"
+                    <?php e($disabled);?>
                     value="<?php e($data['USER']['EMAIL']); ?>"
                     class="narrow-field"/></td></tr>
             <?php if(isset($data['EDIT_USER'])) { ?>
@@ -139,21 +140,22 @@ class ManageaccountElement extends Element
                 e($password_or_no_url);?>"><?php
                 e(tl('manageaccount_element_password'))?></a></label></th>
                 <td><input type="password" id="password"
-                    name="password"  maxlength="80" class="narrow-field"/>
+                    name="password"  maxlength="<?php e(LONG_NAME_LEN);
+                    ?>" class="narrow-field"/>
                 </td></tr>
                 <?php if(isset($data['EDIT_PASSWORD'])) { ?>
                 <tr><th class="table-label"><label for="new-password"><?php
                     e(tl('manageaccount_element_new_password'))?></label></th>
                     <td><input type="password" id="new-password"
-                        name="new_password"  maxlength="80"
-                        class="narrow-field"/>
+                        name="new_password"  maxlength="<?php
+                        e(LONG_NAME_LEN);?>" class="narrow-field"/>
                     </td></tr>
                 <tr><th class="table-label"><label for="retype-password"><?php
                     e(tl('manageaccount_element_retype_password'));
                     ?></label></th>
                     <td><input type="password" id="retype-password"
-                        name="retype_password"  maxlength="80"
-                        class="narrow-field" />
+                        name="retype_password"  maxlength="<?php
+                        e(LONG_NAME_LEN);?>" class="narrow-field" />
                     </td></tr>
                 <?php
                 }

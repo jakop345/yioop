@@ -106,11 +106,13 @@ class SecurityElement extends Element
         <?php
         if($data['CAN_LOCALIZE']) { ?>
             <div class="top-margin">[<a href="<?php 
-                e($localize_url.'&amp;filter=register_view_recovery');
+                e($localize_url.'&amp;filter=register_view_recovery'.
+                    '&amp;previous_activity=security');
                     ?>" ><?php e(tl('security_element_edit_recovery')); ?></a>]
             </div>
             <div class="top-margin">[<a href="<?php 
-                e($localize_url.'&amp;filter=register_view_question');
+                e($localize_url.'&amp;filter=register_view_question'.
+                    '&amp;previous_activity=security');
                     ?>" ><?php e(tl('security_element_edit_captcha')); ?></a>]
             </div>
             <?php

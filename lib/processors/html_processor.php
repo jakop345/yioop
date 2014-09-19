@@ -421,7 +421,7 @@ class HtmlProcessor extends TextProcessor
                stristr($meta->getAttribute('http-equiv'), "location")) {
                 $urls = explode("=", $meta->getAttribute('content'));
                 if(isset($urls[1]) && !UrlParser::checkRecursiveUrl($urls[1]) &&
-                    strlen($urls[1]) < MAX_URL_LENGTH) {
+                    strlen($urls[1]) < MAX_URL_LEN) {
                     $refresh_url = @trim($urls[1]);
                     if($refresh_url != $url) { 
                         //ignore refresh if points to same place
@@ -452,8 +452,8 @@ class HtmlProcessor extends TextProcessor
             if(stristr($link->getAttribute('rel'), "canonical") ) {
                 $canonical_url = trim($link->getAttribute('href'));
                 if(!UrlParser::checkRecursiveUrl($canonical_url) &&
-                    strlen($canonical_url) < min(252, MAX_URL_LENGTH) &&
-                    (strlen($url) > min(255, MAX_URL_LENGTH + 3) ||
+                    strlen($canonical_url) < min(252, MAX_URL_LEN) &&
+                    (strlen($url) > min(255, MAX_URL_LEN + 3) ||
                     levenshtein($canonical_url, $url) > 3)) {
                     //ignore canonical if points to same place
                     return $canonical_url;
@@ -493,7 +493,7 @@ class HtmlProcessor extends TextProcessor
                         $href->getAttribute('href'), $site);
                     $len = strlen($url);
                     if(!UrlParser::checkRecursiveUrl($url)  &&
-                        $len < MAX_URL_LENGTH && $len > 4) {
+                        $len < MAX_URL_LEN && $len > 4) {
                         $text = $href->nodeValue;
                         if(isset($sites[$url])) {
                             $sites[$url] .=" .. ".
@@ -518,7 +518,7 @@ class HtmlProcessor extends TextProcessor
                     $frame->getAttribute('src'), $site);
                 $len = strlen($url);
                 if(!UrlParser::checkRecursiveUrl($url)
-                    && $len < MAX_URL_LENGTH && $len > 4) {
+                    && $len < MAX_URL_LEN && $len > 4) {
                     if(isset($sites[$url]) ) {
                         $sites[$url] .=" .. HTMLframe";
                     } else {
@@ -539,7 +539,7 @@ class HtmlProcessor extends TextProcessor
                     $img->getAttribute('src'), $site);
                 $len = strlen($url);
                 if(!UrlParser::checkRecursiveUrl($url)
-                    && $len < MAX_URL_LENGTH && $len > 4) {
+                    && $len < MAX_URL_LEN && $len > 4) {
                     if(isset($sites[$url])) {
                         $sites[$url] .=" .. ".$alt;
                         $sites[$url] = mb_substr($sites[$url], 0,

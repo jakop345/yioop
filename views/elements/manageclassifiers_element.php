@@ -165,7 +165,7 @@ class ManageclassifiersElement extends Element
         <div class="top-margin"><label for="class-label"><?php
             e(tl('manageclassifiers_classifier_name')) ?></label>:
             <input type="text" id="class-label" name="name"
-                value="" maxlength="80"
+                value="" maxlength="<?php e(NAME_LEN)?>"
                     class="wide-field"/>
             <button class="button-box"  type="submit"><?php
                 e(tl('manageclassifiers_create_button')) ?></button>

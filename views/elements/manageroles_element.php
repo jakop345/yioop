@@ -145,7 +145,7 @@ class ManagerolesElement extends Element
         <tr><th class="table-label"><label for="role-name"><?php
             e(tl('manageroles_element_rolename'))?></label>:</th>
             <th><input type="text" id="role-name"
-                name="name"  maxlength="80"
+                name="name"  maxlength="<?php e(NAME_LEN); ?>"
                 value="<?php e($data['CURRENT_ROLE']['name']); ?>"
                 class="narrow-field" <?php
                 if($editrole) {

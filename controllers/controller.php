@@ -481,7 +481,7 @@ abstract class Controller
                         $_SESSION['OLD_ACTION_STAMPS'][$action] =
                             $timestamp_to_check;
                         $token_okay = true;
-                        $cull_time = time() - 3600;
+                        $cull_time = time() - ONE_HOUR;
                         foreach($_SESSION['OLD_ACTION_STAMPS'] as $act =>
                             $time) {
                             if($time < $cull_time) {

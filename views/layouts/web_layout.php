@@ -137,7 +137,7 @@ class WebLayout extends Layout
             .icon-upload,
             .current-activity,
             .light-content,
-            .small-margin-current-activity
+            .small-margin-current-activity,
             .suggest-list li span.unselected
             {
                 background-color: <?php e($foreground_color); ?>;

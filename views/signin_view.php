@@ -89,13 +89,15 @@ class SigninView extends View
             <td class="table-label" ><b><label for="username"><?php
                 e(tl('signin_view_username')); ?></label>:</b></td><td
                     class="table-input"><input id="username" type="text"
-                    class="narrow-field" maxlength="80" name="u"/>
+                    class="narrow-field" maxlength="<?php
+                    e(NAME_LEN);?>" name="u"/>
             </td><td></td></tr>
             <tr>
             <td class="table-label" ><b><label for="password"><?php
                 e(tl('signin_view_password')); ?></label>:</b></td><td
                 class="table-input"><input id="password" type="password"
-                class="narrow-field" maxlength="80" name="p" /></td>
+                class="narrow-field" maxlength="<?php
+                e(LONG_NAME_LEN);?>" name="p" /></td>
             <td><input type="hidden" name="<?php e(CSRF_TOKEN);?>"
                     id="CSRF-TOKEN" value="<?php e($data[CSRF_TOKEN]); ?>" />
                 <input type="hidden" name="c" value="admin" />

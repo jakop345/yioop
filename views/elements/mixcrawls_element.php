@@ -158,12 +158,14 @@ class MixcrawlsElement extends Element
         <tr><th><label for="share-mix-name" ><?php
             e(tl("mixcrawls_element_mixname")); ?></label></th>
         <td><input type="text" name="smixname" value="" disabled="disabled"
-            id="share-mix-name" maxlength="80" class="wide-field"/></td>
+            id="share-mix-name" maxlength="<?php e(NAME_LEN);
+            ?>" class="wide-field"/></td>
         </tr>
         <tr><th><label for="share-group" ><?php
             e(tl("mixcrawls_element_group")); ?></label></th>
         <td><input type="text" name="group_name"
-            id="share-group" maxlength="80" class="wide-field"/></td>
+            id="share-group" maxlength="<?php e(SHORT_TITLE_LEN);
+            ?>" class="wide-field"/></td>
         </tr>
         <tr><td></td><td><button class="button-box" type="submit"><?php
             e(tl("mixcrawls_element_share")); ?></button></td>
@@ -200,7 +202,7 @@ class MixcrawlsElement extends Element
         <div class="top-margin"><label for="mix-name"><?php
             e(tl('mixcrawls_element_mix_name')); ?></label>:
             <input type="text" id="mix-name" name="NAME"
-                value="" maxlength="80"
+                value="" maxlength="<?php e(NAME_LEN); ?>"
                     class="wide-field"/>
            <button class="button-box"  type="submit"><?php
                 e(tl('mixcrawls_element_create_button')); ?></button></div>

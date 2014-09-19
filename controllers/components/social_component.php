@@ -116,7 +116,7 @@ class SocialComponent extends Component implements CrawlConstants
            this is also the only place group loaded using $group_id
         */
         if(isset($_REQUEST['group_id']) && $_REQUEST['group_id'] != "") {
-            $group_id = $parent->clean($_REQUEST['group_id'], "string" );
+            $group_id = $parent->clean($_REQUEST['group_id'], "int" );
             $group = $group_model->getGroupById($group_id,
                 $_SESSION['USER_ID']);
             if($group && ($group['OWNER_ID'] == $_SESSION['USER_ID'] ||
@@ -141,7 +141,8 @@ class SocialComponent extends Component implements CrawlConstants
                 $group = NULL;
             }
         } else if(isset($_REQUEST['name'])){
-            $name = $parent->clean($_REQUEST['name'], "string");
+            $name = substr($parent->clean($_REQUEST['name'], "string"), 0,
+                SHORT_TITLE_LEN);
             $data['CURRENT_GROUP']['name'] = $name;
             $group_id = NULL;
             $group = NULL;
@@ -251,8 +252,9 @@ class SocialComponent extends Component implements CrawlConstants
                 case "changeowner":
                     $data['FORM_TYPE'] = "changeowner";
                     if(isset($_REQUEST['new_owner']) && $is_owner) {
-                        $new_owner_name = $parent->clean($_REQUEST['new_owner'],
-                            'string');
+                        $new_owner_name = substr(
+                            $parent->clean($_REQUEST['new_owner'],
+                            'string'), 0, NAME_LEN);
                         $new_owner = $parent->model("user")->getUser(
                             $new_owner_name);
                         if(isset($new_owner['USER_ID']) ) {
@@ -540,8 +542,8 @@ class SocialComponent extends Component implements CrawlConstants
             unset($_REQUEST['user_limit']);
         }
         if(isset($_REQUEST['user_filter'])) {
-            $user_filter = $parent->clean(
-                $_REQUEST['user_filter'], 'string');
+            $user_filter = substr($parent->clean(
+                $_REQUEST['user_filter'], 'string'), 0, NAME_LEN);
         } else {
             $user_filter = "";
         }
@@ -670,10 +672,16 @@ class SocialComponent extends Component implements CrawlConstants
         $clean_array = array( "title" => "string", "description" => "string",
             "just_group_id" => "int", "just_thread" => "int",
             "just_user_id" => "int");
+        $strings_array = array( "title" => TITLE_LEN, "description" =>
+            MAX_GROUP_POST_LEN);
         foreach($clean_array as $field => $type) {
             $$field = ($type == "string") ? "" : 0;
             if(isset($_REQUEST[$field])) {
-                $$field = $parent->clean($_REQUEST[$field], $type);
+                $tmp = $parent->clean($_REQUEST[$field], $type);
+                if(isset($strings_array[$field])) {
+                    $tmp = substr($tmp, 0, $strings_array[$field]);
+                }
+                $$field = $tmp;
             }
         }
         $possible_arguments = array("addcomment", "deletepost", "newthread",
@@ -1145,12 +1153,21 @@ EOD;
             "diff2" => 'int',
             "revert" => 'int'
         );
+        $strings_array = array(
+            "page_name" => TITLE_LEN,
+            "page" => MAX_GROUP_PAGE_LEN,
+            "edit_reason" => SHORT_TITLE_LEN,
+            "filter" => SHORT_TITLE_LEN);
         $last_care_missing = 2;
         $missing_fields = false;
         $i = 0;
         foreach($clean_array as $field => $type) {
             if(isset($_REQUEST[$field])) {
-                $$field = $parent->clean($_REQUEST[$field], $type);
+                $tmp = $parent->clean($_REQUEST[$field], $type);
+                if(isset($strings_array[$field])) {
+                    $tmp = substr($tmp, 0, $strings_array[$field]);
+                }
+                $$field = $tmp;
             } else if($i < $last_care_missing) {
                 $$field = false;
                 $missing_fields = true;
@@ -1757,8 +1774,8 @@ EOD;
                 case "createmix":
                     $mix['TIMESTAMP'] = time();
                     if(isset($_REQUEST['NAME'])) {
-                        $mix['NAME'] = $parent->clean($_REQUEST['NAME'],
-                            'string');
+                        $mix['NAME'] = substr($parent->clean($_REQUEST['NAME'],
+                            'string'), 0, NAME_LEN);
                     } else {
                         $mix['NAME'] = tl('social_component_unnamed');
                     }
@@ -1791,7 +1808,8 @@ EOD;
                     if(!isset($_REQUEST['timestamp'])) {
                         $import_success = false;
                     }
-                    $timestamp = $parent->clean($_REQUEST['timestamp'], "int");
+                    $timestamp = substr($parent->clean(
+                        $_REQUEST['timestamp'], "int"), 0, TIMESTAMP_LEN);
                     $mix = $crawl_model->getCrawlMix($timestamp);
                     if(!$mix) {
                         $import_success = false;
@@ -1813,7 +1831,9 @@ EOD;
                 case "index":
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('social_component_set_index')."</h1>');";
-                    $timestamp = $parent->clean($_REQUEST['timestamp'], "int");
+                    $timestamp = substr(
+                        $parent->clean($_REQUEST['timestamp'], "int"), 0,
+                        TIMESTAMP_LEN);
                     if($can_manage_crawls) {
                         $crawl_model->setCurrentIndexDatabaseName(
                             $timestamp);
@@ -1844,8 +1864,9 @@ EOD;
                     }
                     $timestamp = $parent->clean($_REQUEST['timestamp'], "int");
                     $group_model = $parent->model("group");
-                    $group_name =
-                        $parent->clean($_REQUEST['group_name'], "string");
+                    $group_name = substr(
+                        $parent->clean($_REQUEST['group_name'], "string"), 0,
+                        SHORT_TITLE_LEN);
                     $group_id = $group_model->getGroupId($group_name);
                     $group = NULL;
                     if($group_id) {
@@ -1910,9 +1931,12 @@ EOD;
         $mix = array();
         $timestamp = 0;
         if(isset($_REQUEST['timestamp'])) {
-            $timestamp = $parent->clean($_REQUEST['timestamp'], "int");
+            $timestamp = substr($parent->clean($_REQUEST['timestamp'], "int"),
+                0, TIMESTAMP_LEN);
         } else if (isset($_REQUEST['mix']['TIMESTAMP'])) {
-            $timestamp = $parent->clean($_REQUEST['mix']['TIMESTAMP'], "int");
+            $timestamp = substr(
+                $parent->clean($_REQUEST['mix']['TIMESTAMP'], "int"),
+                0, TIMESTAMP_LEN);
         }
         if(!$crawl_model->isMixOwner($timestamp, $user_id)) {
             $data["ELEMENT"] = "mixcrawls";

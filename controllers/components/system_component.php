@@ -265,7 +265,7 @@ class SystemComponent extends Component
                         $data["REFRESH_LOG"] .=
                             "&arg=log&name=".$r['name'];
                     }
-                    if($data["time"] >= 1200) {
+                    if($data["time"] >= ONE_HOUR/3) {
                         $data["REFRESH_LOG"] = "";
                     }
 
@@ -433,6 +433,13 @@ class SystemComponent extends Component
                     $paging = false;
                     $data["leftorright"] =
                         (getLocaleDirection() == 'ltr') ? "right": "left";
+                    $data['PREVIOUS_ACTIVITY'] = "manageLocales";
+                    if(isset($_REQUEST['previous_activity']) &&
+                        in_array($_REQUEST['previous_activity'], array(
+                        "security", "searchSources"))) {
+                            $data['PREVIOUS_ACTIVITY'] =
+                                $_REQUEST['previous_activity'];
+                    }
                     $data["ELEMENT"] = "editlocales";
                     $data['CURRENT_LOCALE_NAME'] =
                         $locale_model->getLocaleName($selectlocale);
@@ -1077,8 +1084,9 @@ EOD;
                 }
             }
             if(isset($_REQUEST['ROBOT_DESCRIPTION'])) {
-                $robot_description =
-                    $parent->clean($_REQUEST['ROBOT_DESCRIPTION'], "string");
+                $robot_description = substr(
+                    $parent->clean($_REQUEST['ROBOT_DESCRIPTION'], "string"), 0,
+                    MAX_GROUP_PAGE_LEN);
                 $group_model->setPageName(ROOT_ID, PUBLIC_GROUP_ID,
                     "bot", $robot_description, $locale_tag, "", "", "", "");
             }

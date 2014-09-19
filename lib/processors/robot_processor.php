@@ -122,7 +122,7 @@ class RobotProcessor extends PageProcessor
                 case "sitemap":
                     $tmp_url = UrlParser::canonicalLink($value, $host_url);
                     if(!UrlParser::checkRecursiveUrl($tmp_url)
-                        && strlen($tmp_url) < MAX_URL_LENGTH) {
+                        && strlen($tmp_url) < MAX_URL_LEN) {
                         $summary[self::LINKS][] = $tmp_url;
                     }
                 break;

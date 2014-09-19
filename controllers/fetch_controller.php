@@ -88,7 +88,8 @@ class FetchController extends Controller implements CrawlConstants
         }
         if(isset($_REQUEST['robot_instance'])) {
             $robot_table[$this->clean($_REQUEST['robot_instance'], "string")] =
-                array($_SERVER['REMOTE_ADDR'], $_REQUEST['machine_uri'],
+                array($_SERVER['REMOTE_ADDR'],
+                $this->clean($_REQUEST['machine_uri'], "string"),
                 time());
             file_put_contents($robot_table_name, serialize($robot_table),
                 LOCK_EX);
@@ -107,7 +108,8 @@ class FetchController extends Controller implements CrawlConstants
         // set up query
         $data = array();
         if(isset($_REQUEST['crawl_time'])) {;
-            $crawl_time = $this->clean($_REQUEST['crawl_time'], 'int');
+            $crawl_time = substr($this->clean($_REQUEST['crawl_time'], 'int'),
+                0, TIMESTAMP_LEN);
         } else {
             $crawl_time = 0;
         }
@@ -144,7 +146,8 @@ class FetchController extends Controller implements CrawlConstants
         $view = "fetch";
         $request_start = time();
         if(isset($_REQUEST['crawl_time'])) {;
-            $crawl_time = $this->clean($_REQUEST['crawl_time'], 'int');
+            $crawl_time = substr($this->clean($_REQUEST['crawl_time'], 'int'),
+                0, TIMESTAMP_LEN);
         } else {
             $crawl_time = 0;
         }
@@ -247,10 +250,11 @@ class FetchController extends Controller implements CrawlConstants
     function checkRestart($crawl_type)
     {
         if(isset($_REQUEST['crawl_time'])) {;
-            $crawl_time = $this->clean($_REQUEST['crawl_time'], 'int');
+            $crawl_time = substr($this->clean($_REQUEST['crawl_time'], 'int'),
+                0, TIMESTAMP_LEN);
             if(isset($_REQUEST['check_crawl_time'])) {
-                $check_crawl_time = $this->clean(
-                    $_REQUEST['check_crawl_time'], 'int');
+                $check_crawl_time = substr($this->clean(
+                    $_REQUEST['check_crawl_time'], 'int'), 0, TIMESTAMP_LEN);
             }
         } else {
             $crawl_time = 0;
@@ -465,7 +469,9 @@ class FetchController extends Controller implements CrawlConstants
      */
     function addScheduleToScheduleDirectory($schedule_name, &$data_string)
     {
-        $dir = CRAWL_DIR."/schedules/".$schedule_name.$_REQUEST['crawl_time'];
+        $crawl_time = substr($this->clean($_REQUEST['crawl_time'], "int"), 0,
+            TIMESTAMP_LEN);
+        $dir = CRAWL_DIR."/schedules/".$schedule_name . $crawl_time;
         $address = str_replace(".", "-", $_SERVER['REMOTE_ADDR']);
         $address = str_replace(":", "_", $address);
         $time = time();
@@ -495,7 +501,8 @@ class FetchController extends Controller implements CrawlConstants
         $view = "fetch";
         $cron_model = $this->model("cron");
         if(isset($_REQUEST['crawl_time'])) {;
-            $prev_crawl_time = $this->clean($_REQUEST['crawl_time'], 'int');
+            $prev_crawl_time = substr(
+                $this->clean($_REQUEST['crawl_time'], 'int'), 0, TIMESTAMP_LEN);
         } else {
             $prev_crawl_time = 0;
         }

@@ -76,7 +76,7 @@ class EditclassifierElement extends Element
             e(tl('editclassifier_classifier_label')) ?></label>
             <input type="text" id="rename-label" name="rename_label"
                 value="<?php e($data['class_label']) ?>"
-                maxlength="80" class="wide-field"/>
+                maxlength="<?php e(NAME_LEN);?>" class="wide-field"/>
             <button class="button-box" type="submit"><?php
                 e(tl('editclassifier_change')); ?></button>
         </div>
@@ -134,7 +134,8 @@ class EditclassifierElement extends Element
                     e("</tr><tr>");
                 }?>
                 <td <?php if(!MOBILE) {?>colspan="2" <?php } ?> >
-                    <input type="text" maxlength="80" id="label-docs-keywords"
+                    <input type="text" maxlength="<?php e(LONG_NAME_LEN);
+                        ?>" id="label-docs-keywords"
                         name="label_docs_keywords" />
                     <button class="button-box" type="submit"><?php
                         e(tl('editclassifier_load')) ?></button>

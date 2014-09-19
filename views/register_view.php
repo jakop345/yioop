@@ -195,7 +195,8 @@ class RegisterView extends View
                         </th>
                         <td class="table-input">
                             <input id="firstname" type="text"
-                                class="narrow-field" maxlength="80"
+                                class="narrow-field" maxlength="<?php
+                                e(NAME_LEN);?>"
                                 name="first" autocomplete="off"
                                 value = "<?php e($data['FIRST']); ?>"/>
                             <?php e(in_array("first", $missing)
@@ -209,7 +210,8 @@ class RegisterView extends View
                         </th>
                         <td class="table-input">
                             <input id="lastname" type="text"
-                                class="narrow-field" maxlength="80"
+                                class="narrow-field" maxlength="<?php
+                                e(NAME_LEN);?>"
                                 name="last" autocomplete="off"
                                 value = "<?php e($data['LAST']); ?>"/>
                             <?php echo in_array("last", $missing)
@@ -222,7 +224,8 @@ class RegisterView extends View
                         </th>
                         <td class="table-input">
                             <input id="username" type="text"
-                                class="narrow-field" maxlength="80"
+                                class="narrow-field" maxlength="<?php
+                                e(NAME_LEN);?>"
                                 name="user" autocomplete="off"
                                 value = "<?php e($data['USER']); ?>"/>
                             <?php echo in_array("user", $missing)
@@ -234,7 +237,8 @@ class RegisterView extends View
                         </th>
                         <td class="table-input">
                             <input id="email" type="text"
-                                class="narrow-field" maxlength="80"
+                                class="narrow-field" maxlength="<?php
+                                e(LONG_NAME_LEN);?>"
                                 name="email" autocomplete="off"
                                 value = "<?php e($data['EMAIL']); ?>"/>
                             <?php echo in_array("email", $missing)
@@ -248,7 +252,8 @@ class RegisterView extends View
                         </th>
                         <td class="table-input">
                             <input id="pass-word" type="password"
-                                class="narrow-field" maxlength="80"
+                                class="narrow-field" maxlength="<?php
+                                e(LONG_NAME_LEN);?>"
                                 name="password" value="<?php
                                 e($data['PASSWORD']); ?>" />
                             <?php echo in_array("password", $missing)
@@ -262,7 +267,8 @@ class RegisterView extends View
                         </th>
                         <td class="table-input">
                             <input id="retype-password" type="password"
-                                class="narrow-field" maxlength="80"
+                                class="narrow-field" maxlength="<?php
+                                e(LONG_NAME_LEN);?>"
                                 name="repassword" value="<?php
                                 e($data['REPASSWORD']); ?>" />
                             <?php e(in_array("repassword", $missing)
@@ -315,7 +321,8 @@ class RegisterView extends View
                             src="<?php
                             e($data['CAPTCHA_IMAGE']); ?>" alt="CAPTCHA">
                             </td></tr><tr><td>
-                            <input type="text" maxlength="6"
+                            <input type="text" maxlength="<?php
+                                e(CAPTCHA_LEN); ?>"
                             id="user-captcha-text" class="narrow-field"
                             name="user_captcha_text"/></td></tr>
                         <?php

@@ -99,7 +99,8 @@ class SuggestView extends View
                             </th>
                             <td class="table-input">
                                 <input id="url" type="text"
-                                    class="narrow-field" maxlength="100"
+                                    class="narrow-field" maxlength="<?php
+                                    e(SHORT_TITLE_LEN); ?>"
                                     name="url"
                                     value = "<?php e($data['url']); ?>"/>
                                 <?php echo in_array("url", $missing)
@@ -149,7 +150,8 @@ class SuggestView extends View
                                 src="<?php
                                 e($data['CAPTCHA_IMAGE']); ?>" alt="CAPTCHA">
                                 </td></tr><tr><td>
-                                <input type="text" maxlength="6"
+                                <input type="text" maxlength="<?php
+                                e(CAPTCHA_LEN); ?>"
                                 id="user-captcha-text" class="narrow-field"
                                 name="user_captcha_text"/></td></tr>
                             <?php

@@ -143,6 +143,14 @@ class AccountaccessComponent extends Component
             switch($_REQUEST['arg'])
             {
                 case "updateuser":
+                    if(strlen($_REQUEST['new_password']) > LONG_NAME_LEN) {
+                        $data["MESSAGE"] =
+                            tl('accountaccess_component_passwords_too_long');
+                        $data['SCRIPT'] .=
+                            "doMessage('<h1 class=\"red\" >". $data["MESSAGE"].
+                            "</h1>')";
+                        return $data;
+                    }
                     if(isset($data['EDIT_PASSWORD']) &&
                         (!isset($_REQUEST['retype_password']) ||
                         !isset($_REQUEST['new_password']) ||
@@ -177,11 +185,12 @@ class AccountaccessComponent extends Component
                     }
                     $user = array();
                     $user['USER_ID'] = $user_id;
-                    $fields = array("EMAIL", "FIRST_NAME", "LAST_NAME");
-                    foreach($fields as $field) {
+                    $fields = array("EMAIL" => LONG_NAME_LEN,
+                        "FIRST_NAME" => NAME_LEN, "LAST_NAME" => NAME_LEN);
+                    foreach($fields as $field => $len) {
                         if(isset($_REQUEST[$field])) {
-                            $user[$field] = $parent->clean(
-                                $_REQUEST[$field], "string");
+                            $user[$field] = substr($parent->clean(
+                                $_REQUEST[$field], "string"), 0, $len);
                             $data['USER'][$field] =  $user[$field];
                         }
                     }
@@ -275,7 +284,8 @@ class AccountaccessComponent extends Component
         $search_array = array();
         $username = "";
         if(isset($_REQUEST['user_name'])) {
-            $username = $parent->clean($_REQUEST['user_name'], "string" );
+            $username = substr($parent->clean($_REQUEST['user_name'], "string"),
+                0, NAME_LEN);
         }
         if($username == "" && isset($_REQUEST['arg']) && $_REQUEST['arg']
             != "search") {
@@ -311,7 +321,13 @@ class AccountaccessComponent extends Component
             switch($_REQUEST['arg'])
             {
                 case "adduser":
-                    if($_REQUEST['retypepassword'] != $_REQUEST['password']) {
+                    if(strlen($_REQUEST['password']) > LONG_NAME_LEN) {
+                        $data['SCRIPT'] .=
+                            "doMessage('<h1 class=\"red\" >".
+                            tl('accountaccess_component_passwords_too_long').
+                            "</h1>')";
+                    } else if($_REQUEST['retypepassword'] !=
+                        $_REQUEST['password']) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_passwords_dont_match').
                             "</h1>')";
@@ -327,15 +343,20 @@ class AccountaccessComponent extends Component
                         $zkp_password = "";
                         if(AUTHENTICATION_MODE == ZKP_AUTHENTICATION) {
                             $zkp_password = 
-                                $parent->clean($_REQUEST['password'], "string");
+                                substr($parent->clean($_REQUEST['password'],
+                                    "string"), 0, ZKP_PASSWORD_LEN);
                         } else {
                             $norm_password = 
-                                $parent->clean($_REQUEST['password'], "string");
+                                substr($parent->clean($_REQUEST['password'],
+                                "string"), 0, LONG_NAME_LEN);
                         }
                         $user_model->addUser($username, $norm_password,
-                            $parent->clean($_REQUEST['first_name'], "string"),
-                            $parent->clean($_REQUEST['last_name'], "string"),
-                            $parent->clean($_REQUEST['email'], "string"),
+                            substr($parent->clean($_REQUEST['first_name'],
+                                "string"), 0, NAME_LEN),
+                            substr($parent->clean($_REQUEST['last_name'],
+                                "string"), 0, NAME_LEN),
+                            substr($parent->clean($_REQUEST['email'],
+                                "string"), 0, LONG_NAME_LEN),
                             $_REQUEST['status'], $zkp_password
                         );
                         $data['USER_NAMES'][$username] = $username;
@@ -610,8 +631,8 @@ class AccountaccessComponent extends Component
             unset($_REQUEST['role_limit']);
         }
         if(isset($_REQUEST['role_filter'])) {
-            $role_filter = $parent->clean(
-                $_REQUEST['role_filter'], 'string');
+            $role_filter = substr($parent->clean(
+                $_REQUEST['role_filter'], 'string'), 0, NAME_LEN);
         } else {
             $role_filter = "";
         }
@@ -651,8 +672,8 @@ class AccountaccessComponent extends Component
             unset($_REQUEST['group_limit']);
         }
         if(isset($_REQUEST['group_filter'])) {
-            $group_filter = $parent->clean(
-                $_REQUEST['group_filter'], 'string');
+            $group_filter = substr($parent->clean(
+                $_REQUEST['group_filter'], 'string'), 0, SHORT_TITLE_LEN);
         } else {
             $group_filter = "";
         }
@@ -702,7 +723,8 @@ class AccountaccessComponent extends Component
             }
         }
         if(isset($_REQUEST['name'])) {
-            $name = $parent->clean($_REQUEST['name'], "string" );
+            $name = substr($parent->clean($_REQUEST['name'], "string"),
+                0, NAME_LEN);
              $data['CURRENT_ROLE']['name'] = $name;
         } else {
             $name = "";

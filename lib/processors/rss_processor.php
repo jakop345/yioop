@@ -260,7 +260,7 @@ class RssProcessor extends TextProcessor
                 }
                 if($url === NULL || $url === "" ||
                     UrlParser::checkRecursiveUrl($url) ||
-                    strlen($url) >= MAX_URL_LENGTH) {
+                    strlen($url) >= MAX_URL_LEN) {
                     return false;
                 }
             }

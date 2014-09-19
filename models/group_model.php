@@ -1384,8 +1384,8 @@ class GroupModel extends Model
         $result = $db->execute($sql, $params);
         if($result) {
             $row = $db->fetchArray($result);
-            $total = ($row) ? $row["TOTAL"] : 0;
         }
+        $total = (isset($row) && $row) ? $row["TOTAL"] : 0;
         $pages = array();
         if($total > 0) {
             $sql = "SELECT TITLE, PAGE AS DESCRIPTION

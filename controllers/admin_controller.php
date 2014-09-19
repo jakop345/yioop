@@ -429,30 +429,30 @@ class AdminController extends Controller implements CrawlConstants
                     $field != "MEMCACHE_SERVERS" &&
                     $field != "PROXY_SERVERS") {
                     if(in_array($field, $color_fields)) {
-                        $clean_field =
+                        $clean_value =
                             $this->clean($_REQUEST[$field], "color");
                     } else {
-                        $clean_field =
+                        $clean_value =
                             $this->clean($_REQUEST[$field], "string");
                     }
                 } else {
-                    $clean_field = $_REQUEST[$field];
+                    $clean_value = $_REQUEST[$field];
                 }
                 if($field == "NAME_SERVER" &&
-                    $clean_field[strlen($clean_field) -1] != "/") {
-                    $clean_field .= "/";
+                    $clean_value[strlen($clean_value) -1] != "/") {
+                    $clean_value .= "/";
                 }
-                $data[$field] = $clean_field;
+                $data[$field] = $clean_value;
                 $profile[$field] = $data[$field];
                 if($field == "MEMCACHE_SERVERS" || $field == "PROXY_SERVERS") {
-                    $mem_array = preg_split("/(\s)+/", $clean_field);
+                    $mem_array = preg_split("/(\s)+/", $clean_value);
                     $profile[$field] =
                         $this->convertArrayLines(
                             $mem_array, "|Z|", true);
                 }
             }
             if(!isset($data[$field])) {
-                if(defined($field)) {
+                if(defined($field) && !in_array($field, $check_box_fields)) {
                     $data[$field] = constant($field);
                 } else {
                     $data[$field] = "";
