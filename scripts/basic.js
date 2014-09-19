@@ -195,22 +195,27 @@ function toggleHelp(id, isMobile) {
 
     if (isMobile === false) {
         var new_width;
+        var decrease_width_by = (getCssProperty(obj, 'width')/3);
         //Calculate pixel to inch. clientWidth only returns in pixels.
         if (obj.style.display === "none") {
-            new_width = Math.floor(getCssProperty(help_node, 'width') / 96) + 1;
+            new_width = Math.floor(getCssProperty(help_node, 'width')) 
+                    + decrease_width_by;
         } else if (obj.style.display === "block") {
-            new_width = Math.floor(getCssProperty(help_node, 'width') / 96) - 1;
+            new_width = Math.floor(getCssProperty(help_node, 'width')) 
+                    - decrease_width_by;
         }
 
         if (new_width !== undefined) {
-            help_node.style.maxWidth = new_width + "in";
+            help_node.style.maxWidth = new_width + "px";
         }
     } else {
         //Calculate pixel to inch. clientWidth only returns in pixels.
         if (obj.style.display === "none") {
-            help_node.style.top = getCssProperty(help_node, 'top') - help_height + "px";
+            help_node.style.top = getCssProperty(help_node, 'top') 
+                    - help_height + "px";
         } else if (obj.style.display === "block") {
-            help_node.style.top = getCssProperty(help_node, 'top') + help_height + "px";
+            help_node.style.top = getCssProperty(help_node, 'top') 
+                    + help_height + "px";
         }
     }
 
@@ -220,6 +225,7 @@ function toggleHelp(id, isMobile) {
      */
     function getCssProperty(elm, property) {
         //always returns in px
-        return parseInt(window.getComputedStyle(elm, null).getPropertyValue(property));
+        return parseInt(window.getComputedStyle(elm, null)
+                .getPropertyValue(property));
     }
 }
