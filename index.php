@@ -125,7 +125,7 @@ if (function_exists('lcfirst') === false) {
     }
 }
 $available_controllers = array( "admin", "archive",  "cache", "classifier",
-    "crawl", "fetch", "group", "machine", "resource", "search", "settings",
+    "crawl", "fetch", "group","api", "machine", "resource", "search", "settings",
     "statistics", "static");
 if(!WEB_ACCESS) {
 $available_controllers = array("admin", "archive", "cache", "crawl", "fetch",

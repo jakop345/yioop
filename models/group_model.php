@@ -969,7 +969,7 @@ class GroupModel extends Model
     function getPageInfoByName($group_id, $name, $locale_tag, $mode)
     {
         $db = $this->db;
-        if($mode == "edit") {
+        if($mode == "edit" || $mode == "api") {
             $sql = "SELECT HP.PAGE_ID AS ID, HP.PAGE AS PAGE,
                 GP.DISCUSS_THREAD AS DISCUSS_THREAD FROM GROUP_PAGE GP,
                 GROUP_PAGE_HISTORY HP WHERE GP.GROUP_ID = ?

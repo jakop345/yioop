@@ -1172,11 +1172,18 @@ EOD;
         }
         $group = $group_model->getGroupById($group_id, $user_id);
         $data["CAN_EDIT"] = false;
+        if((!isset($data['MODE'])) || $data['MODE'] != "api"){
         $data["MODE"] = "read";
+        }
         if(!$group) {
+            if($data['MODE'] !== 'api'){
             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                 tl("group_controller_no_group_access").
                 "</h1>');";
+            }else{
+                $data['errors'] =  array();
+                $data['errors'][] = tl("group_controller_no_group_access");
+            }
             $group_id = PUBLIC_GROUP_ID;
             $group = $group_model->getGroupById($group_id, $user_id);
         } else {
@@ -1511,7 +1518,7 @@ EOD;
             $page_name = tl('group_controller_main');
         }
         $data["GROUP"] = $group;
-        if(in_array($data["MODE"], array("read", "edit", "media"))) {
+        if(in_array($data["MODE"], array("read", "edit", "media","api"))) {
             if(!isset($data["PAGE"]) || !$data['PAGE']) {
                 $data["PAGE_NAME"] = $page_name;
                 if(isset($search_page_info) && $search_page_info) {
