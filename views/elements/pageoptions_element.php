@@ -312,31 +312,32 @@ class PageOptionsElement extends Element
         <table class="weights-table" >
         <tr><th><label for="title-weight"><?php
             e(tl('pageoptions_element_title_weight'))?></label></th><td>
-            <input type="text" id="title-weight" size="3" maxlength="6"
-                name="TITLE_WEIGHT"
+            <input type="text" id="title-weight" class="very-narrow-field"
+                maxlength="<?php e(NUM_FIELD_LEN); ?>" name="TITLE_WEIGHT"
                 value="<?php  e($data['TITLE_WEIGHT']); ?>" /></td></tr>
         <tr><th><label for="description-weight"><?php
             e(tl('pageoptions_element_description_weight'))?></label></th><td>
-            <input type="text" id="description-weight" size="3" maxlength="6"
-                name="DESCRIPTION_WEIGHT"
+            <input type="text" id="description-weight" class="very-narrow-field"
+                maxlength="<?php e(NUM_FIELD_LEN); ?>" name="DESCRIPTION_WEIGHT"
                 value="<?php  e($data['DESCRIPTION_WEIGHT']); ?>" /></td></tr>
         <tr><th><label for="link-weight"><?php
             e(tl('pageoptions_element_link_weight'))?></label></th><td>
-            <input type="text" id="link-weight" size="3" maxlength="6"
-                name="LINK_WEIGHT"
+            <input type="text" id="link-weight" class="very-narrow-field"
+                maxlength="<?php e(NUM_FIELD_LEN); ?>" name="LINK_WEIGHT"
                 value="<?php  e($data['LINK_WEIGHT']); ?>" /></td></tr>
         </table>
         <h2><?php e(tl('pageoptions_element_results_grouping_options'))?></h2>
         <table class="weights-table" >
         <tr><th><label for="min-results-to-group"><?php
             e(tl('pageoptions_element_min_results_to_group'))?></label></th><td>
-            <input type="text" id="min-results-to-group" size="3" maxlength="6"
-                name="MIN_RESULTS_TO_GROUP"
+            <input type="text" id="min-results-to-group"
+                class="very-narrow-field"
+                maxlength="<?php e(NUM_FIELD_LEN); ?>" name="MIN_RESULTS_TO_GROUP"
                 value="<?php  e($data['MIN_RESULTS_TO_GROUP']); ?>" /></td></tr>
         <tr><th><label for="server-alpha"><?php
             e(tl('pageoptions_element_server_alpha'))?></label></th><td>
-            <input type="text" id="server-alpha" size="3" maxlength="6"
-                name="SERVER_ALPHA"
+            <input type="text" id="server-alpha" class="very-narrow-field"
+                maxlength="<?php e(NUM_FIELD_LEN); ?>" name="SERVER_ALPHA"
                 value="<?php e($data['SERVER_ALPHA']); ?>" /></td></tr>
         </table>
         </div>

@@ -37,7 +37,7 @@ if(!defined('BASE_DIR') ||
 /** Version number for upgrade function
  * @var int
  */
-define('YIOOP_VERSION', 23);
+define('YIOOP_VERSION', 24);
 /*
     pcre is an external library to php which can cause Yioop
     to seg fault if given instances of reg expressions with
@@ -221,6 +221,9 @@ if(!defined('LOGO')) {
      */
     define('LOGO', "resources/yioop.png");
     define('M_LOGO', "resources/m-yioop.png");
+    if(!defined("BASE_URL")) {
+        define('BASE_URL', NAME_SERVER);
+    }
     define('FAVICON', BASE_URL."favicon.ico");
     define('TIMEZONE', 'America/Los_Angeles');
     /* name of the cookie used to manage the session
@@ -375,11 +378,11 @@ define('MAX_LINKS_PER_SITEMAP', MEMORY_PROFILE * 80);
 define('MAX_LINKS_WORD_TEXT', 100);
 /**  maximum length of urls to try to queue, this is important for
  *  memory when creating schedule, since the amount of memory is
- *  going to be greater than the product MAX_URL_LENGTH*MAX_FETCH_SIZE
+ *  going to be greater than the product MAX_URL_LEN*MAX_FETCH_SIZE
  *  text_processors need to promise to implement this check or rely
  *  on the base class which does implement it in extractHttpHttpsUrls
  */
-define('MAX_URL_LENGTH', 512);
+define('MAX_URL_LEN', 512);
 /** request this many bytes out of a page -- this is the default value to
  * use if the user doesn't set this value in the page options GUI
  */
@@ -674,14 +677,7 @@ define('STANDARD_GROUP_ITEM', 0);
  *  page so that people can discuss the pages contents
  */
 define('WIKI_GROUP_ITEM', 1);
-/**
- * Maximum length of a post or a comment in a group feed
- */
-define('MAX_GROUP_POST_LEN', 8192);
-/**
- * Maximum length of a group wiki page
- */
-define('MAX_GROUP_PAGE_LEN', 32768);
+
 /** Constant used to indicate lasting an arbitrary number of seconds */
 define('FOREVER', -2);
 /** Number of seconds in a day*/
@@ -694,4 +690,33 @@ define('ONE_MONTH', 2592000);
 define('ONE_HOUR', 3600);
 /** Number of seconds in a minute */
 define('ONE_MINUTE', 60);
+/*
+ * Database Field Sizes
+ */
+/* Length for names of things like first name, last name, etc */
+define('NAME_LEN', 32);
+/* Used for lengths of media sources, passwords, and emails */
+define('LONG_NAME_LEN', 64);
+/* Length for names of things like group names, etc */
+define('SHORT_TITLE_LEN', 128);
+/* Length for names of things like titles of blog entries, etc */
+define('TITLE_LEN', 512);
+/* Length of a feed item or post, etc */
+define('MAX_GROUP_POST_LEN', 8192);
+/* Length for for the contents of a wiki_page */
+define('MAX_GROUP_PAGE_LEN', 32768);
+/* Length for base 64 encode timestamps */
+define('TIMESTAMP_LEN', 11);
+/* Length for timestamps down to microseconds */
+define('MICROSECOND_TIMESTAMP_LEN', 20);
+/* Length for a CAPTCHA */
+define('CAPTCHA_LEN', 6);
+/* Length for a number field */
+define('MAX_IP_ADDRESS_AS_STRING_LEN', 39);
+/* Length for a number field */
+define('NUM_FIELD_LEN', 4);
+/* Length for writing mode in locales */
+define('WRITING_MODE_LEN', 5);
+/* Length of zero knowledge password string */
+define('ZKP_PASSWORD_LEN', 200);
 ?>

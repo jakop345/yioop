@@ -417,7 +417,8 @@ class SearchController extends Controller implements CrawlConstants
             }
         }
         if(isset($_REQUEST['save_timestamp'])){
-            $save_timestamp = $this->clean($_REQUEST['save_timestamp'], 'int');
+            $save_timestamp = substr($this->clean(
+                $_REQUEST['save_timestamp'], 'int'), 0, TIMESTAMP_LEN);
         } else {
             $save_timestamp = 0;
         }
@@ -440,7 +441,8 @@ class SearchController extends Controller implements CrawlConstants
         if((isset($_REQUEST['its']) || isset($_SESSION['its']))) {
             $its = (isset($_REQUEST['its'])) ? $_REQUEST['its'] :
                 $_SESSION['its'];
-            $index_timestamp = $this->clean($its, "int");
+            $index_timestamp = substr($this->clean($its, "int"), 0,
+                TIMESTAMP_LEN);
         } else {
             $index_timestamp =
                 $this->model("crawl")->getCurrentIndexDatabaseName();

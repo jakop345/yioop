@@ -133,7 +133,7 @@ class DocxProcessor extends TextProcessor
                         $url = UrlParser::canonicalLink(
                             $link, $site);
                         if(!UrlParser::checkRecursiveUrl($url)  &&
-                            strlen($url) < MAX_URL_LENGTH) {
+                            strlen($url) < MAX_URL_LEN) {
                             if(isset($sites[$url])) {
                                 $sites[$url] .=" ".$link;
                             } else {

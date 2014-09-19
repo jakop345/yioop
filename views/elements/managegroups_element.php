@@ -308,7 +308,7 @@ class ManagegroupsElement extends Element
         <tr><th class="table-label"><label for="group-name"><?php
             e(tl('managegroups_element_groupname'))?></label>:</th>
             <td><input type="text" id="group-name"
-                name="name"  maxlength="80"
+                name="name"  maxlength="<?php e(SHORT_TITLE_LEN);?>"
                 value="<?php e($data['CURRENT_GROUP']['name']); ?>"
                 class="narrow-field" <?php
                 if($editgroup) {
@@ -444,7 +444,8 @@ class ManagegroupsElement extends Element
                             <td colspan="2" class="center">
                                 <input class="very-narrow-field center"
                                     name="user_filter" type="text" 
-                                    max-length="10" value='<?php
+                                    maxlength="<?php e(NAME_LEN)?>"
+                                    value='<?php
                                     e($data['USER_FILTER']); ?>' /><br />
                                 <button type="submit" name="change_filter"
                                     value="true"><?php
@@ -524,7 +525,7 @@ class ManagegroupsElement extends Element
         <b><label for="group-name"><?php
             e(tl('managegroups_element_groupname'))?></label>:</b>
             <input type="text" id="group-name"
-                name="name"  maxlength="80"
+                name="name"  maxlength="<?php e(SHORT_TITLE_LEN); ?>"
                 value="<?php e($data['CURRENT_GROUP']['name']); ?>"
                 class="narrow-field" disabled="disabled" />
         </div>
@@ -571,7 +572,7 @@ class ManagegroupsElement extends Element
             <th class="table-label"><label for="group-name"><?php
                 e(tl('managegroups_element_groupname'))?></label>:</th>
             <td><input type="text" id="group-name"
-                name="name"  maxlength="80"
+                name="name"  maxlength="<?php e(SHORT_TITLE_LEN); ?>"
                 value="<?php e($data['CURRENT_GROUP']['name']); ?>"
                 class="narrow-field" disabled="disabled" /></td>
         </tr>
@@ -579,7 +580,8 @@ class ManagegroupsElement extends Element
             <th class="table-label"><label for="new-owner"><?php
                 e(tl('managegroups_element_new_group_owner')); ?></label>:</th>
             <td><input type="text"  id='new-owner'
-                name='new_owner' maxlength="80" class="narrow-field" /></td>
+                name='new_owner' maxlength="<?php e(NAME_LEN); ?>"
+                class="narrow-field" /></td>
         </tr>
         <tr>
             <th>&nbsp;</th><td>&nbsp;<button class="button-box"

@@ -351,6 +351,7 @@ class WebArchiveBundle
     static function getParamModifiedTime($dir_name)
     {
         if(file_exists($dir_name."/description.txt")) {
+            clearstatcache();
             return filemtime($dir_name."/description.txt");
         }
         return false;

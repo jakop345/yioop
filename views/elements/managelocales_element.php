@@ -151,7 +151,8 @@ class ManagelocalesElement extends Element
             <tr><th><label for="locale-name"><?php
                 e(tl('managelocales_element_localenamelabel'))?></label></th>
                 <td><input type="text" id="locale-name"
-                    name="localename" maxlength="80" class="narrow-field"
+                    name="localename" maxlength="<?php e(LONG_NAME_LEN); 
+                    ?>" class="narrow-field"
                     value="<?php e($data['CURRENT_LOCALE']['localename']); ?>"
                     <?php
                     if($editlocale) {
@@ -163,7 +164,7 @@ class ManagelocalesElement extends Element
             <tr><th><label for="locale-tag"><?php
                 e(tl('managelocales_element_localetaglabel'))?></label></th>
                 <td><input type="text" id="locale-tag"
-                name="localetag"  maxlength="80"
+                name="localetag"  maxlength="<?php e(NAME_LEN); ?>"
                 value="<?php e($data['CURRENT_LOCALE']['localetag']); ?>"
                 class="narrow-field"/></td>
             </tr>

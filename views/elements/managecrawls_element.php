@@ -62,7 +62,8 @@ class ManagecrawlsElement
             e(tl('managecrawls_element_description')); ?></label>:
             <input type="text" id="description-name" name="description"
                 value="<?php if(isset($data['DESCRIPTION'])) {
-                    e($data['DESCRIPTION']); } ?>" maxlength="80"
+                    e($data['DESCRIPTION']); } ?>" maxlength="<?php e(
+                    TITLE_LEN); ?>"
                     class="wide-field"/>
             <button class="button-box" type="submit"><?php
                 e(tl('managecrawls_element_start_new_crawl')); ?></button>

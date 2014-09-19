@@ -63,12 +63,13 @@ class ManagemachinesElement extends Element
         <tr><th><label for="machine-name"><?php
             e(tl('managemachines_element_machine_name'))?></label></th>
             <td><input type="text" id="machine-name" name="name"
-                maxlength="80" class="wide-field" /></td>
+                maxlength="<?php e(NAME_LEN); ?>" class="wide-field" /></td>
         </tr>
         <tr><th><label for="machine-url"><?php
             e(tl('managemachines_element_machineurl'))?></label></th>
             <td><input type="text" id="machine-url" name="url"
-                maxlength="80" class="wide-field" /></td></tr>
+                maxlength="<?php e(MAX_URL_LEN);
+                ?>" class="wide-field" /></td></tr>
         <tr><th><label for="is-replica-box"><?php
             e(tl('managemachines_element_is_mirror'))?></label></th>
             <td><input type="checkbox" id="is-replica-box"
@@ -77,7 +78,7 @@ class ManagemachinesElement extends Element
          <tr id="m1"><th><label for="parent-machine-name"><?php
             e(tl('managemachines_element_parent_name'))?></label></th>
             <td><input type="text" name="parent" id="parent-machine-name"
-                 maxlength="80" class="wide-field" />
+                 maxlength="<?php e(NAME_LEN); ?>" class="wide-field" />
             </td>
         </tr>
         <tr id="m2"><th><label for="queue-box"><?php

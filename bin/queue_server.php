@@ -479,7 +479,7 @@ class QueueServer implements CrawlConstants, Join
         switch($this->crawl_type)
         {
             case self::WEB_CRAWL:
-                if($this->isOnlyIndexer()) return;
+                if($this->isOnlyIndexer()) { return; }
                 $this->processRobotUrls();
                 if(USE_ETAG_EXPIRES) {
                     $this->processEtagExpires();
@@ -1199,10 +1199,19 @@ class QueueServer implements CrawlConstants, Join
         $keys = array_keys($updatable_info);
         $archive_info = IndexArchiveBundle::getArchiveInfo($dir);
         $index_info = unserialize($archive_info['DESCRIPTION']);
+        $check_cull_fields = array("restrict_sites_by_url", "allowed_sites",
+            "disallowed_sites");
+        $cull_now_non_crawlable = false;
         foreach($keys as $index_field) {
             if(isset($index_info[$updatable_info[$index_field]]) ) {
                 if($index_field == "disallowed_sites") {
                     $update_disallow = true;
+                }
+                if(in_array($index_field, $check_cull_fields) &&
+                    (!isset($this->$index_field) ||
+                    $this->$index_field !=
+                    $index_info[$updatable_info[$index_field]]) ) {
+                    $cull_now_non_crawlable = true;
                 }
                 $this->$index_field =
                     $index_info[$updatable_info[$index_field]];
@@ -1217,6 +1226,11 @@ class QueueServer implements CrawlConstants, Join
            of them are really quota sites
          */
         if($update_disallow == true) {  $this->updateDisallowedQuotaSites(); }
+        if($this->isAScheduler() && $cull_now_non_crawlable) {
+            crawlLog("Scheduler: Allowed/Disallowed Urls have changed");
+            crawlLog("Scheduler: Checking if urls in queue need to be culled");
+            $this->cullNoncrawlableSites();
+        }
         $this->archive_modified_time = $modified_time;
     }
     /**
@@ -2328,6 +2342,53 @@ class QueueServer implements CrawlConstants, Join
             }
         }
         return $i;
+    }
+    /**
+     * Used to remove from the queue urls that are no longer crawlable
+     * because the allowed and disallowed sites have changed.
+     */
+    function cullNoncrawlableSites()
+    {
+        $count = $this->web_queue->to_crawl_queue->count;
+        crawlLog("Culling noncrawlable urls after change in crawl parameters;".
+            " Queue Size $count");
+        $start_time = microtime();
+        $fh = $this->web_queue->openUrlArchive();
+        $delete_urls = array();
+        $i = 1;
+        while($i < $count) {
+            crawlTimeoutLog("..still culling noncrawlable urls. Examining ".
+                "location %s in queue of %s.", $i, $count);
+            $tmp = $this->web_queue->peekQueue($i, $fh);
+            list($url, $weight, $flag, $probe) = $tmp;
+            if(!$this->allowedToCrawlSite($url) ||
+                $this->disallowedToCrawlSite($url)) {
+                $delete_urls[] = $url;
+            }
+            $i++;
+        }
+        $this->web_queue->closeUrlArchive($fh);
+        $new_time = microtime();
+        crawlLog("...Done selecting cullable URLS, time so far:".
+            (changeInMicrotime($start_time)));
+        $this->web_queue->closeUrlArchive($fh);
+        $new_time = microtime();
+        $num_deletes = count($delete_urls);
+        $k = 0;
+        foreach($delete_urls as $delete_url) {
+            $k++;
+            crawlTimeoutLog("..Removing selected url %s of %s ".
+                "from queue.", $k, $num_deletes);
+            if($delete_url) {
+                $this->web_queue->removeQueue($delete_url);
+            } else {
+                /*  if there was a hash table look up error still get rid of
+                    index from priority queue */
+                $this->web_queue->to_crawl_queue->poll($k);
+            }
+        }
+        crawlLog("...Removed $k cullable URLS  from queue in time: ".
+            (changeInMicrotime($new_time)));
     }
     /**
      * Checks if url belongs to a list of sites that are allowed to be

@@ -108,7 +108,8 @@ class CrawlComponent extends Component implements CrawlConstants
                     $crawl_params = array();
                     $crawl_params[self::STATUS] = "RESUME_CRAWL";
                     $crawl_params[self::CRAWL_TIME] =
-                        $parent->clean($_REQUEST['timestamp'], "int");
+                        substr($parent->clean($_REQUEST['timestamp'], "int"),0,
+                        TIMESTAMP_LEN);
                     $seed_info = $crawl_model->getCrawlSeedInfo(
                         $crawl_params[self::CRAWL_TIME], $machine_urls);
                     $this->getCrawlParametersFromSeedInfo($crawl_params,
@@ -132,8 +133,8 @@ class CrawlComponent extends Component implements CrawlConstants
                 break;
                 case "delete":
                     if(isset($_REQUEST['timestamp'])) {
-                         $timestamp =
-                            $parent->clean($_REQUEST['timestamp'], "int");
+                         $timestamp = substr($parent->clean(
+                            $_REQUEST['timestamp'], "int"), 0, TIMESTAMP_LEN);
                          $crawl_model->deleteCrawl($timestamp,
                             $machine_urls);
 
@@ -151,7 +152,8 @@ class CrawlComponent extends Component implements CrawlConstants
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('crawl_component_set_index')."</h1>')";
 
-                    $timestamp = $parent->clean($_REQUEST['timestamp'], "int");
+                    $timestamp = substr($parent->clean($_REQUEST['timestamp'], 
+                        "int"), 0,  TIMESTAMP_LEN);
                     $crawl_model->setCurrentIndexDatabaseName($timestamp);
                 break;
                 case "options":
@@ -184,7 +186,9 @@ class CrawlComponent extends Component implements CrawlConstants
         $seed_info = $crawl_model->getSeedInfo();
         $this->getCrawlParametersFromSeedInfo($crawl_params, $seed_info);
         if(isset($_REQUEST['description'])) {
-            $description = $parent->clean($_REQUEST['description'], "string");
+            $description = substr(
+                $parent->clean($_REQUEST['description'], "string"), 0,
+                TITLE_LEN);
         } else {
             $description = tl('crawl_component_no_description');
         }
@@ -399,15 +403,15 @@ class CrawlComponent extends Component implements CrawlConstants
             $update_flag = true;
             $no_further_changes = true;
         } else if(isset($_REQUEST['ts'])) {
-            $timestamp =
-                $parent->clean($_REQUEST['ts'], "int");
+            $timestamp = substr($parent->clean($_REQUEST['ts'], "int"), 0,
+                TIMESTAMP_LEN);
             $seed_info = $crawl_model->getCrawlSeedInfo(
                 $timestamp, $machine_urls);
             $data['ts'] = $timestamp;
         } else {
             $seed_info = $crawl_model->getSeedInfo();
         }
-        if(isset($_REQUEST['suggest']) && $_REQUEST['suggest']=='add') {
+        if(isset($_REQUEST['suggest']) && $_REQUEST['suggest'] == 'add') {
             $suggest_urls = $crawl_model->getSuggestSites();
             if(isset($_REQUEST['ts'])) {
                 $new_urls = array();
@@ -532,8 +536,8 @@ class CrawlComponent extends Component implements CrawlConstants
         $inject_urls = array();
         if(isset($_REQUEST['ts']) &&
             isset($_REQUEST['inject_sites']) && $_REQUEST['inject_sites']) {
-                $timestamp = $parent->clean($_REQUEST['ts'],
-                    "string");
+                $timestamp = substr($parent->clean($_REQUEST['ts'],
+                    "string"), 0, TIMESTAMP_LEN);
                 $inject_urls =
                     $parent->convertStringCleanArray(
                     $_REQUEST['inject_sites']);
@@ -599,7 +603,13 @@ class CrawlComponent extends Component implements CrawlConstants
         if(isset($_REQUEST['arg']) &&
             in_array($_REQUEST['arg'], $possible_arguments)) {
             if(isset($_REQUEST['name'])) {
-                $name = $parent->clean($_REQUEST['name'], 'string');
+                $name = substr($parent->clean($_REQUEST['name'], 'string'), 0,
+                    NAME_LEN);
+                $name = Classifier::cleanLabel($name);
+            } else if(isset($_REQUEST['class_label'])) {
+                $name = substr($parent->clean(
+                    $_REQUEST['class_label'], 'string'), 0,
+                    NAME_LEN);
                 $name = Classifier::cleanLabel($name);
             } else {
                 $name = "";
@@ -647,7 +657,6 @@ class CrawlComponent extends Component implements CrawlConstants
                             '</h1>\');';
                     }
                 break;
-
                 case 'editclassifier':
                     if (isset($classifiers[$name])) {
                         $data['class_label'] = $name;
@@ -659,7 +668,6 @@ class CrawlComponent extends Component implements CrawlConstants
                             '</h1>\');';
                     }
                 break;
-
                 case 'finalizeclassifier':
                     /*
                        Finalizing is too expensive to be done directly in the
@@ -731,10 +739,10 @@ class CrawlComponent extends Component implements CrawlConstants
 
         $classifier = $classifiers[$data['class_label']];
 
-        if (isset($_REQUEST['update']) && $_REQUEST['update'] == 'update') {
-            if (isset($_REQUEST['rename_label'])) {
-                $new_label = $parent->clean($_REQUEST['rename_label'],
-                    'string');
+        if(isset($_REQUEST['update']) && $_REQUEST['update'] == 'update') {
+            if(isset($_REQUEST['rename_label'])) {
+                $new_label = substr($parent->clean($_REQUEST['rename_label'],
+                    'string'), 0, NAME_LEN);
                 $new_label = preg_replace('/[^a-zA-Z0-9_]/', '', $new_label);
                 if (!isset($classifiers[$new_label])) {
                     $old_label = $classifier->class_label;
@@ -859,7 +867,8 @@ class CrawlComponent extends Component implements CrawlConstants
             if($_REQUEST['load_option'] == 1) {
                 $seed_loaded = $crawl_model->getSeedInfo(true);
             } else {
-                $timestamp = $parent->clean($_REQUEST['load_option'], "int");
+                $timestamp = substr($parent->clean(
+                    $_REQUEST['load_option'], "int"), 0, TIMESTAMP_LEN);
                 $seed_loaded = $crawl_model->getCrawlSeedInfo(
                     $timestamp, $machine_urls);
             }
@@ -1642,12 +1651,12 @@ class CrawlComponent extends Component implements CrawlConstants
                             $source['TITLE_PATH'] . "###" .
                             $source['DESCRIPTION_PATH'] . "###".
                             $source['LINK_PATH'];
-                            unset($source['CHANNEL_PATH']);
-                            unset($source['ITEM_PATH']);
-                            unset($source['TITLE_PATH']);
-                            unset($source['DESCRIPTION_PATH']);
-                            unset($source['LINK_PATH']);
                         }
+                        unset($source['CHANNEL_PATH']);
+                        unset($source['ITEM_PATH']);
+                        unset($source['TITLE_PATH']);
+                        unset($source['DESCRIPTION_PATH']);
+                        unset($source['LINK_PATH']);
                         $source_model->updateMediaSource($source);
                         $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
                             tl('crawl_component_media_source_updated').

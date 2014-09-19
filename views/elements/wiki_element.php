@@ -166,7 +166,7 @@ class WikiElement extends Element implements CrawlConstants
             case "read":
             case "show":
             default:
-                $this->renderReadPage($data, $can_edit, $logged_in);
+                $this->renderReadPage($data, $can_edit, $logged_in, $is_admin);
             break;
             case "resources":
                 $this->renderResources($data);
@@ -184,8 +184,13 @@ class WikiElement extends Element implements CrawlConstants
      *     edit or create this page
      * @param bool $logged_in whethe current user is logged in or not
      */
-    function renderReadPage($data, $can_edit, $logged_in)
+    function renderReadPage($data, $can_edit, $logged_in, $is_admin)
     {
+        if($is_admin &&
+            isset($data['PAGE_HEADER']) && isset($data["HEAD"]['page_type']) &&
+            $data["HEAD"]['page_type'] != 'presentation') {
+            e($data['PAGE_HEADER']);
+        }
         if(isset($data["HEAD"]['page_type']) && $data["HEAD"]['page_type'] ==
             'media_list') {
             $this->renderResources($data, true, $logged_in);
@@ -223,6 +228,11 @@ class WikiElement extends Element implements CrawlConstants
         } else {
             e("<h2>".tl("wiki_view_page_no_exist", $data["PAGE_NAME"]).
                 "</h2>");
+        }
+        if($is_admin && 
+            isset($data['PAGE_FOOTER']) && isset($data["HEAD"]['page_type']) &&
+            $data["HEAD"]['page_type'] != 'presentation') {
+            e($data['PAGE_FOOTER']);
         }
     }
 
@@ -291,21 +301,21 @@ class WikiElement extends Element implements CrawlConstants
             e(tl('wiki_element_title'));
             ?></b></label><input type="text" id='page-title'
                 name="title" value="<?php e($data['title']);?>"
-                maxlength="80" class="wide-field"/>
+                maxlength="<?php e(SHORT_TITLE_LEN); ?>" class="wide-field"/>
             </div>
             <div class="top-margin">
             <label for="meta-author"><b><?php
             e(tl('wiki_element_meta_author'));
             ?></b></label><input type="text" id='meta-author'
                 name="author" value="<?php e($data['author']);?>"
-                maxlength="80" class="wide-field"/>
+                maxlength="<?php e(LONG_NAME_LEN); ?>" class="wide-field"/>
             </div>
             <div class="top-margin">
             <label for="meta-robots"><b><?php
             e(tl('wiki_element_meta_robots'));
             ?></b></label><input type="text" id='meta-robots'
                 name="robots" value="<?php e($data['robots']);?>"
-                maxlength="80" class="wide-field"/>
+                maxlength="<?php e(LONG_NAME_LEN); ?>" class="wide-field"/>
             </div>
             <div class="top-margin">
             <label for="meta-description"><b><?php
@@ -316,10 +326,31 @@ class WikiElement extends Element implements CrawlConstants
                 name="description" data-buttons='none'><?php
                 e($data['description']);
             ?></textarea>
+            <div class="top-margin">
+            <label for="page-header"><b><?php
+            e(tl('wiki_element_page_header'));
+            ?></b></label><input type="text" id='page-header'
+                name="page_header" value="<?php e($data['page_header']);?>"
+                maxlength="<?php e(SHORT_TITLE_LEN); ?>" class="wide-field"/>
+            </div>
+            <div class="top-margin">
+            <label for="page-footer"><b><?php
+            e(tl('wiki_element_page_footer'));
+            ?></b></label><input type="text" id='page-footer'
+                name="page_footer" value="<?php e($data['page_footer']);?>"
+                maxlength="<?php e(SHORT_TITLE_LEN); ?>" class="wide-field"/>
+            </div>
             </div>
             <div id='page-container'><textarea id="wiki-page"
                 class="tall-text-area" name="page"
-                data-buttons='all' ><?php
+                <?php 
+                if((!isset($data['page_type']) ||
+                        $data['page_type'] != 'presentation')){
+                    $data_buttons = 'all,!wikibtn-slide';
+                }else{
+                    $data_buttons = 'all';
+                }?>
+                data-buttons='<?php e($data_buttons); ?>' ><?php
                 e($data['PAGE']);
             ?></textarea>
             <div class="green"><?php
@@ -330,7 +361,7 @@ class WikiElement extends Element implements CrawlConstants
             e(tl('wiki_element_edit_reason'));
             ?></b></label><input type="text" id='edit-reason'
                 name="edit_reason" value=""
-                maxlength="80" class="wide-field"/>
+                maxlength="<?php e(SHORT_TITLE_LEN); ?>" class="wide-field"/>
             </div>
             </div>
             <div id="save-container" class="top-margin center">
@@ -544,6 +575,7 @@ class WikiElement extends Element implements CrawlConstants
         <input type="hidden" name="group_id" value="<?php
             e($data['GROUP']['GROUP_ID']); ?>" />
         <input type="text" name="filter" class="extra-wide-field"
+            maxlength="<?php e(SHORT_TITLE_LEN); ?>"
             placeholder="<?php e(tl("wiki_view_filter_or_create")); 
             ?>" value="<?php e($data['FILTER'])?>" />
         <button class="button-box" type="submit"><?php

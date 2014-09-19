@@ -68,8 +68,8 @@ class EditmixElement extends Element
             e(tl('mixcrawls_element_mix_name')); ?></label>
             <input type="text" id="mix-name" name="mix[NAME]"
                 value="<?php if(isset($data['MIX']['NAME'])) {
-                    e($data['MIX']['NAME']); } ?>" maxlength="80"
-                    class="wide-field"/>
+                    e($data['MIX']['NAME']); } ?>" maxlength="<?php
+                    e(NAME_LEN);?>" class="wide-field"/>
         </div>
         <h3><?php e(tl('mixcrawls_element_mix_components'))?></h3>
         <div>

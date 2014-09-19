@@ -63,11 +63,12 @@ class ConfigureElement extends Element
      */
     function render($data)
     {
+        $configure_url = '?c=admin&amp;a=configure&amp;'.
+            CSRF_TOKEN."=".$data[CSRF_TOKEN];
     ?>
         <div class="current-activity">
         <form id="configureDirectoryForm" method="post"
-            action='?c=admin&amp;a=configure&amp;<?php
-            e(CSRF_TOKEN."=".$data[CSRF_TOKEN]); ?>' >
+            action='<?php e($configure_url); ?>' >
         <?php
         if(isset($data['lang'])) { ?>
             <input type="hidden" name="lang" value="<?php
@@ -160,6 +161,52 @@ class ConfigureElement extends Element
             <div class="top-margin">
             <fieldset><legend><?php
                 e(tl('configure_element_customizations'))?></legend>
+                <div class="top-margin"><label for="back-color"><?php
+                    e(tl('configure_element_use_wiki_landing'));
+                    ?></label>
+                <input type="checkbox" id="landing-page"
+                    name="LANDING_PAGE" value='true' <?php
+                    if($data['LANDING_PAGE'] == true){
+                        e("checked='checked'");} ?>/></div>
+                <div class="top-margin"><label for="back-color"><?php
+                    e(tl('configure_element_background_color'));
+                    ?></label>
+                <input type="text" id="back-image"
+                    name="BACKGROUND_COLOR" class="narrow-field" value='<?php
+                    e($data["BACKGROUND_COLOR"]); ?>' /></div>
+                <div class="top-margin"><label for="back-image"><?php
+                    e(tl('configure_element_background_image'));
+                    ?></label>
+                <input type="file" id="back-image"
+                    name="BACKGROUND_IMAGE" class="upload-icon"
+                    onchange="checkUploadIcon('back-image')"  />
+                <?php
+                if(isset($data['BACKGROUND_IMAGE']) &&
+                    $data['BACKGROUND_IMAGE']) {?>
+                    <img id='current-back-image' class="small-icon"
+                        src="<?php e($data['BACKGROUND_IMAGE']); ?>" alt="<?php
+                        e(tl('configure_element_background_image')); ?>" />
+                <?php
+                } ?>
+                </div>
+                <div class="top-margin"><label for="fore-color"><?php
+                    e(tl('configure_element_foreground_color'));
+                    ?></label>
+                <input type="text" id="fore-color"
+                    name="FOREGROUND_COLOR" class="narrow-field" value='<?php
+                    e($data["FOREGROUND_COLOR"]); ?>' /></div>
+                <div class="top-margin"><label for="top-color"><?php
+                    e(tl('configure_element_topbar_color'));
+                    ?></label>
+                <input type="text" id="top-color"
+                    name="TOPBAR_COLOR" class="narrow-field" value='<?php
+                    e($data["TOPBAR_COLOR"]); ?>' /></div>
+                <div class="top-margin"><label for="side-color"><?php
+                    e(tl('configure_element_sidebar_color'));
+                    ?></label>
+                <input type="text" id="side-color"
+                    name="SIDEBAR_COLOR" class="narrow-field" value='<?php
+                    e($data["SIDEBAR_COLOR"]); ?>' /></div>
                 <div class="top-margin"><label for="site-logo"><?php
                     e(tl('configure_element_site_logo')); 
                     ?></label>
@@ -177,7 +224,7 @@ class ConfigureElement extends Element
                 <input type="file" id="mobile-logo"
                     onchange="checkUploadIcon('mobile-logo')"
                     name="M_LOGO" class='icon-upload'  />
-                <img id='current-mobile-logo' class="small-icon" 
+                <img id='current-mobile-logo' class="small-icon"
                     src="<?php e($data['M_LOGO']); ?>" alt="<?php
                     e(tl('configure_element_mobile_logo')); ?>" />
                 <span id='info-mobile-logo'></span>
@@ -216,6 +263,11 @@ class ConfigureElement extends Element
                 <input type="text" id="token-name"
                     name="CSRF_TOKEN" class="extra-wide-field" value='<?php
                     e($data["CSRF_TOKEN"]); ?>' /></div>
+                <div class="center">
+                [<a href="<?php e($configure_url.
+                    '&amp;arg=reset'); ?>"><?php
+                    e(tl('configure_element_reset_customizations')); ?></a>]
+                </div>
             </fieldset>
             </div>
             </div>

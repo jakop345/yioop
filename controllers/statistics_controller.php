@@ -102,7 +102,8 @@ class StatisticsController extends Controller implements CrawlConstants
         }
         $this->machine_urls = $this->model("machine")->getQueueServerUrls();
         if(isset($_REQUEST['its'])) {
-            $this->index_time_stamp = $this->clean($_REQUEST['its'], "string");
+            $this->index_time_stamp = substr(
+                $this->clean($_REQUEST['its'], "string"), 0, TIMESTAMP_LEN);
             //validate timestamp against list
             //(some crawlers replay deleted crawls)
             $crawls = $this->model("crawl")->getCrawlList(false,true,

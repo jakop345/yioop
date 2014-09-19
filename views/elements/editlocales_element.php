@@ -54,8 +54,8 @@ class EditlocalesElement extends Element
     ?>
         <div class="current-activity">
         <div class="<?php e($data['leftorright']);?>">
-        <a href="?c=admin&amp;a=manageLocales&amp;<?php
-            e(CSRF_TOKEN."=".$data[CSRF_TOKEN]) ?>"
+        <a href="?c=admin&amp;<?php e('a='.$data['PREVIOUS_ACTIVITY'].'&amp;'.
+            CSRF_TOKEN.'='.$data[CSRF_TOKEN]) ?>"
         ><?php e(tl('editlocales_element_back_to_manage'))?></a>
         </div>
         <h2><?php e(tl('editlocales_element_edit_locale',
@@ -75,7 +75,8 @@ class EditlocalesElement extends Element
             $data['show'], true); ?>
         <label for="string-filter"><b><?php e(tl('editlocales_element_filter'));
         ?></b></label><input type="text" id="string-filter" name="filter"
-            value="<?php e($data['filter']); ?>" maxlength="20"
+            value="<?php e($data['filter']); ?>" maxlength="<?php
+            e(LONG_NAME_LEN); ?>"
             onchange="this.form.submit()"
             class="narrow-field" /> <button class="button-box"
             type="submit"><?php

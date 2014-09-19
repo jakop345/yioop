@@ -212,7 +212,7 @@ class ManageusersElement extends Element
         <tr><th class="table-label"><label for="user-name"><?php
             e(tl('manageusers_element_username'))?>:</label></th>
             <td><input type="text" id="user-name"
-                name="user_name"  maxlength="80"
+                name="user_name"  maxlength="<?php e(NAME_LEN);?>"
                 value="<?php e($data['CURRENT_USER']['user_name']); ?>"
                 class="narrow-field" <?php
                 if($edituser) {
@@ -222,19 +222,19 @@ class ManageusersElement extends Element
         <tr><th class="table-label"><label for="first-name"><?php
                 e(tl('manageusers_element_firstname')); ?>:</label></th>
             <td><input type="text" id="first-name"
-                name="first_name"  maxlength="80"
+                name="first_name"  maxlength="<?php e(NAME_LEN);?>"
                 value="<?php e($data['CURRENT_USER']['first_name']); ?>"
                 class="narrow-field"/></td></tr>
         <tr><th class="table-label"><label for="last-name"><?php
                 e(tl('manageusers_element_lastname')); ?>:</label></th>
             <td><input type="text" id="last-name"
-                name="last_name"  maxlength="80"
+                name="last_name"  maxlength="<?php e(NAME_LEN);?>"
                 value="<?php e($data['CURRENT_USER']['last_name']); ?>"
                 class="narrow-field"/></td></tr>
         <tr><th class="table-label"><label for="e-mail"><?php
                 e(tl('manageusers_element_email')); ?>:</label></th>
             <td><input type="text" id="e-mail"
-                name="email"  maxlength="80"
+                name="email"  maxlength="<?php e(LONG_NAME_LEN);?>"
                 value="<?php e($data['CURRENT_USER']['email']); ?>"
                 class="narrow-field"/></td></tr>
         <tr><th class="table-label"><label
@@ -312,7 +312,8 @@ class ManageusersElement extends Element
                             }
                             ?>
                         <input class="very-narrow-field center" 
-                            name="role_filter" type="text" max-length="10"
+                            name="role_filter" type="text" maxlength="<?php
+                            e(NAME_LEN); ?>"
                             value='<?php e($data['ROLE_FILTER']); ?>' />
                             <?php
                             if($data['NUM_USER_ROLES'] > $limit +
@@ -397,7 +398,8 @@ class ManageusersElement extends Element
                             }
                             ?>
                         <input class="very-narrow-field center" 
-                            name="group_filter" type="text" max-length="10" 
+                            name="group_filter" type="text" maxlength="<?php
+                            e(SHORT_TITLE_LEN); ?>"
                             value='<?php  e($data['GROUP_FILTER']); ?>' />
                         <?php
                             if($data['NUM_USER_GROUPS'] > $limit +
@@ -438,13 +440,13 @@ class ManageusersElement extends Element
         <tr><th class="table-label"><label for="pass-word"><?php
              e(tl('manageusers_element_password'))?>:</label></th>
             <td><input type="password" id="pass-word"
-                name="password" maxlength="80"
+                name="password" maxlength="<?php e(LONG_NAME_LEN);?>"
                 value="<?php e($data['CURRENT_USER']['password']); ?>"
                 class="narrow-field"/></td></tr>
         <tr><th class="table-label"><label for="retype-password"><?php
                 e(tl('manageusers_element_retype_password'))?>:</label></th>
             <td><input type="password" id="retype-password"
-                name="retypepassword" maxlength="80"
+                name="retypepassword" maxlength="<?php e(LONG_NAME_LEN);?>"
                 value="<?php e($data['CURRENT_USER']['password']); ?>"
                 class="narrow-field"/></td></tr>
 

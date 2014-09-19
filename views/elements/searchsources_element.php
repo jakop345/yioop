@@ -52,7 +52,8 @@ class SearchsourcesElement extends Element
         $pre_base_url = "?".CSRF_TOKEN."=".$data[CSRF_TOKEN]."&amp;c=admin";
         $base_url = $pre_base_url . "&amp;a=searchSources";
         $localize_url = $pre_base_url . "&amp;a=manageLocales".
-            "&amp;arg=editstrings&amp;selectlocale=".$data['LOCALE_TAG'];
+            "&amp;arg=editstrings&amp;selectlocale=".$data['LOCALE_TAG'].
+            "&amp;previous_activity=searchSources";
         ?>
         <div class="current-activity">
         <?php if($data["SOURCE_FORM_TYPE"] == "editsource") {
@@ -92,22 +93,29 @@ class SearchsourcesElement extends Element
             e(tl('searchsources_element_sourcename'))?></b></label></td><td>
             <input type="text" id="source-name" name="name"
                 value="<?php e($data['CURRENT_SOURCE']['name']); ?>"
-                maxlength="80" class="wide-field" /></td></tr>
+                maxlength="<?php e(LONG_NAME_LEN); ?>"
+                class="wide-field" /></td></tr>
         <tr><td><label for="source-url"><b><?php
             e(tl('searchsources_element_url'))?></b></label></td><td>
             <input type="text" id="source-url" name="source_url"
                 value="<?php e($data['CURRENT_SOURCE']['source_url']); ?>"
-                maxlength="80" class="wide-field" /></td></tr>
+                maxlength="<?php e(MAX_URL_LEN); ?>"
+                class="wide-field" /></td></tr>
         <tr><td><label for="source-locale-tag"><b id="locale-text"><?php
             e(tl('searchsources_element_locale_tag'))?></b></label></td><td>
             <?php $this->view->helper("options")->render("source-locale-tag",
                 "language", $data['LANGUAGES'],
                  $data['CURRENT_SOURCE']['language']); ?></td></tr>
         <tr><td><label for="source-thumbnail"><b id="thumb-text"><?php
-            e(tl('searchsources_element_thumbnail'))?></b></label></td><td>
+            e(tl('searchsources_element_thumbnail'));
+            $aux_info_len = MAX_URL_LEN;
+            $num_sub_aux_fields = 5;
+            $sub_aux_len = floor(MAX_URL_LEN/$num_sub_aux_fields);
+            ?></b></label></td><td>
             <input type="text" id="source-thumbnail" name="aux_info"
                 value="<?php e($data['CURRENT_SOURCE']['aux_info']); ?>"
-                maxlength="80" class="wide-field" /></td></tr>
+                maxlength="<?php e($aux_info_len);
+                ?>" class="wide-field" /></td></tr>
         <tr><td colspan="2"><span id='instruct'><?php 
             e(tl('searchsources_element_feed_instruct'));
             ?></span></td></tr>
@@ -115,27 +123,32 @@ class SearchsourcesElement extends Element
             e(tl('searchsources_element_channelpath')); ?></b></label></td><td>
             <input type="text" id="channel-path" name="channel_path"
                 value="<?php e($data['CURRENT_SOURCE']['channel_path']); ?>"
-                maxlength="80" class="wide-field" /></td></tr>
+                maxlength="<?php e($sub_aux_len); ?>"
+                class="wide-field" /></td></tr>
         <tr><td><label for="item-path"><b id="item-text"><?php
             e(tl('searchsources_element_itempath')); ?></b></label></td><td>
             <input type="text" id="item-path" name="item_path"
                 value="<?php e($data['CURRENT_SOURCE']['item_path']); ?>"
-                maxlength="80" class="wide-field" /></td></tr>
+                maxlength="<?php e($sub_aux_len); ?>"
+                class="wide-field" /></td></tr>
         <tr><td><label for="title-path"><b id="title-text"><?php
             e(tl('searchsources_element_titlepath'))?></b></label></td><td>
             <input type="text" id="title-path" name="title_path"
                 value="<?php e($data['CURRENT_SOURCE']['title_path']); ?>"
-                maxlength="80" class="wide-field" /></td></tr>
+                maxlength="<?php e($sub_aux_len); ?>"
+                class="wide-field" /></td></tr>
         <tr><td><label for="description-path"><b id="description-text"><?php
             e(tl('searchsources_element_descpath'))?></b></label></td><td>
             <input type="text" id="description-path" name="description_path"
                 value="<?php e($data['CURRENT_SOURCE']['description_path']); ?>"
-                maxlength="80" class="wide-field" /></td></tr>
+                maxlength="<?php e($sub_aux_len); ?>"
+                class="wide-field" /></td></tr>
         <tr><td><label for="date-path"><b id="link-text"><?php
             e(tl('searchsources_element_linkpath'))?></b></label></td><td>
             <input type="text" id="link-path" name="link_path"
                 value="<?php e($data['CURRENT_SOURCE']['link_path']); ?>"
-                maxlength="80" class="wide-field" /></td></tr>
+                maxlength="<?php e($sub_aux_len); ?>"
+                class="wide-field" /></td></tr>
         <tr><td></td><td class="center"><button class="button-box"
             type="submit"><?php e(tl('searchsources_element_submit'));
             ?></button></td></tr>

@@ -58,6 +58,11 @@ class WikiView extends View
         $logo = LOGO;
         $logged_in = isset($data["ADMIN"]) && $data["ADMIN"];
         $can_edit = $logged_in && isset($data["CAN_EDIT"]) && $data["CAN_EDIT"];
+        $is_admin = ($data["CONTROLLER"] == "admin");
+        $use_header = !$is_admin &&
+                isset($data['PAGE_HEADER']) && 
+                isset($data["HEAD"]['page_type']) &&
+                $data["HEAD"]['page_type'] != 'presentation';
         $base_query = "?c=group&amp;".CSRF_TOKEN."=".
             $data[CSRF_TOKEN] . "&amp;group_id=".
                 $data["GROUP"]["GROUP_ID"];
@@ -72,7 +77,11 @@ class WikiView extends View
         if(MOBILE) {
             $logo = M_LOGO;
         }
-        if(!isset($data['page_type']) || $data['page_type'] != 'presentation') {
+        if($use_header) {
+            e("<div>".$data['PAGE_HEADER']."</div>");
+        } else if(!$use_header &&
+            (!isset($data['page_type']) || $data['page_type'] != 'presentation')
+            ) {
             ?>
             <div class="top-bar">
             <div class="subsearch">
@@ -127,7 +136,13 @@ class WikiView extends View
             <?php
         }
         $this->element("wiki")->render($data);
-
+        if(!$is_admin &&
+            isset($data['PAGE_FOOTER']) && 
+            isset($data["HEAD"]['page_type']) &&
+            $data["HEAD"]['page_type'] != 'presentation') {
+            e("<div style='position:relative;top:20px;'>".
+                $data['PAGE_FOOTER']."</div>");
+        }
         if($logged_in) {
         ?>
         <script type="text/javascript">

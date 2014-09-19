@@ -183,7 +183,7 @@ class TextProcessor extends PageProcessor
         preg_match_all($pattern, $page, $matches);
         $i = 0;
         foreach($matches[0] as $url) {
-            if(!isset($sites[$url]) && strlen($url) < MAX_URL_LENGTH &&
+            if(!isset($sites[$url]) && strlen($url) < MAX_URL_LEN &&
                 strlen($url) > 4) {
                 $sites[$url] = preg_replace("/\s+/", " ", strip_tags($url));
                 $i++;

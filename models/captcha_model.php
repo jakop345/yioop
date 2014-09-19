@@ -57,7 +57,7 @@ class CaptchaModel extends Model
         $bg_color = imagecolorallocate($image, mt_rand(0,255), 255, 0);
         imagefill($image, 0, 0, $bg_color);
         $lines_color = imagecolorallocate($image, 0x99, 0xCC, 0x99);
-        $text_color = imagecolorallocate($image, mt_rand(0,255), 0, 255);
+        $text_color = imagecolorallocate($image, mt_rand(0, 255), 0, 255);
         // draws random lines
         for($i = 0; $i < 4; $i++){
             imageline($image, 0, rand(0,35), 195, rand(0,35),
@@ -66,7 +66,7 @@ class CaptchaModel extends Model
         $captcha_letter_array = str_split($captcha_text);
         foreach($captcha_letter_array as $i => $captcha_letter) {
             imagesetthickness($image, 1);
-            imagestring($image, 5, 5 + ($i * 35), rand(2,14),
+            imagestring($image, 5, 5 + ($i * 35), rand(2, 14),
                 $captcha_letter, $text_color);
         }
         // creates image

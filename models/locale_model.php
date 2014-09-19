@@ -189,12 +189,13 @@ class LocaleModel extends Model
                 LOCALE_DIR."/".DEFAULT_LOCALE."/configure.ini");
         }
         $this->locale_tag = $locale_tag;
+        $db = $this->db;
         $sql = "SELECT LOCALE_NAME, WRITING_MODE ".
             " FROM LOCALE WHERE LOCALE_TAG ='$locale_tag'";
-        $result = $this->db->execute($sql);
+        $result = $db->execute($sql);
         $row = false;
         if($result) {
-            $row = $this->db->fetchArray($result);
+            $row = $db->fetchArray($result);
         }
         $this->locale_name = $row['LOCALE_NAME'];
         $this->writing_mode = $row['WRITING_MODE'];
@@ -237,21 +238,28 @@ class LocaleModel extends Model
                 $this->db->setWorldPermissionsRecursive($tag_prefix);
             }
             if(!file_exists("$tag_prefix/statistics.txt") ||
+                !file_exists("$tag_prefix/configure.ini") ||
                 filemtime("$tag_prefix/statistics.txt") <
                 filemtime("$tag_prefix/configure.ini")) {
-
-                $tmp = parse_ini_with_fallback(
-                    "$tag_prefix/configure.ini");
-                $num_ids = 0;
-                $num_strings = 0;
-                foreach ($tmp['strings'] as $msg_id => $msg_string) {
-                    $num_ids++;
-                    if(strlen($msg_string) > 0) {
-                        $num_strings++;
-                    }
+                $tmp = NULL;
+                if(file_exists("$tag_prefix/configure.ini")) {
+                    $tmp = parse_ini_with_fallback(
+                        "$tag_prefix/configure.ini");
                 }
-                $locales[$i]['PERCENT_WITH_STRINGS'] =
-                    floor(100 * $num_strings/$num_ids);
+                if($tmp) {
+                    $num_ids = 0;
+                    $num_strings = 0;
+                    foreach ($tmp['strings'] as $msg_id => $msg_string) {
+                        $num_ids++;
+                        if(strlen($msg_string) > 0) {
+                            $num_strings++;
+                        }
+                    }
+                    $locales[$i]['PERCENT_WITH_STRINGS'] =
+                        floor(100 * $num_strings/$num_ids);
+                } else {
+                    $locales[$i]['PERCENT_WITH_STRINGS'] = 0;
+                }
                 file_put_contents("$tag_prefix/statistics.txt",
                     serialize($locales[$i]['PERCENT_WITH_STRINGS']));
             } else {
@@ -341,7 +349,7 @@ class LocaleModel extends Model
         $sql = "INSERT INTO LOCALE (LOCALE_NAME, LOCALE_TAG,
             WRITING_MODE, ACTIVE) VALUES (?, ?, ?, ?)";
         $this->db->execute($sql, array($locale_name, $locale_tag,
-            $writing_mode));
+            $writing_mode, $active));
         if(!file_exists(LOCALE_DIR."/$locale_tag")) {
             mkdir(LOCALE_DIR."/$locale_tag");
             $this->db->setWorldPermissionsRecursive(LOCALE_DIR."/$locale_tag");

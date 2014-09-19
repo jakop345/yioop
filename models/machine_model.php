@@ -267,7 +267,9 @@ class MachineModel extends Model
             if($news) {
                 $url .= "&news=true";
             }
-            $log_data = urldecode(json_decode(FetchUrl::getPage($url)));
+            $log_page = FetchUrl::getPage($url);
+            $log_data = htmlentities(urldecode(json_decode($log_page)),
+                ENT_SUBSTITUTE);
         } else {
             $log_data = "";
         }

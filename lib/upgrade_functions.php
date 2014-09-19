@@ -131,7 +131,7 @@ function upgradeDatabaseVersion1(&$db)
     $db->execute("CREATE TABLE VERSION (ID INTEGER PRIMARY KEY)");
     $db->execute("INSERT INTO VERSION VALUES (1)");
     $db->execute("CREATE TABLE USER_SESSION( USER_ID INTEGER PRIMARY KEY, ".
-        "SESSION VARCHAR(4096))");
+        "SESSION VARCHAR(".MAX_GROUP_POST_LEN."))");
 }
 /**
  * Upgrades a Version 1 version of the Yioop! database to a Version 2 version
@@ -170,8 +170,8 @@ function upgradeDatabaseVersion3(&$db)
     $db->execute("INSERT INTO ROLE_ACTIVITY VALUES (1, 10)");
 
     $db->execute("CREATE TABLE MACHINE (
-        NAME VARCHAR(16) PRIMARY KEY, URL VARCHAR(256) UNIQUE,
-        HAS_QUEUE_SERVER BOOLEAN, NUM_FETCHERS INT(4))");
+        NAME VARCHAR(16) PRIMARY KEY, URL VARCHAR(".MAX_URL_LEN.") UNIQUE,
+        HAS_QUEUE_SERVER BOOLEAN, NUM_FETCHERS INTEGER)");
 
     $db->execute("DELETE FROM ACTIVITY WHERE ACTIVITY_ID>5 AND ACTIVITY_ID<11");
     $db->execute(
@@ -238,7 +238,7 @@ function upgradeDatabaseVersion3(&$db)
 function upgradeDatabaseVersion4(&$db)
 {
     $db->execute("UPDATE VERSION SET ID=4 WHERE ID=3");
-    $db->execute("ALTER TABLE MACHINE ADD COLUMN PARENT VARCHAR(16)");
+    $db->execute("ALTER TABLE MACHINE ADD COLUMN PARENT VARCHAR(".NAME_LEN.")");
 }
 /**
  * Upgrades a Version 4 version of the Yioop! database to a Version 5 version
@@ -298,9 +298,9 @@ function upgradeDatabaseVersion8(&$db)
 {
     $db->execute("UPDATE VERSION SET ID=8 WHERE ID=7");
     $db->execute("INSERT INTO LOCALE VALUES (20, 'fa', 'فارسی', 'rl-tb')");
-    $db->execute("CREATE TABLE ACTIVE_FETCHER (NAME VARCHAR(16),".
-        " FETCHER_ID INT(4))");
-    $db->execute("CREATE TABLE CRON_TIME (TIMESTAMP INT(11))");
+    $db->execute("CREATE TABLE ACTIVE_FETCHER (NAME VARCHAR(".NAME_LEN."),".
+        " FETCHER_ID INTEGER)");
+    $db->execute("CREATE TABLE CRON_TIME (TIMESTAMP INT(".TIMESTAMP_LEN."))");
     $db->execute("INSERT INTO CRON_TIME VALUES ('".time()."')");
     upgradeLocales();
 }
@@ -806,7 +806,7 @@ function upgradeDatabaseVersion22(&$db)
     $db->execute("ALTER TABLE LOCALE ADD ACTIVE INTEGER DEFAULT 1");
 }
 /**
- * Upgrades a Version 23 version of the Yioop! database to a Version 21 version
+ * Upgrades a Version 22 version of the Yioop! database to a Version 23 version
  * @param object $db datasource to use to upgrade
  */
 function upgradeDatabaseVersion23(&$db)
@@ -815,6 +815,45 @@ function upgradeDatabaseVersion23(&$db)
     $db->execute("UPDATE VERSION SET ID=23 WHERE ID=22");
     $db->execute("ALTER TABLE GROUPS ADD POST_LIFETIME INTEGER DEFAULT ".
         FOREVER);
+}
+/**
+ * Upgrades a Version 23 version of the Yioop! database to a Version 24 version
+ * @param object $db datasource to use to upgrade
+ */
+function upgradeDatabaseVersion24(&$db)
+{
+    /** Get base class for profile_model.php*/
+    require_once BASE_DIR."/models/model.php";
+    /** For ProfileModel::createDatabaseTables method */
+    require_once BASE_DIR."/models/profile_model.php";
+    $db->execute("DELETE FROM VERSION WHERE ID < 23");
+    $db->execute("UPDATE VERSION SET ID=24 WHERE ID=23");
+    $profile_model = new ProfileModel(DB_NAME, false);
+    $profile_model->db = $db;
+    $dbinfo = array("DBMS" => DBMS, "DB_HOST" => DB_HOST, "DB_USER" => DB_USER,
+        "DB_PASSWORD" => DB_PASSWORD, "DB_NAME" => DB_NAME);
+    $profile_model->initializeSql($db, $dbinfo);
+    foreach($profile_model->create_statements as $object_name => $statement) {
+        if(stristr($object_name, "_INDEX")) {
+            if(!$db->execute($statement)) {
+                echo $statement." ERROR!";
+                exit();
+            }
+        } else {
+            if(!$db->execute("ALTER TABLE $object_name RENAME TO " .
+                $object_name . "_OLD")) {
+                echo "RENAME $object_name ERROR!";
+                exit();
+            }
+            if(!$db->execute($statement)) {
+                echo $statement." ERROR!";
+                exit();
+            }
+            DatasourceManager::copyTable($object_name."_OLD", $db, 
+                $object_name, $db);
+            $db->execute("DROP TABLE ".$object_name."_OLD");
+        }
+    }
 }
 /**
  * Used to insert a new activity into the database at a given acitivity_id

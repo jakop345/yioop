@@ -909,7 +909,7 @@ class RegisterController extends Controller implements CrawlConstants
         // selecting letters for captcha
         $captcha_letter = $characters_for_captcha[rand(0, $len - 1)];
         $word = "";
-        for ($i = 0; $i < 6; $i++) {
+        for ($i = 0; $i < CAPTCHA_LEN; $i++) {
             // selecting letters for captcha
             $captcha_letter = $characters_for_captcha[rand(0, $len - 1)];
             $word = $word . $captcha_letter;
@@ -1174,9 +1174,10 @@ class RegisterController extends Controller implements CrawlConstants
             }
         }
         if(isset($_REQUEST['password'])
-            && isset($_REQUEST['repassword'])
-            && $this->clean($_REQUEST['password'], "string" ) !=
-            $this->clean($_REQUEST['repassword'], "string" )) {
+            && isset($_REQUEST['repassword']) &&
+            (strlen($_REQUEST['password']) > LONG_NAME_LEN
+            || $this->clean($_REQUEST['password'], "string" ) !=
+            $this->clean($_REQUEST['repassword'], "string" ))) {
             $error = true;
             $missing[] = "password";
             $missing[] = "repassword";

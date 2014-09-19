@@ -98,6 +98,101 @@ class WebLayout extends Layout
             }
         }
         ?>
+        <style type="text/css">
+        <?php
+        $background_color = "#FFF";
+        if(defined('BACKGROUND_COLOR')) {
+            $background_color = isset($data['BACKGROUND_COLOR']) ?
+                $data['BACKGROUND_COLOR'] : BACKGROUND_COLOR;
+            ?>
+            body
+            {
+                background-color: <?php e($background_color); ?>;
+            }
+            <?php
+        }
+        if(defined('BACKGROUND_IMAGE') && BACKGROUND_IMAGE) {
+            $background_image = isset($data['BACKGROUND_IMAGE']) ?
+                $data['BACKGROUND_IMAGE'] : BACKGROUND_IMAGE;
+            ?>
+            body
+            {
+                background-image: url(<?php e(html_entity_decode(
+                    $background_image)); ?>);
+                background-repeat: no-repeat;
+                background-size: 11in;
+            }
+            body.mobile
+            {
+                background-size: 100%;
+            }
+            <?php
+        }
+        $foreground_color = "#FFF";
+        if(defined('FOREGROUND_COLOR')) {
+            $foreground_color = isset($data['FOREGROUND_COLOR']) ?
+                $data['FOREGROUND_COLOR'] : FOREGROUND_COLOR;
+            ?>
+            .frame,
+            .icon-upload,
+            .current-activity,
+            .light-content,
+            .small-margin-current-activity,
+            .suggest-list li span.unselected
+            {
+                background-color: <?php e($foreground_color); ?>;
+            }
+            .icon-upload
+            {
+                color: <?php e($foreground_color); ?>;
+            }
+            <?php
+        }
+        if(defined('SIDEBAR_COLOR')) {
+            ?>
+            .activity-menu h2
+            {
+                background-color: <?php if(isset($data['SIDEBAR_COLOR'])) {
+                    e($data['SIDEBAR_COLOR']);
+                } else {
+                    e(SIDEBAR_COLOR);
+                } ?>;
+            }
+            .light-content,
+            .mobile .light-content
+            {
+                border: 16px solid <?php if(isset($data['SIDEBAR_COLOR'])) {
+                    e($data['SIDEBAR_COLOR']);
+                } else {
+                    e(SIDEBAR_COLOR);
+                } ?>;
+            }
+            <?php
+        }
+        if(defined('TOPBAR_COLOR')) {
+            $top_color = (isset($data['TOPBAR_COLOR'])) ?
+                $data['TOPBAR_COLOR'] : TOPBAR_COLOR;
+            ?>
+            .suggest-list,
+            .suggest-list li,
+            .suggest-list li span.selected,
+            .search-box {
+                background-color: <?php e($top_color); ?>;
+            }
+            .top-bar,
+            .landing-top-bar
+            {
+                background: <?php e($top_color); ?>;
+                background: linear-gradient(to top, <?php
+                    e($background_color); ?> 0%, <?php
+                    e($top_color); ?> 30%, <?php e($top_color);
+                    ?> 70%, <?php
+                    e($background_color); ?> 100%);
+            }
+            <?php
+        }
+        ?>
+        </style>
         </head>
         <?php
             $data['MOBILE'] = (MOBILE) ? 'mobile': '';

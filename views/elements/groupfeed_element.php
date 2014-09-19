@@ -217,7 +217,7 @@ class GroupfeedElement extends Element implements CrawlConstants
                 (($page['USER_ID'] != "" &&
                 $page['USER_ID'] == $_SESSION['USER_ID']) ||
                 $_SESSION['USER_ID'] == ROOT_ID) &&
-                $page['TYPE'] != WIKI_GROUP_ITEM) {
+                isset($page['TYPE']) && $page['TYPE'] != WIKI_GROUP_ITEM) {
                 ?>
                 <div class="float-opposite" ><?php
                 if(!isset($page['NO_EDIT'])) {
@@ -342,7 +342,8 @@ class GroupfeedElement extends Element implements CrawlConstants
                         "{$page['GROUP_ID']}"); ?>)'><?php
                     e(tl('groupfeed_element_comment'));?></a>.<?php
                     if(!isset($data['JUST_GROUP_ID']) &&
-                        $page["MEMBER_ACCESS"] == GROUP_READ_WRITE) {
+                        in_array($page["MEMBER_ACCESS"], array(GROUP_READ_WRITE,
+                        GROUP_READ_WIKI)) ) {
                     ?>
                         <a href='javascript:start_thread_form(<?php
                         e("{$page['ID']},".
@@ -449,7 +450,7 @@ class GroupfeedElement extends Element implements CrawlConstants
                     ?></label></b></h2>'+
                     '<textarea class="short-text-area" '+
                     'id="comment-'+ id +'" name="description" '+
-                    'data-buttons="all,!wikibtn-search,!wikibtn-heading" '+
+                    'data-buttons="all,!wikibtn-search,!wikibtn-heading,!wikibtn-slide" '+
                     '></textarea>' +
                     '<button class="button-box float-opposite" ' +
                     'type="submit"><?php e(tl("groupfeed_element_save"));
@@ -490,14 +491,15 @@ class GroupfeedElement extends Element implements CrawlConstants
                     ?></label></b></p>' +
                     '<p><input type="text" id="title-'+ id +'" '+
                     'name="title" value="" '+
-                    ' maxlength="80" class="wide-field"/></p>' +
+                    ' maxlength="<?php e(TITLE_LEN); ?>" '+
+                    'class="wide-field"/></p>' +
                     '<p><b><label for="description-'+ id +'" ><?php
                         e(tl("groupfeed_element_post"));
                     ?></label></b></p>' +
                     '<textarea class="short-text-area" '+
                     'id="description-'+ id +'" name="description" '+
-                    'data-buttons="all,!wikibtn-search,!wikibtn-heading" '+
-                    '></textarea>' +
+                    'data-buttons="all,!wikibtn-search,!wikibtn-heading,' +
+                    '!wikibtn-slide" ></textarea>' +
                     '<button class="button-box float-opposite" ' +
                     'type="submit"><?php e(tl("groupfeed_element_save"));
                     ?></button>' +
@@ -537,14 +539,15 @@ class GroupfeedElement extends Element implements CrawlConstants
                         e(tl("groupfeed_element_subject"));
                     ?></label></b></p>' +
                     '<p><input type="text" name="title" value="'+title+'" '+
-                    ' maxlength="80" class="wide-field"/></p>' +
+                    ' maxlength="<?php e(TITLE_LEN);
+                    ?>" class="wide-field"/></p>' +
                     '<p><b><label for="description-'+ id +'" ><?php
                         e(tl("groupfeed_element_post"));
                     ?></label></b></p>' +
                     '<textarea class="short-text-area" '+
                     'id="description-'+ id +'" name="description" '+
-                    'data-buttons="all,!wikibtn-search,!wikibtn-heading" '+
-                    '>' + description + '</textarea>'+
+                    'data-buttons="all,!wikibtn-search,!wikibtn-heading,' +
+                    '!wikibtn-slide" >' + description + '</textarea>'+
                     '<button class="button-box float-opposite" ' +
                     'type="submit"><?php e(tl("groupfeed_element_save"));
                     ?></button>' +

@@ -134,7 +134,8 @@ class SearchformHelper extends Helper
                     "{$out_name}", $dropdowns[$name], $data["{$out_name}"]);
             } else {
                 e("<input type='text' id='{$name}-id' name='$out_name' ".
-                    "maxlength='80' value='{$data[$out_name]}' ".
+                    "maxlength='<?php e(LONG_NAME_LEN); ?>' ".
+                    "value='{$data[$out_name]}' ".
                     "class='narrow-field'  />");
             }
             e($item_sep);
