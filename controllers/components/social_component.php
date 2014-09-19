@@ -1189,8 +1189,11 @@ EOD;
         }
         $group = $group_model->getGroupById($group_id, $user_id);
         $data["CAN_EDIT"] = false;
-        if((!isset($data['MODE'])) || $data['MODE'] != "api"){
-        $data["MODE"] = "read";
+        if((isset($_REQUEST['c'])) && $_REQUEST['c'] == "api"){
+            $data['MODE'] = 'api';
+            $data['VIEW'] = 'api';
+        }else {
+            $data["MODE"] = "read";
         }
         if(!$group) {
             if($data['MODE'] !== 'api'){

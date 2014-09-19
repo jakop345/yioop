@@ -49,14 +49,14 @@ require_once BASE_DIR."/lib/wiki_parser.php";
  * the admin panel setting. This either could be because the admin panel
  * is "collapsed" or because the request concerns a wiki page.
  *
- * @author Chris Pollett
+ * @author Eswara Rajesh Pinapala
  * @package seek_quarry
  * @subpackage controller
  */
 class ApiController extends Controller implements CrawlConstants
 {
     /**
-     * Says which activities (roughly methods invoke from the web) this
+     * Says which activities (roughly methods invoke for the api) this
      * controller will respond to (note: more activities will be loaded from
      * components)
      * @var array
@@ -70,10 +70,6 @@ class ApiController extends Controller implements CrawlConstants
     function processRequest()
     {
         $data = array();
-        $data['MODE'] = 'api';
-        if((isset($_REQUEST['f']))&& $_REQUEST['f'] == "json"){
-            $data['FORMAT'] = "json";
-        }
         if(!PROFILE) {
             return $this->configureRequest();
         }
@@ -124,10 +120,10 @@ class ApiController extends Controller implements CrawlConstants
     }
     /**
      * Used to perform the actual activity call to be done by the 
-     * group_controller.
+     * api_controller.
      * processSession is called from @see processRequest, which does some
      * cleaning of fields if the CSRFToken is not valid. It is more likely
-     * that that group_controller may be involved in such requests as it can
+     * that that api_controller may be involved in such requests as it can
      * be invoked either when a user is logged in or not and for users with and
      * without accounts. processSession makes sure the $_REQUEST'd activity is
      * valid (or falls back to groupFeeds) then calls it. If someone uses
@@ -144,8 +140,8 @@ class ApiController extends Controller implements CrawlConstants
             $activity = "groupFeeds";
         }
         $data = $this->call($activity);
-        //$data['ACTIVITY_CONTROLLER'] = "group";
-        //$data['ACTIVITY_METHOD'] = $activity; //for settings controller
+        $data['ACTIVITY_CONTROLLER'] = "group";
+        $data['ACTIVITY_METHOD'] = $activity; //for settings controller
         if(!is_array($data)) {
             $data = array();
         }

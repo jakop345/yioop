@@ -42,7 +42,7 @@ require_once BASE_DIR."/lib/crawl_constants.php";
  * @package seek_quarry
  * @subpackage element
  */
-class WikiElement extends Element implements CrawlConstants
+class ApiElement extends Element implements CrawlConstants
 {
     /**
      * Draw a wiki page for group, or, depending on $data['MODE'] a listing
@@ -73,14 +73,7 @@ class WikiElement extends Element implements CrawlConstants
             $other_base_query .= $csrf_token;
             $csrf_token = "&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN];
         }
-        ?>
-        <?php
-        switch($data["FORMAT"])
-        {
-            case "json":
-            default:
-                $this->renderJsonDocument($data, $can_edit, $logged_in);
-        }
+        $this->renderJsonDocument($data, $can_edit, $logged_in);
     }
    
     /**
