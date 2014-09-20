@@ -58,7 +58,7 @@ class HashTable extends StringArray
      */
     var $key_size;
     /**
-     * The size in bytes of values associated with keys
+     * The size in bytes of values associated with values
      *
      * @var int
      */
@@ -152,6 +152,13 @@ class HashTable extends StringArray
         }
         //there was a free slot so write entry...
         $data = pack("x". ($this->key_size + $this->value_size));
+        if(strlen($value) < $this->value_size) {
+            /* this case should not happen, rather
+                give an error we null terminate the string to the desired
+                length
+             */
+            $value = strpad($value, $this->value_size, '\0');
+        }
         //first the key
         for ($i = 0; $i < $this->key_size; $i++) {
             $data[$i] = $key[$i];

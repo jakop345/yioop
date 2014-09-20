@@ -458,6 +458,7 @@ class UserModel extends Model
         $sql = "UPDATE USERS SET ";
         $comma ="";
         $params = array();
+        if($user == array()) {return; }
         foreach($user as $field => $value) {
             $sql .= "$comma $field=? ";
             $comma = ",";

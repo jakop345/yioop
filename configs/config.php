@@ -98,9 +98,9 @@ if(MAINTENANCE_MODE && $_SERVER["SERVER_ADDR"] != $_SERVER["REMOTE_ADDR"]) {
 }
 
 if(!defined('WORK_DIRECTORY')) {
-/*+++ The next block of code is machine edited, change at
+/*+++ The next block of code is machine edited, change at 
 your own risk, please use configure web page instead +++*/
-define('WORK_DIRECTORY', '');
+define('WORK_DIRECTORY', '/Applications/MAMP/htdocs/crawls');
 /*++++++*/
 // end machine edited code
 }
@@ -214,6 +214,9 @@ if(file_exists(WORK_DIRECTORY.PROFILE_FILE_NAME)) {
     define ('SERVER_ALPHA', 1.6);
     $INDEXING_PLUGINS = array();
 }
+if(!defined("BASE_URL")) {
+    define('BASE_URL', NAME_SERVER);
+}
 if(!defined('LOGO')) { 
     /*  these defines were added to the profile at same. So we add them all in 
         one go to both the case where we have no profile and in the older 
@@ -221,9 +224,6 @@ if(!defined('LOGO')) {
      */
     define('LOGO', "resources/yioop.png");
     define('M_LOGO', "resources/m-yioop.png");
-    if(!defined("BASE_URL")) {
-        define('BASE_URL', NAME_SERVER);
-    }
     define('FAVICON', BASE_URL."favicon.ico");
     define('TIMEZONE', 'America/Los_Angeles');
     /* name of the cookie used to manage the session

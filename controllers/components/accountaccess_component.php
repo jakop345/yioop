@@ -223,6 +223,8 @@ class AccountaccessComponent extends Component
                             return $data;
                         }
                     }
+                    echo "yono";
+                    print_r($user);
                     $user_model->updateUser($user);
                     $data['USER']['USER_ICON'] = $user_model->getUserIconUrl(
                         $user['USER_ID']);
