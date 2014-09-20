@@ -607,6 +607,9 @@ class AccountaccessComponent extends Component
                 break;
             }
         }
+        if($search_array == array()) {
+            $search_array[] = array("user", "", "", "ASC");
+        }
         $parent->pagingLogic($data, $user_model, "USERS",
             DEFAULT_ADMIN_PAGING_NUM, $search_array, "");
         return $data;
@@ -888,6 +891,9 @@ class AccountaccessComponent extends Component
                         array('name'));
                 break;
             }
+        }
+        if($search_array == array()) {
+            $search_array[] = array("name", "", "", "ASC");
         }
         $parent->pagingLogic($data, $role_model, "ROLES",
             DEFAULT_ADMIN_PAGING_NUM, $search_array, "");

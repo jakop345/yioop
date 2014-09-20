@@ -516,6 +516,9 @@ class SocialComponent extends Component implements CrawlConstants
             $browse = true;
             $data['browse'] = 'true';
         }
+        if($search_array == array()) {
+            $search_array[] = array("name", "", "", "ASC");
+        }
         $parent->pagingLogic($data, $group_model,
             "GROUPS", DEFAULT_ADMIN_PAGING_NUM, $search_array, "",
             array($current_id, $browse));
@@ -1895,6 +1898,9 @@ EOD;
                         tl('social_component_thread_created'). "</h1>');";
                 break;
             }
+        }
+        if($search_array == array()) {
+            $search_array[] = array("name", "", "", "ASC");
         }
         $search_array[] = array("owner_id", "=", $user_id, "");
         $parent->pagingLogic($data, $crawl_model, "available_mixes",
