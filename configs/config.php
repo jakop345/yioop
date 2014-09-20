@@ -258,7 +258,20 @@ if(isset($_SERVER['HTTP_USER_AGENT'])) {
 } else {
     define("MOBILE", false);
 }
-
+/*
+ * Various groups and user ids. These must be defined before the
+ * profile check and return below
+ */
+/** ID of the root user */
+define('ROOT_ID', 1);
+/** Role of the root user */
+define('ADMIN_ROLE', 1);
+/** Default role of an active user */
+define('USER_ROLE', 2);
+/** ID of the group to which all Yioop users belong */
+define('PUBLIC_GROUP_ID', 2);
+/** ID of the group to which all Yioop users belong */
+define('PUBLIC_USER_ID', 2);
 if(!PROFILE) {
     return;
 }
@@ -584,16 +597,6 @@ define('MAX_MIX_FRAGMENTS', 10);
  * they are displayed (not in DB)
  */
 define ('NAME_TRUNCATE_LEN', 7);
-/** ID of the root user */
-define('ROOT_ID', 1);
-/** Role of the root user */
-define('ADMIN_ROLE', 1);
-/** Default role of an active user */
-define('USER_ROLE', 2);
-/** ID of the group to which all Yioop users belong */
-define('PUBLIC_GROUP_ID', 2);
-/** ID of the group to which all Yioop users belong */
-define('PUBLIC_USER_ID', 2);
 /** USER STATUS value used for a user who can log in and perform activities */
 define('ACTIVE_STATUS', 1);
 /**
