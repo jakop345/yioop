@@ -212,6 +212,10 @@ if(file_exists(WORK_DIRECTORY.PROFILE_FILE_NAME)) {
         server_alpha*total_num/num_servers will be returned any a given
         queue server machine*/
     define ('SERVER_ALPHA', 1.6);
+    define('BACKGROUND_COLOR', "#FFF");
+    define('FOREGROUND_COLOR', "#FFF");
+    define('SIDEBAR_COLOR', "#8A4");
+    define('TOPBAR_COLOR', "#EEF");
     $INDEXING_PLUGINS = array();
 }
 if(!defined("BASE_URL")) {
