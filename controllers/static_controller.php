@@ -129,7 +129,7 @@ class StaticController extends Controller
         $head_info = $static_view->head_objects[$data['page']];
         if((isset($head_info['title']))) {
             if($head_info['title']) {
-                $data["subtitle"] = " - ". $head_info;
+                $data["subtitle"] = " - ". $head_info['title'];
             } else {
                 $data["subtitle"] = "";
             }
