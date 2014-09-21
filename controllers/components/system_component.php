@@ -1029,7 +1029,8 @@ EOD;
                 $tmp_image = $old_profile['BACKGROUND_IMAGE'];
                 $old_profile['BACKGROUND_IMAGE'] = "";
                 if($profile_model->updateProfile(
-                    $data['WORK_DIRECTORY'], $profile, $old_profile)) {
+                    $data['WORK_DIRECTORY'], $profile, $old_profile,
+                    true)) {
                     $old_profile['BACKGROUND_IMAGE'] = $tmp_image;
                     foreach($profile as $key => $value) {
                         $data[$key] = $value;
