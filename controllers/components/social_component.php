@@ -1208,6 +1208,7 @@ EOD;
         }
         $page_defaults = array(
             'page_type' => 'standard',
+            'page_border' => 'solid',
             'title' => '',
             'author' => '',
             'robots' => '',
@@ -1219,6 +1220,11 @@ EOD;
             "standard" => tl('social_component_standard_page'),
             "media_list" => tl('social_component_media_list'),
             "presentation" => tl('social_component_presentation')
+        );
+        $data['page_borders'] = array(
+            "solid-border" => tl('social_component_solid'),
+            "dashed-border" => tl('social_component_dashed'),
+            "none" => tl('social_component_none')
         );
         $read_address = "?c={$data['CONTROLLER']}&amp;a=wiki&amp;".
             "arg=read&amp;group_id=$group_id&amp;page_name=";
@@ -1263,12 +1269,18 @@ EOD;
                         $write_head = false;
                         $head_vars = array();
                         $page_types = array_keys($data['page_types']);
+                        $page_borders = array_keys($data['page_borders']);
                         foreach($page_defaults as $key => $default) {
                             $head_vars[$key] = $default;
                             if(isset($_REQUEST[$key])) {
                                 $head_vars[$key] =  trim(
                                     $parent->clean($_REQUEST[$key], "string"));
                                 if($key == 'page_type') {
+                                    if(!in_array($head_vars[$key],
+                                        $page_types)) {
+                                        $head_vars[$key] = $default;
+                                    }
+                                } else if($key == 'page_borders') {
                                     if(!in_array($head_vars[$key],
                                         $page_types)) {
                                         $head_vars[$key] = $default;
