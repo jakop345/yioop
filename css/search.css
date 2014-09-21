@@ -2192,7 +2192,7 @@ div.group-result
     min-width: 9in;
     max-width: 9in;
     position: relative;
-    top:.3in;
+    top:0.3in;
 }
 .small-margin-current-activity
 {

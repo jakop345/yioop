@@ -142,7 +142,7 @@ class WikiView extends View
             isset($data['PAGE_FOOTER']) && 
             isset($data["HEAD"]['page_type']) &&
             $data["HEAD"]['page_type'] != 'presentation') {
-            e("<div class='current-activity-footer clear'>".
+            e("<div class='current-activity-footer'>".
                 $data['PAGE_FOOTER']."</div>");
         }
         if($logged_in) {
