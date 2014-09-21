@@ -77,11 +77,13 @@ class StaticView extends View
             </div>
             <?php
         }
+        $head_objects = isset($this->head_objects[$data['page']]) ?
+            $this->head_objects[$data['page']] : "";
         $page_border = "";
-        if(isset($this->head_objects['page_border']) && 
-            $this->head_objects['page_border'] &&
-            $this->head_objects['page_border'] != 'none') {
-            $page_border = $this->head_objects['page_border'];
+        if(isset($head_objects['page_border']) &&
+            $head_objects['page_border'] &&
+            $head_objects['page_border'] != 'none') {
+            $page_border = $head_objects['page_border'];
         }
         ?>
         <div class="small-margin-current-activity <?php  e($page_border); ?>">
