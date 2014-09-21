@@ -99,7 +99,7 @@ class StaticView extends View
         if(isset($data['PAGE_FOOTER'])) {
             ?><div class="current-activity-footer center">
             <?php e($data['PAGE_FOOTER']);
-            ?></div>
+            ?></div><?php
         } else {
             ?>
             <div class="current-activity-footer center">
