@@ -1124,7 +1124,6 @@ class SocialComponent extends Component implements CrawlConstants
         } else {
             $user_id = PUBLIC_USER_ID;
         }
-        $additional_substitutions = array();
         $search_translation = tl('social_component_search');
         $search_form = <<<EOD
 <div class="search-box $2-search-box">
@@ -1226,8 +1225,12 @@ EOD;
             "dashed-border" => tl('social_component_dashed'),
             "none" => tl('social_component_none')
         );
-        $read_address = "?c={$data['CONTROLLER']}&amp;a=wiki&amp;".
-            "arg=read&amp;group_id=$group_id&amp;page_name=";
+        if($group_id == PUBLIC_GROUP_ID) {
+            $read_address = "{{controller_and_page}}";
+        } else {
+            $read_address = "?c={{controller}}&amp;a=wiki&amp;".
+                "arg=read&amp;group_id=$group_id&amp;page_name=";
+        }
         if(isset($_REQUEST["arg"])) {
             switch($_REQUEST["arg"])
             {
@@ -1569,7 +1572,8 @@ EOD;
             }
             $view = $parent->view($data['VIEW']);
             $parent->parsePageHeadVars($view, $data["PAGE_ID"], $data["PAGE"]);
-            $data["PAGE"] = $view->page_objects[$data["PAGE_ID"]];
+            $data["PAGE"] = $this->dynamicSubstitutions($group_id, $data,
+                $view->page_objects[$data["PAGE_ID"]]);
             $data["HEAD"] = $view->head_objects[$data["PAGE_ID"]];
             if(isset($data["HEAD"]['page_header']) &&
                 $data["HEAD"]['page_type'] != 'presentation') {
@@ -1663,6 +1667,23 @@ EOD;
             }
         }
         return $data;
+    }
+    /**
+     *
+     */
+    function dynamicSubstitutions($group_id, $data, $pre_page)
+    {
+        if($data['CONTROLLER'] == 'static') {
+            $address = "?c=static&amp;p=";
+        } else {
+            $address = "?c={$data['CONTROLLER']}&amp;a=wiki&amp;".
+                "arg=read&amp;group_id=$group_id&amp;page_name=";
+        }
+        $pre_page = preg_replace('/{{controller_and_page}}/', $address,
+            $pre_page);
+        $pre_page = preg_replace('/{{controller}}/', $data['CONTROLLER'],
+            $pre_page);
+        return $pre_page;
     }
     /**
      * Called to include the Javascript Wiki Editor (wiki.js) on a page
@@ -2077,5 +2098,4 @@ EOD;
         }
         $data['SCRIPT'] .= ']; drawFragments();';
     }
-
 }

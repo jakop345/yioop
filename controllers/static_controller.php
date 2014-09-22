@@ -182,6 +182,9 @@ class StaticController extends Controller
                 PUBLIC_GROUP_ID, $page_name, DEFAULT_LOCALE, "read");
             $page_string = $page_info["PAGE"];
         }
+        $data['CONTROLLER'] = "static";
+        $page_string = $this->component("social")->dynamicSubstitutions(
+            PUBLIC_GROUP_ID, $data, $page_string);
         return $page_string;
     }
 }
