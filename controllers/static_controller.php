@@ -139,6 +139,7 @@ class StaticController extends Controller
             $data["subtitle"] = "";
         }
         $locale_tag = getLocaleTag();
+        $data['CONTROLLER'] = "static";
         $group_model = $this->model("group");
         if(isset($head_info['page_header']) && $head_info['page_header']) {
             $page_header = $group_model->getPageInfoByName(PUBLIC_GROUP_ID,
@@ -149,6 +150,9 @@ class StaticController extends Controller
             }
             $data["PAGE_HEADER"] = (isset($header_parts[1])) ?
                 $header_parts[1] : "".$page_header['PAGE'];
+            $data["PAGE_HEADER"] = $this->component("social"
+                )->dynamicSubstitutions(PUBLIC_GROUP_ID, $data,
+                $data["PAGE_HEADER"]);
         }
         if(isset($head_info['page_footer']) && $head_info['page_footer']) {
             $page_footer = $group_model->getPageInfoByName(PUBLIC_GROUP_ID,
@@ -159,6 +163,9 @@ class StaticController extends Controller
             }
             $data['PAGE_FOOTER'] = (isset($footer_parts[1])) ?
                 $footer_parts[1] : "" . $page_footer['PAGE'];
+            $data["PAGE_FOOTER"] = $this->component("social"
+                )->dynamicSubstitutions(PUBLIC_GROUP_ID, $data,
+                $data["PAGE_FOOTER"]);
         }
         return $data;
     }
