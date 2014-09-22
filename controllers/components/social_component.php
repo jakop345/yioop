@@ -1689,7 +1689,7 @@ EOD;
             $address = "?c={$data['CONTROLLER']}&amp;{$csrf_token}a=wiki&amp;".
                 "arg=read&amp;group_id=$group_id&amp;page_name=";
         }
-        $pre_page = preg_replace('/\{{controller_and_page}\]/', $address,
+        $pre_page = preg_replace('/\[{controller_and_page}\]/', $address,
             $pre_page);
         $pre_page = preg_replace('/\[{controller}\]/', $data['CONTROLLER'],
             $pre_page);
