@@ -1090,9 +1090,9 @@ class SocialComponent extends Component implements CrawlConstants
         $data['LIMIT'] = $limit;
         $data['RESULTS_PER_PAGE'] = $results_per_page;
         $data['PAGES'] = $pages;
-        $data['PAGING_QUERY'] = "?c=$controller_name&amp;a=groupFeeds";
+        $data['PAGING_QUERY'] = "./?c=$controller_name&amp;a=groupFeeds";
         $data['OTHER_PAGING_QUERY'] =
-            "?c=$other_controller_name&amp;a=groupFeeds";
+            "./?c=$other_controller_name&amp;a=groupFeeds";
         $this->initializeWikiEditor($data, -1);
         return $data;
     }
@@ -1677,10 +1677,16 @@ EOD;
      */
     function dynamicSubstitutions($group_id, $data, $pre_page)
     {
+        $csrf_token = "";
+        if(isset($data['ADMIN']) && $data['ADMIN']) {
+            $csrf_token =
+                CSRF_TOKEN."=".$this->parent->generateCSRFToken(
+                $_SESSION['USER_ID']). "&amp;";
+        }
         if($data['CONTROLLER'] == 'static') {
-            $address = "?c=static&amp;p=";
+            $address = "?c=static&amp;{$csrf_token}p=";
         } else {
-            $address = "?c={$data['CONTROLLER']}&amp;a=wiki&amp;".
+            $address = "?c={$data['CONTROLLER']}&amp;{$csrf_token}a=wiki&amp;".
                 "arg=read&amp;group_id=$group_id&amp;page_name=";
         }
         $pre_page = preg_replace('/{{controller_and_page}}/', $address,

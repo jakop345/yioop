@@ -57,7 +57,7 @@ class GroupfeedElement extends Element implements CrawlConstants
             $data[CSRF_TOKEN] : "";
         $arrows = ($is_admin) ? "&lt;&lt;" : "&gt;&gt;";
         $is_status = isset($data['STATUS']);
-        $base_query = "./".$data['PAGING_QUERY'] . $append_url;
+        $base_query = $data['PAGING_QUERY'] . $append_url;
         if(isset($data["WIKI_QUERY"])) {
             $wiki_query = $data["WIKI_QUERY"] . $append_url;
         }
