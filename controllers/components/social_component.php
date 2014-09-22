@@ -1226,9 +1226,9 @@ EOD;
             "none" => tl('social_component_none')
         );
         if($group_id == PUBLIC_GROUP_ID) {
-            $read_address = "{{controller_and_page}}";
+            $read_address = "[{controller_and_page}]";
         } else {
-            $read_address = "?c={{controller}}&amp;a=wiki&amp;".
+            $read_address = "?c=[{controller}]&amp;a=wiki&amp;".
                 "arg=read&amp;group_id=$group_id&amp;page_name=";
         }
         if(isset($_REQUEST["arg"])) {
@@ -1689,9 +1689,9 @@ EOD;
             $address = "?c={$data['CONTROLLER']}&amp;{$csrf_token}a=wiki&amp;".
                 "arg=read&amp;group_id=$group_id&amp;page_name=";
         }
-        $pre_page = preg_replace('/{{controller_and_page}}/', $address,
+        $pre_page = preg_replace('/\{{controller_and_page}\]/', $address,
             $pre_page);
-        $pre_page = preg_replace('/{{controller}}/', $data['CONTROLLER'],
+        $pre_page = preg_replace('/\[{controller}\]/', $data['CONTROLLER'],
             $pre_page);
         return $pre_page;
     }
