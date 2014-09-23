@@ -446,7 +446,11 @@ class Model implements CrawlConstants
         $where_and = "";
         $sort_types = array("ASC", "DESC");
         foreach($search_array as $row) {
-            $field_name = $this->search_table_column_map[$row[0]];
+            if(isset($this->search_table_column_map[$row[0]])) {
+                $field_name = $this->search_table_column_map[$row[0]];
+            } else {
+                $field_name = $row[0];
+            }
             $comparison = $row[1];
             $value = $row[2];
             $sort_dir = $row[3];

@@ -516,6 +516,9 @@ class SocialComponent extends Component implements CrawlConstants
             $browse = true;
             $data['browse'] = 'true';
         }
+        if($search_array == array()) {
+            $search_array[] = array("name", "", "", "ASC");
+        }
         $parent->pagingLogic($data, $group_model,
             "GROUPS", DEFAULT_ADMIN_PAGING_NUM, $search_array, "",
             array($current_id, $browse));
@@ -1087,9 +1090,9 @@ class SocialComponent extends Component implements CrawlConstants
         $data['LIMIT'] = $limit;
         $data['RESULTS_PER_PAGE'] = $results_per_page;
         $data['PAGES'] = $pages;
-        $data['PAGING_QUERY'] = "?c=$controller_name&amp;a=groupFeeds";
+        $data['PAGING_QUERY'] = "./?c=$controller_name&amp;a=groupFeeds";
         $data['OTHER_PAGING_QUERY'] =
-            "?c=$other_controller_name&amp;a=groupFeeds";
+            "./?c=$other_controller_name&amp;a=groupFeeds";
         $this->initializeWikiEditor($data, -1);
         return $data;
     }
@@ -1121,7 +1124,6 @@ class SocialComponent extends Component implements CrawlConstants
         } else {
             $user_id = PUBLIC_USER_ID;
         }
-        $additional_substitutions = array();
         $search_translation = tl('social_component_search');
         $search_form = <<<EOD
 <div class="search-box $2-search-box">
@@ -1215,6 +1217,7 @@ EOD;
         }
         $page_defaults = array(
             'page_type' => 'standard',
+            'page_border' => 'solid',
             'title' => '',
             'author' => '',
             'robots' => '',
@@ -1227,8 +1230,17 @@ EOD;
             "media_list" => tl('social_component_media_list'),
             "presentation" => tl('social_component_presentation')
         );
-        $read_address = "?c={$data['CONTROLLER']}&amp;a=wiki&amp;".
-            "arg=read&amp;group_id=$group_id&amp;page_name=";
+        $data['page_borders'] = array(
+            "solid-border" => tl('social_component_solid'),
+            "dashed-border" => tl('social_component_dashed'),
+            "none" => tl('social_component_none')
+        );
+        if($group_id == PUBLIC_GROUP_ID) {
+            $read_address = "[{controller_and_page}]";
+        } else {
+            $read_address = "?c=[{controller}]&amp;a=wiki&amp;".
+                "arg=read&amp;group_id=$group_id&amp;page_name=";
+        }
         if(isset($_REQUEST["arg"])) {
             switch($_REQUEST["arg"])
             {
@@ -1270,12 +1282,18 @@ EOD;
                         $write_head = false;
                         $head_vars = array();
                         $page_types = array_keys($data['page_types']);
+                        $page_borders = array_keys($data['page_borders']);
                         foreach($page_defaults as $key => $default) {
                             $head_vars[$key] = $default;
                             if(isset($_REQUEST[$key])) {
                                 $head_vars[$key] =  trim(
                                     $parent->clean($_REQUEST[$key], "string"));
                                 if($key == 'page_type') {
+                                    if(!in_array($head_vars[$key],
+                                        $page_types)) {
+                                        $head_vars[$key] = $default;
+                                    }
+                                } else if($key == 'page_borders') {
                                     if(!in_array($head_vars[$key],
                                         $page_types)) {
                                         $head_vars[$key] = $default;
@@ -1564,7 +1582,8 @@ EOD;
             }
             $view = $parent->view($data['VIEW']);
             $parent->parsePageHeadVars($view, $data["PAGE_ID"], $data["PAGE"]);
-            $data["PAGE"] = $view->page_objects[$data["PAGE_ID"]];
+            $data["PAGE"] = $this->dynamicSubstitutions($group_id, $data,
+                $view->page_objects[$data["PAGE_ID"]]);
             $data["HEAD"] = $view->head_objects[$data["PAGE_ID"]];
             if(isset($data["HEAD"]['page_header']) &&
                 $data["HEAD"]['page_type'] != 'presentation') {
@@ -1576,6 +1595,8 @@ EOD;
                 }
                 $data["PAGE_HEADER"] = (isset($header_parts[1])) ?
                     $header_parts[1] : "". $page_header['PAGE'];
+                $data["PAGE_HEADER"] = $this->dynamicSubstitutions(
+                    $group_id, $data, $data["PAGE_HEADER"]);
             }
             if(isset($data["HEAD"]['page_footer']) &&
                 $data["HEAD"]['page_type'] != 'presentation') {
@@ -1587,6 +1608,8 @@ EOD;
                 }
                 $data['PAGE_FOOTER'] = (isset($footer_parts[1])) ?
                     $footer_parts[1] : "" . $page_footer['PAGE'];
+                $data["PAGE_FOOTER"] = $this->dynamicSubstitutions(
+                    $group_id, $data, $data["PAGE_FOOTER"]);
             }
             if($data['MODE'] == "read" && strpos($data["PAGE"], "`") !== false){
                 if(isset($data["INCLUDE_SCRIPTS"])) {
@@ -1658,6 +1681,29 @@ EOD;
             }
         }
         return $data;
+    }
+    /**
+     *
+     */
+    function dynamicSubstitutions($group_id, $data, $pre_page)
+    {
+        $csrf_token = "";
+        if(isset($data['ADMIN']) && $data['ADMIN']) {
+            $csrf_token =
+                CSRF_TOKEN."=".$this->parent->generateCSRFToken(
+                $_SESSION['USER_ID']). "&amp;";
+        }
+        if($data['CONTROLLER'] == 'static') {
+            $address = "?c=static&amp;{$csrf_token}p=";
+        } else {
+            $address = "?c={$data['CONTROLLER']}&amp;{$csrf_token}a=wiki&amp;".
+                "arg=read&amp;group_id=$group_id&amp;page_name=";
+        }
+        $pre_page = preg_replace('/\[{controller_and_page}\]/', $address,
+            $pre_page);
+        $pre_page = preg_replace('/\[{controller}\]/', $data['CONTROLLER'],
+            $pre_page);
+        return $pre_page;
     }
     /**
      * Called to include the Javascript Wiki Editor (wiki.js) on a page
@@ -1906,6 +1952,9 @@ EOD;
                 break;
             }
         }
+        if($search_array == array()) {
+            $search_array[] = array("name", "", "", "ASC");
+        }
         $search_array[] = array("owner_id", "=", $user_id, "");
         $parent->pagingLogic($data, $crawl_model, "available_mixes",
             DEFAULT_ADMIN_PAGING_NUM, $search_array, "", true);
@@ -2069,5 +2118,4 @@ EOD;
         }
         $data['SCRIPT'] .= ']; drawFragments();';
     }
-
 }

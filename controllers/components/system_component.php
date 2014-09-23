@@ -952,7 +952,8 @@ EOD;
                     if(isset($_FILES[$field]['name']) &&
                         $_FILES[$field]['name'] !="") {
                         if((!in_array($_FILES[$field]['type'],
-                            array('image/png', 'image/gif', 'image/jpeg')) &&
+                            array('image/png', 'image/gif', 'image/jpeg',
+                                'image/x-icon')) &&
                             $field != 'SEARCHBAR_PATH') || (
                             $_FILES[$field]['type'] != 'text/xml' &&
                             $field == 'SEARCHBAR_PATH')) {
@@ -1028,7 +1029,8 @@ EOD;
                 $tmp_image = $old_profile['BACKGROUND_IMAGE'];
                 $old_profile['BACKGROUND_IMAGE'] = "";
                 if($profile_model->updateProfile(
-                    $data['WORK_DIRECTORY'], $profile, $old_profile)) {
+                    $data['WORK_DIRECTORY'], $profile, $old_profile,
+                    true)) {
                     $old_profile['BACKGROUND_IMAGE'] = $tmp_image;
                     foreach($profile as $key => $value) {
                         $data[$key] = $value;

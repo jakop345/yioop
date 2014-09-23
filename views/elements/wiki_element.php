@@ -97,7 +97,13 @@ class WikiElement extends Element implements CrawlConstants
             == 'presentation') {
             e('<div class="presentation-activity">');
         } else {
-            e('<div class="small-margin-current-activity">');
+            $page_border = "";
+            if(isset($data["HEAD"]['page_border']) && 
+                $data["HEAD"]['page_border'] &&
+                $data['HEAD']['page_border'] != 'none') {
+                $page_border = $data['HEAD']['page_border'];
+            }
+            e('<div class="small-margin-current-activity '.$page_border.'">');
         }
         if(isset($data['MEDIA_NAME'])) {
             ?>
@@ -294,6 +300,14 @@ class WikiElement extends Element implements CrawlConstants
             ?></b></label><?php
             $this->view->helper("options")->render("page-type","page_type",
                 $data['page_types'], $data['current_page_type']);
+            ?>
+            </div>
+            <div class="top-margin">
+            <label for="page-border"><b><?php
+            e(tl('wiki_element_page_border'));
+            ?></b></label><?php
+            $this->view->helper("options")->render("page-border","page_border",
+                $data['page_borders'], $data['page_border']);
             ?>
             </div>
             <div class="top-margin">

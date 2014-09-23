@@ -129,7 +129,7 @@ class StaticController extends Controller
         $head_info = $static_view->head_objects[$data['page']];
         if((isset($head_info['title']))) {
             if($head_info['title']) {
-                $data["subtitle"] = " - ". $head_info;
+                $data["subtitle"] = " - ". $head_info['title'];
             } else {
                 $data["subtitle"] = "";
             }
@@ -139,6 +139,7 @@ class StaticController extends Controller
             $data["subtitle"] = "";
         }
         $locale_tag = getLocaleTag();
+        $data['CONTROLLER'] = "static";
         $group_model = $this->model("group");
         if(isset($head_info['page_header']) && $head_info['page_header']) {
             $page_header = $group_model->getPageInfoByName(PUBLIC_GROUP_ID,
@@ -149,6 +150,9 @@ class StaticController extends Controller
             }
             $data["PAGE_HEADER"] = (isset($header_parts[1])) ?
                 $header_parts[1] : "".$page_header['PAGE'];
+            $data["PAGE_HEADER"] = $this->component("social"
+                )->dynamicSubstitutions(PUBLIC_GROUP_ID, $data,
+                $data["PAGE_HEADER"]);
         }
         if(isset($head_info['page_footer']) && $head_info['page_footer']) {
             $page_footer = $group_model->getPageInfoByName(PUBLIC_GROUP_ID,
@@ -159,6 +163,9 @@ class StaticController extends Controller
             }
             $data['PAGE_FOOTER'] = (isset($footer_parts[1])) ?
                 $footer_parts[1] : "" . $page_footer['PAGE'];
+            $data["PAGE_FOOTER"] = $this->component("social"
+                )->dynamicSubstitutions(PUBLIC_GROUP_ID, $data,
+                $data["PAGE_FOOTER"]);
         }
         return $data;
     }
@@ -182,6 +189,9 @@ class StaticController extends Controller
                 PUBLIC_GROUP_ID, $page_name, DEFAULT_LOCALE, "read");
             $page_string = $page_info["PAGE"];
         }
+        $data['CONTROLLER'] = "static";
+        $page_string = $this->component("social")->dynamicSubstitutions(
+            PUBLIC_GROUP_ID, $data, $page_string);
         return $page_string;
     }
 }

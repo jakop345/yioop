@@ -223,6 +223,8 @@ class AccountaccessComponent extends Component
                             return $data;
                         }
                     }
+                    echo "yono";
+                    print_r($user);
                     $user_model->updateUser($user);
                     $data['USER']['USER_ICON'] = $user_model->getUserIconUrl(
                         $user['USER_ID']);
@@ -607,6 +609,9 @@ class AccountaccessComponent extends Component
                 break;
             }
         }
+        if($search_array == array()) {
+            $search_array[] = array("user", "", "", "ASC");
+        }
         $parent->pagingLogic($data, $user_model, "USERS",
             DEFAULT_ADMIN_PAGING_NUM, $search_array, "");
         return $data;
@@ -888,6 +893,9 @@ class AccountaccessComponent extends Component
                         array('name'));
                 break;
             }
+        }
+        if($search_array == array()) {
+            $search_array[] = array("name", "", "", "ASC");
         }
         $parent->pagingLogic($data, $role_model, "ROLES",
             DEFAULT_ADMIN_PAGING_NUM, $search_array, "");

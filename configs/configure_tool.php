@@ -170,13 +170,14 @@ class ConfigureTool
             return "configureMenu";
         }
         e("Enter old password:");
-        $_REQUEST["oldpassword"] = readPassword();
+        $_REQUEST["password"] = readPassword();
         e("Enter new password:");
-        $_REQUEST["newpassword"] = readPassword();
+        $_REQUEST["new_password"] = readPassword();
         e("Re-Enter new password:");
-        $_REQUEST["retypepassword"] = readPassword();
-        $_SESSION['USER_ID'] = 1;
-        $_REQUEST['arg'] = "changepassword";
+        $_REQUEST["retype_password"] = readPassword();
+        $_SESSION['USER_ID'] = ROOT_ID;
+        $_REQUEST['arg'] = "updateuser";
+        $_REQUEST['edit_pass'] = "true";
         $next_menu = $this->confirmChange("manageAccount", "rootPassword");
         return $next_menu;
     }
@@ -307,7 +308,7 @@ class ConfigureTool
             "SUBSEARCH_LINK"  => "Subsearch Links",
             "SIGNIN_LINK" => "Sign-in Links", "CACHE_LINK" => "Cache Link",
             "SIMILAR_LINK" => "Similar Link", "IN_LINK" => "Inlinks",
-            "IP_LINK"=> "IP Links", "USE_WORDNET"=> "WordNet");
+            "IP_LINK"=> "IP Links");
         $items = array();
         foreach($settings as $setting => $setting_string) {
             $toggle = ($data[$setting]) ? "On" : "Off";
@@ -444,6 +445,7 @@ class ConfigureTool
      */
     function confirmChange($admin_method, $reenter_method)
     {
+        global $COMPONENT_ACTIVITIES;
         $items = array("confirm" => "Confirm Change",
             "reenter" => "Re-enter the information",
             "configureMenu" => "Return to the Configure Menu");

@@ -302,8 +302,11 @@ class ProfileModel extends Model
      * fields of $new_profile_data will be considered).
      * @param array $old_profile_data fields and values that come from
      *     presumably a previously existing profile
+     * @param bool whether the new profile data is coming from a reset to
+     *      factory settings or not
      */
-    function updateProfile($directory, $new_profile_data, $old_profile_data)
+    function updateProfile($directory, $new_profile_data, $old_profile_data,
+        $reset = false)
     {
         $n = array();
         $n[] = <<<EOT
@@ -365,7 +368,7 @@ EOT;
         //now integrate the different profiles
         foreach($this->profile_fields as $field) {
             if(isset($new_profile_data[$field])) {
-                if(in_array($field, array('LOGO','M_LOGO', 'FAVICON',
+                if(!$reset && in_array($field, array('LOGO','M_LOGO', 'FAVICON',
                     'SEARCHBAR_PATH', 'BACKGROUND_IMAGE'))) {
                     if(isset($new_profile_data[$field]['name']) &&
                         isset($new_profile_data[$field]['tmp_name'])) {
@@ -526,6 +529,8 @@ EOT;
             if(!$result = $dbm->execute($statement)) {
                 echo $statement." ERROR!";
                 return false;
+            } else {
+                echo $statement."\n";
             }
         }
         return true;

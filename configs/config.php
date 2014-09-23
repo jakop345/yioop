@@ -212,7 +212,14 @@ if(file_exists(WORK_DIRECTORY.PROFILE_FILE_NAME)) {
         server_alpha*total_num/num_servers will be returned any a given
         queue server machine*/
     define ('SERVER_ALPHA', 1.6);
+    define('BACKGROUND_COLOR', "#FFF");
+    define('FOREGROUND_COLOR', "#FFF");
+    define('SIDEBAR_COLOR', "#8A4");
+    define('TOPBAR_COLOR', "#EEF");
     $INDEXING_PLUGINS = array();
+}
+if(!defined("BASE_URL")) {
+    define('BASE_URL', NAME_SERVER);
 }
 if(!defined('LOGO')) { 
     /*  these defines were added to the profile at same. So we add them all in 
@@ -221,9 +228,6 @@ if(!defined('LOGO')) {
      */
     define('LOGO', "resources/yioop.png");
     define('M_LOGO', "resources/m-yioop.png");
-    if(!defined("BASE_URL")) {
-        define('BASE_URL', NAME_SERVER);
-    }
     define('FAVICON', BASE_URL."favicon.ico");
     define('TIMEZONE', 'America/Los_Angeles');
     /* name of the cookie used to manage the session
@@ -254,7 +258,20 @@ if(isset($_SERVER['HTTP_USER_AGENT'])) {
 } else {
     define("MOBILE", false);
 }
-
+/*
+ * Various groups and user ids. These must be defined before the
+ * profile check and return below
+ */
+/** ID of the root user */
+define('ROOT_ID', 1);
+/** Role of the root user */
+define('ADMIN_ROLE', 1);
+/** Default role of an active user */
+define('USER_ROLE', 2);
+/** ID of the group to which all Yioop users belong */
+define('PUBLIC_GROUP_ID', 2);
+/** ID of the group to which all Yioop users belong */
+define('PUBLIC_USER_ID', 2);
 if(!PROFILE) {
     return;
 }
@@ -580,16 +597,6 @@ define('MAX_MIX_FRAGMENTS', 10);
  * they are displayed (not in DB)
  */
 define ('NAME_TRUNCATE_LEN', 7);
-/** ID of the root user */
-define('ROOT_ID', 1);
-/** Role of the root user */
-define('ADMIN_ROLE', 1);
-/** Default role of an active user */
-define('USER_ROLE', 2);
-/** ID of the group to which all Yioop users belong */
-define('PUBLIC_GROUP_ID', 2);
-/** ID of the group to which all Yioop users belong */
-define('PUBLIC_USER_ID', 2);
 /** USER STATUS value used for a user who can log in and perform activities */
 define('ACTIVE_STATUS', 1);
 /**

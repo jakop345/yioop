@@ -693,8 +693,10 @@ class CrawlComponent extends Component implements CrawlConstants
                 break;
             }
         }
-
         $data['classifiers'] = $classifiers;
+        if($search_array == array()) {
+            $search_array[] = array("name", "", "", "ASC");
+        }
         $parent->pagingLogic($data, 'classifiers', 'classifiers',
             DEFAULT_ADMIN_PAGING_NUM, $search_array, "",
             array('name' => 'class_label'));
@@ -1668,9 +1670,11 @@ class CrawlComponent extends Component implements CrawlConstants
         $data['CAN_LOCALIZE'] = $parent->model("user")->isAllowedUserActivity(
             $_SESSION['USER_ID'], "manageLocales");
         $parent->pagingLogic($data, $source_model, "MEDIA_SOURCES",
-            DEFAULT_ADMIN_PAGING_NUM/5);
+            DEFAULT_ADMIN_PAGING_NUM/5, array(
+            array("NAME", "", "", "ASC")));
         $parent->pagingLogic($data, $source_model,
-            "SUBSEARCHES", DEFAULT_ADMIN_PAGING_NUM/5, array(), "SUB",
+            "SUBSEARCHES", DEFAULT_ADMIN_PAGING_NUM/5, array(
+            array("FOLDER_NAME", "", "", "ASC")), "SUB",
             "SUBSEARCH");
         foreach($data["SUBSEARCHES"] as $search) {
             if(!isset($data["SEARCH_LISTS"][trim($search['INDEX_IDENTIFIER'])])

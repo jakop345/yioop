@@ -69,7 +69,7 @@ class StaticView extends View
             e($data['PAGE_HEADER']);
         } else {
             ?>
-            <div class="non-search center">
+            <div class="current-activity-header center">
             <h1 class="logo"><a href="<?php e($path_info."/?".
                 $append_url);?>"><img src="<?php e($path_info."/".$logo); ?>"
                 alt="<?php e(tl('static_view_title')); ?>" /></a><span><?php
@@ -77,8 +77,16 @@ class StaticView extends View
             </div>
             <?php
         }
+        $head_objects = isset($this->head_objects[$data['page']]) ?
+            $this->head_objects[$data['page']] : "";
+        $page_border = "";
+        if(isset($head_objects['page_border']) &&
+            $head_objects['page_border'] &&
+            $head_objects['page_border'] != 'none') {
+            $page_border = $head_objects['page_border'];
+        }
         ?>
-        <div class="content">
+        <div class="small-margin-current-activity <?php  e($page_border); ?>">
             <?php if(isset($data["value"])) {
                     $page = sprintf($this->page_objects[$data['page']],
                         $data["value"]);
@@ -89,12 +97,14 @@ class StaticView extends View
         </div>
         <?php
         if(isset($data['PAGE_FOOTER'])) {
-            e($data['PAGE_FOOTER']);
+            ?><div class="current-activity-footer">
+            <?php e($data['PAGE_FOOTER']);
+            ?></div><?php
         } else {
             ?>
-            <div class="landing-footer">
+            <div class="current-activity-footer center">
                 <?php  $this->element("footer")->render($data);?>
-            </div>
+
             <?php
         }
     }

@@ -690,7 +690,7 @@ class SearchController extends Controller implements CrawlConstants
                     $top_query, $limit, $results_per_page, false, $filter,
                     $use_cache_if_possible, $raw, $queue_servers,
                     $guess_semantics, $save_timestamp, $limit_news);
-                $data['PAGING_QUERY'] = "?c=search&amp;".
+                $data['PAGING_QUERY'] = "./?c=search&amp;".
                     "a=related&amp;arg=".urlencode($url);
                 if(isset($this->subsearch_name) && $this->subsearch_name !="") {
                     $data['PAGING_QUERY'] .= "&amp;s=".
@@ -712,7 +712,7 @@ class SearchController extends Controller implements CrawlConstants
                             $guess_semantics, $save_timestamp,  $limit_news);
                     $query = $original_query;
                 }
-                $data['PAGING_QUERY'] = "?q=".urlencode($query);
+                $data['PAGING_QUERY'] = "./?q=".urlencode($query);
                 if(isset($this->subsearch_name) && $this->subsearch_name !="") {
                     $data['PAGING_QUERY'] .= "&amp;s=".
                         $this->subsearch_name;

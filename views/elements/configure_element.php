@@ -314,6 +314,7 @@ class ConfigureElement extends Element
             var upload_info = elt('info-'+id);
             if(upload_icon.type != 'image/png' &&
                 upload_icon.type != 'image/jpeg' &&
+                upload_icon.type != 'image/x-icon' &&
                 upload_icon.type != 'image/gif') {
                 doMessage('<h1 class=\"red\" ><?php
                     e(tl("configure_element_invalid_filetype")); ?></h1>');

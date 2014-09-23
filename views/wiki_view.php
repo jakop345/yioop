@@ -60,7 +60,7 @@ class WikiView extends View
         $can_edit = $logged_in && isset($data["CAN_EDIT"]) && $data["CAN_EDIT"];
         $is_admin = ($data["CONTROLLER"] == "admin");
         $use_header = !$is_admin &&
-                isset($data['PAGE_HEADER']) && 
+                isset($data['PAGE_HEADER']) && $data['PAGE_HEADER'] &&
                 isset($data["HEAD"]['page_type']) &&
                 $data["HEAD"]['page_type'] != 'presentation';
         $base_query = "?c=group&amp;".CSRF_TOKEN."=".
@@ -122,6 +122,7 @@ class WikiView extends View
             $this->element("signin")->render($data);
             ?>
             </div>
+            <div class="current-activity-header">
             <h1 class="group-heading logo"><a href="./<?php
                 if($logged_in) {
                     e("?".CSRF_TOKEN."=".$data[CSRF_TOKEN]);
@@ -133,6 +134,7 @@ class WikiView extends View
                     "</a>|".tl('wiki_view_wiki')."]");
                 ?></small>
             </h1>
+            </div>
             <?php
         }
         $this->element("wiki")->render($data);
@@ -140,7 +142,7 @@ class WikiView extends View
             isset($data['PAGE_FOOTER']) && 
             isset($data["HEAD"]['page_type']) &&
             $data["HEAD"]['page_type'] != 'presentation') {
-            e("<div style='position:relative;top:20px;'>".
+            e("<div class='current-activity-footer'>".
                 $data['PAGE_FOOTER']."</div>");
         }
         if($logged_in) {

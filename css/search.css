@@ -32,11 +32,11 @@
 /*
     search.css
     Main stylesheet for Yioop search engine
-*/
+ */
 /*
    We begin with some generic global styles
    and classes
-*/
+ */
 h2,
 h3
 {
@@ -275,9 +275,17 @@ a.echo-link:hover
 
 .frame
 {
-    background-color: #FFF;
-    border: 1px solid #CCC;
+    border: 1px solid #ccc;
     position: relative;
+}
+
+.solid-border {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
+.dashed-border {
+    border: 1px dashed #ccc;
+    border-radius: 8px;
 }
 
 .name-table
@@ -533,7 +541,7 @@ body.mobile
 /* bar on which web, images, video subsearches and sign-in stuff live
    for many of the below things we need to handle them different on the landing
    page from pages where search results appear
-*/
+ */
 .top-bar
 {
     background: #DDD;
@@ -1557,7 +1565,7 @@ div.group-result
     font-size: 12pt;
     position: relative;
     top: -5px;
-    width: 174px;
+    width: 172px;
 }
 .mobile .landing .search-box input
 {
@@ -2172,9 +2180,7 @@ div.group-result
 {
     clear:both;
 }
-
-.current-activity,
-.small-margin-current-activity
+.current-activity
 {
     background-color: #fff;
     border: 1px solid #ccc;
@@ -2194,16 +2200,35 @@ div.group-result
 {
     margin-left: 2.75in;
 }
-
 .html-rtl .current-activity
 {
     margin-right: 2.75in;
 }
-
+.current-activity-header
+{
+    min-width: 9in;
+    max-width: 9in;
+}
+.current-activity-footer
+{
+    min-width: 9in;
+    max-width: 9in;
+    position: relative;
+    top:0.3in;
+}
 .small-margin-current-activity
 {
+    font-size: 16pt;
     margin-left: .2in;
     margin-right: .2in;
+    max-width: 9in;
+    min-height: 6.5in;
+    min-width: 9in;
+    padding-left: 0.1in;
+    padding-right: 0.1in;
+    padding-bottom: 0.1in;
+    position: relative;
+    top: 30px;
 }
 
 .mobile .current-activity,
