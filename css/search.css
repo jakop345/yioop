@@ -544,8 +544,6 @@ body.mobile
  */
 .top-bar
 {
-    background: #DDD;
-    background: linear-gradient(to top, #FFF 0%, #EEF 30%,#EEF 70%, #FFF 100%);
     height: 45px;
     left: 0;
     min-width: 12in;
@@ -556,8 +554,6 @@ body.mobile
 
 .landing-top-bar
 {
-    background: #DDD;
-    background: linear-gradient(to top, #FFF 0%, #EEF 30%,#EEF 70%, #FFF 100%);
     height: 45px;
     left: 0;
     position: absolute;
@@ -569,8 +565,6 @@ body.mobile
 .mobile .top-bar,
 .mobile .landing-top-bar
 {
-    background: #DDD;
-    background: linear-gradient(to top, #FFF 0%,#EEF 30%,#EEF 70%, #FFF 100%);
     height: 30px;
     left: 0px;
     position: absolute;
@@ -584,7 +578,7 @@ body.mobile
 
 /* this is for informational messages when settings are changed or admin stuff
    done
-*/
+ */
 #message
 {
     left: 2in;
@@ -605,7 +599,7 @@ body.mobile
 
 /*
    for the sign-in, settings, admin, logout links on the top-bar
-*/
+ */
 .html-ltr .user-nav
 {
     margin: 0 0.55in 0 0;
@@ -663,7 +657,7 @@ body.mobile
 
 /*
    For the web, images, video links on the top-bar
-*/
+ */
 .html-ltr .subsearch ul.out-list
 {
     float:left;
@@ -806,7 +800,7 @@ ul.in-list li
 }
 /*
    Landing page (www.yioop.com) specific css
-*/
+ */
 .html-ltr .landing
 {
     clear: both;
@@ -859,7 +853,7 @@ ul.in-list li
 
 /*
    Style tweaks for blog, privacy, bot, settings, and admin pages
-*/
+ */
 .mobile .non-search
 {
     left: -10px;
@@ -876,7 +870,7 @@ ul.in-list li
 
 /*
    Styles to control logo (image + adjacent text) on various pages
-*/
+ */
 .logo
 {
     margin: 0;
@@ -1001,7 +995,7 @@ ul.in-list li
 
 /*
    Styles for footers on various pages
-*/
+ */
 
 .landing-footer,
 .setting-footer,
@@ -1070,7 +1064,7 @@ ul.in-list li
    render statistics about all the SQL and search engine
    queries that were executed for a page. These styles
    control how this diagnostic info renders
-*/
+ */
 
 .query-statistics
 {
@@ -1094,7 +1088,7 @@ ul.in-list li
 
 /*
    Styles for the login, settings, and register pages
-*/
+ */
 .html-ltr .cancel
 {
     text-align: right;
@@ -1217,7 +1211,6 @@ ul.in-list li
 }
 .icon-upload
 {
-    color:white;
     left:16px;
     padding-right:2px;
     position:relative;
@@ -1232,7 +1225,7 @@ ul.in-list li
 }
 /*
    Styles for the statistics for a crawl page
-*/
+ */
 .mobile .stats span
 {
     left: -10px;
@@ -1251,7 +1244,7 @@ ul.in-list li
 
 /*
   Styles for search and search result pages
-*/
+ */
 
 .html-ltr .serp
 {
@@ -1485,10 +1478,9 @@ div.group-result
 /*
    The next styles are for the built-in search box that comes with
    Yioop rather than the search boxes which can be inserted on wiki pages.
-*/
+ */
 .search-box
 {
-    background-color: #DDF;
     border-color: #AAA;
     border-radius: 0.07in;
     border-style: solid;
@@ -1546,19 +1538,19 @@ div.group-result
 }
 .search-box button
 {
-    width:0.5in;
-    padding:0;
+        width:0.5in;
+        padding:0;
 }
 .search-box img
 {
-    left:-5px;
-    position:relative;
-    top:2px;
+        left:-5px;
+        position:relative;
+        top:2px;
 }
 .mobile .search-box button
 {
-    width:50px;
-    padding:0;
+        width:50px;
+        padding:0;
 }
 .mobile .search-box input
 {
@@ -1574,12 +1566,12 @@ div.group-result
     margin-right:6px;
     position: relative;
     top: -5px;
-    width: 218px;
+    width: 217px;
 }
 /*
     The next styles are for the search boxes which can be inserted
     into wiki pages
-*/
+ */
 .mobile .small-search-box
 {
     position:static;
@@ -1671,7 +1663,7 @@ div.group-result
 
 /*
    Styles for the word suggest drop down on search pages
-*/
+ */
 .dropdown
 {
     border-bottom-style: solid;
@@ -1709,7 +1701,6 @@ div.group-result
 
 .suggest-list
 {
-    background: #DDF;
     border: 0;
     font-size: 16pt;
     margin: 0;
@@ -1724,7 +1715,6 @@ div.group-result
 }
 .suggest-list li
 {
-    background: #DDF;
     cursor: pointer;
     font-size: 16pt;
     list-style:none;
@@ -1750,16 +1740,6 @@ div.group-result
     z-index: 5;
 }
 
-.suggest-list li span.unselected
-{
-    background-color: white;
-}
-
-.suggest-list li span.selected
-{
-    background-color: #AAE;
-}
-
 .mobile .suggest-list
 {
     display: none;
@@ -1768,7 +1748,7 @@ div.group-result
 /*
    Styles for the bottom of search results links to additional
    pages of search results
-*/
+ */
 .pagination
 {
     margin-bottom: 8px;
@@ -1906,7 +1886,7 @@ div.group-result
 }
 /*
    Styles for video subsearch page
-*/
+ */
 .html-ltr .video-link
 {
     float: left;
@@ -1952,7 +1932,7 @@ div.group-result
 
 /*
    Styles for image subsearch page
-*/
+ */
 .image-list
 {
     margin-left: 10%;
@@ -1985,7 +1965,7 @@ div.group-result
 
 /*
    Styles for tables on login, settings, and admin pages
-*/
+ */
 .mobile .table-input select
 {
     width: 190px;
@@ -2017,7 +1997,7 @@ div.group-result
 
 /*
     Styles for different admin page elements
-*/
+ */
 .content
 {
     background-color: white;
@@ -2124,7 +2104,6 @@ div.group-result
 
 .activity-menu h2
 {
-    background-color: #8A4;
     border-top-right-radius: 8px;
     border-top-left-radius: 8px;
     color: #222;
@@ -2182,13 +2161,12 @@ div.group-result
 }
 .current-activity
 {
-    background-color: #fff;
     border: 1px solid #ccc;
     border-radius: 8px;
     font-size: 16pt;
     max-width: 9in;
     min-height: 6.5in;
-    min-width: 7in;
+    min-width: 8in;
     padding-left: 0.1in;
     padding-right: 0.1in;
     padding-bottom: 0.1in;
@@ -2436,8 +2414,8 @@ div.group-result
 .html-ltr .search-page-table,
 .html-ltr .search-page-all td
 {
-    margin-left: 0.3in;
-    vertical-align: top;
+   margin-left: 0.3in;
+   vertical-align: top;
 }
 
 .html-rtl .file-types-table,
@@ -2445,8 +2423,8 @@ div.group-result
 .html-rtl .search-page-table,
 .html-rtl .search-page-all td
 {
-    margin-right: 0.3in;
-    vertical-align: top;
+   margin-right: 0.3in;
+   vertical-align: top;
 }
 
 .mobile .file-types-table,
@@ -2454,9 +2432,9 @@ div.group-result
 .mobile .search-page-table,
 .mobile .search-page-all td
 {
-    margin-left: 2px;
-    margin-right: 2px;
-    vertical-align: top;
+   margin-left: 2px;
+   margin-right: 2px;
+   vertical-align: top;
 }
 
 .html-ltr .weights-table th
@@ -2556,8 +2534,6 @@ div.group-result
 }
 .light-content
 {
-    background-color: white;
-    border: 16px solid #8A4;
     height: 4in;
     left: 20%;
     right: 20%;
@@ -2662,7 +2638,7 @@ table.wikitable > caption
 }
 /*
   Styles for the classifiers settings pages
-*/
+ */
 #update-accuracy.disabled
 {
     color: gray;
