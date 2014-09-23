@@ -195,13 +195,13 @@ function toggleHelp(id, isMobile) {
 
     if (isMobile === false) {
         var new_width;
-        var decrease_width_by = (getCssProperty(obj, 'width')/3);
+        var decrease_width_by = (getCssProperty(obj, 'width') / 3);
         //Calculate pixel to inch. clientWidth only returns in pixels.
         if (obj.style.display === "none") {
-            new_width = Math.floor(getCssProperty(help_node, 'width')) 
+            new_width = Math.floor(getCssProperty(help_node, 'width'))
                     + decrease_width_by;
         } else if (obj.style.display === "block") {
-            new_width = Math.floor(getCssProperty(help_node, 'width')) 
+            new_width = Math.floor(getCssProperty(help_node, 'width'))
                     - decrease_width_by;
         }
 
@@ -211,10 +211,10 @@ function toggleHelp(id, isMobile) {
     } else {
         //Calculate pixel to inch. clientWidth only returns in pixels.
         if (obj.style.display === "none") {
-            help_node.style.top = getCssProperty(help_node, 'top') 
+            help_node.style.top = getCssProperty(help_node, 'top')
                     - help_height + "px";
         } else if (obj.style.display === "block") {
-            help_node.style.top = getCssProperty(help_node, 'top') 
+            help_node.style.top = getCssProperty(help_node, 'top')
                     + help_height + "px";
         }
     }
@@ -228,4 +228,108 @@ function toggleHelp(id, isMobile) {
         return parseInt(window.getComputedStyle(elm, null)
                 .getPropertyValue(property));
     }
+}
+
+//This is a JS function to display preview.
+function parseWikiContent(wikitext) {
+    var html = wikitext;
+
+    html = listify(html);
+
+    // Basic MediaWiki Syntax.
+    // Replace newlines with <br />
+    html = html.replace(/\n/gi, "<br />");
+
+    //Regex replace for headings
+    html = html.replace(/(?:^|\n)([=]+)(.*)\1/g,
+            function (match, contents, t) {
+                return '<h'
+                        + contents.length + '>'
+                        + t
+                        + '</h'
+                        + contents.length
+                        + '>';
+            });
+
+    //Regex replace for Bold characters
+    html = html.replace(/'''(.*?)'''/g, function (match, contents) {
+        return '<b>' + contents + '</b>';
+    });
+
+    //Regex replace for Italic characters
+    html = html.replace(/''(.*?)''/g, function (match, contents) {
+        return '<i>' + contents + '</i>';
+    });
+
+    //Regex replace for HR
+    html = html.replace(/----(.*?)/g, function (match, contents) {
+        return '<hr>' + contents + '</hr>';
+    });
+
+    //Regex replace normal links
+    html = html.replace(/\[(.*?)\]/g, function (match, contents) {
+        return '<a href= "' + contents + '">' + contents + '</a>';
+    });
+
+    //Regex replace for external links
+    html = html.replace(/[\[](http.*)[!\]]/g, function (match, contents) {
+        var p = contents.replace(/[\[\]]/g, '').split(/ /);
+        var link = p.shift();
+        return '<a href="' + link + '">'
+                + (p.length ? p.join(' ') : link)
+                + '</a>';
+    });
+
+    //Regex replace for blocks
+    html = html.replace(/(?:^|\n+)([^# =\*<].+)(?:\n+|$)/gm,
+            function (match, contents) {
+                if (contents.match(/^\^+$/))
+                    return contents;
+                return "\n<div>" + contents + "</div>\n";
+            });
+
+    return html;
+}
+
+function listify(str) {
+    return str.replace(/(?:(?:(?:^|\n)[\*#].*)+)/g, function (match) {
+        var listType = match.match(/(^|\n)#/) ? 'ol' : 'ul';
+        match = match.replace(/(^|\n)[\*#][ ]{0,1}/g, "$1");
+        match = listify(match);
+        return '<'
+                + listType + '><li>'
+                + match.replace(/^\n/, '')
+                .split(/\n/).join('</li><li>')
+                + '</li></' + listType
+                + '>';
+    });
+}
+
+var getJSON = function (url, successHandler, errorHandler) {
+    var xhr = makeRequest();
+    xhr.open('GET', url, true);
+    xhr.responseType = 'json';
+    xhr.onload = function () {
+        var status = xhr.status;
+        if (status == 200) {
+            successHandler && successHandler(xhr.response);
+        } else {
+            errorHandler && errorHandler(status);
+        }
+    };
+    xhr.send();
+};
+
+function evalJSON(json) {
+    return eval("(" + json + ")");
+}
+
+function displayHelpForId(help_point) {
+    toggleHelp('help-frame',false);
+    getJSON("?c=api&group_id=7&arg=read&a=wiki&page_name=" + help_point.id, function (data) {
+        document.getElementById("help-frame-body").innerHTML = parseWikiContent(data.wiki_content);
+    }, function (status) {
+        alert('Something went wrong.');
+    });
+ event.preventDefault();
 }

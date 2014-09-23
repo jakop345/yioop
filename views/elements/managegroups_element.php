@@ -317,7 +317,12 @@ class ManagegroupsElement extends Element
                 ?> /></td><?php
                 if($addgroup) { ?>
                     <td>[<a href="<?php e($browse_url); ?>"><?php 
-                        e(tl('managegroups_element_browse')); ?></a>]</td>
+                        e(tl('managegroups_element_browse')); ?></a>]
+                    <button type="button" 
+                    href="" 
+                    onclick="javascript:displayHelpForId(this)"
+                    id="browse_url">?</button>
+                    </td>
                 <?php
                 }
         ?></tr>

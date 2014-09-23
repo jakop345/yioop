@@ -58,7 +58,7 @@ class HelpElement extends Element {
             if (MOBILE) { ?>
                 
                 <div id="mobile-help">
-                    <a href="javascript:;" onclick="toggleHelp('help-frame', true);">Help</a>
+                    <!-- a href="javascript:;" onclick="toggleHelp('help-frame', true);">Help</a -->
                   <div id="help-frame" class="frame help-pane">
                     <h2>Help Content</h2>
                     <p>Here is a help paragraph.</p>
@@ -69,11 +69,13 @@ class HelpElement extends Element {
                 ?>
                 
                 <div id="help">
-                    <a href="javascript:;" onclick="toggleHelp('help-frame',false);">Help</a>
+                    <!-- a href="javascript:;" onclick="toggleHelp('help-frame',false);">Help</a -->
                   <div id="help-frame" class="frame help-pane">
                     <h2>Help Content</h2>
-                    <p>Here is a help paragraph.</p>
+                    <div id="help-frame-body" class="wordwrap">
+                        <p>Here is a help paragraph.</p>
                     <p>Here is another help paragraph.</p>
+                    </div>
                   </div>
                 </div>
                 <?php
