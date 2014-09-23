@@ -157,7 +157,12 @@ class PdoManager extends DatasourceManager
     {
         if($table_name && $this->to_upper_dbms == "PGSQL") {
             $table_name .= "_ID_SEQ";
-            return $this->pdo->lastInsertId($table_name);
+            $id = $this->pdo->lastInsertId($table_name);
+            if(!$id) {
+                //if sequence number somehow was renamed
+                $id = $this->pdo->lastInsertId($table_name."1");
+            }
+            return $id;
         }
         return $this->pdo->lastInsertId();
     }
