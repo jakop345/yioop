@@ -187,7 +187,8 @@ function toggleDisplay(id)
  * @param String id  the id of the DOM element for the help div
  */
 function toggleHelp(id, isMobile) {
-    var all_help_elements = document.getElementsByClassName('current-activity');
+    var all_help_elements =
+            document.getElementsByClassName('current-activity');
     var help_node = all_help_elements[0];
     toggleDisplay(id);
     obj = elt(id);
@@ -230,7 +231,12 @@ function toggleHelp(id, isMobile) {
     }
 }
 
-//This is a JS function to display preview.
+/**
+ * This is a JS function to convert yioop wiki markup to
+ * html.
+ * @param String wikitext
+ * @returns  String html
+ */
 function parseWikiContent(wikitext) {
     var html = wikitext;
 
@@ -255,6 +261,12 @@ function parseWikiContent(wikitext) {
     html = html.replace(/'''(.*?)'''/g, function (match, contents) {
         return '<b>' + contents + '</b>';
     });
+
+    //Regex for resource extraction.
+    html = html.replace(/{{resource:(.+?)\|(.+?)}}/g,
+            function (match, contents, desc) {
+                return '<img src="' + contents + '" alt="' + desc + '" />';
+            });
 
     //Regex replace for Italic characters
     html = html.replace(/''(.*?)''/g, function (match, contents) {
@@ -291,6 +303,12 @@ function parseWikiContent(wikitext) {
     return html;
 }
 
+/**
+ * Lists need to be recursively parsed. So the below function is used
+ * to ecursively convert wiki markup to html.
+ * @param {type} str
+ * @returns {unresolved}
+ */
 function listify(str) {
     return str.replace(/(?:(?:(?:^|\n)[\*#].*)+)/g, function (match) {
         var listType = match.match(/(^|\n)#/) ? 'ol' : 'ul';
@@ -305,6 +323,16 @@ function listify(str) {
     });
 }
 
+/**
+ * getJson doe a GET HTTP call on the url passed. 
+ * Also fires the callback functions passed as 
+ * params appropriately.
+ * 
+ * @param {type} url
+ * @param {function} successHandler
+ * @param {function} errorHandler
+ * @returns {nothing}
+ */
 var getJSON = function (url, successHandler, errorHandler) {
     var xhr = makeRequest();
     xhr.open('GET', url, true);
@@ -320,16 +348,37 @@ var getJSON = function (url, successHandler, errorHandler) {
     xhr.send();
 };
 
+
+/**
+ * 
+ * {"foo": "bar"} // SyntaxError
+ * An object literal needs to be wrapped in parentheses to properly
+ *  be evaluated in eval context and other contexts:
+ *  eval('{}') is undefined, for example. 
+ *  whereas eval('(' + '{}' + ')' ) evaluates to Object.
+ *  Wrap it in parentheses and it becomes a valid expression.
+ *  
+ * @param  Json String
+ * @returns JsonObject
+ */
 function evalJSON(json) {
     return eval("(" + json + ")");
 }
 
+/**
+ * taked in the help point id, uses it to fetch wiki content, then 
+ * wiki content is being eval'd to be painted int he help pane.
+ * @param {elm} help_point
+ * @returns {none}
+ */
 function displayHelpForId(help_point) {
-    toggleHelp('help-frame',false);
-    getJSON("?c=api&group_id=7&arg=read&a=wiki&page_name=" + help_point.id, function (data) {
-        document.getElementById("help-frame-body").innerHTML = parseWikiContent(data.wiki_content);
-    }, function (status) {
+    toggleHelp('help-frame', false);
+    getJSON("?c=api&group_id=7&arg=read&a=wiki&page_name="
+            + help_point.id, function (data) {
+                document.getElementById("help-frame-body").innerHTML
+                        = parseWikiContent(data.wiki_content);
+            }, function (status) {
         alert('Something went wrong.');
     });
- event.preventDefault();
+    event.preventDefault();
 }
