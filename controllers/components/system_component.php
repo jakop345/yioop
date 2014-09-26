@@ -105,10 +105,23 @@ class SystemComponent extends Component
         foreach($request_fields as $field => $type) {
             if(isset($_REQUEST[$field])) {
                 $r[$field] = $parent->clean($_REQUEST[$field], $type);
-                if($field == "url" && isset($r[$field][strlen($r[$field])-1]) &&
-                    $r[$field][strlen($r[$field])-1]
-                    != "/") {
-                    $r[$field] .= "/";
+                if($type == "string") {
+                    $r[$field] = trim($r[$field]);
+                    if($r[$field] == "" && $field != "parent") {
+                        $allset = false;
+                    }
+                }
+                if($field == "url") {
+                    if(isset($r[$field][strlen($r[$field])-1]) &&
+                        $r[$field][strlen($r[$field])-1] != "/") {
+                        $r[$field] .= "/";
+                    }
+                    $r[$field] = UrlParser::canonicalLink($r[$field],
+                        NAME_SERVER);
+                    echo $r[$field];
+                    if(!$r[$field]) {
+                        $allset = false;
+                    }
                 }
             } else {
                 $allset = false;
