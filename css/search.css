@@ -98,12 +98,12 @@ p
 .inline li
 {
     border-right: 2px solid black;
-    padding:.1in;
+    padding:.05in;
 }
 .inline li:first-child
 {
     border-left: 2px solid black;
-    padding:.1in;
+    padding:.05in;
 }
 .indent
 {
