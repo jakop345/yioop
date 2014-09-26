@@ -333,6 +333,10 @@ class AccountaccessComponent extends Component
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_passwords_dont_match').
                             "</h1>')";
+                    } else if(trim($username) == "") {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('accountaccess_component_invalid_username').
+                            "</h1>')";
                     } else if($signin_model->getUserId($username) > 0) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_user_exists').
@@ -352,13 +356,14 @@ class AccountaccessComponent extends Component
                                 substr($parent->clean($_REQUEST['password'],
                                 "string"), 0, LONG_NAME_LEN);
                         }
+                        $username = trim($username);
                         $user_model->addUser($username, $norm_password,
-                            substr($parent->clean($_REQUEST['first_name'],
-                                "string"), 0, NAME_LEN),
-                            substr($parent->clean($_REQUEST['last_name'],
-                                "string"), 0, NAME_LEN),
-                            substr($parent->clean($_REQUEST['email'],
-                                "string"), 0, LONG_NAME_LEN),
+                            substr(trim($parent->clean($_REQUEST['first_name'],
+                                "string")), 0, NAME_LEN),
+                            substr(trim($parent->clean($_REQUEST['last_name'],
+                                "string")), 0, NAME_LEN),
+                            substr(trim($parent->clean($_REQUEST['email'],
+                                "string")), 0, LONG_NAME_LEN),
                             $_REQUEST['status'], $zkp_password
                         );
                         $data['USER_NAMES'][$username] = $username;

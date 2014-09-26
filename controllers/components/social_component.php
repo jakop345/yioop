@@ -141,7 +141,7 @@ class SocialComponent extends Component implements CrawlConstants
                 $group = NULL;
             }
         } else if(isset($_REQUEST['name'])){
-            $name = substr($parent->clean($_REQUEST['name'], "string"), 0,
+            $name = substr(trim($parent->clean($_REQUEST['name'], "string")), 0,
                 SHORT_TITLE_LEN);
             $data['CURRENT_GROUP']['name'] = $name;
             $group_id = NULL;
