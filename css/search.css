@@ -103,7 +103,7 @@ p
 .inline li:first-child
 {
     border-left: 2px solid black;
-    padding:.05in;
+    padding:.03in;
 }
 .indent
 {
