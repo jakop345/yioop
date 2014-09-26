@@ -118,7 +118,6 @@ class SystemComponent extends Component
                     }
                     $r[$field] = UrlParser::canonicalLink($r[$field],
                         NAME_SERVER);
-                    echo $r[$field];
                     if(!$r[$field]) {
                         $allset = false;
                     }
