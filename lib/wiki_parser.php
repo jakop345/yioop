@@ -261,7 +261,7 @@ class WikiParser implements CrawlConstants
             if(count($document_parts) > 1) {
                 $head = $document_parts[0];
                 $document = $document_parts[1];
-                $head_lines = preg_split("/\n\n/", $head);
+                $head_lines = preg_split("/\n\s*\n/", $head);
                 foreach($head_lines as $line) {
                     $semi_pos =  (strpos($line, ";")) ? strpos($line, ";"):
                         strlen($line);
