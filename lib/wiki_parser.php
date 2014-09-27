@@ -121,10 +121,10 @@ class WikiParser implements CrawlConstants
                 "&#039;&#039;&#039;&#039;&#039;/s", "<b><i>$1</i></b>"),
             array("/&#039;&#039;&#039;(.+?)&#039;&#039;&#039;/s", "<b>$1</b>"),
             array("/&#039;&#039;(.+?)&#039;&#039;/s", "<i>$1</i>"),
-            array('/[^\n\A]?{{\s*class\s*\=\s*'.
+            array('/[^\n]{{\s*class\s*\=\s*'.
                 '&quot;([a-zA-Z\_\-\s]+)&quot;\s+(.+)}}/s',
                 "$esc<span class=\"$1\" >\n$2$esc</span>"),
-            array('/[^\n]?{{\s*class\s*\=\s*'.
+            array('/[^\n]{{\s*class\s*\=\s*'.
                 '&#039;([a-zA-Z\_\-\s]+)&#039;\s+(.+)}}/s',
                 "$esc<span class=\"$1\" >\n$2$esc</span>"),
             array('/\n*?{{\s*class\s*\=\s*'.
