@@ -61,8 +61,9 @@ class HelpElement extends Element {
                     <!-- a href="javascript:;" onclick="toggleHelp('help-frame', true);">Help</a -->
                   <div id="help-frame" class="frame help-pane">
                     <h2>Help Content</h2>
-                    <p>Here is a help paragraph.</p>
-                    <p>Here is another help paragraph.</p>
+                    <div id="help-frame-body" class="wordwrap">
+                       
+                    </div>
                   </div>
                 </div>
             <?php } else {
@@ -73,8 +74,7 @@ class HelpElement extends Element {
                   <div id="help-frame" class="frame help-pane">
                     <h2>Help Content</h2>
                     <div id="help-frame-body" class="wordwrap">
-                        <p>Here is a help paragraph.</p>
-                    <p>Here is another help paragraph.</p>
+                       
                     </div>
                   </div>
                 </div>

@@ -239,6 +239,11 @@ function toggleHelp(id, isMobile) {
  */
 function parseWikiContent(wikitext) {
     var html = wikitext;
+    
+    //note that line breaks from a textarea are sent
+    //as \r\n , so make sure we cleanthem up to replace
+    //all \r\n with \n
+    html = html.replace(/\r\n/g, "\n");
 
     html = listify(html);
 
