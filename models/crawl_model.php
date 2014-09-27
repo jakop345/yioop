@@ -299,8 +299,8 @@ class CrawlModel extends ParallelModel implements CrawlConstants
         $db = $this->db;
         $sql = "SELECT TIMESTAMP, NAME FROM CRAWL_MIXES WHERE ".
             " NAME= ?";
-        $result = $db->execute($sql);
-        $mix =  $db->fetchArray($result, array($mix_name));
+        $result = $db->execute($sql, array($mix_name));
+        $mix =  $db->fetchArray($result);
         if(isset($mix["TIMESTAMP"])) {
             return $mix["TIMESTAMP"];
         }

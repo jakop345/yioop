@@ -182,16 +182,6 @@ class RegisterController extends Controller implements CrawlConstants
             $user = $_SERVER['REMOTE_ADDR'];
         }
         $visitor_check_names = array('captcha_time_out','suggest_day_exceeded');
-       /* foreach($visitor_check_names as $name) {
-            $visitor = $visitor_model->getVisitor($_SERVER['REMOTE_ADDR'],
-                $name);
-            if(isset($visitor['END_TIME']) && $visitor['END_TIME'] > time()) {
-                $_SESSION['value'] = date('Y-m-d H:i:s', $visitor['END_TIME']);
-                $url = BASE_URL."?c=static&p=".$visitor['PAGE_NAME'];
-                header("Location:".$url);
-                exit();
-            }
-        }*/
         $data = array();
         $data['REFRESH'] = "register";
         $activity = isset($_REQUEST['a']) ?
@@ -995,7 +985,7 @@ class RegisterController extends Controller implements CrawlConstants
      * @param string& $activity current tentative activity
      * @param string $activity_success activity to test for and to test prereqs
      *     for.
-     * @param string $activity_fail if prereqs not met which acitivty to switch
+     * @param string $activity_fail if prereqs not met which acitivity to switch
      *     to
      * @param array& $data data to help render the view this controller draws
      */
@@ -1018,7 +1008,7 @@ class RegisterController extends Controller implements CrawlConstants
                         tl('register_controller_need_cookies')."</h1>');";
                         $activity = 'createAccount';
                         $this->model("visitor")->updateVisitor(
-                        $_SERVER['REMOTE_ADDR'], "captcha_time_out");
+                            $_SERVER['REMOTE_ADDR'], "captcha_time_out");
                     } else if(!$this->checkCaptchaAnswers()) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('register_controller_failed_human')."</h1>');";
@@ -1050,7 +1040,7 @@ class RegisterController extends Controller implements CrawlConstants
                             tl('register_controller_failed_hashcode').
                             "</h1>');";
                         $this->model("visitor")->updateVisitor(
-                        $_SERVER['REMOTE_ADDR'], "captcha_time_out");
+                            $_SERVER['REMOTE_ADDR'], "captcha_time_out");
                         $activity = $activity_fail;
                     }
                 break;
@@ -1158,7 +1148,7 @@ class RegisterController extends Controller implements CrawlConstants
             '/^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+'.
             '(\.[a-z0-9-]+)*(\.[a-z]{2,3})$/';
         foreach($fields as $field) {
-            if(!isset($_REQUEST[$field]) || empty($_REQUEST[$field])) {
+            if(!isset($_REQUEST[$field]) || !trim($_REQUEST[$field])) {
                 $error = true;
                 $missing[] = $field;
                 $data[strtoupper($field)] = "";
@@ -1171,6 +1161,9 @@ class RegisterController extends Controller implements CrawlConstants
             } else {
                 $data[strtoupper($field)] = $this->clean($_REQUEST[$field],
                     "string");
+                if(!in_array($field, array('password','repassword'))) {
+                    $data[strtoupper($field)] = trim($data[strtoupper($field)]);
+                }
             }
         }
         if(isset($_REQUEST['password'])

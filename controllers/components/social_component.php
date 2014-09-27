@@ -141,7 +141,7 @@ class SocialComponent extends Component implements CrawlConstants
                 $group = NULL;
             }
         } else if(isset($_REQUEST['name'])){
-            $name = substr($parent->clean($_REQUEST['name'], "string"), 0,
+            $name = substr(trim($parent->clean($_REQUEST['name'], "string")), 0,
                 SHORT_TITLE_LEN);
             $data['CURRENT_GROUP']['name'] = $name;
             $group_id = NULL;
@@ -1830,17 +1830,23 @@ EOD;
                 case "createmix":
                     $mix['TIMESTAMP'] = time();
                     if(isset($_REQUEST['NAME'])) {
-                        $mix['NAME'] = substr($parent->clean($_REQUEST['NAME'],
-                            'string'), 0, NAME_LEN);
+                        $mix['NAME'] = substr(trim($parent->clean(
+                            $_REQUEST['NAME'], 'string')), 0, NAME_LEN);
                     } else {
-                        $mix['NAME'] = tl('social_component_unnamed');
+                        $mix['NAME'] = "";
                     }
-                    $mix['FRAGMENTS'] = array();
-                    $mix['OWNER_ID'] = $user_id;
-                    $mix['PARENT'] = -1;
-                    $crawl_model->setCrawlMix($mix);
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('social_component_mix_created')."</h1>');";
+                    if($mix['NAME'] &&
+                        !$crawl_model->getCrawlMixTimestamp($mix['NAME'])) {
+                        $mix['FRAGMENTS'] = array();
+                        $mix['OWNER_ID'] = $user_id;
+                        $mix['PARENT'] = -1;
+                        $crawl_model->setCrawlMix($mix);
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('social_component_mix_created')."</h1>');";
+                    } else {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('social_component_invalid_name')."</h1>');";
+                    }
                 break;
                 case "deletemix":
                     if(!isset($_REQUEST['timestamp'])||

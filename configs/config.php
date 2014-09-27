@@ -711,7 +711,7 @@ define('TITLE_LEN', 512);
 /* Length of a feed item or post, etc */
 define('MAX_GROUP_POST_LEN', 8192);
 /* Length for for the contents of a wiki_page */
-define('MAX_GROUP_PAGE_LEN', 32768);
+define('MAX_GROUP_PAGE_LEN', 524288);
 /* Length for base 64 encode timestamps */
 define('TIMESTAMP_LEN', 11);
 /* Length for timestamps down to microseconds */

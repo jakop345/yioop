@@ -105,10 +105,22 @@ class SystemComponent extends Component
         foreach($request_fields as $field => $type) {
             if(isset($_REQUEST[$field])) {
                 $r[$field] = $parent->clean($_REQUEST[$field], $type);
-                if($field == "url" && isset($r[$field][strlen($r[$field])-1]) &&
-                    $r[$field][strlen($r[$field])-1]
-                    != "/") {
-                    $r[$field] .= "/";
+                if($type == "string") {
+                    $r[$field] = trim($r[$field]);
+                    if($r[$field] == "" && $field != "parent") {
+                        $allset = false;
+                    }
+                }
+                if($field == "url") {
+                    if(isset($r[$field][strlen($r[$field])-1]) &&
+                        $r[$field][strlen($r[$field])-1] != "/") {
+                        $r[$field] .= "/";
+                    }
+                    $r[$field] = UrlParser::canonicalLink($r[$field],
+                        NAME_SERVER);
+                    if(!$r[$field]) {
+                        $allset = false;
+                    }
                 }
             } else {
                 $allset = false;
@@ -353,28 +365,41 @@ class SystemComponent extends Component
             in_array($_REQUEST['arg'], $possible_arguments)) {
             $clean_fields = array('localename', 'localetag', 'writingmode',
                 'selectlocale', 'active');
+            $incomplete = false;
+            $required = array('localename', 'localetag');
             foreach($clean_fields as $field) {
                 $$field = "";
                 if($field == 'active') {
                     $active = 0;
                 }
                 if(isset($_REQUEST[$field])) {
-                    $tmp = $parent->clean($_REQUEST[$field], "string");
+                    $tmp = trim($parent->clean($_REQUEST[$field], "string"));
                     if($field == "writingmode" && ($tmp == -1 ||
                         !isset($data['WRITING_MODES'][$tmp]))) {
                         $tmp = "lr-tb";
                     }
+                    if($tmp == "" && in_array($field, $required)) {
+                        $incomplete = true;
+                    }
                     $$field = $tmp;
+                } else if (in_array($field, $required)) {
+                    $incomplete = true;
                 }
             }
             switch($_REQUEST['arg'])
             {
                 case "addlocale":
-                    $locale_model->addLocale(
-                        $localename, $localetag, $writingmode, $active);
-                    $locale_model->extractMergeLocales();
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('system_component_locale_added')."</h1>')";
+                    if($incomplete) {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('system_component_locale_missing_info').
+                            "</h1>')";
+                    } else {
+                        $locale_model->addLocale(
+                            $localename, $localetag, $writingmode, $active);
+                        $locale_model->extractMergeLocales();
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('system_component_locale_added')."</h1>')";
+                    }
                 break;
 
                 case "deletelocale":

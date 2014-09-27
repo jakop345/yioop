@@ -529,8 +529,6 @@ EOT;
             if(!$result = $dbm->execute($statement)) {
                 echo $statement." ERROR!";
                 return false;
-            } else {
-                echo $statement."\n";
             }
         }
         return true;
