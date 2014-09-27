@@ -186,7 +186,8 @@ function toggleDisplay(id)
  * Also changes the width of the Current activity accordingly.
  * @param String id  the id of the DOM element for the help div
  */
-function toggleHelp(id, isMobile) {
+function toggleHelp(id, isMobile) 
+{
     var all_help_elements =
             document.getElementsByClassName('current-activity');
     var help_node = all_help_elements[0];
@@ -210,6 +211,7 @@ function toggleHelp(id, isMobile) {
             help_node.style.maxWidth = new_width + "px";
         }
     } else {
+        alert(obj.clientHeight);
         //Calculate pixel to inch. clientWidth only returns in pixels.
         if (obj.style.display === "none") {
             help_node.style.top = getCssProperty(help_node, 'top')
@@ -220,11 +222,12 @@ function toggleHelp(id, isMobile) {
         }
     }
 
-    /*
-     * gets the Css property given an element and property name. 
-     * @param element elm, Strin property
-     */
-    function getCssProperty(elm, property) {
+/*
+* gets the Css property given an element and property name. 
+* @param element elm, Strin property
+*/
+function getCssProperty(elm, property) 
+    {
         //always returns in px
         return parseInt(window.getComputedStyle(elm, null)
                 .getPropertyValue(property));
@@ -237,7 +240,8 @@ function toggleHelp(id, isMobile) {
  * @param String wikitext
  * @returns  String html
  */
-function parseWikiContent(wikitext) {
+function parseWikiContent(wikitext) 
+{
     var html = wikitext;
     
     //note that line breaks from a textarea are sent
@@ -314,7 +318,8 @@ function parseWikiContent(wikitext) {
  * @param {type} str
  * @returns {unresolved}
  */
-function listify(str) {
+function listify(str) 
+{
     return str.replace(/(?:(?:(?:^|\n)[\*#].*)+)/g, function (match) {
         var listType = match.match(/(^|\n)#/) ? 'ol' : 'ul';
         match = match.replace(/(^|\n)[\*#][ ]{0,1}/g, "$1");
@@ -338,7 +343,8 @@ function listify(str) {
  * @param {function} errorHandler
  * @returns {nothing}
  */
-var getJSON = function (url, successHandler, errorHandler) {
+var getJSON = function (url, successHandler, errorHandler) 
+{
     var xhr = makeRequest();
     xhr.open('GET', url, true);
     xhr.responseType = 'json';
@@ -366,22 +372,29 @@ var getJSON = function (url, successHandler, errorHandler) {
  * @param  Json String
  * @returns JsonObject
  */
-function evalJSON(json) {
+function evalJSON(json) 
+{
     return eval("(" + json + ")");
 }
 
 /**
- * taked in the help point id, uses it to fetch wiki content, then 
+ * takes in the help point id, uses it to fetch wiki content, then 
  * wiki content is being eval'd to be painted int he help pane.
+ * Ajax call happens only if help needs to be displayed.
  * @param {elm} help_point
  * @returns {none}
  */
-function displayHelpForId(help_point) {
-    toggleHelp('help-frame', false);
+function displayHelpForId(help_point, is_mobile) 
+{
+    if((elt("help-frame").style.display) === "block"){
+        toggleHelp('help-frame', is_mobile);
+        return;
+    }
     getJSON("?c=api&group_id=7&arg=read&a=wiki&page_name="
             + help_point.id, function (data) {
                 document.getElementById("help-frame-body").innerHTML
                         = parseWikiContent(data.wiki_content);
+                toggleHelp('help-frame', is_mobile);
             }, function (status) {
         alert('Something went wrong.');
     });

@@ -56,9 +56,7 @@ class HelpElement extends Element {
         <?php
         if (isset($data['ACTIVITIES'])) {
             if (MOBILE) { ?>
-                
                 <div id="mobile-help">
-                    <!-- a href="javascript:;" onclick="toggleHelp('help-frame', true);">Help</a -->
                   <div id="help-frame" class="frame help-pane">
                     <h2>Help Content</h2>
                     <div id="help-frame-body" class="wordwrap">
@@ -70,7 +68,6 @@ class HelpElement extends Element {
                 ?>
                 
                 <div id="help">
-                    <!-- a href="javascript:;" onclick="toggleHelp('help-frame',false);">Help</a -->
                   <div id="help-frame" class="frame help-pane">
                     <h2>Help Content</h2>
                     <div id="help-frame-body" class="wordwrap">

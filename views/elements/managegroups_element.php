@@ -320,7 +320,7 @@ class ManagegroupsElement extends Element
                         e(tl('managegroups_element_browse')); ?></a>]
                     <button type="button" 
                     href="" 
-                    onclick="javascript:displayHelpForId(this)"
+                    onclick="javascript:displayHelpForId(this, <?php if(MOBILE) e("true"); else e("false");?>)"
                     id="browse_url">?</button>
                     </td>
                 <?php
