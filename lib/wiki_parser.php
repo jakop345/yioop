@@ -269,7 +269,7 @@ class WikiParser implements CrawlConstants
                     $line_parts = explode("=",$line);
                     if(count($line_parts) == 2) {
                         $head_vars[trim(addslashes($line_parts[0]))] =
-                                addslashes(trim($line_parts[1]));
+                            addslashes(trim($line_parts[1]));
                     }
                 }
                 if(isset($head_vars['page_type'])) {

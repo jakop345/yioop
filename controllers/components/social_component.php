@@ -1575,7 +1575,7 @@ EOD;
             $data["PAGE"] = $this->dynamicSubstitutions($group_id, $data,
                 $view->page_objects[$data["PAGE_ID"]]);
             $data["HEAD"] = $view->head_objects[$data["PAGE_ID"]];
-            if(isset($data["HEAD"]['page_header']) &&
+            if($data['MODE'] == "read" && isset($data["HEAD"]['page_header']) &&
                 $data["HEAD"]['page_type'] != 'presentation') {
                 $page_header = $group_model->getPageInfoByName($group_id,
                     $data["HEAD"]['page_header'], $locale_tag, $data["MODE"]);
@@ -1588,7 +1588,7 @@ EOD;
                 $data["PAGE_HEADER"] = $this->dynamicSubstitutions(
                     $group_id, $data, $data["PAGE_HEADER"]);
             }
-            if(isset($data["HEAD"]['page_footer']) &&
+            if($data['MODE'] == "read" && isset($data["HEAD"]['page_footer']) &&
                 $data["HEAD"]['page_type'] != 'presentation') {
                 $page_footer = $group_model->getPageInfoByName($group_id,
                     $data["HEAD"]['page_footer'], $locale_tag, $data["MODE"]);
