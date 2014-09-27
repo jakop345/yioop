@@ -123,10 +123,10 @@ class WikiParser implements CrawlConstants
             array("/&#039;&#039;(.+?)&#039;&#039;/s", "<i>$1</i>"),
             array('/[^\n]{{\s*class\s*\=\s*'.
                 '&quot;([a-zA-Z\_\-\s]+)&quot;\s+(.+)}}/s',
-                "$esc<span class=\"$1\" >\n$2$esc</span>"),
+                "$esc<span class=\"$1\" >\t\n$2$esc</span>"),
             array('/[^\n]{{\s*class\s*\=\s*'.
                 '&#039;([a-zA-Z\_\-\s]+)&#039;\s+(.+)}}/s',
-                "$esc<span class=\"$1\" >\n$2$esc</span>"),
+                "$esc<span class=\"$1\" >\t\n$2$esc</span>"),
             array('/\n*?{{\s*class\s*\=\s*'.
                 '&quot;([a-zA-Z\_\-\s]+)&quot;\s+(.+)}}/s',
                 "\n\n$esc<div class=\"$1\" >\n\n$2\n\n$esc</div>"),
@@ -147,7 +147,7 @@ class WikiParser implements CrawlConstants
                 "\n\n$esc<div style=\"$1\">\n\n$2\n\n$esc</div>"),
             array('/\n*?{{\s*style\s*\=\s*'.
                 '&#039;([0-9a-zA-Z\_\-\.\;\:\s\n]+)&#039;\s+(.+)}}/',
-                "$esc<span style='$1'>$2$esc</span>"),
+                "$esc<span style='$1'>\t$2$esc</span>"),
             array('/\n*?{{\s*style\s*\=\s*'.
                 '&#039;([0-9a-zA-Z\_\-\.\;\:\s\n]+)&#039;\s+(.+)}}/s',
                 "\n\n$esc<div style='$1'>\n\n$2\n\n$esc</div>"),
