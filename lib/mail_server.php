@@ -254,13 +254,13 @@ class MailServer
         if($from == "") {
             $from = $this->sender_email;
         }
+        $eol = self::EOL;
         if(USE_MAIL_PHP) {
             $header = "From: " . $from . $eol;
             mail($to, $subject, $message, $header);
             return;
         }
         $this->messages = "";
-        $eol = self::EOL;
         $mail  = "Date: " . date(DATE_RFC822) . $eol;
         $mail .= "Subject: " . $subject . $eol;
         $mail .= "From: " . $from . $eol;
