@@ -223,8 +223,6 @@ class AccountaccessComponent extends Component
                             return $data;
                         }
                     }
-                    echo "yono";
-                    print_r($user);
                     $user_model->updateUser($user);
                     $data['USER']['USER_ICON'] = $user_model->getUserIconUrl(
                         $user['USER_ID']);
@@ -739,7 +737,7 @@ class AccountaccessComponent extends Component
         } else {
             $name = "";
         }
-        if($name != "" ) {
+        if($name != "") {
             $role_id = $role_model->getRoleId($name);
             $data['ROLE_ACTIVITIES'] =
                 $role_model->getRoleActivities($role_id);
@@ -811,6 +809,7 @@ class AccountaccessComponent extends Component
                     }
                 break;
                 case "addrole":
+                    $name = trim($name);
                     if($name != "" && $role_model->getRoleId($name) > 0) {
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_rolename_exists').
@@ -820,6 +819,10 @@ class AccountaccessComponent extends Component
                         $data['CURRENT_ROLE']['name'] = "";
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('accountaccess_component_rolename_added').
+                            "</h1>')";
+                   } else {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('accountaccess_component_rolename_blank').
                             "</h1>')";
                    }
                    $data['CURRENT_ROLE']['name'] = "";
