@@ -2755,19 +2755,17 @@ table.wikitable > caption
 .html-ltr #mobile-help
 {
     float: left;
-    width: 3.312in;
+    width: 3in;
     position: absolute;
-    left: 0.042in;
-    top: 137px;
+    top: 142px;
 }
 
 .html-rtl #mobile-help
 {
     float: left;
-    width: 3.312in;
+    width: 3in;
     position: absolute;
-    left: 0.042in;
-    top: 137px;
+    top: 142px;
 }
 
 .help-pane{

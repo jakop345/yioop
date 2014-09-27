@@ -184,18 +184,20 @@ function toggleDisplay(id)
 /*
  * Toggles Help element from display:none and display block. 
  * Also changes the width of the Current activity accordingly.
- * @param String id  the id of the DOM element for the help div
+ * @param {String} help element's id to toggle.
+ * @param {String} isMobile flag true/false.
  */
 function toggleHelp(id, isMobile) 
 {
     var all_help_elements =
             document.getElementsByClassName('current-activity');
     var help_node = all_help_elements[0];
-    toggleDisplay(id);
+    
     obj = elt(id);
     var help_height = 164;//obj.clientHeight;
 
     if (isMobile === false) {
+        toggleDisplay(id);
         var new_width;
         var decrease_width_by = (getCssProperty(obj, 'width') / 3);
         //Calculate pixel to inch. clientWidth only returns in pixels.
@@ -211,20 +213,23 @@ function toggleHelp(id, isMobile)
             help_node.style.maxWidth = new_width + "px";
         }
     } else {
-        alert(obj.clientHeight);
+        var height_before_toggle = (obj.clientHeight);
+        toggleDisplay(id);
+        var height_after_toggle = (obj.clientHeight);
         //Calculate pixel to inch. clientWidth only returns in pixels.
         if (obj.style.display === "none") {
             help_node.style.top = getCssProperty(help_node, 'top')
-                    - help_height + "px";
+                    - height_before_toggle + "px";
         } else if (obj.style.display === "block") {
             help_node.style.top = getCssProperty(help_node, 'top')
-                    + help_height + "px";
+                    + height_after_toggle + "px";
         }
     }
 
 /*
 * gets the Css property given an element and property name. 
-* @param element elm, Strin property
+* @param {Element} elm to get the Css property for
+* @param {String} Css property name.
 */
 function getCssProperty(elm, property) 
     {
@@ -237,19 +242,19 @@ function getCssProperty(elm, property)
 /**
  * This is a JS function to convert yioop wiki markup to
  * html.
- * @param String wikitext
- * @returns  String html
+ * @param {String} wiki_text tobe parsed as HTML
+ * @returns {String} parsed html
  */
-function parseWikiContent(wikitext) 
+function parseWikiContent(wiki_text)
 {
-    var html = wikitext;
+    var html = wiki_text;
     
-    //note that line breaks from a textarea are sent
-    //as \r\n , so make sure we cleanthem up to replace
+    //note that line breaks from a text area are sent
+    //as \r\n , so make sure we clean them up to replace
     //all \r\n with \n
     html = html.replace(/\r\n/g, "\n");
 
-    html = listify(html);
+    html = parseLists(html);
 
     // Basic MediaWiki Syntax.
     // Replace newlines with <br />
@@ -314,16 +319,16 @@ function parseWikiContent(wikitext)
 
 /**
  * Lists need to be recursively parsed. So the below function is used
- * to ecursively convert wiki markup to html.
- * @param {type} str
- * @returns {unresolved}
+ * to recursively convert wiki markup to html.
+ * @param {String} str
+ * @returns {String}
  */
-function listify(str) 
+function parseLists(str)
 {
     return str.replace(/(?:(?:(?:^|\n)[\*#].*)+)/g, function (match) {
         var listType = match.match(/(^|\n)#/) ? 'ol' : 'ul';
         match = match.replace(/(^|\n)[\*#][ ]{0,1}/g, "$1");
-        match = listify(match);
+        match = parseLists(match);
         return '<'
                 + listType + '><li>'
                 + match.replace(/^\n/, '')
@@ -338,51 +343,34 @@ function listify(str)
  * Also fires the callback functions passed as 
  * params appropriately.
  * 
- * @param {type} url
- * @param {function} successHandler
- * @param {function} errorHandler
- * @returns {nothing}
+ * @param {String} url
+ * @param {String} response_type
+ * @param {function} success_call_back
+ * @param {function} error_handler
  */
-var getJSON = function (url, successHandler, errorHandler) 
+var get = function (url, response_type, success_call_back, error_handler)
 {
-    var xhr = makeRequest();
-    xhr.open('GET', url, true);
-    xhr.responseType = 'json';
-    xhr.onload = function () {
-        var status = xhr.status;
+    var request = makeRequest();
+    request.open('GET', url, true);
+    request.responseType = response_type;
+    request.onload = function () {
+        var status = request.status;
         if (status == 200) {
-            successHandler && successHandler(xhr.response);
+            success_call_back && success_call_back(request.response);
         } else {
-            errorHandler && errorHandler(status);
+            error_handler && error_handler(status);
         }
     };
-    xhr.send();
+    request.send();
 };
-
-
-/**
- * 
- * {"foo": "bar"} // SyntaxError
- * An object literal needs to be wrapped in parentheses to properly
- *  be evaluated in eval context and other contexts:
- *  eval('{}') is undefined, for example. 
- *  whereas eval('(' + '{}' + ')' ) evaluates to Object.
- *  Wrap it in parentheses and it becomes a valid expression.
- *  
- * @param  Json String
- * @returns JsonObject
- */
-function evalJSON(json) 
-{
-    return eval("(" + json + ")");
-}
 
 /**
  * takes in the help point id, uses it to fetch wiki content, then 
  * wiki content is being eval'd to be painted int he help pane.
  * Ajax call happens only if help needs to be displayed.
- * @param {elm} help_point
- * @returns {none}
+ * @param {object} help_point element
+ * @param {String} is_mobile flag to check if the client is mobile
+ * or not.
  */
 function displayHelpForId(help_point, is_mobile) 
 {
@@ -390,8 +378,8 @@ function displayHelpForId(help_point, is_mobile)
         toggleHelp('help-frame', is_mobile);
         return;
     }
-    getJSON("?c=api&group_id=7&arg=read&a=wiki&page_name="
-            + help_point.id, function (data) {
+    get("?c=api&group_id=7&arg=read&a=wiki&page_name="
+            + help_point.id,'json', function (data) {
                 document.getElementById("help-frame-body").innerHTML
                         = parseWikiContent(data.wiki_content);
                 toggleHelp('help-frame', is_mobile);
