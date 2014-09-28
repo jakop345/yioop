@@ -96,7 +96,7 @@ class AdminView extends View
          */
         function autoLogout()
         {
-            document.location='?c=search&a=signout';
+            document.location='?a=signout';
         }
         //schedule logout warnings
         var sec = 1000;

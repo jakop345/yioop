@@ -230,8 +230,8 @@ class WebLayout extends Layout
             foreach($data['INCLUDE_SCRIPTS'] as $script_name) {
                 if($script_name == "math") {
                     e('<script type="text/javascript"
-                        src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?'.
-                        'config=TeX-MML-AM_HTMLorMML"></script>');
+                        src="https://cdn.mathjax.org/mathjax/latest/MathJax.js'.
+                        '?config=TeX-MML-AM_HTMLorMML"></script>');
                 } else {
                     e('<script type="text/javascript"
                         src="'.$_SERVER["PATH_INFO"].'/scripts/'.
