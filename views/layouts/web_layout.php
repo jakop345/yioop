@@ -105,7 +105,6 @@ class WebLayout extends Layout
             $background_color = isset($data['BACKGROUND_COLOR']) ?
                 $data['BACKGROUND_COLOR'] : BACKGROUND_COLOR;
             ?>
-            .back-color,
             body
             {
                 background-color: <?php e($background_color); ?>;
@@ -174,6 +173,7 @@ class WebLayout extends Layout
             $top_color = (isset($data['TOPBAR_COLOR'])) ?
                 $data['TOPBAR_COLOR'] : TOPBAR_COLOR;
             ?>
+            .top-color,
             .suggest-list,
             .suggest-list li,
             .suggest-list li span.selected,
