@@ -105,6 +105,7 @@ class WebLayout extends Layout
             $background_color = isset($data['BACKGROUND_COLOR']) ?
                 $data['BACKGROUND_COLOR'] : BACKGROUND_COLOR;
             ?>
+            .back-color,
             body
             {
                 background-color: <?php e($background_color); ?>;
@@ -150,7 +151,6 @@ class WebLayout extends Layout
         }
         if(defined('SIDEBAR_COLOR')) {
             ?>
-            .sidebar-color,
             .activity-menu h2
             {
                 background-color: <?php if(isset($data['SIDEBAR_COLOR'])) {
