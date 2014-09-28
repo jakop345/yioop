@@ -393,8 +393,8 @@ class WikiParser implements CrawlConstants
         $min_sections_for_toc = 4;
         preg_match_all('/(\A|\n)==\s*([^=]+)\s*==/', $page, $matches);
         if(isset($matches[2]) && count($matches[2]) >= $min_sections_for_toc) {
-            $toc .= "<div style='border: 1px ridge #000; width:280px;".
-                "background-color:#EEF; padding: 3px; margin:6px;'><ol>\n";
+            $toc .= "<div class='sidebar-color' style='border: 1px ".
+                "ridge #000; width:280px;padding: 3px; margin:6px;'><ol>\n";
             foreach($matches[2] as $section) {
                 $toc .= "<li><a href='#".addslashes($section)."'>".
                     $section."</a></li>\n";

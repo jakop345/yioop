@@ -1208,6 +1208,7 @@ EOD;
         $page_defaults = array(
             'page_type' => 'standard',
             'page_border' => 'solid',
+            'toc' => true,
             'title' => '',
             'author' => '',
             'robots' => '',
@@ -1289,12 +1290,18 @@ EOD;
                                         $head_vars[$key] = $default;
                                     }
                                 } else {
-                                    $head_vars[$key] = 
+                                    $head_vars[$key] =
                                         trim(preg_replace("/\n+/", "\n",
                                         $head_vars[$key]));
                                 }
                                 if($head_vars[$key] != $default) {
                                     $write_head = true;
+                                }
+                            } else if($key == 'toc') {
+                                if(isset($_REQUEST['title'])) {
+                                    $head_vars[$key] = false;
+                                } else {
+                                    $head_vars[$key] == true;
                                 }
                             }
                         }
