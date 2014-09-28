@@ -150,7 +150,7 @@ class WebLayout extends Layout
         }
         if(defined('SIDEBAR_COLOR')) {
             ?>
-            .sidebar-color
+            .sidebar-color,
             .activity-menu h2
             {
                 background-color: <?php if(isset($data['SIDEBAR_COLOR'])) {
