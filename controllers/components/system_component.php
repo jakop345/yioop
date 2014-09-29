@@ -149,7 +149,6 @@ class SystemComponent extends Component
                         $machine_model->addMachine(
                             $r["name"], $r["url"], $r["has_queue_server"],
                             $r["num_fetchers"], $r["parent"]);
-
                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                             tl('system_component_machine_added').
                             "</h1>');";
