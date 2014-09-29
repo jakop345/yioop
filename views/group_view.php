@@ -131,7 +131,7 @@ class GroupView extends View implements CrawlConstants
          */
         function autoLogout()
         {
-            document.location='?c=search&a=signout';
+            document.location='?a=signout';
         }
         //schedule logout warnings
         var sec = 1000;
