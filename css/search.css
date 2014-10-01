@@ -2737,18 +2737,22 @@ table.wikitable > caption
 
 .html-ltr #help
 {
+    border-radius: 8px;
     float: left;
     width: 4.0in;
     position: absolute;
     left: 11.5in;
+    top: 135px;
 }
 
 .html-rtl #help
 {
+    border-radius: 8px;
     float: left;
     width: 4.0in;
     position: absolute;
     right: 11.5in;
+    top: 135px;
 }
 
 
@@ -2782,4 +2786,7 @@ table.wikitable > caption
 .help-pane p {
     color:#333;
     padding:10px;
+}
+.wiki-resource-image{
+    max-width:320px;
 }

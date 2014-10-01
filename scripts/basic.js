@@ -181,6 +181,11 @@ function toggleDisplay(id)
     obj.style.display = value;
 }
 
+current_activity_closed = true;
+current_activity_top = 0;
+all_help_elements =
+            document.getElementsByClassName('current-activity');
+help_node = all_help_elements[0];
 /*
  * Toggles Help element from display:none and display block. 
  * Also changes the width of the Current activity accordingly.
@@ -189,17 +194,17 @@ function toggleDisplay(id)
  */
 function toggleHelp(id, isMobile) 
 {
-    var all_help_elements =
-            document.getElementsByClassName('current-activity');
-    var help_node = all_help_elements[0];
-    
+    var images = document.querySelectorAll(".wiki-resource-image");
+
+    if (current_activity_closed === true) {
+        current_activity_top = getCssProperty(help_node, 'top');
+    }
     obj = elt(id);
-    var help_height = 164;//obj.clientHeight;
 
     if (isMobile === false) {
         toggleDisplay(id);
         var new_width;
-        var decrease_width_by = (getCssProperty(obj, 'width') / 3);
+        var decrease_width_by = Math.floor(getCssProperty(obj, 'width') / 3);
         //Calculate pixel to inch. clientWidth only returns in pixels.
         if (obj.style.display === "none") {
             new_width = Math.floor(getCssProperty(help_node, 'width'))
@@ -218,25 +223,40 @@ function toggleHelp(id, isMobile)
         var height_after_toggle = (obj.clientHeight);
         //Calculate pixel to inch. clientWidth only returns in pixels.
         if (obj.style.display === "none") {
-            help_node.style.top = getCssProperty(help_node, 'top')
-                    - height_before_toggle + "px";
+            //on closing, restore top
+            help_node.style.top = current_activity_top + "px";
+            current_activity_closed = true;
+            //getCssProperty(help_node, 'top')
+            //       - height_before_toggle + "px";
         } else if (obj.style.display === "block") {
-            help_node.style.top = getCssProperty(help_node, 'top')
+            help_node.style.top = current_activity_top
                     + height_after_toggle + "px";
+            //For some reason the div.clientHeight doesnt include the height
+            //of the images inside the div. So we iterate through the 
+            //image elements, after each image is loaded add the image
+            //height to the top of the current_activity div.
+            for (var i = 0; i < images.length; i++) {
+                var image = images[i];
+                image.onload = function(){
+                    help_node.style.top =  getCssProperty(help_node, 'top') 
+                            + this.height + 'px';
+                };
+            }
+            current_activity_closed = false;
         }
     }
+}
 
 /*
-* gets the Css property given an element and property name. 
-* @param {Element} elm to get the Css property for
-* @param {String} Css property name.
-*/
-function getCssProperty(elm, property) 
-    {
-        //always returns in px
-        return parseInt(window.getComputedStyle(elm, null)
-                .getPropertyValue(property));
-    }
+ * gets the Css property given an element and property name.
+ * @param {Element} elm to get the Css property for
+ * @param {String} Css property name.
+ */
+function getCssProperty(elm, property)
+{
+    //always returns in px
+    return parseInt(window.getComputedStyle(elm, null)
+        .getPropertyValue(property));
 }
 
 /**
@@ -245,7 +265,7 @@ function getCssProperty(elm, property)
  * @param {String} wiki_text tobe parsed as HTML
  * @returns {String} parsed html
  */
-function parseWikiContent(wiki_text)
+function parseWikiContent(wiki_text, group_id, page_id)
 {
     var html = wiki_text;
     
@@ -255,6 +275,21 @@ function parseWikiContent(wiki_text)
     html = html.replace(/\r\n/g, "\n");
 
     html = parseLists(html);
+
+    //Regex replace normal links
+    html = html.replace(/[^\[](http[^\[\s]*)/g, function (m, l) {
+    // normal link
+        return '<a href="' + l + '">' + l + '</a>';
+    });
+
+    //Regex replace for external links
+    html = html.replace(/[\[](http.*)[!\]]/g, function (m, l) {
+    // external link
+        var p = l.replace(/[\[\]]/g, '').split(/ /);
+        var link = p.shift();
+        return '<a href="' + link + '">'
+        + (p.length ? p.join(' ') : link) + '</a>';
+    });
 
     // Basic MediaWiki Syntax.
     // Replace newlines with <br />
@@ -276,35 +311,27 @@ function parseWikiContent(wiki_text)
         return '<b>' + contents + '</b>';
     });
 
-    //Regex for resource extraction.
-    html = html.replace(/{{resource:(.+?)\|(.+?)}}/g,
-            function (match, contents, desc) {
-                return '<img src="' + contents + '" alt="' + desc + '" />';
-            });
-
     //Regex replace for Italic characters
     html = html.replace(/''(.*?)''/g, function (match, contents) {
         return '<i>' + contents + '</i>';
     });
+
+    //Regex for resource extraction.
+    html = html.replace(/{{resource:(.+?)\|(.+?)}}/g,
+            function (match, contents, desc) {
+                return '<img src="' + "?c=resource&a=get&f=resources&g="
+                + group_id
+                + "&p=" + page_id
+                + "&n=" + contents + '" alt="' + desc
+                + '" class="wiki-resource-image"/>';
+            });
 
     //Regex replace for HR
     html = html.replace(/----(.*?)/g, function (match, contents) {
         return '<hr>' + contents + '</hr>';
     });
 
-    //Regex replace normal links
-    html = html.replace(/\[(.*?)\]/g, function (match, contents) {
-        return '<a href= "' + contents + '">' + contents + '</a>';
-    });
-
-    //Regex replace for external links
-    html = html.replace(/[\[](http.*)[!\]]/g, function (match, contents) {
-        var p = contents.replace(/[\[\]]/g, '').split(/ /);
-        var link = p.shift();
-        return '<a href="' + link + '">'
-                + (p.length ? p.join(' ') : link)
-                + '</a>';
-    });
+    
 
     //Regex replace for blocks
     html = html.replace(/(?:^|\n+)([^# =\*<].+)(?:\n+|$)/gm,
@@ -381,7 +408,8 @@ function displayHelpForId(help_point, is_mobile)
     get("?c=api&group_id=7&arg=read&a=wiki&page_name="
             + help_point.id,'json', function (data) {
                 document.getElementById("help-frame-body").innerHTML
-                        = parseWikiContent(data.wiki_content);
+                        = parseWikiContent(data.wiki_content,
+                data.group_id, data.page_id);
                 toggleHelp('help-frame', is_mobile);
             }, function (status) {
         alert('Something went wrong.');
