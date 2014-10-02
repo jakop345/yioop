@@ -225,7 +225,7 @@ class WikiParser implements CrawlConstants
             array('/{{smallcaps\|(.+?)}}/s', "<small>$1</small>\t"),
             array("/{{fraction\|(.+?)\|(.+?)}}/si", "<small>$1/$2</small>\t"),
             array('/(\A|\n)----/', "$1<hr />"),
-            array('/\r/', ""),*/
+            array('/\r/', ""),
         );
         if($minimal) {
             $substitutions = array(
