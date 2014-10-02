@@ -160,7 +160,7 @@ class WikiParser implements CrawlConstants
             array("/&lt;blockquote&gt;(.+?)&lt;\/blockquote&gt;/s",
                 "$esc<blockquote>\n\n$1\n\n$esc</blockquote>"),
             array("/&lt;pre&gt;(.+?)&lt;\/pre&gt;/s",
-                "$esc<pre>\n\n$1\n\n$esc</pre>"),
+                "$esc<pre>$1$esc</pre>"),
             array("/&lt;tt&gt;(.+?)&lt;\/tt&gt;/s", "<tt>$1</tt>"),
             array("/&lt;u&gt;(.+?)&lt;\/u&gt;/s", "<u>$1</u>"),
             array("/&lt;strike&gt;(.+?)&lt;\/strike&gt;/s",
@@ -367,18 +367,21 @@ class WikiParser implements CrawlConstants
             if(trim($part) == "") {
                 continue;
             }
-            $start = substr($part, 0, 3);
-            if(in_array($start[0], $space_like)) {
-                $document .= "\n<pre>\n".ltrim($part)."\n</pre>\n";
+            $part = preg_replace("/(\A|\n)(( |\t).*(\n|\Z))+/",
+                "<pre>$0</pre>\n", $part);
+            $start = substr($part, 0, 4);
+            $end = substr($part, -5);
+            if($start == "<pre" && $end == "pre>\n") {
+                $document .= $part;
             } else {
                 if($start != $esc) {
-                    $document .= "\n<div>\n".$part. "\n</div>\n";
+                    $document .= "\n<div>\n".$part. "</div>\n";
                 } else {
                     $document .= $part;
                 }
             }
         }
-        $document = str_replace(",[}", "", $document);
+        $document = str_replace($esc, "", $document);
         return $document;
     }
     /**
