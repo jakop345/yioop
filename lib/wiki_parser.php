@@ -161,6 +161,7 @@ class WikiParser implements CrawlConstants
                 "$esc<blockquote>\n\n$1\n\n$esc</blockquote>"),
             array("/&lt;pre&gt;(.+?)&lt;\/pre&gt;/s",
                 "$esc<pre>$1$esc</pre>"),
+            array("/(\A|\n)(( |\t).*(\n|\Z))+/", "$esc<pre>$0$esc</pre>\n"),
             array("/&lt;tt&gt;(.+?)&lt;\/tt&gt;/s", "<tt>$1</tt>"),
             array("/&lt;u&gt;(.+?)&lt;\/u&gt;/s", "<u>$1</u>"),
             array("/&lt;strike&gt;(.+?)&lt;\/strike&gt;/s",
@@ -367,18 +368,11 @@ class WikiParser implements CrawlConstants
             if(trim($part) == "") {
                 continue;
             }
-            $part = preg_replace("/(\A|\n)(( |\t).*(\n|\Z))+/",
-                "<pre>$0</pre>\n", $part);
-            $start = substr($part, 0, 4);
-            $end = substr($part, -5);
-            if($start == "<pre" && $end == "pre>\n") {
-                $document .= $part;
+            $start = substr($part, 0, 3);
+            if($start != $esc) {
+                $document .= "\n<div>\n".$part. "\n</div>\n";
             } else {
-                if($start != $esc) {
-                    $document .= "\n<div>\n".$part. "</div>\n";
-                } else {
-                    $document .= $part;
-                }
+                $document .= $part;
             }
         }
         $document = str_replace($esc, "", $document);
