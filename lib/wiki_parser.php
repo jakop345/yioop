@@ -48,7 +48,7 @@ require_once BASE_DIR."/lib/processors/text_processor.php";
 class WikiParser implements CrawlConstants
 {
     /**
-     * Escape string to prevent incorrect nesting of div for some of the
+     * Escape string to try to prevent incorrect nesting of div for some of the
      * substitutions;
      * @var string
      */
@@ -263,7 +263,6 @@ class WikiParser implements CrawlConstants
     function parse($document, $parse_head_vars = true,
         $handle_big_files = false)
     {
-        $esc = $this->esc;
         $head = "";
         $page_type = "standard";
         $head_vars = array();
@@ -295,6 +294,9 @@ class WikiParser implements CrawlConstants
         $document = preg_replace_callback(
             "/&lt;nowiki&gt;(.+?)&lt;\/nowiki&gt;/s",
             "base64EncodeCallback", $document);
+        $document = preg_replace_callback(
+            "/&lt;pre&gt;(.+?)&lt;\/pre&gt;/s",
+            "spaceEncodeCallback", $document);
         if(!$this->minimal) {
             if($draw_toc && $page_type != "presentation") {
                 $toc = $this->makeTableOfContents($document);
@@ -369,9 +371,11 @@ class WikiParser implements CrawlConstants
         $esc = $this->esc;
         $document = preg_replace_callback("/((href=)\"([^\"]+)\")/",
             "fixLinksCallback", $document);
+        $document = preg_replace_callback(
+            "/<span(.+?)<\/span\s*>/s",
+            "spanEncodeCallback", $document);
         $doc_parts = preg_split("/\n\n+/", $document);
         $document = "";
-        $space_like = array(" ", "\t");
         foreach($doc_parts as $part) {
             if(trim($part) == "") {
                 continue;
@@ -383,6 +387,7 @@ class WikiParser implements CrawlConstants
                 $document .= $part;
             }
         }
+
         $document = str_replace($esc, "", $document);
         return $document;
     }
@@ -693,7 +698,33 @@ function base64EncodeCallback($matches)
 {
     return "&lt;nowiki&gt;".base64_encode($matches[1])."&lt;/nowiki&gt;";
 }
-
+/**
+ * Callback used to base64 encode the contents of pre tags so they
+ * won't accidently get sub-pre tags because a bunch of leading lines have
+ * spaces
+ *
+ * @param array $matches $matches[1] should contain the contents of a pre tag
+ * @return string encoded contents surrounded by an escaped pre tag.
+ */
+function spaceEncodeCallback($matches)
+{
+    $out = str_replace(" ", "&nbsp;", $matches[1]);
+    $out = str_replace("\n\n", "&nbsp;\n&nbsp;\n", $out);
+    return "&lt;pre&gt;".$out."&lt;/pre&gt;";
+}
+/**
+ * Callback used to base64 encode the contents of pre tags so they
+ * won't accidently get sub-pre tags because a bunch of leading lines have
+ * spaces
+ *
+ * @param array $matches $matches[1] should contain the contents of a pre tag
+ * @return string encoded contents surrounded by an escaped pre tag.
+ */
+function spanEncodeCallback($matches)
+{
+    $out = str_replace("\n\n", "&nbsp;\n&nbsp;\n", $matches[1]);
+    return "<span".$out."</span>";
+}
 /**
  * Callback used to base64 decode the contents of previously base64 encoded
  * (@see base64EncodeCallback) nowiki tags after all mediawiki substitutions
