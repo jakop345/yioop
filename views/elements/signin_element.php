@@ -74,7 +74,7 @@ class SigninElement extends Element
             ?><li><a href="./?c=admin&amp;<?php
             e(CSRF_TOKEN."=".$data[CSRF_TOKEN])?>"><?php
                     e(tl('signin_element_admin')); ?></a></li><?php
-            ?><li><a href="./?c=search&amp;a=signout"><?php
+            ?><li><a href="./?a=signout"><?php
                 e(tl('signin_element_signout')); ?></a></li><?php
         }
         ?>

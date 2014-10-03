@@ -1508,7 +1508,19 @@ class CrawlComponent extends Component implements CrawlConstants
                         array('aux_info','language'));
                     foreach ($to_clean as $clean_me) {
                         $r[$clean_me] = (isset($_REQUEST[$clean_me])) ?
-                            $parent->clean($_REQUEST[$clean_me], "string" ):"";
+                            trim($parent->clean($_REQUEST[$clean_me], "string"))
+                            : "";
+                        if($clean_me == "source_url") {
+                            $r[$clean_me] = UrlParser::canonicalLink(
+                                $r[$clean_me], NAME_SERVER);
+                            if(!$r[$clean_me]) {
+                                $data['SCRIPT'] .= 
+                                    "doMessage('<h1 class=\"red\" >".
+                                    tl('crawl_component_invalid_url').
+                                    "</h1>');";
+                            }
+                            break 2;
+                        }
                         if(in_array($clean_me, $must_have) &&
                             $r[$clean_me] == "" ) {
                             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
@@ -1534,9 +1546,10 @@ class CrawlComponent extends Component implements CrawlConstants
                     $must_have = $to_clean;
                     foreach ($to_clean as $clean_me) {
                         $r[$clean_me] = (isset($_REQUEST[$clean_me])) ?
-                            $parent->clean($_REQUEST[$clean_me], "string" ):"";
+                            trim($parent->clean($_REQUEST[$clean_me],"string")):
+                            "";
                         if(in_array($clean_me, $must_have) &&
-                            $r[$clean_me] == "" ) {
+                            ($r[$clean_me] == "" || $r[$clean_me] == -1)) {
                             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                                 tl('crawl_component_missing_fields').
                                 "</h1>');";

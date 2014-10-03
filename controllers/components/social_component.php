@@ -1218,6 +1218,7 @@ EOD;
         $page_defaults = array(
             'page_type' => 'standard',
             'page_border' => 'solid',
+            'toc' => true,
             'title' => '',
             'author' => '',
             'robots' => '',
@@ -1299,12 +1300,18 @@ EOD;
                                         $head_vars[$key] = $default;
                                     }
                                 } else {
-                                    $head_vars[$key] = 
+                                    $head_vars[$key] =
                                         trim(preg_replace("/\n+/", "\n",
                                         $head_vars[$key]));
                                 }
                                 if($head_vars[$key] != $default) {
                                     $write_head = true;
+                                }
+                            } else if($key == 'toc') {
+                                if(isset($_REQUEST['title'])) {
+                                    $head_vars[$key] = false;
+                                } else {
+                                    $head_vars[$key] == true;
                                 }
                             }
                         }
@@ -1585,7 +1592,7 @@ EOD;
             $data["PAGE"] = $this->dynamicSubstitutions($group_id, $data,
                 $view->page_objects[$data["PAGE_ID"]]);
             $data["HEAD"] = $view->head_objects[$data["PAGE_ID"]];
-            if(isset($data["HEAD"]['page_header']) &&
+            if($data['MODE'] == "read" && isset($data["HEAD"]['page_header']) &&
                 $data["HEAD"]['page_type'] != 'presentation') {
                 $page_header = $group_model->getPageInfoByName($group_id,
                     $data["HEAD"]['page_header'], $locale_tag, $data["MODE"]);
@@ -1598,7 +1605,7 @@ EOD;
                 $data["PAGE_HEADER"] = $this->dynamicSubstitutions(
                     $group_id, $data, $data["PAGE_HEADER"]);
             }
-            if(isset($data["HEAD"]['page_footer']) &&
+            if($data['MODE'] == "read" && isset($data["HEAD"]['page_footer']) &&
                 $data["HEAD"]['page_type'] != 'presentation') {
                 $page_footer = $group_model->getPageInfoByName($group_id,
                     $data["HEAD"]['page_footer'], $locale_tag, $data["MODE"]);

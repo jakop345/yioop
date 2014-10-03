@@ -48,7 +48,7 @@ class StaticController extends Controller
      * this controller will respond to
      * @var array
      */
-    var $activities = array("showPage");
+    var $activities = array("showPage", "signout");
     /**
      * This is the main entry point for handling people arriving to view
      * a static page. It determines which page to draw and class the view
@@ -66,6 +66,11 @@ class StaticController extends Controller
         if(isset($_REQUEST['a'])) {
             if(in_array($_REQUEST['a'], $this->activities)) {
                 $activity = $_REQUEST['a'];
+                if($activity == "signout") {
+                    $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
+                        tl('static_controller_logout_successful')."</h1>')";
+                    $activity = "showPage";
+                }
             } else {
                 $activity = "showPage";
             }
@@ -129,12 +134,12 @@ class StaticController extends Controller
         $head_info = $static_view->head_objects[$data['page']];
         if((isset($head_info['title']))) {
             if($head_info['title']) {
-                $data["subtitle"] = " - ". $head_info['title'];
+                $data["subtitle"] = " - ".$head_info['title'];
             } else {
                 $data["subtitle"] = "";
             }
-            $static_view->head_objects[$data['page']]['title'] = "Yioop!".
-                $data["subtitle"];
+            $static_view->head_objects[$data['page']]['title'] =
+                tl('static_controller_complete_title', $head_info['title']);
         } else {
             $data["subtitle"] = "";
         }

@@ -111,22 +111,22 @@ class WikiParser implements CrawlConstants
             array('/\[\[(http[^\s\|\]]+)\|([^\[\]]+?)\]\]/s',
                 "<a href=\"$1\">$2</a>"),
             array('/\[\[([^\[\]]+?)\|([^\[\]]+?)\]\]/s',
-                "<a href=\"{$base_address}$1\">$2</a>"),
+                "<a href=\"{$base_address}$1\">$2</a>\t"),
             array('/\[\[([^\[\]]+?)\]\]/s',
-                "<a href=\"{$base_address}$1\">$1</a>"),
+                "<a href=\"{$base_address}$1\">$1</a>\t"),
             array("/\[(http[^\s\]]+)\s+(.+?)\]/s",
                 "[<a href=\"$1\">$2</a>]"),
             array("/\[(http[^\]\s]+)\s*\]/","(<a href=\"$1\">&rarr;</a>)"),
             array("/&#039;&#039;&#039;&#039;&#039;(.+?)".
-                "&#039;&#039;&#039;&#039;&#039;/s", "<b><i>$1</i></b>"),
-            array("/&#039;&#039;&#039;(.+?)&#039;&#039;&#039;/s", "<b>$1</b>"),
-            array("/&#039;&#039;(.+?)&#039;&#039;/s", "<i>$1</i>"),
-            array('/[^\n]?{{\s*class\s*\=\s*'.
+                "&#039;&#039;&#039;&#039;&#039;/s", "<b><i>$1</i></b>\t"),
+            array("/&#039;&#039;&#039;(.+?)&#039;&#039;&#039;/s","<b>$1</b>\t"),
+            array("/&#039;&#039;(.+?)&#039;&#039;/s", "<i>$1</i>\t"),
+            array('/[^\n]{{\s*class\s*\=\s*'.
                 '&quot;([a-zA-Z\_\-\s]+)&quot;\s+(.+)}}/s',
-                "$esc<span class=\"$1\" >\n$2$esc</span>"),
-            array('/[^\n]?{{\s*class\s*\=\s*'.
+                "$esc<span class=\"$1\" >\t\n$2$esc</span>\t"),
+            array('/[^\n]{{\s*class\s*\=\s*'.
                 '&#039;([a-zA-Z\_\-\s]+)&#039;\s+(.+)}}/s',
-                "$esc<span class=\"$1\" >\n$2$esc</span>"),
+                "$esc<span class=\"$1\" >\t\n$2$esc</span>\t"),
             array('/\n*?{{\s*class\s*\=\s*'.
                 '&quot;([a-zA-Z\_\-\s]+)&quot;\s+(.+)}}/s',
                 "\n\n$esc<div class=\"$1\" >\n\n$2\n\n$esc</div>"),
@@ -147,7 +147,7 @@ class WikiParser implements CrawlConstants
                 "\n\n$esc<div style=\"$1\">\n\n$2\n\n$esc</div>"),
             array('/\n*?{{\s*style\s*\=\s*'.
                 '&#039;([0-9a-zA-Z\_\-\.\;\:\s\n]+)&#039;\s+(.+)}}/',
-                "$esc<span style='$1'>$2$esc</span>"),
+                "$esc<span style='$1'>\t$2$esc</span>\t"),
             array('/\n*?{{\s*style\s*\=\s*'.
                 '&#039;([0-9a-zA-Z\_\-\.\;\:\s\n]+)&#039;\s+(.+)}}/s',
                 "\n\n$esc<div style='$1'>\n\n$2\n\n$esc</div>"),
@@ -160,58 +160,70 @@ class WikiParser implements CrawlConstants
             array("/&lt;blockquote&gt;(.+?)&lt;\/blockquote&gt;/s",
                 "$esc<blockquote>\n\n$1\n\n$esc</blockquote>"),
             array("/&lt;pre&gt;(.+?)&lt;\/pre&gt;/s",
-                "$esc<pre>\n\n$1\n\n$esc</pre>"),
+                "$esc<pre>$1$esc</pre>"),
+            array("/(\A|\n)(( |\t).*(\n|\Z))+/", "$esc<pre>$0$esc</pre>\n"),
             array("/&lt;tt&gt;(.+?)&lt;\/tt&gt;/s", "<tt>$1</tt>"),
             array("/&lt;u&gt;(.+?)&lt;\/u&gt;/s", "<u>$1</u>"),
             array("/&lt;strike&gt;(.+?)&lt;\/strike&gt;/s",
                 "<strike>$1</strike>"),
-            array("/&lt;s&gt;(.+?)&lt;\/s&gt;/s", "<s>$1</s>"),
-            array("/&lt;ins&gt;(.+?)&lt;\/ins&gt;/s", "<ins>$1</ins>"),
-            array("/&lt;del&gt;(.+?)&lt;\/del&gt;/s", "<del>$1</del>"),
-            array("/&lt;sub&gt;(.+?)&lt;\/sub&gt;/s", "<sub>$1</sub>"),
-            array("/&lt;sup&gt;(.+?)&lt;\/sup&gt;/s", "<sup>$1</sup>"),
+            array("/&lt;s&gt;(.+?)&lt;\/s&gt;/s", "<s>$1</s>\t"),
+            array("/&lt;ins&gt;(.+?)&lt;\/ins&gt;/s", "<ins>$1</ins>\t"),
+            array("/&lt;del&gt;(.+?)&lt;\/del&gt;/s", "<del>$1</del>\t"),
+            array("/&lt;sub&gt;(.+?)&lt;\/sub&gt;/s", "<sub>$1</sub>\t"),
+            array("/&lt;sup&gt;(.+?)&lt;\/sup&gt;/s", "<sup>$1</sup>\t"),
             array("/&lt;math&gt;(.+?)&lt;\/math&gt;/s", "`$1`"),
             array("/&lt;br(\s*\/)?&gt;/", "<br />"),
             array("/&amp;nbsp;/", "&nbsp;"),
-            array('/(\A|\n)\*(.+)(\n|\Z)/', "\n<li>$2</li>\n"),
-            array('/(\A|\n)\*(.+)(\n|\Z)/', "\n<li>$2</li>\n"),
-            array('/(\A|^>|[^i]\s*>)\n<li>/', "$1\n<ul>\n<li>"),
-            array('@</li>\n(\Z|[^<])@', "</li>\n</ul>\n$1"),
+            array('/(\A|\n)\*(.+)(\n(\*|\n\s*|\Z|<li)|\Z)/sU',
+                "\n<li>$2</li>\n$4"),
+            array('/(\A|\n)\*(.+)(\n(\*|\n\s*|\Z|<li)|\Z)/sU',
+                "\n<li>$2</li>\n$4"),
+            array('/(\A|[^>])\n<li>/', "$1\n<ul>\n<li>"),
+            array('@</li>\n(\Z|([^<]|<[^l]))@', "</li>\n</ul>\n$1"),
             array('@</li>\n<li>\*@', "\n**"),
-            array('/\n\*\*(.+?)(\n|\Z)/s', "\n<li>$1</li>\n"),
-            array('/\n\*\*(.+?)(\n|\Z)/s', "\n<li>$1</li>\n"),
-            array('/(\A|^>|[^i]\s*>)\n<li>/', "$1\n<ul>\n<li>"),
+            array('/\n\*\*(.+)(\n(\*|\n\s*|\Z|\<li)|\Z)/sU',
+                "\n<li>$1</li>\n$3"),
+            array('/\n\*\*(.+)(\n(\*|\n\s*|\Z|\<li)|\Z)/sU',
+                "\n<li>$1</li>\n$3"),
+            array('/([^>])\n<li>/', "$1\n<ul>\n<li>"),
             array('@</li></li>@', "</li>\n</ul>\n</li>"),
-            array('/(\A|\n)\#(.+?)(\n|\Z)/s', "\n<li>$2</li>\n"),
-            array('/(\A|\n)\#(.+?)(\n|\Z)/s', "\n<li>$2</li>\n"),
-            array('/(\A|^>|[^i]\s*>)\n<li>/', "$1\n<ol>\n<li>"),
-            array('@</li>\n(\Z|[^<])@',
-                "</li>\n</ol>\n$1"),
+            array('/(\A|\n)\#(.+)(\n(\#|\n\s*|\Z|<|[\t\n\r]+\n)|\Z)/sU',
+                "\n<li>$2</li>\n$4"),
+            array('/(\A|\n)\#(.+)(\n(\#|\n\s*|\Z|<|[\t\n\r]+\n)|\Z)/sU',
+                "\n<li>$2</li>\n$4"),
+            array('/(\A|[^>])\n<li>/', "$1\n<ol>\n<li>"),
+            array('@</li>\n(\Z|([^<]|<[^l]))@', "</li>\n</ol>\n$1"),
             array('@</li>\n<li>\#@', "\n##"),
-            array('/\n\#\#(.+?)(\n|\Z)/s', "\n<li>$1</li>\n"),
-            array('/\n\#\#(.+?)(\n|\Z)/s', "\n<li>$1</li>\n"),
-            array('/(\A|^>|[^i]\s*>)\n<li>/', "$1\n<ol>\n<li>"),
+            array('/\n\#\#(.+)(\n(\#|\n\s*|\Z|\<li)|\Z)/sU',
+                "\n<li>$1</li>\n$3"),
+            array('/\n\#\#(.+)(\n(\#|\n\s*|\Z|\<li)|\Z)/sU',
+                "\n<li>$1</li>\n$3"),
+            array('/([^>])\n<li>/', "$1\n<ol>\n<li>"),
             array('@</li></li>@', "</li>\n</ol>\n</li>"),
             array('@</li>\n<li>\*@', "\n**"),
-            array('/\n\*\*(.+?)(\n|\Z)/s', "\n<li>$1</li>\n"),
-            array('/\n\*\*(.+?)(\n|\Z)/s', "\n<li>$1</li>\n"),
-            array('/(\A|^>|[^i]\s*>)\n<li>/', "$1\n<ul>\n<li>"),
+            array('/\n\*\*(.+)(\n(\*|\n\s*|\Z|\<li)|\Z)/sU',
+                "\n<li>$1</li>\n$3"),
+            array('/\n\*\*(.+)(\n(\*|\n\s*|\Z|\<li)|\Z)/sU',
+                "\n<li>$1</li>\n$3"),
+            array('/([^>])\n<li>/', "$1\n<ul>\n<li>"),
             array('@</li></li>@', "</li>\n</ul>\n</li>"),
             array('@</li>\n<li>\#@', "\n##"),
-            array('/\n\#\#(.+?)(\n|\Z)/s', "\n<li>$1</li>\n"),
-            array('/\n\#\#(.+?)(\n|\Z)/s', "\n<li>$1</li>\n"),
-            array('/(\A|^>|[^i]\s*>)\n<li>/', "$1\n<ol>\n<li>"),
+            array('/\n\#\#(.+)(\n(\#|\n\s*|\Z|\<li)|\Z)/sU',
+                "\n<li>$1</li>\n$3"),
+            array('/\n\#\#(.+)(\n(\#|\n\s*|\Z|\<li)|\Z)/sU',
+                "\n<li>$1</li>\n$3"),
+            array('/([^>])\n<li>/', "$1\n<ol>\n<li>"),
             array('@</li></li>@', "</li>\n</ol>\n</li>"),
             array('/(\A|\n);([^:]+):([^\n]+)/',
                 "<dl><dt>$2</dt>\n<dd>$3</dd></dl>\n"),
-            array('/(\A|\n):\s/', "\n<span class='indent1'>&nbsp;</span>"),
-            array('/(\A|\n)::\s/', "\n<span class='indent2'>&nbsp;</span>"),
-            array('/(\A|\n):::\s/', "\n<span class='indent3'>&nbsp;</span>"),
-            array('/(\A|\n)::::\s/', "\n<span class='indent4'>&nbsp;</span>"),
+            array('/(\A|\n):\s/', "\n<span class='indent1'>&nbsp;</span>\t"),
+            array('/(\A|\n)::\s/', "\n<span class='indent2'>&nbsp;</span>\t"),
+            array('/(\A|\n):::\s/', "\n<span class='indent3'>&nbsp;</span>\t"),
+            array('/(\A|\n)::::\s/', "\n<span class='indent4'>&nbsp;</span>\t"),
             array('/(\A|\n)(:)+::::\s/',
-                "\n<span class='indent5'>&nbsp;</span>"),
-            array('/{{smallcaps\|(.+?)}}/s', "<small>$1</small>"),
-            array("/{{fraction\|(.+?)\|(.+?)}}/si", "<small>$1/$2</small>"),
+                "\n<span class='indent5'>&nbsp;</span>\t"),
+            array('/{{smallcaps\|(.+?)}}/s', "<small>$1</small>\t"),
+            array("/{{fraction\|(.+?)\|(.+?)}}/si", "<small>$1/$2</small>\t"),
             array('/(\A|\n)----/', "$1<hr />"),
             array('/\r/', ""),
         );
@@ -261,7 +273,7 @@ class WikiParser implements CrawlConstants
             if(count($document_parts) > 1) {
                 $head = $document_parts[0];
                 $document = $document_parts[1];
-                $head_lines = preg_split("/\n\n/", $head);
+                $head_lines = preg_split("/\n\s*\n/", $head);
                 foreach($head_lines as $line) {
                     $semi_pos =  (strpos($line, ";")) ? strpos($line, ";"):
                         strlen($line);
@@ -269,7 +281,7 @@ class WikiParser implements CrawlConstants
                     $line_parts = explode("=",$line);
                     if(count($line_parts) == 2) {
                         $head_vars[trim(addslashes($line_parts[0]))] =
-                                addslashes(trim($line_parts[1]));
+                            addslashes(trim($line_parts[1]));
                     }
                 }
                 if(isset($head_vars['page_type'])) {
@@ -365,17 +377,13 @@ class WikiParser implements CrawlConstants
                 continue;
             }
             $start = substr($part, 0, 3);
-            if(in_array($start[0], $space_like)) {
-                $document .= "\n<pre>\n".ltrim($part)."\n</pre>\n";
+            if($start != $esc) {
+                $document .= "\n<div>\n".$part. "\n</div>\n";
             } else {
-                if($start != $esc) {
-                    $document .= "\n<div>\n".$part. "\n</div>\n";
-                } else {
-                    $document .= $part;
-                }
+                $document .= $part;
             }
         }
-        $document = str_replace(",[}", "", $document);
+        $document = str_replace($esc, "", $document);
         return $document;
     }
     /**
@@ -393,8 +401,8 @@ class WikiParser implements CrawlConstants
         $min_sections_for_toc = 4;
         preg_match_all('/(\A|\n)==\s*([^=]+)\s*==/', $page, $matches);
         if(isset($matches[2]) && count($matches[2]) >= $min_sections_for_toc) {
-            $toc .= "<div style='border: 1px ridge #000; width:280px;".
-                "background-color:#EEF; padding: 3px; margin:6px;'><ol>\n";
+            $toc .= "<div class='top-color' style='border: 1px ".
+                "ridge #000; width:280px;padding: 3px; margin:6px;'><ol>\n";
             foreach($matches[2] as $section) {
                 $toc .= "<li><a href='#".addslashes($section)."'>".
                     $section."</a></li>\n";

@@ -311,6 +311,16 @@ class WikiElement extends Element implements CrawlConstants
             ?>
             </div>
             <div class="top-margin">
+            <label for="page-toc"><b><?php
+            e(tl('wiki_element_table_of_contents'));
+            ?></b></label><input type="checkbox" name="toc" value="true"
+                <?php
+                    $checked = (isset($data['toc']) && $data['toc']) ?
+                    'checked="checked"' : '';
+                    e( $checked );
+                ?> id='page-toc' />
+            </div>
+            <div class="top-margin">
             <label for="page-title"><b><?php
             e(tl('wiki_element_title'));
             ?></b></label><input type="text" id='page-title'

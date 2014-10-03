@@ -96,7 +96,7 @@ function getPage(tag, url)
     }
 }
 /*
- * Returns the position of the caret within anode
+ * Returns the position of the caret within a node
  *
  * @param String input type element
  */
