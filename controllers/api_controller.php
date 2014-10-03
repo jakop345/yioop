@@ -81,7 +81,7 @@ class ApiController extends Controller implements CrawlConstants
         }
         $data['SCRIPT'] = "";
         $token_okay = $this->checkCSRFToken(CSRF_TOKEN, $user_id);
-        $data[CSRF_TOKEN] = $this->generateCSRFToken($user_id);
+        //$data[CSRF_TOKEN] = $this->generateCSRFToken($user_id);
         if(!$token_okay) {
             $keep_fields = array("a", "arg", "f", "group_id", "just_group_id",
                 "just_user_id", "just_thread", "limit", "n", "num", "page_id",

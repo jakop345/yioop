@@ -54,32 +54,44 @@ class HelpElement extends Element {
     function render($data) {
         ?>
         <?php
-        if (isset($data['ACTIVITIES'])) {
             if (MOBILE) { ?>
                 <div id="mobile-help">
-                  <div id="help-frame" class="frame help-pane">
-                    <h2>Help Content</h2>
+                    <div id="help-frame" class="frame help-pane">
+                        <div id="help-frame-head">
+                            <h2 id="page_name"></h2>
+                        </div>
+
+                        <div id="help-frame-body" class="wordwrap">
+
+                        </div>
+                        <div id="help-frame-editor" class="wordwrap">
+
+                        </div>
+                    </div>
+                </div>
+            <?php } else {
+                if($_REQUEST['c'] != 'admin'){
+                    $help_class_prefix = "small-margin-help-pane";
+                }
+                ?>
+                <div id="help">
+                  <div id="help-frame" class="frame help-pane <?php 
+                  e($help_class_prefix); ?>">
+                      <div id="help-frame-head">
+                          <h2 id="page_name"></h2>
+                      </div>
+
                     <div id="help-frame-body" class="wordwrap">
                        
                     </div>
-                  </div>
-                </div>
-            <?php } else {
-                ?>
-                
-                <div id="help">
-                  <div id="help-frame" class="frame help-pane">
-                    <h2>Help Content</h2>
-                    <div id="help-frame-body" class="wordwrap">
-                       
+                    <div id="help-frame-editor" class="wordwrap">
+
                     </div>
                   </div>
                 </div>
                 <?php
             }
-        }
     }
 
 }
 ?>
-

@@ -183,19 +183,20 @@ function toggleDisplay(id)
 
 current_activity_closed = true;
 current_activity_top = 0;
-all_help_elements =
-            document.getElementsByClassName('current-activity');
-help_node = all_help_elements[0];
 /*
  * Toggles Help element from display:none and display block. 
  * Also changes the width of the Current activity accordingly.
  * @param {String} help element's id to toggle.
  * @param {String} isMobile flag true/false.
  */
-function toggleHelp(id, isMobile) 
+function toggleHelp(id, isMobile, target_c) 
 {
+    var activity = (target_c === "admin") ? 'current-activity' 
+    : 'small-margin-current-activity';
     var images = document.querySelectorAll(".wiki-resource-image");
-
+    var all_help_elements =
+            document.getElementsByClassName(activity);
+    var help_node = all_help_elements[0];
     if (current_activity_closed === true) {
         current_activity_top = getCssProperty(help_node, 'top');
     }
@@ -399,20 +400,54 @@ var get = function (url, response_type, success_call_back, error_handler)
  * @param {String} is_mobile flag to check if the client is mobile
  * or not.
  */
-function displayHelpForId(help_point, is_mobile) 
+function displayHelpForId(help_point,is_mobile,target_c,csrf_token)
 {
-    if((elt("help-frame").style.display) === "block"){
-        toggleHelp('help-frame', is_mobile);
+    var help_group_id = 7;
+    var c = 'api';
+    var a = "wiki";
+    var arg = "read";
+
+    if ((elt("help-frame").style.display) === "block") {
+        toggleHelp('help-frame', is_mobile,target_c);
         return;
     }
-    get("?c=api&group_id=7&arg=read&a=wiki&page_name="
-            + help_point.id,'json', function (data) {
-                document.getElementById("help-frame-body").innerHTML
-                        = parseWikiContent(data.wiki_content,
-                data.group_id, data.page_id);
-                toggleHelp('help-frame', is_mobile);
-            }, function (status) {
-        alert('Something went wrong.');
-    });
+    get("?c=" + c + "&group_id=" + help_group_id + "&" +
+            "arg=" + arg + "&" +
+            "a=" + a + "&" +
+            "YIOOP_TOKEN=" + csrf_token + "&" +
+            "page_name=" + help_point.id,
+            'json',
+            function (data) {
+                elt("help-frame-body").innerHTML = parseWikiContent(
+                        data.wiki_content,
+                        data.group_id,
+                        data.page_id
+                        );
+                elt('page_name').innerHTML = data.page_name + ' <a href="'+
+                        getEditLink(
+                        target_c, 
+                        csrf_token,
+                        help_group_id,
+                        data.page_name) +'">'+
+                        '[Edit]</a>' ;
+
+                toggleHelp('help-frame', is_mobile,target_c);
+            },
+            function (status) {
+                doMessage(
+                        '<h2 style="color:red">' +
+                                'Unable to Load help content.</h2>'
+                        );
+                toggleHelp('help-frame', is_mobile,target_c);
+            });
     event.preventDefault();
+}
+
+function getEditLink(target_c, csrf_token, group_id, page_name){
+    return '?c=' + target_c +
+            '&YIOOP_TOKEN=' + csrf_token +
+            '&group_id=' + group_id +
+            '&arg=edit' +
+            '&a=wiki' +
+            '&page_name=' + page_name;
 }

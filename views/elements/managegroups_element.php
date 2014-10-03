@@ -318,11 +318,10 @@ class ManagegroupsElement extends Element
                 if($addgroup) { ?>
                     <td>[<a href="<?php e($browse_url); ?>"><?php 
                         e(tl('managegroups_element_browse')); ?></a>]
-                    <button type="button" 
-                    href="" 
-                    onclick="javascript:displayHelpForId(this, <?php if(MOBILE) e("true"); else e("false");?>)"
-                    id="browse_url">?</button>
-                    </td>
+                    <?php 
+                    e(renderHelpButton("browse_url", $data[CSRF_TOKEN],
+                            $_REQUEST['c']));
+                    ?></td>
                 <?php
                 }
         ?></tr>
@@ -390,11 +389,11 @@ class ManagegroupsElement extends Element
                         if($data['CURRENT_GROUP']['owner'] ==
                             $user_array['USER_NAME']) {
                             e("<td>".
-                                $data['MEMBERSHIP_CODES'][$user_array['STATUS']] .
+                            $data['MEMBERSHIP_CODES'][$user_array['STATUS']] .
                                 "</td>");
                             e("<td>" . tl('managegroups_element_groupowner') .
                                 "</td><td><span class='gray'>".
-                                tl('managegroups_element_delete')."</span></td>");
+                            tl('managegroups_element_delete')."</span></td>");
                         } else {
                             e("<td>".$data['MEMBERSHIP_CODES'][
                                 $user_array['STATUS']]);

@@ -2805,6 +2805,14 @@ table.wikitable > caption
     border:2px solid #0094ff;
 }
 
+.small-margin-help-pane {
+display: none;
+width: 380px;
+border: 2px solid #0094ff;
+left: -1in;
+top: 1in;
+}
+
 .help-pane h2 {
     background:#0094ff;
     color:white;
@@ -2815,5 +2823,5 @@ table.wikitable > caption
     padding:10px;
 }
 .wiki-resource-image{
-    max-width:320px;
+    max-width:100%;
 }

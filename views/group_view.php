@@ -114,6 +114,7 @@ class GroupView extends View implements CrawlConstants
             $element = $data['ELEMENT'];
             $this->element($element)->render($data);
         }
+        $this->element("help")->render($data);
         if(PROFILE) {
         ?>
         <script type="text/javascript">
