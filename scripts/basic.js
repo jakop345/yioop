@@ -294,7 +294,7 @@ function parseWikiContent(wiki_text, group_id, page_id)
 
     // Basic MediaWiki Syntax.
     // Replace newlines with <br />
-    html = html.replace(/\n/gi, "<br />");
+    //html = html.replace(/\n/gi, "<br />");
 
     //Regex replace for headings
     html = html.replace(/(?:^|\n)([=]+)(.*)\1/g,
@@ -332,7 +332,10 @@ function parseWikiContent(wiki_text, group_id, page_id)
         return '<hr>' + contents + '</hr>';
     });
 
-    
+    //replace nowiki with pre tags
+    html = html.replace(/<nowiki>(.*?)<\/nowiki>/g, function (match, contents) {
+        return '<pre>' + contents + '</pre>';
+    });
 
     //Regex replace for blocks
     html = html.replace(/(?:^|\n+)([^# =\*<].+)(?:\n+|$)/gm,
