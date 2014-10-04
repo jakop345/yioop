@@ -71,12 +71,15 @@ class HelpElement extends Element {
                 </div>
             <?php } else {
                 if($_REQUEST['c'] != 'admin'){
-                    $help_class_prefix = "small-margin-help-pane";
+                    $help_class_class = "small-margin-help-pane";
+                    $help_id ="small-margin-help";
+                }else{
+                    $help_id = "help";
                 }
                 ?>
-                <div id="help">
+                <div id="<?php e($help_id); ?>">
                   <div id="help-frame" class="frame help-pane <?php 
-                  e($help_class_prefix); ?>">
+                  e($help_class_class); ?>">
                       <div id="help-frame-head">
                           <h2 id="page_name"></h2>
                       </div>
