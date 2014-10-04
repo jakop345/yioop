@@ -1248,7 +1248,8 @@ EOD;
                 case "edit":
                     if(!$data["CAN_EDIT"]) { continue; }
                     if(isset($_REQUEST['caret']) &&
-                       isset($_REQUEST['scroll_top'])) {
+                       isset($_REQUEST['scroll_top']) 
+                            && !isset($page)) {
                         $caret = $parent->clean($_REQUEST['caret'],
                             'int');
                         $scroll_top= $parent->clean($_REQUEST['scroll_top'],
@@ -1260,7 +1261,11 @@ EOD;
                             "} ".
                             "wiki.scrollTop = $scroll_top;";
                     }
-                    $data["MODE"] = "edit";
+                    if(isset($page)){
+                        $data["MODE"] = "read";
+                    }else{
+                        $data["MODE"] = "edit";
+                    }
                     $page_info = $group_model->getPageInfoByName($group_id,
                         $page_name, $locale_tag, 'resources');
                     /* if page not yet created than $page_info will be null

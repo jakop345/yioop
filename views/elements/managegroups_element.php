@@ -93,6 +93,7 @@ class ManagegroupsElement extends Element
         <?php
             $group_url = "?c=admin&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN];
             $base_url = $group_url . "&amp;a=manageGroups";
+            $wiki_url = $group_url . "&amp;a=wiki&amp;group_id=";
             $group_url .= "&amp;a=groupFeeds&amp;just_group_id=";
             if(isset($data['browse'])) {
                 $base_url .= "&amp;browse=".$data['browse'];
@@ -199,7 +200,13 @@ class ManagegroupsElement extends Element
                         ($group['MEMBER_ACCESS'] != GROUP_PRIVATE ||
                         $group["OWNER_ID"] == $_SESSION['USER_ID'])) {
                         e("<td><a href='".$group_url.$group['GROUP_ID']."' >".
-                            $group_column."</a></td>");
+                            $group_column."</a>".
+                                " <a href=\"" 
+                                . $wiki_url. $group['GROUP_ID'] 
+                                ."\">"
+                                . "[Wiki]"
+                                . "</a>"
+                                ."</td>");
                     } else {
                         e("<td>$group_column</td>");
                     }
