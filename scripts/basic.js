@@ -451,3 +451,21 @@ function getEditLink(target_c, csrf_token, group_id, page_name){
             '&a=wiki' +
             '&page_name=' + page_name;
 }
+
+
+function renderPreview(page_id, group_id) {
+    var msg = "This is only a preview; your changes have not yet been saved!";
+    if (event.preventDefault)
+        event.preventDefault();
+    event.returnValue = false;
+    var textArea = document.getElementById('wiki-page');
+    var div = document.getElementById('wiki-preview');
+    div.innerHTML = "<hr>" 
+            + msg
+            + "<hr>"
+            + "<p>"
+            + parseWikiContent(
+            textArea.value,
+            group_id,
+            page_id) + "</p> <hr>";
+}
