@@ -133,6 +133,11 @@ class AdminController extends Controller implements CrawlConstants
                     $user_id = $this->model("signin")->getUserId(
                         $this->clean($_REQUEST['u'], "string"));
                     $session = $this->model("user")->getUserSession($user_id);
+                    if(isset($_SESSION['LAST_ACTIVITY']) &&
+                        is_array($_SESSION['LAST_ACTIVITY'])) {
+                        $_REQUEST = array_merge($_REQUEST,
+                            $_SESSION['LAST_ACTIVITY']);
+                    }
                     if(is_array($session)) {
                         $_SESSION = $session;
                     }
@@ -147,7 +152,8 @@ class AdminController extends Controller implements CrawlConstants
                     if(isset($data['INACTIVE'])) {
                         $data['CURRENT_ACTIVITY'] = "signin";
                         $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
-                            tl('admin_controller_account_not_active')."</h1>');";
+                            tl('admin_controller_account_not_active').
+                            "</h1>');";
                         $view = "signin";
                         unset($_SESSION['USER_ID']);
                     }

@@ -78,7 +78,19 @@ class GroupfeedElement extends Element implements CrawlConstants
             if($is_admin || $logged_in) { ?>
                 <div class="float-same admin-collapse">[<a
                 href="<?php e($other_paging_query) ?>" ><?php
-                e($arrows); ?></a>]</div>
+                e($arrows); ?></a>]<?php
+                if(isset($data['SUBSCRIBE_LINK'])) {
+                    if($data['SUBSCRIBE_LINK'] == PUBLIC_JOIN) {
+                        e('[<a href="'.$paging_query.'&amp;arg=addgroup">'.
+                        tl('groupfeed_element_add_group').
+                        '</a>]');
+                    } else if ($data['SUBSCRIBE_LINK'] != NO_JOIN) {
+                        e('[<a href="'.$paging_query.'&amp;arg=addgroup">'.
+                        tl('groupfeed_element_request_add').
+                        '</a>]');
+                    }
+                }
+                ?></div>
             <?php
             }
             ?>

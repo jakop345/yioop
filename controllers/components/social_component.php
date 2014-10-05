@@ -180,47 +180,13 @@ class SocialComponent extends Component implements CrawlConstants
                         $register =
                             $group_model->getRegisterType($add_id);
                         if($add_id > 0 && $register && $register != NO_JOIN) {
-                            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                                tl('social_component_group_joined').
-                                "</h1>')";
-                            $join_type = (($register == REQUEST_JOIN ||
-                                $register == PUBLIC_BROWSE_REQUEST_JOIN) &&
-                                $_SESSION['USER_ID'] != ROOT_ID) ?
-                                INACTIVE_STATUS : ACTIVE_STATUS;
-                            $group_model->addUserGroup(
-                                $_SESSION['USER_ID'], $add_id, $join_type);
-                            if(!in_array($join_type, array(REQUEST_JOIN,
-                                PUBLIC_BROWSE_REQUEST_JOIN) ) ){ break; }
-                            // if account needs to be activated email owner
-                            $group_info = $group_model->getGroupById($add_id,
-                                ROOT_ID);
-                            $user_model = $parent->model("user");
-                            $owner_info = $user_model->getUser(
-                                $group_info['OWNER']);
-                            $server = new MailServer(MAIL_SENDER, MAIL_SERVER,
-                                MAIL_SERVERPORT, MAIL_USERNAME, MAIL_PASSWORD,
-                                MAIL_SECURITY);
-                            $subject = tl('social_component_activate_group',
-                                $group_info['GROUP_NAME']);
-                            $current_username = $user_model->getUserName(
-                                $_SESSION['USER_ID']);
-                            $body = tl('social_component_activate_body',
-                                $current_username,
-                                $group_info['GROUP_NAME'])."\n\n".
-                                tl('social_component_notify_closing')."\n".
-                                tl('social_component_notify_signature');
-                            $message = tl(
-                                'social_component_notify_salutation',
-                                $owner_info['USER_NAME'])."\n\n";
-                            $message .= $body;
-                            $server->send($subject, MAIL_SENDER,
-                                $owner_info['EMAIL'], $message);
+                            $this->addGroup($data, $add_id, $register);
                         } else {
                             $data['CURRENT_GROUP'] = array("name" => "",
                                 "id" => "", "owner" =>"", "register" => -1,
                                 "member_access" => -1);
                             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('social_component_groupname_unavailable').
+                                tl('social_component_groupname_unavailable').
                                 "</h1>')";
                         }
                     } else if ($name != ""){
@@ -526,6 +492,60 @@ class SocialComponent extends Component implements CrawlConstants
     }
 
     /**
+     * Used to add a group to a user's list of group or to request
+     * membership in a group if the group is By Request or Public
+     * Request
+     *
+     * @param array &$data field variables to be drawn to view,
+     *      we modify the SCRIPT component of this with a message
+     *      regarding success of not of add attempt.
+     * @param int $add_id group id to be added
+     * @param int $register the registration type of the group
+     */
+    function addGroup(&$data, $add_id, $register)
+    {
+        $parent = $this->parent;
+        $group_model = $parent->model('group');
+        $join_type = (($register == REQUEST_JOIN ||
+            $register == PUBLIC_BROWSE_REQUEST_JOIN) &&
+            $_SESSION['USER_ID'] != ROOT_ID) ?
+            INACTIVE_STATUS : ACTIVE_STATUS;
+        $msg = ($join_type == ACTIVE_STATUS) ? "doMessage('<h1 class=\"red\" >".
+            tl('social_component_group_joined').
+            "</h1>')" : "doMessage('<h1 class=\"red\" >".
+            tl('social_component_group_request_join').
+            "</h1>')";
+        $group_model->addUserGroup(
+            $_SESSION['USER_ID'], $add_id, $join_type);
+        $data['SCRIPT'] .= $msg;
+        if(!in_array($join_type, array(REQUEST_JOIN,
+            PUBLIC_BROWSE_REQUEST_JOIN) ) ){ return; }
+        // if account needs to be activated email owner
+        $group_info = $group_model->getGroupById($add_id,
+            ROOT_ID);
+        $user_model = $parent->model("user");
+        $owner_info = $user_model->getUser(
+            $group_info['OWNER']);
+        $server = new MailServer(MAIL_SENDER, MAIL_SERVER,
+            MAIL_SERVERPORT, MAIL_USERNAME, MAIL_PASSWORD,
+            MAIL_SECURITY);
+        $subject = tl('social_component_activate_group',
+            $group_info['GROUP_NAME']);
+        $current_username = $user_model->getUserName(
+            $_SESSION['USER_ID']);
+        $body = tl('social_component_activate_body',
+            $current_username,
+            $group_info['GROUP_NAME'])."\n\n".
+            tl('social_component_notify_closing')."\n".
+            tl('social_component_notify_signature');
+        $message = tl(
+            'social_component_notify_salutation',
+            $owner_info['USER_NAME'])."\n\n";
+        $message .= $body;
+        $server->send($subject, MAIL_SENDER,
+            $owner_info['EMAIL'], $message);
+    }
+    /**
      * Uses $_REQUEST and $user_id to look up all the users that a group
      * has to subject to $_REQUEST['user_limit'] and
      * $_REQUEST['user_filter']. Information about these roles is added as
@@ -653,6 +673,7 @@ class SocialComponent extends Component implements CrawlConstants
             $user_id = $_SESSION['USER_ID'];
         } else {
             $user_id = PUBLIC_GROUP_ID;
+            
         }
         $username = $user_model->getUsername($user_id);
         if(isset($_REQUEST['num'])) {
@@ -677,6 +698,11 @@ class SocialComponent extends Component implements CrawlConstants
             "just_user_id" => "int");
         $strings_array = array( "title" => TITLE_LEN, "description" =>
             MAX_GROUP_POST_LEN);
+        if($user_id == PUBLIC_GROUP_ID) {
+            $_SESSION['LAST_ACTIVITY']['a'] = 'groupFeeds';
+        } else {
+            unset($_SESSION['LAST_ACTIVITY']);
+        }
         foreach($clean_array as $field => $type) {
             $$field = ($type == "string") ? "" : 0;
             if(isset($_REQUEST[$field])) {
@@ -684,11 +710,14 @@ class SocialComponent extends Component implements CrawlConstants
                 if(isset($strings_array[$field])) {
                     $tmp = substr($tmp, 0, $strings_array[$field]);
                 }
+                if($user_id == PUBLIC_GROUP_ID) {
+                    $_SESSION['LAST_ACTIVITY'][$field] = $tmp;
+                }
                 $$field = $tmp;
             }
         }
-        $possible_arguments = array("addcomment", "deletepost", "newthread",
-            "updatepost", "status", "upvote", "downvote");
+        $possible_arguments = array("addcomment", "deletepost", "addgroup",
+            "newthread", "updatepost", "status", "upvote", "downvote");
         if(isset($_REQUEST['arg']) &&
             in_array($_REQUEST['arg'], $possible_arguments)) {
             switch($_REQUEST['arg'])
@@ -767,6 +796,18 @@ class SocialComponent extends Component implements CrawlConstants
                     }
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('social_component_comment_added'). "</h1>');";
+                break;
+                case "addgroup":
+                    $register =
+                        $group_model->getRegisterType($just_group_id);
+                    if($just_group_id > 0 && $register && $register != NO_JOIN){
+                        $this->addGroup($data, $just_group_id, $register);
+                        unset($data['SUBSCRIBE_LINK']);
+                    } else {
+                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                            tl('social_component_groupname_cant_add').
+                            "</h1>')";
+                    }
                 break;
                 case "deletepost":
                     if(!isset($_REQUEST['post_id'])) {
@@ -1076,6 +1117,11 @@ class SocialComponent extends Component implements CrawlConstants
                         $data['NO_POSTS_START_THREAD'] = true;
                 }
             }
+            if($user_id != PUBLIC_USER_ID &&
+                !$group_model->checkUserGroup($user_id, $just_group_id)) {
+                $data['SUBSCRIBE_LINK'] = $group_model->getRegisterType(
+                    $just_group_id);
+            }
             $data['SUBTITLE'] = $page[self::SOURCE_NAME];
             $data['ADD_PAGING_QUERY'] = "&amp;just_group_id=$just_group_id";
             $data['JUST_GROUP_ID'] = $just_group_id;
@@ -1163,6 +1209,11 @@ EOD;
         $last_care_missing = 2;
         $missing_fields = false;
         $i = 0;
+        if($user_id == PUBLIC_USER_ID) {
+            $_SESSION['LAST_ACTIVITY']['a'] = 'wiki';
+        } else {
+            unset($_SESSION['LAST_ACTIVITY']);
+        }
         foreach($clean_array as $field => $type) {
             if(isset($_REQUEST[$field])) {
                 $tmp = $parent->clean($_REQUEST[$field], $type);
@@ -1170,6 +1221,9 @@ EOD;
                     $tmp = substr($tmp, 0, $strings_array[$field]);
                 }
                 $$field = $tmp;
+                if($user_id == PUBLIC_USER_ID) {
+                    $_SESSION['LAST_ACTIVITY'][$field] = $tmp;
+                }
             } else if($i < $last_care_missing) {
                 $$field = false;
                 $missing_fields = true;
