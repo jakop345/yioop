@@ -74,6 +74,7 @@ class WikiParser implements CrawlConstants
         $minimal = false)
     {
         $esc = $this->esc;
+        $not_braces = '(?:[^\}]|\}[^\}])*';
         $this->minimal = $minimal;
         //assume substitutions are applied after htmlentities called on string
         $substitutions = array(
@@ -122,40 +123,47 @@ class WikiParser implements CrawlConstants
             array("/&#039;&#039;&#039;(.+?)&#039;&#039;&#039;/s","<b>$1</b>\t"),
             array("/&#039;&#039;(.+?)&#039;&#039;/s", "<i>$1</i>\t"),
             array('/[^\n]{{\s*class\s*\=\s*'.
-                '&quot;([a-zA-Z\_\-\s]+)&quot;\s+(.+)}}/s',
+                '&quot;([a-zA-Z\_\-\s]+)&quot;\s+()}}/',
                 "$esc<span class=\"$1\" >\t\n$2$esc</span>\t"),
             array('/[^\n]{{\s*class\s*\=\s*'.
-                '&#039;([a-zA-Z\_\-\s]+)&#039;\s+(.+)}}/s',
+                '&#039;([a-zA-Z\_\-\s]+)&#039;\s+('.$not_braces.')}}/',
                 "$esc<span class=\"$1\" >\t\n$2$esc</span>\t"),
             array('/\n*?{{\s*class\s*\=\s*'.
-                '&quot;([a-zA-Z\_\-\s]+)&quot;\s+(.+)}}/s',
+                '&quot;([a-zA-Z\_\-\s]+)&quot;\s+('.$not_braces.')}}/',
                 "\n\n$esc<div class=\"$1\" >\n\n$2\n\n$esc</div>"),
             array('/\n*?{{\s*class\s*\=\s*'.
-                '&#039;([a-zA-Z\_\-\s]+)&#039;\s+(.+)}}/s',
+                '&#039;([a-zA-Z\_\-\s]+)&#039;\s+('.$not_braces.')}}/',
                 "\n\n$esc<div class='$1' >\n\n$2\n\n$esc</div>"),
-            array('/\n*?{{\s*id\s*\=\s*&quot;([a-zA-Z\_\-]+)&quot;\s+(.+)}}/',
+            array('/\n*?{{\s*id\s*\=\s*&quot;([a-zA-Z\_\-]+)&quot;\s+('.
+                $not_braces.')}}/',
                 "$esc<span id=\"$1\">$2$esc</span>"),
-            array('/\n*?{{\s*id\s*\=\s*&quot;([a-zA-Z\_\-]+)&quot;\s+(.+)}}/s',
+            array('/\n*?{{\s*id\s*\=\s*&quot;([a-zA-Z\_\-]+)&quot;\s+('.
+                $not_braces.')}}/',
                 "\n\n$esc<div id=\"$1\">\n\n$2\n\n$esc</div>"),
-            array('/\n*?{{\s*id\s*\=\s*&#039;([a-zA-Z\_\-]+)&#039;\s+(.+)}}/s',
+            array('/\n*?{{\s*id\s*\=\s*&#039;([a-zA-Z\_\-]+)&#039;\s+('
+                .$not_braces.')}}/',
                 "\n\n$esc<div id='$1'>\n\n$2\n\n$esc</div>"),
             array('/\n*?{{\s*style\s*\=\s*'.
-                '&quot;([0-9a-zA-Z\/\#\_\-\.\;\:\s\n]+)&quot;\s+(.+)}}/',
+                '&quot;([0-9a-zA-Z\/\#\_\-\.\;\:\s\n]+)&quot;\s+('.
+                 $not_braces.')}}/',
                 "$esc<span style=\"$1\">$2$esc</span>"),
             array('/\n*?{{\s*style\s*\=\s*'.
-                '&quot;([0-9a-zA-Z\/\#\_\-\.\;\:\s\n]+)&quot;\s+(.+)}}/s',
+                '&quot;([0-9a-zA-Z\/\#\_\-\.\;\:\s\n]+)&quot;\s+('.
+                $not_braces.')}}/',
                 "\n\n$esc<div style=\"$1\">\n\n$2\n\n$esc</div>"),
             array('/\n*?{{\s*style\s*\=\s*'.
-                '&#039;([0-9a-zA-Z\_\-\.\;\:\s\n]+)&#039;\s+(.+)}}/',
+                '&#039;([0-9a-zA-Z\_\-\.\;\:\s\n]+)&#039;'.
+                '\s+('.$not_braces.')}}/',
                 "$esc<span style='$1'>\t$2$esc</span>\t"),
             array('/\n*?{{\s*style\s*\=\s*'.
-                '&#039;([0-9a-zA-Z\_\-\.\;\:\s\n]+)&#039;\s+(.+)}}/s',
+                '&#039;([0-9a-zA-Z\_\-\.\;\:\s\n]+)&#039;\s+('.
+                $not_braces.')}}/',
                 "\n\n$esc<div style='$1'>\n\n$2\n\n$esc</div>"),
-            array('/\n*{{center\s*\|\s*(.+?)}}/s',
+            array('/\n*{{center\s*\|\s*('.$not_braces.')}}/',
                 "\n\n$esc<div class='center'>\n\n$1\n\n$esc</div>"),
-            array('/\n*?{{left\s*\|\s*(.+?)}}/s',
+            array('/\n*?{{left\s*\|\s*('.$not_braces.')}}/',
                 "\n\n$esc<div class='align-left'>\n\n$1\n\n$esc</div>"),
-            array('/\n*?{{right\s*\|\s*(.+?)}}/s',
+            array('/\n*?{{right\s*\|\s*('.$not_braces.')}}/',
                 "\n\n$esc<div class='align-right'>\n\n$1\n\n$esc</div>"),
             array("/&lt;blockquote&gt;(.+?)&lt;\/blockquote&gt;/s",
                 "$esc<blockquote>\n\n$1\n\n$esc</blockquote>"),
