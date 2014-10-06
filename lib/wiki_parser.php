@@ -214,12 +214,11 @@ class WikiParser implements CrawlConstants
                 "\n<li>$1</li>\n$3"),
             array('/([^>])\n<li>/', "$1\n<ol>\n<li>"),
             array('@</li></li>@', "</li>\n</ol>\n</li>"),
-            array('/(\A|\n);([^:]+):(.+)(\n(;|\s*\n|\Z|\s*\<|'.
-                '[\t\n\r]+\n)|\Z)/sU',
-                "<dl><dt>$2</dt><dd>$3</dd></dl>\n$5"),
-            array('/(\A|\n);([^:]+):(.+)(\n(;|\s*\n|\Z|\s*\<|'.
-                '[\t\n\r]+\n)|\Z)/sU',
-                "<dl><dt>$2</dt><dd>$3</dd></dl>\n$5"),
+            array('/(\A|\n);([^:]+):(.+)(\n(;|[\t\n\r]+\n|<|\n\s*)|\Z)/sU',
+                "\n<dl><dt>$2</dt><dd>$3</dd></dl>$4"),
+            array('/(\A|\n);([^:]+):(.+)(\n(;|[\t\n\r]+\n|<|\n\s*)|\Z)/sU',
+                "\n<dl><dt>$2</dt><dd>$3</dd></dl>$4"),
+            array('/\<\/dl\>\n*\<dl\>/', "\n"),
             array('/(\A|\n):\s/', "\n<span class='indent1'>&nbsp;</span>\t"),
             array('/(\A|\n)::\s/', "\n<span class='indent2'>&nbsp;</span>\t"),
             array('/(\A|\n):::\s/', "\n<span class='indent3'>&nbsp;</span>\t"),
