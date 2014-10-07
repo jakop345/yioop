@@ -801,6 +801,7 @@ EOT;
                 $info['DESCRIPTION'] = "";
                 $info["COUNT"] = 0;
                 $info['VISITED_URLS_COUNT'] = 0;
+                restore_error_handler();
                 foreach($info_lists as $info_list) {
                     $a_info = @unserialize(webdecode(
                         $info_list[self::PAGE]));
@@ -816,6 +817,7 @@ EOT;
                             $a_info['COUNT'];
                     }
                 }
+                set_error_handler("yioop_error_handler");
                 file_put_contents($cache_file, serialize($info));
                 return $info;
             }
