@@ -111,8 +111,15 @@ class MachinestatusView extends View
                 $off_mirror = $base_url . "update&amp;name={$m['NAME']}".
                     "&amp;action=mirror_stop";
             ?></p>
-            <?php if($m['PARENT'] != "") {
-                $log_url = $base_url . "log&mirror_name={$m['NAME']}"
+            <?php
+                if($m['STATUSES'] == 'NOT_CONFIGURED_ERROR') {
+                    e("<span class='red'>".
+                        tl('machinestatus_view_not_configured')."</span>");
+                    e('</div>');
+                    continue;
+                }
+                if($m['PARENT'] != "") {
+                    $log_url = $base_url . "log&mirror_name={$m['NAME']}"
             ?>
                 <table class="machine-table"><tr>
                 <th><?php e(tl('machinestatus_view_mirrors', $m['PARENT'])); ?>
