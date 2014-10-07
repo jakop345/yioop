@@ -178,7 +178,9 @@ class SystemComponent extends Component
                         $service_in_use = false;
                         foreach($machines as $machine) {
                             if($machine['NAME'] == $r["name"]) {
-                                if($machine['STATUSES'] != array()) {
+                                if(isset($machine['STATUSES']) &&
+                                    is_array($machine['STATUSES']) &&
+                                    $machine['STATUSES'] != array()) {
                                     $service_in_use = true;
                                     break;
                                 } else {
