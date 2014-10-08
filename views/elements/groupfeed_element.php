@@ -191,7 +191,8 @@ class GroupfeedElement extends Element implements CrawlConstants
                             "{$data['PAGES'][0]['GROUP_ID']}"); ?>)'><?php
                         e(tl('groupfeed_element_start_thread'));?></button>
                     <?php 
-                    e($this->renderHelpButton("start_new_thread", $data[CSRF_TOKEN],
+                    e($this->renderHelpButton("start_new_thread", 
+                            $data[CSRF_TOKEN],
                             $_REQUEST['c']));
                     ?>
                 <div id='add-comment'></div>
@@ -466,7 +467,8 @@ class GroupfeedElement extends Element implements CrawlConstants
                     ?></label></b></h2>'+
                     '<textarea class="short-text-area" '+
                     'id="comment-'+ id +'" name="description" '+
-                    'data-buttons="all,!wikibtn-search,!wikibtn-heading,!wikibtn-slide" '+
+                    'data-buttons="all,!wikibtn-search,!wikibtn-heading,'+
+                    '!wikibtn-slide" '+
                     '></textarea>' +
                     '<button class="button-box float-opposite" ' +
                     'type="submit"><?php e(tl("groupfeed_element_save"));
