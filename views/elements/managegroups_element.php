@@ -204,7 +204,9 @@ class ManagegroupsElement extends Element
                                 " <a href=\"" 
                                 . $wiki_url. $group['GROUP_ID'] 
                                 ."\">"
-                                . "[Wiki]"
+                                ."["
+                                . (tl('manageaccount_element_group_wiki')) 
+                                ."]"
                                 . "</a>"
                                 ."</td>");
                     } else {

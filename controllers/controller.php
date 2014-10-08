@@ -254,6 +254,7 @@ abstract class Controller
                 $data['TOTAL_ELAPSED_TIME'] += $mail_total_time;
             }
         }
+        $data['c'] = isset($_REQUEST['c']) ? $_REQUEST['c'] : NULL;
         $this->view($view)->render($data);
     }
     /**
