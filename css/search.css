@@ -913,6 +913,7 @@ ul.in-list li
 {
     position:relative;
     top:10px;
+    height:0;
 }
 .admin-heading,
 .group-heading

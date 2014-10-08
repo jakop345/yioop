@@ -200,8 +200,13 @@ class MachineModel extends Model
             foreach($statuses as $status) {
                 if($machines[$i][CrawlConstants::URL] ==
                     $status[CrawlConstants::URL]) {
-                    $machines[$i]["STATUSES"] =
+                    $pre_status =
                         json_decode($status[CrawlConstants::PAGE], true);
+                    if(is_array($pre_status)) {
+                        $machines[$i]["STATUSES"] = $pre_status;
+                    } else {
+                        $machines[$i]["STATUSES"] = "NOT_CONFIGURED_ERROR";
+                    }
                 }
             }
         }

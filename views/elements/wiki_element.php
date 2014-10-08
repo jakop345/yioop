@@ -467,7 +467,7 @@ class WikiElement extends Element implements CrawlConstants
             request.addEventListener("load", uploadComplete, false);
             request.addEventListener("error", uploadFailed, false);
             request.addEventListener("abort", uploadCanceled, false);
-            request.open("POST", "./");
+            request.open("post", "./");
             request.send(form_data);
             event.preventDefault();
         }

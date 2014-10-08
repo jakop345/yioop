@@ -92,6 +92,7 @@ class SearchController extends Controller implements CrawlConstants
         if($activity == "query" && $this->mirrorHandle()) {return; }
         list($index_timestamp, $index_info, $save_timestamp) =
             $this->initializeIndexInfo($web_flag, $raw, $data);
+        unset($_SESSION['LAST_ACTIVITY']);
         if(isset($_REQUEST['q']) && strlen($_REQUEST['q']) > 0
             || $activity != "query") {
             if($activity != "cache") {

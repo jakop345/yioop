@@ -1245,8 +1245,8 @@ class QueueServer implements CrawlConstants, Join
         $dir_cnt = 0;
         foreach($dirs as $dir) {
             $dir_cnt++;
-            crawlTimeoutLog("..Indexer still deleting %s of %s orphaned dirs",
-                $dir_cnt, $num_dirs);
+            crawlTimeoutLog("..Indexer looking for through directory %s of %s".
+                " to see if orphaned", $dir_cnt, $num_dirs);
             if(strlen(
                 $pre_timestamp = strstr($dir, self::queue_base_name)) > 0) {
                 $timestamp =
