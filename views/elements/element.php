@@ -1,4 +1,5 @@
 <?php
+
 /**
  * SeekQuarry/Yioop --
  * Open Source Pure PHP Search Engine, Crawler, and Indexer
@@ -30,7 +31,11 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
+if (!defined('BASE_DIR')) {
+    echo "BAD REQUEST";
+    exit();
+}
+
 /**
  * Base Element Class.
  * Elements are classes are used to render portions of
@@ -43,22 +48,23 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @package seek_quarry
  * @subpackage element
  */
-abstract class Element
-{
+abstract class Element {
+
     /**
      * The View on which this Element is drawn
      * @var object
      */
     var $view;
+
     /**
      * constructor stores a reference to the view this element will reside on
      *
      * @param object $view   object this element will reside on
      */
-    function __construct($view = NULL)
-    {
+    function __construct($view = NULL) {
         $this->view = $view;
     }
+
     /**
      * This method is responsible for actually drawing the view.
      * It should be implemented in subclasses.
@@ -67,5 +73,26 @@ abstract class Element
      * that should be used in drawing the view
      */
     public abstract function render($data);
+
+    /**
+     * This method is used to render the help button,
+     * given a help point  csrf token and target controller name.
+     * 
+     * @param  $help_point_id - used to set as help button id
+     * @param  $csrf_token - csrf token to make api call/open edit link
+     * @param  $target_c - target controller to remember the view.
+     * @return String button html.
+     */
+    public function renderHelpButton($help_point_id, $csrf_token, $target_c) {
+        $is_mobile = MOBILE ? "true" : "false";
+        return '<button type="button" 
+                    href="" 
+                    onclick="javascript:displayHelpForId(this,'
+                . $is_mobile . ',\'' . $target_c . '\',\'' 
+                . $csrf_token . '\')" '
+                . 'id="' . $help_point_id . '">?</button>';
+    }
+
 }
+
 ?>

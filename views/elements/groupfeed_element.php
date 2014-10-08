@@ -191,7 +191,7 @@ class GroupfeedElement extends Element implements CrawlConstants
                             "{$data['PAGES'][0]['GROUP_ID']}"); ?>)'><?php
                         e(tl('groupfeed_element_start_thread'));?></button>
                     <?php 
-                    e(renderHelpButton("start_new_thread", $data[CSRF_TOKEN],
+                    e($this->renderHelpButton("start_new_thread", $data[CSRF_TOKEN],
                             $_REQUEST['c']));
                     ?>
                 <div id='add-comment'></div>
