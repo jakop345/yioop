@@ -1,4 +1,5 @@
 <?php
+
 /**
  * SeekQuarry/Yioop --
  * Open Source Pure PHP Search Engine, Crawler, and Indexer
@@ -30,9 +31,13 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
-/** Loads common constants for web crawling*/
-require_once BASE_DIR."/lib/crawl_constants.php";
+if (!defined('BASE_DIR')) {
+    echo "BAD REQUEST";
+    exit();
+}
+/** Loads common constants for web crawling */
+require_once BASE_DIR . "/lib/crawl_constants.php";
+
 /**
  * Element responsible for drawing wiki pages in either admin or wiki view
  * It is also responsible for rendering wiki history pages, and listings of
@@ -42,8 +47,8 @@ require_once BASE_DIR."/lib/crawl_constants.php";
  * @package seek_quarry
  * @subpackage element
  */
-class ApiElement extends Element implements CrawlConstants
-{
+class ApiElement extends Element implements CrawlConstants {
+
     /**
      * Draw a wiki page for group, or, depending on $data['MODE'] a listing
      * of all pages for a group, or the history of revisions of a given page
@@ -52,35 +57,17 @@ class ApiElement extends Element implements CrawlConstants
      * @param array $data fields contain data about the page being
      * displayeed or edited, or the list of pages being displayed.
      */
-    function render($data)
-    {
+    function render($data) {
         $logged_in = isset($data["ADMIN"]) && $data["ADMIN"];
         $can_edit = $logged_in && isset($data["CAN_EDIT"]) && $data["CAN_EDIT"];
-        $is_admin = ($data["CONTROLLER"] == "admin");
-        $arrows = ($is_admin) ? "&lt;&lt;" : "&gt;&gt;";
-        $other_controller = ($is_admin) ? "group" : "admin";
-        $base_query = "?c={$data['CONTROLLER']}";
-        $csrf_token = "";
-        if($logged_in) {
-            $csrf_token = "&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN];
-            $base_query .= $csrf_token;
-        }
-        $base_query .= "&amp;group_id=".$data["GROUP"]["GROUP_ID"];
-        $other_base_query = "?c=$other_controller&amp;a=wiki&amp;group_id=".
-            $data["GROUP"]["GROUP_ID"]."&amp;arg=".$data['MODE']."&amp;".
-            "page_name=".$data['PAGE_NAME'];
-        if($logged_in) {
-            $other_base_query .= $csrf_token;
-            $csrf_token = "&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN];
-        }
         $this->renderJsonDocument($data, $can_edit, $logged_in);
     }
-   
+
     /**
-     * Used to send a Wiki content response for reading. If the page does not exist
-     * various create/login-to-create etc messages are displayed depending
-     * of it the user is logged in. and has write permissions on the group
-     *
+     * Used to send a Wiki content response for reading. If the page does 
+     * not exist various create/login-to-create etc messages are displayed 
+     * depending of it the user is logged in. and has write permissions 
+     * on the group.
      * @param array $data fields PAGE used for page contents
      * @param bool $can_edit whether the current user has permissions to
      *     edit or create this page
@@ -88,11 +75,13 @@ class ApiElement extends Element implements CrawlConstants
      */
     function renderJsonDocument($data, $can_edit, $logged_in) {
         $out_array = array();
-        if (isset($data["HEAD"]['page_type']) && $data["HEAD"]['page_type'] ==
-                'media_list') {
-            //Show error view not supported
-        } else if ($data["PAGE"]) {
-            $out_array["wiki_content"] = html_entity_decode($data['PAGE'], ENT_QUOTES);
+        if ($data["PAGE"]) {
+            $out_array["wiki_content"] = html_entity_decode($data['PAGE'], 
+                    ENT_QUOTES);
+            $out_array['group_id'] = $data['GROUP']['GROUP_ID'];
+            $out_array['group_name'] = $data['GROUP']['GROUP_NAME'];
+            $out_array['page_id'] = $data['PAGE_ID'];
+            $out_array['page_name'] = $data['PAGE_NAME'];
             $http_code = 200;
         } else if (!$logged_in) {
             $out_array["logged_in"] = false;
@@ -102,23 +91,18 @@ class ApiElement extends Element implements CrawlConstants
             $out_array["can_edit"] = true;
         }
 
-        $out_array['group_id'] =  $data['GROUP']['GROUP_ID'];
-        $out_array['group_name'] = $data['GROUP']['GROUP_NAME'];
-        $out_array['page_id'] = $data['PAGE_ID'];
-        $out_array['page_name'] = $data['PAGE_NAME'];
-
-        
-        if (isset($data['errors']) 
-                && count($data['errors']) > 0) {
+        if (isset($data['errors']) && count($data['errors']) > 0) {
             $out_array['errors'] = json_encode(
-                array_map(
-                        function($string) {
-                    return html_entity_decode($string, ENT_QUOTES);
-                }, $data['errors']));
+                    array_map(
+                            function($string) {
+                        return html_entity_decode($string, ENT_QUOTES);
+                    }, $data['errors']));
         }
+
         header("Content-Type: application/json");
         http_response_code($http_code);
         e(json_encode($out_array));
         exit();
     }
+
 }

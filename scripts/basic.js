@@ -59,14 +59,14 @@ function makeRequest()
 {
     try {
         request = new XMLHttpRequest();
-    } catch (e) {
+    } catch(e) {
         try {
             request = new ActiveXObject('MSXML2.XMLHTTP');
-        } catch (e) {
+        } catch(e) {
             try {
-                request = new ActiveXObject('Microsoft.XMLHTTP');
-            } catch (e) {
-                return false;
+            request = new ActiveXObject('Microsoft.XMLHTTP');
+            } catch(e) {
+            return false;
             }
         }
     }
@@ -82,13 +82,13 @@ function makeRequest()
 function getPage(tag, url)
 {
     var request = makeRequest();
-    if (request) {
+    if(request) {
 
         var self = this;
         request.onreadystatechange = function()
         {
-            if (self.request.readyState == 4) {
-                tag.innerHTML = self.request.responseText;
+            if(self.request.readyState == 4) {
+                    tag.innerHTML = self.request.responseText;
             }
         }
         request.open("GET", url, true);
@@ -109,14 +109,14 @@ function caret(node)
     }
     // old ie hack
     var insert_char = "\001",
-            sel = document.selection.createRange(),
-            dul = sel.duplicate(),
-            len = 0;
+    sel = document.selection.createRange(),
+    dul = sel.duplicate(),
+    len = 0;
 
     dul.moveToElementText(node);
     sel.text = insert_char;
     len = dul.text.indexOf(insert_char);
-    sel.moveStart('character', -1);
+    sel.moveStart('character',-1);
     sel.text = "";
     return len;
 }
@@ -158,10 +158,10 @@ function tag(name)
 function setDisplay(id, value)
 {
     obj = elt(id);
-    if (value == true) {
+    if(value == true)  {
         value = "block";
     }
-    if (value == false) {
+    if(value == false) {
         value = "none";
     }
     obj.style.display = value;
@@ -173,7 +173,7 @@ function setDisplay(id, value)
 function toggleDisplay(id)
 {
     obj = elt(id);
-    if (obj.style.display == "block") {
+    if(obj.style.display == "block")  {
         value = "none";
     } else {
         value = "block";
@@ -219,7 +219,6 @@ function toggleHelp(id, isMobile, target_c)
             help_node.style.maxWidth = new_width + "px";
         }
     } else {
-        var height_before_toggle = (obj.clientHeight);
         toggleDisplay(id);
         var height_after_toggle = (obj.clientHeight);
         //Calculate pixel to inch. clientWidth only returns in pixels.
@@ -227,15 +226,14 @@ function toggleHelp(id, isMobile, target_c)
             //on closing, restore top
             help_node.style.top = current_activity_top + "px";
             current_activity_closed = true;
-            //getCssProperty(help_node, 'top')
-            //       - height_before_toggle + "px";
         } else if (obj.style.display === "block") {
             help_node.style.top = current_activity_top
                     + height_after_toggle + "px";
-            //For some reason the div.clientHeight doesnt include the height
-            //of the images inside the div. So we iterate through the 
-            //image elements, after each image is loaded add the image
-            //height to the top of the current_activity div.
+            //The div.clientHeight doesnt include the height
+            //of the images inside the div before the images are completely
+            //loaded. So we iterate through the 
+            //image elements, as each image loads add the image
+            //height to the top of the current_activity div dynamically.
             for (var i = 0; i < images.length; i++) {
                 var image = images[i];
                 image.onload = function(){
@@ -333,7 +331,7 @@ function parseWikiContent(wiki_text, group_id, page_id)
     });
 
     //replace nowiki with pre tags
-    html = html.replace(/<nowiki>(.*?)<\/nowiki>/g, function (match, contents) {
+    html = html.replace(/<nowiki>(.*?)<\/nowiki>/g, function(match, contents) {
         return '<pre>' + contents + '</pre>';
     });
 
@@ -370,7 +368,7 @@ function parseLists(str)
 }
 
 /**
- * getJson doe a GET HTTP call on the url passed. 
+ * get does a GET HTTP call on the url passed. 
  * Also fires the callback functions passed as 
  * params appropriately.
  * 
@@ -446,7 +444,16 @@ function displayHelpForId(help_point,is_mobile,target_c,csrf_token)
     event.preventDefault();
 }
 
-function getEditLink(target_c, csrf_token, group_id, page_name){
+/**
+ * Simple function to construct the Wiki Edit hyperlink with passed in params.
+ * @param {type} target_c
+ * @param {type} csrf_token
+ * @param {type} group_id
+ * @param {type} page_name
+ * @returns {String}
+ */
+function getEditLink(target_c, csrf_token, group_id, page_name)
+{
     return '?c=' + target_c +
             '&YIOOP_TOKEN=' + csrf_token +
             '&group_id=' + group_id +
@@ -456,7 +463,16 @@ function getEditLink(target_c, csrf_token, group_id, page_name){
 }
 
 
-function renderPreview(page_id, group_id) {
+/**
+ * this function grabs the contents of the wiki text area, 
+ * converts them into html then populates the preview 
+ * div with parsed html contents. It takes in a page id and group id that are 
+ * required to render image urls, If any exist.
+ * @param {type} page_id
+ * @param {type} group_id
+ */
+function renderPreview(page_id, group_id) 
+{
     var msg = "This is only a preview; your changes have not yet been saved!";
     if (event.preventDefault)
         event.preventDefault();

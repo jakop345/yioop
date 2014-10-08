@@ -55,24 +55,6 @@ class ApiView extends View
      */
     function renderView($data)
     {
-        $logo = LOGO;
-        $logged_in = isset($data["ADMIN"]) && $data["ADMIN"];
-        $can_edit = $logged_in && isset($data["CAN_EDIT"]) && $data["CAN_EDIT"];
-        $base_query = "?c=group&amp;".CSRF_TOKEN."=".
-            $data[CSRF_TOKEN] . "&amp;group_id=".
-                $data["GROUP"]["GROUP_ID"];
-        $feed_base_query = "?c=group&amp;".CSRF_TOKEN."=".
-            $data[CSRF_TOKEN] . "&amp;just_group_id=".
-                $data["GROUP"]["GROUP_ID"];
-        if(!$logged_in) {
-            $base_query = "?c=group&amp;group_id=". $data["GROUP"]["GROUP_ID"];
-            $feed_base_query =
-                "?c=group&amp;just_group_id=". $data["GROUP"]["GROUP_ID"];
-        }
-        if(MOBILE) {
-            $logo = M_LOGO;
-        }
-        
         $this->element("api")->render($data);
     }
 }

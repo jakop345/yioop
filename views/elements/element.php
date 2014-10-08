@@ -1,5 +1,4 @@
 <?php
-
 /**
  * SeekQuarry/Yioop --
  * Open Source Pure PHP Search Engine, Crawler, and Indexer
@@ -31,11 +30,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-if (!defined('BASE_DIR')) {
-    echo "BAD REQUEST";
-    exit();
-}
-
+if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 /**
  * Base Element Class.
  * Elements are classes are used to render portions of
@@ -48,23 +43,22 @@ if (!defined('BASE_DIR')) {
  * @package seek_quarry
  * @subpackage element
  */
-abstract class Element {
-
+abstract class Element
+{
     /**
      * The View on which this Element is drawn
      * @var object
      */
     var $view;
-
     /**
      * constructor stores a reference to the view this element will reside on
      *
      * @param object $view   object this element will reside on
      */
-    function __construct($view = NULL) {
+    function __construct($view = NULL)
+    {
         $this->view = $view;
     }
-
     /**
      * This method is responsible for actually drawing the view.
      * It should be implemented in subclasses.
