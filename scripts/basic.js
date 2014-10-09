@@ -435,10 +435,6 @@ function displayHelpForId(help_point,is_mobile,target_c,csrf_token)
                 toggleHelp('help-frame', is_mobile,target_c);
             },
             function (status) {
-                doMessage(
-                        '<h2 style="color:red">' +
-                                'Unable to Load help content.</h2>'
-                        );
                 toggleHelp('help-frame', is_mobile,target_c);
             });
     event.preventDefault();
@@ -473,15 +469,12 @@ function getEditLink(target_c, csrf_token, group_id, page_name)
  */
 function renderPreview(page_id, group_id) 
 {
-    var msg = "This is only a preview; your changes have not yet been saved!";
     if (event.preventDefault)
         event.preventDefault();
     event.returnValue = false;
     var textArea = document.getElementById('wiki-page');
     var div = document.getElementById('wiki-preview');
     div.innerHTML = "<hr>" 
-            + msg
-            + "<hr>"
             + "<p>"
             + parseWikiContent(
             textArea.value,
