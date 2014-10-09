@@ -416,7 +416,7 @@ function displayHelpForId(help_point,is_mobile,target_c,csrf_token)
             "arg=" + arg + "&" +
             "a=" + a + "&" +
             "YIOOP_TOKEN=" + csrf_token + "&" +
-            "page_name=" + help_point.id,
+            "page_name=" + help_point.getAttribute("data-pagename"),
             'json',
             function (data) {
                 elt("help-frame-body").innerHTML = parseWikiContent(

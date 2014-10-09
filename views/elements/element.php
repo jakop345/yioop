@@ -84,7 +84,7 @@ abstract class Element
                     onclick="javascript:displayHelpForId(this,'
                 . $is_mobile . ',\'' . $target_c . '\',\'' 
                 . $csrf_token . '\')" '
-                . 'id="' . $help_point_id . '">?</button>';
+                . 'data-pagename="' . $help_point_id . '">?</button>';
     }
 
 }
