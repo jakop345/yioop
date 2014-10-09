@@ -23,7 +23,7 @@
  *
  * END LICENSE
  *
- * @author Chris Pollett chris@pollett.org
+ * @author Eswara Rajesh Pinapala epinapala@live.com
  * @package seek_quarry
  * @subpackage view
  * @license http://www.gnu.org/licenses/ GPL3
@@ -43,7 +43,7 @@ require_once BASE_DIR . "/lib/crawl_constants.php";
  * It is also responsible for rendering wiki history pages, and listings of
  * wiki pages available for a group
  *
- * @author Chris Pollett
+ * @author Eswara Rajesh Pinapala 
  * @package seek_quarry
  * @subpackage element
  */

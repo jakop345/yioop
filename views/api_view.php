@@ -22,7 +22,7 @@
  *
  * END LICENSE
  *
- * @author Chris Pollett chris@pollett.org
+ * @author Eswara Rajesh Pinapala epinapala@live.com
  * @package seek_quarry
  * @subpackage view
  * @license http://www.gnu.org/licenses/ GPL3
@@ -36,7 +36,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * (so activities panel on side is not present.) This is also used to draw
  * wiki pages for public groups when not logged.
  *
- * @author Chris Pollett
+ * @author Eswara Rajesh Pinapala
  * @package seek_quarry
  * @subpackage view
  */
