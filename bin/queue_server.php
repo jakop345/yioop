@@ -1622,7 +1622,7 @@ class QueueServer implements CrawlConstants, Join
             $i = 0;
             foreach($sites as $robot_host => $robot_info) {
                 crawlTimeoutLog("..Scheduler processing robot item %s of %s.",
-                    $i, $num_entries);
+                    $i, $num_sites);
                 $i++;
                 $this->web_queue->addGotRobotTxtFilter($robot_host);
                 $scheme = UrlParser::getScheme($robot_host);
