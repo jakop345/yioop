@@ -434,7 +434,7 @@ class WikiParser implements CrawlConstants
                 $i++;
             }
             $toc .= "<div class='top-color' style='border: 1px ".
-                "ridge #000; width:280px;padding: 3px; margin:6px;'><ol>\n";
+                "ridge #000; width:70%;padding: 3px; margin:6px;'><ol>\n";
             foreach($headers as $section => $subsections) {
                 if($section == 'page_level' && $subsections == array()) {
                     continue;
