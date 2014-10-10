@@ -114,7 +114,7 @@ class WikiParser implements CrawlConstants
                 "<a href=\"$1\">$2</a>"),
             array('/\[\[([^\[\]]+?)\|([^\[\]]+?)\]\]/s',
                 "<a href=\"{$base_address}$1\">$2</a>\t"),
-            array('/\[\[([^\[\]]+?)\]\]/s',
+            array('/\[\[((\#?)[^\[\]]+?)\]\]/s',
                 "<a href=\"{$base_address}$1\">$1</a>\t"),
             array("/\[(http[^\s\]]+)\s+(.+?)\]/s",
                 "[<a href=\"$1\">$2</a>]"),
@@ -416,13 +416,40 @@ class WikiParser implements CrawlConstants
         $toc= "";
         $matches = array();
         $min_sections_for_toc = 4;
-        preg_match_all('/(\A|\n)==\s*([^=]+)\s*==/', $page, $matches);
-        if(isset($matches[2]) && count($matches[2]) >= $min_sections_for_toc) {
+        preg_match_all("/(\A|\n)==(\s*([^=]+)\s*|".
+            "|=\s*([^=]+)\s*=)==/", $page, $matches);
+        if(isset($matches[3]) && count(array_filter($matches[3])) >=
+            $min_sections_for_toc) {
+            $headers = array();
+            $section = "page_level";
+            $headers[$section] = array();
+            $i = 0;
+            foreach($matches[2] as $header) {
+                if(isset($matches[3][$i]) && $matches[3][$i]) {
+                    $section = $header;
+                    $headers[$header] = array();
+                } else if(isset($matches[4][$i]) && $matches[4][$i]) {
+                    $headers[$section][] = $matches[4][$i];
+                }
+                $i++;
+            }
             $toc .= "<div class='top-color' style='border: 1px ".
                 "ridge #000; width:280px;padding: 3px; margin:6px;'><ol>\n";
-            foreach($matches[2] as $section) {
+            foreach($headers as $section => $subsections) {
+                if($section == 'page_level' && $subsections == array()) {
+                    continue;
+                }
                 $toc .= "<li><a href='#".addslashes($section)."'>".
-                    $section."</a></li>\n";
+                    $section."</a>";
+                if($subsections != array()) {
+                    $toc .= "<ol style='list-style-type: lower-alpha;'>\n";
+                    foreach($subsections as $subsection) {
+                        $toc .= "<li><a href='#".addslashes($subsection)."'>".
+                            $subsection."</a></li>";
+                    }
+                    $toc .= "</ol>";
+                }
+                $toc .= "</li>\n";
             }
             $toc .= "</ol></div>\n";
         }
