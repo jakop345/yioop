@@ -75,6 +75,7 @@ class WikiParser implements CrawlConstants
     {
         $esc = $this->esc;
         $not_braces = '(?:[^\}]|\}[^\}])*';
+        $class_or_id = '0-9a-zA-Z\_\-\s';
         $this->minimal = $minimal;
         //assume substitutions are applied after htmlentities called on string
         $substitutions = array(
@@ -123,24 +124,24 @@ class WikiParser implements CrawlConstants
             array("/&#039;&#039;&#039;(.+?)&#039;&#039;&#039;/s","<b>$1</b>\t"),
             array("/&#039;&#039;(.+?)&#039;&#039;/s", "<i>$1</i>\t"),
             array('/[^\n]{{\s*class\s*\=\s*'.
-                '&quot;([a-zA-Z\_\-\s]+)&quot;\s+()}}/',
+                "&quot;([$class_or_id]+)&quot;\s+()}}/",
                 "$esc<span class=\"$1\" >\t\n$2$esc</span>\t"),
             array('/[^\n]{{\s*class\s*\=\s*'.
-                '&#039;([a-zA-Z\_\-\s]+)&#039;\s+('.$not_braces.')}}/',
+                "&#039;([$class_or_id]+)&#039;\s+(".$not_braces.")}}/",
                 "$esc<span class=\"$1\" >\t\n$2$esc</span>\t"),
             array('/\n*?{{\s*class\s*\=\s*'.
-                '&quot;([a-zA-Z\_\-\s]+)&quot;\s+('.$not_braces.')}}/',
+                "&quot;([$class_or_id]+)&quot;\s+(".$not_braces.")}}/",
                 "\n\n$esc<div class=\"$1\" >\n\n$2\n\n$esc</div>"),
             array('/\n*?{{\s*class\s*\=\s*'.
-                '&#039;([a-zA-Z\_\-\s]+)&#039;\s+('.$not_braces.')}}/',
+                "&#039;([$class_or_id]+)&#039;\s+(".$not_braces.")}}/",
                 "\n\n$esc<div class='$1' >\n\n$2\n\n$esc</div>"),
-            array('/\n*?{{\s*id\s*\=\s*&quot;([a-zA-Z\_\-]+)&quot;\s+('.
+            array("/\n*?{{\s*id\s*\=\s*&quot;([$class_or_id]+)&quot;\s+(".
                 $not_braces.')}}/',
                 "$esc<span id=\"$1\">$2$esc</span>"),
-            array('/\n*?{{\s*id\s*\=\s*&quot;([a-zA-Z\_\-]+)&quot;\s+('.
+            array("/\n*?{{\s*id\s*\=\s*&quot;([$class_or_id]+)&quot;\s+(".
                 $not_braces.')}}/',
                 "\n\n$esc<div id=\"$1\">\n\n$2\n\n$esc</div>"),
-            array('/\n*?{{\s*id\s*\=\s*&#039;([a-zA-Z\_\-]+)&#039;\s+('
+            array("/\n*?{{\s*id\s*\=\s*&#039;([$class_or_id]+)&#039;\s+("
                 .$not_braces.')}}/',
                 "\n\n$esc<div id='$1'>\n\n$2\n\n$esc</div>"),
             array('/\n*?{{\s*style\s*\=\s*'.
@@ -483,6 +484,25 @@ class WikiParser implements CrawlConstants
                         }
                         $ref_data['author'] = "<a href=\"$base_address".
                             $ref_data['author']."\">{$ref_data['author']}</a>";
+                    }
+                    for($i = 2; $i < 6; $i++) {
+                        if(!isset($ref_data["author$i"]) &&
+                            isset($ref_data["last$i"])
+                            && isset($ref_data['first'])) {
+                            $ref_data["author$i"] = $ref_data["last$i"].", ".
+                                $ref_data["first$i"];
+                        }
+                        if(!isset($ref_data["author$i"])) {break; }
+                        if(isset($ref_data["authorlink$i"]) ) {
+                            if(!isset($ref_data["author$i"])) {
+                                $ref_data["author$i"] = 
+                                    $ref_data["authorlink$i"];
+                            }
+                            $ref_data["author$i"] = "<a href=\"$base_address".
+                                $ref_data["author$i"].
+                                "\">".$ref_data["author$i"]."</a>";
+                        }
+                        $ref_data["author"] .= " and " . $ref_data["author$i"];
                     }
                     if(!isset($ref_data['title']) && isset($ref_data['url'])) {
                         $ref_data['title'] = $ref_data['url'];
