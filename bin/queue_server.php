@@ -356,12 +356,19 @@ class QueueServer implements CrawlConstants, Join
     {
         global $argv;
         if(isset($argv[1]) && $argv[1] == "start") {
-            $argv[2] = "none";
-            $argv[3] = self::INDEXER;
-            CrawlDaemon::init($argv, "queue_server", 0);
-            $argv[2] = "none";
-            $argv[3] = self::SCHEDULER;
-            CrawlDaemon::init($argv, "queue_server", 2);
+            if(isset($argv[2]) && in_array($argv[2], array(
+                self::INDEXER, self::SCHEDULER)) ) {
+                $argv[3] = $argv[2];
+                $argv[2] = "none";
+                CrawlDaemon::init($argv, "queue_server", 2);
+            } else {
+                $argv[2] = "none";
+                $argv[3] = self::INDEXER;
+                CrawlDaemon::init($argv, "queue_server", 0);
+                $argv[2] = "none";
+                $argv[3] = self::SCHEDULER;
+                CrawlDaemon::init($argv, "queue_server", 2);
+            }
         } else {
             CrawlDaemon::init($argv, "queue_server");
         }
