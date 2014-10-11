@@ -158,8 +158,10 @@ class GroupfeedElement extends Element implements CrawlConstants
             ?>
             </h2>
             <?php
+            if(!isset($data['JUST_GROUP_ID'])){
             e("<a href=\"" . $paging_query . "\">[U]</a>" . "  |  " );
-            e("<a href=\"" . $paging_query . "&amp;v=grouped\">[G]</a>" . " " );
+            e("<a href=\"" . $paging_query . "&amp;v=grouped\">[G]</a>". " " );
+            }
         }
         ?>
         <div>
@@ -177,7 +179,7 @@ class GroupfeedElement extends Element implements CrawlConstants
                     "rel=\"nofollow\">".
                     $group['GROUP_NAME']."</a> " . 
                     "[<a href=\"$paging_query&amp;group_id=".
-                    $group['GROUP_ID']. "\">".
+                    $group['GROUP_ID']. "&amp;a=wiki\">".
                     tl('manageaccount_element_group_wiki') . "</a>] " .
                     "(". tl('manageaccount_element_group_stats',
                         $group['NUM_POSTS'], $group['NUM_THREADS']) . ")</b>" .
