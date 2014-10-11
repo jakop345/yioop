@@ -360,7 +360,8 @@ class QueueServer implements CrawlConstants, Join
                 self::INDEXER, self::SCHEDULER)) ) {
                 $argv[3] = $argv[2];
                 $argv[2] = "none";
-                CrawlDaemon::init($argv, "queue_server", 2);
+                // 3 indicates force start
+                CrawlDaemon::init($argv, "queue_server", 3);
             } else {
                 $argv[2] = "none";
                 $argv[3] = self::INDEXER;
