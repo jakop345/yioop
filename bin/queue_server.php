@@ -1632,7 +1632,7 @@ class QueueServer implements CrawlConstants, Join
                     $robot_url = $robot_host."/robots.txt";
                 }
                 if($this->web_queue->containsUrlQueue($robot_url)) {
-                    crawlLog("Removing $robot_url from queue");
+                    crawlLog("Scheduler Removing $robot_url from queue");
                     $this->web_queue->removeQueue($robot_url);
                 }
                 if(isset($robot_info[self::CRAWL_DELAY])) {
@@ -1649,7 +1649,8 @@ class QueueServer implements CrawlConstants, Join
                 }
             }
         }
-        crawlLog(" time: ".(changeInMicrotime($start_time))."\n");
+        crawlLog("Scheduler Robot time: ".
+            (changeInMicrotime($start_time))."\n");
         crawlLog("Scheduler Done Robots Processing File: $file");
         unlink($file);
     }
