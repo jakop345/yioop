@@ -718,6 +718,43 @@ class SocialComponent extends Component implements CrawlConstants
         }
         $possible_arguments = array("addcomment", "deletepost", "addgroup",
             "newthread", "updatepost", "status", "upvote", "downvote");
+        if (isset($_REQUEST['v']) && $_REQUEST['v'] == 'grouped') {
+            $data['MODE'] = 'grouped';
+            if (isset($_REQUEST['limit'])) {
+                $limit = $parent->clean($_REQUEST['limit'], "int");
+            } else {
+                $limit = 0;
+            }
+            //$data['NUM_SHOWN'] = (isset($_REQUEST['limit'])
+            //      && $_REQUEST['limit'] > 0 ) ? $_REQUEST['limit'] : 5;
+            $data['GROUPS'] = $group_model->getRows($limit, $results_per_page, 
+                    $data['NUM_GROUPS'], array(), array($user_id, false));
+            $num_shown = count($data['GROUPS']);
+            for ($i = 0; $i < $num_shown; $i++) {
+                $search_array = array(array("group_id", "=",
+                        $data['GROUPS'][$i]['GROUP_ID'], ""),
+                    array("pub_date", "", "", "DESC"));
+                $item = $group_model->getGroupItems(0, 1, $search_array, $user_id);
+                $data['GROUPS'][$i]['NUM_POSTS'] = $group_model->getGroupItemCount($search_array, $user_id);
+                $data['GROUPS'][$i]['NUM_THREADS'] = $group_model->getGroupItemCount($search_array, $user_id, $data['GROUPS'][$i]['GROUP_ID']);
+                $data['GROUPS'][$i]['NUM_PAGES'] = $group_model->getGroupPageCount(
+                        $data['GROUPS'][$i]['GROUP_ID']);
+                if (isset($item[0]['TITLE'])) {
+                    $data['GROUPS'][$i]["ITEM_TITLE"] = $item[0]['TITLE'];
+                    $data['GROUPS'][$i]["THREAD_ID"] = $item[0]['PARENT_ID'];
+                } else {
+                    $data['GROUPS'][$i]["ITEM_TITLE"] = tl('accountaccess_component_no_posts_yet');
+                    $data['GROUPS'][$i]["THREAD_ID"] = -1;
+                }
+            }
+            $data['NUM_SHOWN'] = $num_shown;
+            $data['LIMIT'] = $limit;
+            $data['RESULTS_PER_PAGE'] = $results_per_page;
+            $data['PAGING_QUERY'] = "./?c=$controller_name&amp;a=groupFeeds";
+            $data['OTHER_PAGING_QUERY'] =
+            "./?c=$other_controller_name&amp;a=groupFeeds";
+            return $data;
+        }
         if(isset($_REQUEST['arg']) &&
             in_array($_REQUEST['arg'], $possible_arguments)) {
             switch($_REQUEST['arg'])
@@ -1051,47 +1088,6 @@ class SocialComponent extends Component implements CrawlConstants
             array("group_id", "=", $just_group_id, ""),
             array("user_id", "=", $just_user_id, ""),
             $pub_clause);
-        if(true){
-            
-        if(isset($_REQUEST['limit'])) {
-            $limit = $parent->clean($_REQUEST['limit'], "int");
-        } else {
-            $limit = 0;
-        }
-        //$data['NUM_SHOWN'] = (isset($_REQUEST['limit'])
-          //      && $_REQUEST['limit'] > 0 ) ? $_REQUEST['limit'] : 5;
-        $data['GROUPS'] = $group_model->getRows($limit,$results_per_page,
-             $data['NUM_GROUPS'], array(),
-            array($user_id, false));
-        $num_shown = count($data['GROUPS']);
-        for($i = 0; $i < $num_shown; $i++) {
-            $search_array = array(array("group_id", "=",
-                $data['GROUPS'][$i]['GROUP_ID'], ""),
-                array("pub_date", "", "", "DESC"));
-            $item = $group_model->getGroupItems(0, 1,
-                $search_array, $user_id);
-            $data['GROUPS'][$i]['NUM_POSTS'] =
-                $group_model->getGroupItemCount($search_array, $user_id);
-            $data['GROUPS'][$i]['NUM_THREADS'] =
-                $group_model->getGroupItemCount($search_array, $user_id,
-                $data['GROUPS'][$i]['GROUP_ID']);
-            $data['GROUPS'][$i]['NUM_PAGES'] =
-                $group_model->getGroupPageCount(
-                $data['GROUPS'][$i]['GROUP_ID']);
-            if(isset($item[0]['TITLE'])) {
-                $data['GROUPS'][$i]["ITEM_TITLE"] = $item[0]['TITLE'];
-                $data['GROUPS'][$i]["THREAD_ID"] = $item[0]['PARENT_ID'];
-            } else {
-                $data['GROUPS'][$i]["ITEM_TITLE"] =
-                    tl('accountaccess_component_no_posts_yet');
-                $data['GROUPS'][$i]["THREAD_ID"] = -1;
-            }
-        }
-        $data['NUM_SHOWN'] = $num_shown;
-        var_dump($data['GROUPS']);
-        exit();
-        }
-        
         $for_group = ($just_group_id) ? $just_group_id : -1;
         $item_count = $group_model->getGroupItemCount($search_array, $user_id,
             $for_group);

@@ -158,12 +158,41 @@ class GroupfeedElement extends Element implements CrawlConstants
             ?>
             </h2>
             <?php
+            e("<a href=\"" . $paging_query . "\">[U]</a>" . "  |  " );
+            e("<a href=\"" . $paging_query . "&amp;v=grouped\">[G]</a>" . " " );
         }
         ?>
         <div>
         &nbsp;
         </div>
         <?php
+      if(isset($data['MODE']) && $data['MODE'] == 'grouped'){
+        //Grouped View
+        //var_dump($data['GROUPS']);
+        foreach($data['GROUPS'] as $group){
+            e("<div class=\"access-result\">" .
+                    "<div><b>" . 
+                    "<a href=\"$paging_query&amp;just_group_id=".
+                    $group['GROUP_ID']. "\" " .
+                    "rel=\"nofollow\">".
+                    $group['GROUP_NAME']."</a> " . 
+                    "[<a href=\"$paging_query&amp;group_id=".
+                    $group['GROUP_ID']. "\">".
+                    tl('manageaccount_element_group_wiki') . "</a>] " .
+                    "(". tl('manageaccount_element_group_stats',
+                        $group['NUM_POSTS'], $group['NUM_THREADS']) . ")</b>" .
+                    "</div>" .
+                    "<div class=\"slight-pad\">" .
+                    "<b>" . tl('manageaccount_element_last_post') . "</b> " .
+                    "<a href=\"$paging_query&amp;just_thread=" .
+                    $group['THREAD_ID'] ."\">" .
+                    $group['ITEM_TITLE'] ."</a>" .
+                    "</div>" .
+                "</div>");
+        }
+        $data['TOTAL_ROWS'] = $data['NUM_GROUPS'];
+        $paging_query .= "&amp;v=grouped";
+       }else{
         $open_in_tabs = $data['OPEN_IN_TABS'];
         $time = time();
         $can_comment = array(GROUP_READ_COMMENT, GROUP_READ_WRITE,
@@ -380,6 +409,7 @@ class GroupfeedElement extends Element implements CrawlConstants
             </div>
             <?php
             } //end foreach
+       }//No grouped View
             $data['FRAGMENT'] = "";
             if(isset($data['JUST_THREAD']) && $logged_in) {
                 $data['FRAGMENT'] = '#result-'.$page['ID'];
@@ -402,6 +432,7 @@ class GroupfeedElement extends Element implements CrawlConstants
         if(!$is_status) {
             $this->renderScripts($data);
         }
+    
     }
     /**
      * Used to render the Javascript that appears at the non-status updating
