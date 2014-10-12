@@ -373,7 +373,6 @@ class QueueServer implements CrawlConstants, Join
         } else {
             CrawlDaemon::init($argv, "queue_server");
         }
-
         crawlLog("\n\nInitialize logger..", "queue_server", true);
         $this->server_name = "IndexerAndScheduler";
         if(isset($argv[3]) && $argv[1] == "child" &&
@@ -1253,7 +1252,7 @@ class QueueServer implements CrawlConstants, Join
         $dir_cnt = 0;
         foreach($dirs as $dir) {
             $dir_cnt++;
-            crawlTimeoutLog("..Indexer looking for through directory %s of %s".
+            crawlTimeoutLog("..Indexer looking through directory %s of %s".
                 " to see if orphaned", $dir_cnt, $num_dirs);
             if(strlen(
                 $pre_timestamp = strstr($dir, self::queue_base_name)) > 0) {
@@ -1599,7 +1598,8 @@ class QueueServer implements CrawlConstants, Join
         if($this->web_queue->getRobotTxtAge() > CACHE_ROBOT_TXT_TIME) {
             $this->deleteRobotData();
             crawlLog("Scheduler: Deleting DNS Cache data..");
-            $this->web_queue->emptyDNSCache();
+            $message = $this->web_queue->emptyDNSCache();
+            crawlLog("Scheduler: Delete task responded:\n $message");
         } else {
             crawlLog("Scheduler: ... less than max age\n");
             crawlLog("Scheduler: Number of Crawl-Delayed Hosts: ".floor(count(
@@ -1610,7 +1610,7 @@ class QueueServer implements CrawlConstants, Join
             CRAWL_DIR."/schedules/".
                 self::robot_data_base_name.$this->crawl_time;
         $this->processDataFile($robot_dir, "processRobotArchive");
-        crawlLog("done robot check and process. ");
+        crawlLog("Scheduler done robot check and process. ");
     }
     /**
      * Reads in $file of robot data adding host-paths to the disallowed
@@ -1717,16 +1717,17 @@ class QueueServer implements CrawlConstants, Join
      */
     function deleteRobotData()
     {
-        crawlLog("... unlinking robot schedule files ...");
+        crawlLog("... Scheduler: unlinking robot schedule files ...");
 
         $robot_schedules = CRAWL_DIR.'/schedules/'.
             self::robot_data_base_name.$this->crawl_time;
         $this->db->unlinkRecursive($robot_schedules, true);
 
-        crawlLog("... resetting robot data files ...");
-        $this->web_queue->emptyRobotData();
+        crawlLog("... Scheduler: resetting robot data files ...");
+        $message = $this->web_queue->emptyRobotData();
+        crawlog("... Scheduler: resetting robot task answered:\n$message\n");
 
-        crawlLog("...Clearing Waiting Hosts");
+        crawlLog("...Scheduler: Clearing Waiting Hosts");
         $this->waiting_hosts = array();
     }
     /**

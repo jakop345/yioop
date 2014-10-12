@@ -221,7 +221,7 @@ if(file_exists(WORK_DIRECTORY.PROFILE_FILE_NAME)) {
 if(!defined("BASE_URL")) {
     define('BASE_URL', NAME_SERVER);
 }
-if(!defined('LOGO')) { 
+if(!defined('LOGO')) {
     /*  these defines were added to the profile at same. So we add them all in 
         one go to both the case where we have no profile and in the older 
         profile case where they were not defined.

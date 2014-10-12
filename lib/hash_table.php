@@ -157,7 +157,7 @@ class HashTable extends StringArray
                 give an error we null terminate the string to the desired
                 length
              */
-            $value = strpad($value, $this->value_size, '\0');
+            $value = str_pad($value, $this->value_size, '\0');
         }
         //first the key
         for ($i = 0; $i < $this->key_size; $i++) {

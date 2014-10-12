@@ -770,6 +770,9 @@ class WebQueueBundle implements Notifier
     function lookupHashTable($key, $return_probe_value =
         HashTable::RETURN_VALUE)
     {
+        if(!$this->to_crawl_table) {
+            return false;
+        }
         return $this->to_crawl_table->lookup($key, $return_probe_value);
     }
     /**
@@ -891,11 +894,15 @@ class WebQueueBundle implements Notifier
      * Then construct empty new ones.
      * This is called roughly once a day so that robots files will be
      * reloaded and so the policies used won't be too old.
+     *
+     * @return string $message with what happened during empty process
      */
     function emptyRobotData()
     {
+        $message = "";
         $robot_archive_name = $this->dir_name."/robot_archive".
             NonCompressor::fileExtension();
+        $message = "Robot Emptier: Archive Name: $robot_archive_name\n";
         @unlink($this->dir_name."/got_robottxt.ftr");
         @unlink($this->dir_name."/crawl_delay.ftr");
         @unlink($this->dir_name."/robot.dat");
@@ -910,29 +917,70 @@ class WebQueueBundle implements Notifier
         $this->got_robottxt_filter =
             new BloomFilterFile(
                 $this->dir_name."/got_robottxt.ftr", $this->filter_size);
+        if($this->got_robottxt_filter) {
+            $message .= "Robot Emptier: got_robottxt_filter empty now ".
+                "and not null\n";
+        } else {
+            $message .= "Robot Emptier: got_robottxt_filter could not be ".
+                "reinitialized\n";
+        }
         $this->crawl_delay_filter =
             new BloomFilterFile(
                 $this->dir_name."/crawl_delay.ftr", $this->filter_size);
+        if($this->crawl_delay_filter) {
+            $message .= "Robot Emptier: crawl_delay_filter empty now ".
+                "and not null\n";
+        } else {
+            $message .= "Robot Emptier: crawl_delay_filter could not be ".
+                "reinitialized\n";
+        }
         $this->robot_archive = new WebArchive(
             $robot_archive_name, new NonCompressor(), false, true);
+        if($this->robot_archive) {
+            $message .= "Robot Emptier: robot_archive empty now ".
+                "and not null\n";
+        } else {
+            $message .= "Robot Emptier: robot_archive could not be ".
+                "reinitialized\n";
+        }
         $this->robot_table =  new HashTable($this->dir_name.
-            "/robot.dat", 8*$this->num_urls_ram,
+            "/robot.dat", 8 * $this->num_urls_ram,
              self::HASH_KEY_SIZE, self::HASH_VALUE_SIZE);
+        if($this->robot_table) {
+            $message .= "Robot Emptier: robot_table empty now ".
+                "and not null\n";
+        } else {
+            $message .= "Robot Emptier: robot_table could not be ".
+                "reinitialized\n";
+        }
+        return $message;
     }
     /**
      * Delete the Hash table used to store DNS lookup info.
      * Then construct an empty new one.
      * This is called roughly once a day at the same time as
      * @see emptyRobotFilters()
+     *
+     * @return string $message with what happened during empty process
      */
     function emptyDNSCache()
     {
         $num_values = $this->dns_table->num_values;
-        unlink($this->dir_name."/dns_table.dat");
+        if(file_exist($this->dir_name."/dns_table.dat") ) {
+            unlink($this->dir_name."/dns_table.dat");
+        }
         $this->dns_table = NULL;
         gc_collect_cycles();
         $this->dns_table = new HashTable($this->dir_name."/dns_table.dat",
             $num_values, self::HASH_KEY_SIZE, self::IP_SIZE);
+        if($this->robot_table) {
+            $message = "Robot Emptier: dns_table empty now ".
+                "and not null\n";
+        } else {
+            $message = "Robot Emptier: dns_table could not be ".
+                "reinitialized\n";
+        }
+        return $message;
     }
     /**
      * Empty the crawled url filter for this web queue bundle; resets the
