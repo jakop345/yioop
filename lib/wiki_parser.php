@@ -182,7 +182,7 @@ class WikiParser implements CrawlConstants
             array("/&lt;sup&gt;(.+?)&lt;\/sup&gt;/s", "<sup>$1</sup>\t"),
             array("/&lt;math&gt;(.+?)&lt;\/math&gt;/s", "`$1`"),
             array("/&lt;br(\s*\/)?&gt;/", "<br />"),
-            array("/&amp;nbsp;/", "&nbsp;"),
+            array("/&amp;(\#?[a-zA-Z0-9_]+);/", '&$1;'),
             array('/(\A|\n)\*(.+)(\n(\*|\n\s*|\Z|<|[\t\n\r]+\n)|\Z)/sU',
                 "\n<li>$2</li>\n$4"),
             array('/(\A|\n)\*(.+)(\n(\*|\n\s*|\Z|<|[\t\n\r]+\n)|\Z)/sU',
