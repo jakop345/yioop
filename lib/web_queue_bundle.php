@@ -966,7 +966,7 @@ class WebQueueBundle implements Notifier
     function emptyDNSCache()
     {
         $num_values = $this->dns_table->num_values;
-        if(file_exist($this->dir_name."/dns_table.dat") ) {
+        if(file_exists($this->dir_name."/dns_table.dat") ) {
             unlink($this->dir_name."/dns_table.dat");
         }
         $this->dns_table = NULL;
