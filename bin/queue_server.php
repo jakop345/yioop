@@ -1595,7 +1595,7 @@ class QueueServer implements CrawlConstants, Join
     {
         if(!isset($this->web_queue) ) {return;}
         crawlLog("Scheduler Checking age of robot data in queue server ");
-        if($this->web_queue->getRobotTxtAge() > 120) {//CACHE_ROBOT_TXT_TIME) {
+        if($this->web_queue->getRobotTxtAge() > CACHE_ROBOT_TXT_TIME) {
             $this->deleteRobotData();
             crawlLog("Scheduler: Deleting DNS Cache data..");
             $message = $this->web_queue->emptyDNSCache();
