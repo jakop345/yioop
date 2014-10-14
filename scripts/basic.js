@@ -375,7 +375,6 @@ function parseLists(str)
  */
 var get = function (url, response_type, success_call_back, error_handler)
 {
-    alert(url);
     var request = makeRequest();
     request.open('GET', url, true);
     request.responseType = response_type;

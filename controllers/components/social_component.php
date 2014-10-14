@@ -734,16 +734,29 @@ class SocialComponent extends Component implements CrawlConstants
                 $search_array = array(array("group_id", "=",
                         $data['GROUPS'][$i]['GROUP_ID'], ""),
                     array("pub_date", "", "", "DESC"));
-                $item = $group_model->getGroupItems(0, 1, $search_array, $user_id);
-                $data['GROUPS'][$i]['NUM_POSTS'] = $group_model->getGroupItemCount($search_array, $user_id);
-                $data['GROUPS'][$i]['NUM_THREADS'] = $group_model->getGroupItemCount($search_array, $user_id, $data['GROUPS'][$i]['GROUP_ID']);
-                $data['GROUPS'][$i]['NUM_PAGES'] = $group_model->getGroupPageCount(
+                $item = $group_model->getGroupItems(
+                        0, 
+                        1, 
+                        $search_array, 
+                        $user_id);
+                $data['GROUPS'][$i]['NUM_POSTS'] = 
+                        $group_model->getGroupItemCount(
+                                $search_array, $user_id);
+                $data['GROUPS'][$i]['NUM_THREADS'] = 
+                        $group_model->getGroupItemCount(
+                                $search_array, 
+                                $user_id, 
+                                $data['GROUPS'][$i]['GROUP_ID']
+                                );
+                $data['GROUPS'][$i]['NUM_PAGES'] = 
+                        $group_model->getGroupPageCount(
                         $data['GROUPS'][$i]['GROUP_ID']);
                 if (isset($item[0]['TITLE'])) {
                     $data['GROUPS'][$i]["ITEM_TITLE"] = $item[0]['TITLE'];
                     $data['GROUPS'][$i]["THREAD_ID"] = $item[0]['PARENT_ID'];
                 } else {
-                    $data['GROUPS'][$i]["ITEM_TITLE"] = tl('accountaccess_component_no_posts_yet');
+                    $data['GROUPS'][$i]["ITEM_TITLE"] = 
+                            tl('accountaccess_component_no_posts_yet');
                     $data['GROUPS'][$i]["THREAD_ID"] = -1;
                 }
             }
