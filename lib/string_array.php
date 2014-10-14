@@ -89,7 +89,7 @@ class StringArray extends PersistentStructure
     {
         $this->num_values = $num_values;
         $this->data_size = $data_size;
-        $this->string_array_size = $num_values*($data_size);
+        $this->string_array_size = $num_values * ($data_size);
         $this->string_array = pack("x". $this->string_array_size);
         parent::__construct($fname, $save_frequency);
     }
@@ -133,7 +133,7 @@ class StringArray extends PersistentStructure
     function get($i)
     {
         $data_size = $this->data_size;
-        return substr($this->string_array, $i*$data_size, $data_size);
+        return substr($this->string_array, $i * $data_size, $data_size);
     }
     /**
      * Puts data into the ith item of the StringArray

@@ -356,16 +356,23 @@ class QueueServer implements CrawlConstants, Join
     {
         global $argv;
         if(isset($argv[1]) && $argv[1] == "start") {
-            $argv[2] = "none";
-            $argv[3] = self::INDEXER;
-            CrawlDaemon::init($argv, "queue_server", 0);
-            $argv[2] = "none";
-            $argv[3] = self::SCHEDULER;
-            CrawlDaemon::init($argv, "queue_server", 2);
+            if(isset($argv[2]) && in_array($argv[2], array(
+                self::INDEXER, self::SCHEDULER)) ) {
+                $argv[3] = $argv[2];
+                $argv[2] = "none";
+                // 3 indicates force start
+                CrawlDaemon::init($argv, "queue_server", 3);
+            } else {
+                $argv[2] = "none";
+                $argv[3] = self::INDEXER;
+                CrawlDaemon::init($argv, "queue_server", 0);
+                $argv[2] = "none";
+                $argv[3] = self::SCHEDULER;
+                CrawlDaemon::init($argv, "queue_server", 2);
+            }
         } else {
             CrawlDaemon::init($argv, "queue_server");
         }
-
         crawlLog("\n\nInitialize logger..", "queue_server", true);
         $this->server_name = "IndexerAndScheduler";
         if(isset($argv[3]) && $argv[1] == "child" &&
@@ -1245,7 +1252,7 @@ class QueueServer implements CrawlConstants, Join
         $dir_cnt = 0;
         foreach($dirs as $dir) {
             $dir_cnt++;
-            crawlTimeoutLog("..Indexer looking for through directory %s of %s".
+            crawlTimeoutLog("..Indexer looking through directory %s of %s".
                 " to see if orphaned", $dir_cnt, $num_dirs);
             if(strlen(
                 $pre_timestamp = strstr($dir, self::queue_base_name)) > 0) {
@@ -1410,11 +1417,11 @@ class QueueServer implements CrawlConstants, Join
      */
     function processIndexData($blocking)
     {
-        crawlLog("Checking for index data files to process...");
+        crawlLog("Indexer: Checking for index data files to process...");
         $index_dir =  CRAWL_DIR."/schedules/".
             self::index_data_base_name.$this->crawl_time;
         $this->processDataFile($index_dir, "processIndexArchive", $blocking);
-        crawlLog("done index data check and process.");
+        crawlLog("Indexer: done index data check and process.");
     }
     /**
      * Adds the summary and index data in $file to summary bundle and word index
@@ -1442,7 +1449,7 @@ class QueueServer implements CrawlConstants, Join
         crawlLog(
             "{$this->server_name} is starting to process index data,".
             " memory usage: ".memory_get_usage() . "...");
-        crawlLog("Processing index data in $file...");
+        crawlLog("Indexer: Processing index data in $file...");
         $start_time = microtime();
         $start_total_time = microtime();
         $pre_sites = webdecode(file_get_contents($file));
@@ -1587,22 +1594,23 @@ class QueueServer implements CrawlConstants, Join
     function processRobotUrls()
     {
         if(!isset($this->web_queue) ) {return;}
-        crawlLog("Checking age of robot data in queue server ");
+        crawlLog("Scheduler Checking age of robot data in queue server ");
         if($this->web_queue->getRobotTxtAge() > CACHE_ROBOT_TXT_TIME) {
             $this->deleteRobotData();
-            crawlLog("Deleting DNS Cache data..");
-            $this->web_queue->emptyDNSCache();
+            crawlLog("Scheduler: Deleting DNS Cache data..");
+            $message = $this->web_queue->emptyDNSCache();
+            crawlLog("Scheduler: Delete task responded:\n $message");
         } else {
-            crawlLog("... less than max age\n");
-            crawlLog("Number of Crawl-Delayed Hosts: ".floor(count(
+            crawlLog("Scheduler: ... less than max age\n");
+            crawlLog("Scheduler: Number of Crawl-Delayed Hosts: ".floor(count(
                 $this->waiting_hosts)/2));
         }
-        crawlLog("Checking for robots.txt files to process...");
+        crawlLog("Scheduler: Checking for robots.txt files to process...");
         $robot_dir =
             CRAWL_DIR."/schedules/".
                 self::robot_data_base_name.$this->crawl_time;
         $this->processDataFile($robot_dir, "processRobotArchive");
-        crawlLog("done robot check and process. ");
+        crawlLog("Scheduler done robot check and process. ");
     }
     /**
      * Reads in $file of robot data adding host-paths to the disallowed
@@ -1613,12 +1621,17 @@ class QueueServer implements CrawlConstants, Join
      */
     function processRobotArchive($file)
     {
-        crawlLog("Processing Robots data in $file");
+        crawlLog("Scheduler Processing Robots data in $file");
         $start_time = microtime();
-
         $sites = unserialize(gzuncompress(webdecode(file_get_contents($file))));
+        crawlLog("Scheduler done decompressing robot file");
         if(isset($sites)) {
+            $num_sites = count($sites);
+            $i = 0;
             foreach($sites as $robot_host => $robot_info) {
+                crawlTimeoutLog("..Scheduler processing robot item %s of %s.",
+                    $i, $num_sites);
+                $i++;
                 $this->web_queue->addGotRobotTxtFilter($robot_host);
                 $scheme = UrlParser::getScheme($robot_host);
                 if($scheme == "gopher") {
@@ -1627,7 +1640,7 @@ class QueueServer implements CrawlConstants, Join
                     $robot_url = $robot_host."/robots.txt";
                 }
                 if($this->web_queue->containsUrlQueue($robot_url)) {
-                    crawlLog("Removing $robot_url from queue");
+                    crawlLog("Scheduler Removing $robot_url from queue");
                     $this->web_queue->removeQueue($robot_url);
                 }
                 if(isset($robot_info[self::CRAWL_DELAY])) {
@@ -1644,8 +1657,9 @@ class QueueServer implements CrawlConstants, Join
                 }
             }
         }
-        crawlLog(" time: ".(changeInMicrotime($start_time))."\n");
-        crawlLog("Done Robots Processing File: $file");
+        crawlLog("Scheduler Robot time: ".
+            (changeInMicrotime($start_time))."\n");
+        crawlLog("Scheduler Done Robots Processing File: $file");
         unlink($file);
     }
     /**
@@ -1653,12 +1667,12 @@ class QueueServer implements CrawlConstants, Join
      */
     function processEtagExpires()
     {
-        crawlLog("Checking for etag expires http header data");
+        crawlLog("Scheduler Checking for etag expires http header data");
         $etag_expires_dir = CRAWL_DIR."/schedules/".
             self::etag_expires_data_base_name.$this->crawl_time;
         $this->processDataFile($etag_expires_dir,
             "processEtagExpiresArchive");
-        crawlLog("done etag check and process.");
+        crawlLog("Scheduler done etag check and process.");
     }
     /**
      * Processes a cache page validation data file. Extracts key-value pairs
@@ -1669,15 +1683,16 @@ class QueueServer implements CrawlConstants, Join
      */
     function processEtagExpiresArchive($file)
     {
-        crawlLog("Processing etag expires http header data in $file");
+        crawlLog("Scheduler Processing etag expires http header data in $file");
         $start_time = microtime();
         $etag_expires_data =
             unserialize(gzuncompress(webdecode(file_get_contents($file))));
-        crawlLog("Done uncompressing etag data. Starting to add to btree");
+        crawlLog("Scheduler Done uncompressing etag data.".
+            " Starting to add to btree");
         $num_entries = count($etag_expires_data);
         $i = 0;
         foreach($etag_expires_data as $data) {
-            crawlTimeoutLog("..still etag processing on item %s of %s.",
+            crawlTimeoutLog("..Scheduler still etag processing on item %s of %s.",
                 $i, $num_entries);
             $i++;
             $link = $data[0];
@@ -1687,7 +1702,8 @@ class QueueServer implements CrawlConstants, Join
             $this->web_queue->etag_btree->insert($entry);
         }
         crawlLog(" time: ".(changeInMicrotime($start_time))."\n");
-        crawlLog("Done processing etag expires http header data file: $file");
+        crawlLog("Scheduler Done processing etag expires http".
+            " header data file: $file");
         unlink($file);
     }
     /**
@@ -1701,16 +1717,17 @@ class QueueServer implements CrawlConstants, Join
      */
     function deleteRobotData()
     {
-        crawlLog("... unlinking robot schedule files ...");
+        crawlLog("... Scheduler: unlinking robot schedule files ...");
 
         $robot_schedules = CRAWL_DIR.'/schedules/'.
             self::robot_data_base_name.$this->crawl_time;
         $this->db->unlinkRecursive($robot_schedules, true);
 
-        crawlLog("... resetting robot data files ...");
-        $this->web_queue->emptyRobotData();
+        crawlLog("... Scheduler: resetting robot data files ...");
+        $message = $this->web_queue->emptyRobotData();
+        crawlLog("... Scheduler: resetting robot task answered:\n$message\n");
 
-        crawlLog("...Clearing Waiting Hosts");
+        crawlLog("...Scheduler: Clearing Waiting Hosts");
         $this->waiting_hosts = array();
     }
     /**
@@ -1722,13 +1739,13 @@ class QueueServer implements CrawlConstants, Join
      */
     function processQueueUrls()
     {
-        crawlLog("Start checking for new URLs data memory usage: ".
+        crawlLog("Scheduler Start checking for new URLs data memory usage: ".
             memory_get_usage());
         $info = array();
         $info[self::STATUS] = self::CONTINUE_STATE;
         if(file_exists(CRAWL_DIR."/schedules/".self::schedule_start_name)) {
             crawlLog(
-                "Start schedule urls".CRAWL_DIR.
+                "Scheduler Start schedule urls".CRAWL_DIR.
                     "/schedules/".self::schedule_start_name);
             $this->processDataArchive(
                 CRAWL_DIR."/schedules/".self::schedule_start_name);
@@ -1751,7 +1768,7 @@ class QueueServer implements CrawlConstants, Join
     function processDataArchive($file)
     {
         $sites = & $this->getDataArchiveFileData($file);
-        crawlLog("...Updating Delayed Hosts Array Queue ...");
+        crawlLog("...Scheduler Updating Delayed Hosts Array Queue ...");
         $start_time = microtime();
         if(isset($sites[self::SCHEDULE_TIME])) {
             if(isset($this->waiting_hosts[$sites[self::SCHEDULE_TIME]])) {
@@ -1762,7 +1779,7 @@ class QueueServer implements CrawlConstants, Join
                     unset($this->waiting_hosts[$hash_host]);
                         //allows crawl-delayed host to be scheduled again
                 }
-                crawlLog("Done removing host delayed for schedule ".
+                crawlLog("Scheduler Done removing host delayed for schedule ".
                     $sites[self::SCHEDULE_TIME]);
                 $now = time(); /* no schedule should take more than one hour
                     on the other hand schedule data might be waiting for days
@@ -1791,7 +1808,8 @@ class QueueServer implements CrawlConstants, Join
             $cnt = 0;
             foreach($sites[self::HASH_SEEN_URLS] as $hash_url) {
                 if($this->web_queue->lookupHashTable($hash_url)) {
-                    crawlLog("Removing hash ". base64_encode($hash_url).
+                    crawlLog("Scheduler: Removing hash ".
+                        base64_encode($hash_url).
                         " from Queue");
                     $this->web_queue->removeQueue($hash_url, true);
                 }
@@ -1801,11 +1819,12 @@ class QueueServer implements CrawlConstants, Join
         crawlLog("... Scheduler Queueing To Crawl ...");
         $start_time = microtime();
         if(isset($sites[self::TO_CRAWL])) {
-            crawlLog("A.. Queue delete previously seen urls from add set");
+            crawlLog("A.. Scheduler: Queue delete previously  ".
+                "seen urls from add set");
             $to_crawl_sites = & $sites[self::TO_CRAWL];
             $this->deleteSeenUrls($to_crawl_sites);
             crawlLog(" time: ".(changeInMicrotime($start_time)));
-            crawlLog("B.. Queue insert unseen robots.txt urls;".
+            crawlLog("B.. Scheduler: Queue insert unseen robots.txt urls;".
                 "adjust changed weights");
             $start_time = microtime();
             $cnt = 0;
@@ -1818,15 +1837,15 @@ class QueueServer implements CrawlConstants, Join
             if($this->page_recrawl_frequency > 0 &&
                 $this->web_queue->getUrlFilterAge() >
                 ONE_DAY * $this->page_recrawl_frequency) {
-                crawlLog("Emptying queue page url filter!!!!!!");
+                crawlLog("Scheduler: Emptying queue page url filter!!!!!!");
                 $this->web_queue->emptyUrlFilter();
             }
             $this->allow_disallow_cache_time = microtime();
             foreach($to_crawl_sites as $triple) {
                 $url = & $triple[0];
                 $cnt++;
-                crawlTimeoutLog("..Processing url %s of %s ", $cnt, $num_triples
-                   );
+                crawlTimeoutLog("..Scheduler: Processing url %s of %s ",
+                    $cnt, $num_triples);
                 if(strlen($url) < 7) { // strlen("http://")
                     continue;
                 }
@@ -1874,7 +1893,7 @@ class QueueServer implements CrawlConstants, Join
 
             crawlLog(" time: ".(changeInMicrotime($start_time)));
 
-            crawlLog("C.. Add urls to queue");
+            crawlLog("C.. Scheduler: Add urls to queue");
             $start_time = microtime();
             /*
                  adding urls to queue involves disk contains and adjust do not
@@ -1882,8 +1901,8 @@ class QueueServer implements CrawlConstants, Join
              */
             $this->web_queue->addUrlsQueue($added_pairs);
         }
-        crawlLog(" time: ".(changeInMicrotime($start_time)));
-        crawlLog("Done queue schedule file: $file");
+        crawlLog("Scheduler: time: ".(changeInMicrotime($start_time)));
+        crawlLog("Scheduler: Done queue schedule file: $file");
         unlink($file);
     }
     /**
@@ -2004,7 +2023,8 @@ class QueueServer implements CrawlConstants, Join
     {
         $i = 1; // array implementation of priority queue starts at 1 not 0
         $fetch_size = 0;
-        crawlLog("Start Produce Fetch Batch Memory usage".memory_get_usage() );
+        crawlLog("Scheduler: Start Produce Fetch Batch Memory usage".
+            memory_get_usage() );
         $count = $this->web_queue->to_crawl_queue->count;
         $schedule_time = time();
         $first_line = $this->calculateScheduleMetaInfo($schedule_time);
@@ -2014,7 +2034,7 @@ class QueueServer implements CrawlConstants, Join
         $time_per_request_guess = MINIMUM_FETCH_LOOP_TIME ;
             // it would be impressive if we can achieve this speed
         $current_crawl_index = -1;
-        crawlLog("Trying to Produce Fetch Batch; Queue Size $count");
+        crawlLog("Scheduler: Trying to Produce Fetch Batch; Queue Size $count");
         $start_time = microtime();
         $fh = $this->web_queue->openUrlArchive();
         /*
@@ -2025,15 +2045,16 @@ class QueueServer implements CrawlConstants, Join
                 number of slots
         */
         while ($i <= $count && $fetch_size < MAX_FETCH_SIZE) {
-            crawlTimeoutLog("..still producing fetch batch. Examining ".
-                "location %s in queue of %s.", $i, $count);
+            crawlTimeoutLog("..Scheduler: still producing fetch batch. ".
+                "Examining location %s in queue of %s.", $i, $count);
             //look in queue for url and its weight
             $tmp = $this->web_queue->peekQueue($i, $fh);
             list($url, $weight, $flag, $probe) = $tmp;
             // if queue error remove entry any loop
             if($tmp === false || strcmp($url, "LOOKUP ERROR") == 0) {
                 $delete_urls[$i] = false;
-                crawlLog("Removing lookup error at $i during produce fetch");
+                crawlLog("Scheduler: Removing lookup error at".
+                    " $i during produce fetch");
                 $i++;
                 continue;
             }
@@ -2051,10 +2072,10 @@ class QueueServer implements CrawlConstants, Join
                         $this->web_queue->containsGotRobotTxt($host_url);
                     $scheme = UrlParser::getScheme($host_url);
                     if($scheme == "gopher") {
-                        $is_robot = 
+                        $is_robot =
                             (strcmp($host_url."/0/robots.txt", $url) == 0);
                     } else {
-                        $is_robot = 
+                        $is_robot =
                             (strcmp($host_url."/robots.txt", $url) == 0);
                     }
                 }
@@ -2196,8 +2217,8 @@ class QueueServer implements CrawlConstants, Join
         } //end while
         $this->web_queue->closeUrlArchive($fh);
         $new_time = microtime();
-        crawlLog("...Done selecting URLS for fetch batch time so far:".
-            (changeInMicrotime($start_time)));
+        crawlLog("...Scheduler: Done selecting URLS for fetch batch time ".
+            "so far:". (changeInMicrotime($start_time)));
         $num_deletes = count($delete_urls);
         $k = 0;
         foreach($delete_urls as $delete_url) {
@@ -2212,8 +2233,8 @@ class QueueServer implements CrawlConstants, Join
                 $this->web_queue->to_crawl_queue->poll($k);
             }
         }
-        crawlLog("...Removed $k URLS for fetch batch from queue in time: ".
-            (changeInMicrotime($new_time)));
+        crawlLog("...Scheduler: Removed $k URLS for fetch batch from ".
+            "queue in time: ".(changeInMicrotime($new_time)));
         $new_time = microtime();
         if(isset($sites) && count($sites) > 0 ) {
             $dummy_slot = array(self::DUMMY, 0.0, 0);
@@ -2240,7 +2261,7 @@ class QueueServer implements CrawlConstants, Join
             $num_sites = count($sites);
             $k = 0;
             foreach($sites as $site) {
-                crawlTimeoutLog("..Still Writing fetch schedule %s".
+                crawlTimeoutLog("..Scheduler: Still Writing fetch schedule %s".
                     " of %s.", $k, $num_sites);
                 $k++;
                 $extracted_etag = NULL;
@@ -2295,17 +2316,17 @@ class QueueServer implements CrawlConstants, Join
                 fwrite($fh, $out_string);
             }
             fclose($fh);
-            crawlLog("...Sort URLS and write schedule time: ".
+            crawlLog("...Scheduler: Sort URLS and write schedule time: ".
                 (changeInMicrotime($new_time)));
-            crawlLog("End Produce Fetch Batch Memory usage".
+            crawlLog("Scheduler: End Produce Fetch Batch Memory usage".
                 memory_get_usage() );
-            crawlLog("Created fetch batch of size $num_sites.".
+            crawlLog("Scheduler: Created fetch batch of size $num_sites.".
                 " $num_deletes urls were deleted.".
                 " Queue size is now ". $this->web_queue->to_crawl_queue->count.
                 "...Total Time to create batch: ".
                 (changeInMicrotime($start_time)));
         } else {
-            crawlLog("No fetch batch created!! " .
+            crawlLog("Scheduler: No fetch batch created!! " .
                 "Time failing to make a fetch batch:" .
                 (changeInMicrotime($start_time)).". Loop properties:$i $count".
                 " $num_deletes urls were deleted in failed attempt.");
@@ -2313,10 +2334,10 @@ class QueueServer implements CrawlConstants, Join
             if($num_deletes < 5 && $i >= $count &&
                     $count >= NUM_URLS_QUEUE_RAM -
                     SEEN_URLS_BEFORE_UPDATE_SCHEDULER * $max_links) {
-                crawlLog("Queue Full and Couldn't produce Fetch Batch!! ".
-                    "Or Delete any URLS!!!");
-                crawlLog("Rescheduling Queue Contents (not marking seen) ".
-                    "to try to unjam!");
+                crawlLog("Scheduler: Queue Full and Couldn't produce Fetch ".
+                    "Batch!! Or Delete any URLS!!!");
+                crawlLog("Scheduler: Rescheduling Queue Contents ".
+                    "(not marking seen) to try to unjam!");
                 $this->dumpQueueToSchedules(true);
                 $this->clearWebQueue();
             }
@@ -2350,14 +2371,16 @@ class QueueServer implements CrawlConstants, Join
     function cullNoncrawlableSites()
     {
         $count = $this->web_queue->to_crawl_queue->count;
-        crawlLog("Culling noncrawlable urls after change in crawl parameters;".
+        crawlLog("Scheduler: ".
+            " Culling noncrawlable urls after change in crawl parameters;".
             " Queue Size $count");
         $start_time = microtime();
         $fh = $this->web_queue->openUrlArchive();
         $delete_urls = array();
         $i = 1;
         while($i < $count) {
-            crawlTimeoutLog("..still culling noncrawlable urls. Examining ".
+            crawlTimeoutLog("..Scheduler: ".
+                "still culling noncrawlable urls. Examining ".
                 "location %s in queue of %s.", $i, $count);
             $tmp = $this->web_queue->peekQueue($i, $fh);
             list($url, $weight, $flag, $probe) = $tmp;
@@ -2369,7 +2392,7 @@ class QueueServer implements CrawlConstants, Join
         }
         $this->web_queue->closeUrlArchive($fh);
         $new_time = microtime();
-        crawlLog("...Done selecting cullable URLS, time so far:".
+        crawlLog("...Scheduler: Done selecting cullable URLS, time so far:".
             (changeInMicrotime($start_time)));
         $this->web_queue->closeUrlArchive($fh);
         $new_time = microtime();
@@ -2377,7 +2400,7 @@ class QueueServer implements CrawlConstants, Join
         $k = 0;
         foreach($delete_urls as $delete_url) {
             $k++;
-            crawlTimeoutLog("..Removing selected url %s of %s ".
+            crawlTimeoutLog("..Scheduler: Removing selected url %s of %s ".
                 "from queue.", $k, $num_deletes);
             if($delete_url) {
                 $this->web_queue->removeQueue($delete_url);
@@ -2387,7 +2410,7 @@ class QueueServer implements CrawlConstants, Join
                 $this->web_queue->to_crawl_queue->poll($k);
             }
         }
-        crawlLog("...Removed $k cullable URLS  from queue in time: ".
+        crawlLog("...Scheduler: Removed $k cullable URLS  from queue in time: ".
             (changeInMicrotime($new_time)));
     }
     /**
