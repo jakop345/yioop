@@ -229,11 +229,11 @@ function toggleHelp(id, isMobile, target_c)
         } else if (obj.style.display === "block") {
             help_node.style.top = current_activity_top
                     + height_after_toggle + "px";
-            //The div.clientHeight doesnt include the height
-            //of the images inside the div before the images are completely
-            //loaded. So we iterate through the 
-            //image elements, as each image loads add the image
-            //height to the top of the current_activity div dynamically.
+            /* The div.clientHeight doesnt include the height
+            of the images inside the div before the images are completely
+            loaded. So we iterate through the 
+            image elements, as each image loads add the image
+            height to the top of the current_activity div dynamically. */
             for (var i = 0; i < images.length; i++) {
                 var image = images[i];
                 image.onload = function(){
@@ -268,9 +268,9 @@ function parseWikiContent(wiki_text, group_id, page_id)
 {
     var html = wiki_text;
     
-    //note that line breaks from a text area are sent
-    //as \r\n , so make sure we clean them up to replace
-    //all \r\n with \n
+    /* note that line breaks from a text area are sent
+    as \r\n , so make sure we clean them up to replace
+    all \r\n with \n */
     html = html.replace(/\r\n/g, "\n");
 
     html = parseLists(html);
@@ -289,10 +289,6 @@ function parseWikiContent(wiki_text, group_id, page_id)
         return '<a href="' + link + '">'
         + (p.length ? p.join(' ') : link) + '</a>';
     });
-
-    // Basic MediaWiki Syntax.
-    // Replace newlines with <br />
-    //html = html.replace(/\n/gi, "<br />");
 
     //Regex replace for headings
     html = html.replace(/(?:^|\n)([=]+)(.*)\1/g,
@@ -379,6 +375,7 @@ function parseLists(str)
  */
 var get = function (url, response_type, success_call_back, error_handler)
 {
+    alert(url);
     var request = makeRequest();
     request.open('GET', url, true);
     request.responseType = response_type;
@@ -401,7 +398,8 @@ var get = function (url, response_type, success_call_back, error_handler)
  * @param {String} is_mobile flag to check if the client is mobile
  * or not.
  */
-function displayHelpForId(help_point,is_mobile,target_c,csrf_token)
+function displayHelpForId(help_point,
+                is_mobile,target_c,csrf_token_key,csrf_token_value)
 {
     var help_group_id = 7;
     var c = 'api';
@@ -415,7 +413,7 @@ function displayHelpForId(help_point,is_mobile,target_c,csrf_token)
     get("?c=" + c + "&group_id=" + help_group_id + "&" +
             "arg=" + arg + "&" +
             "a=" + a + "&" +
-            "YIOOP_TOKEN=" + csrf_token + "&" +
+            csrf_token_key +'=' + csrf_token_value + "&" +
             "page_name=" + help_point.getAttribute("data-pagename"),
             'json',
             function (data) {
@@ -427,7 +425,8 @@ function displayHelpForId(help_point,is_mobile,target_c,csrf_token)
                 elt('page_name').innerHTML = data.page_name + ' <a href="'+
                         getEditLink(
                         target_c, 
-                        csrf_token,
+                        csrf_token_key,
+                        csrf_token_value,
                         help_group_id,
                         data.page_name) +'">'+
                         '[Edit]</a>' ;
@@ -448,10 +447,11 @@ function displayHelpForId(help_point,is_mobile,target_c,csrf_token)
  * @param {type} page_name
  * @returns {String}
  */
-function getEditLink(target_c, csrf_token, group_id, page_name)
+function getEditLink(target_c, 
+                csrf_token_key, csrf_token_value, group_id, page_name)
 {
     return '?c=' + target_c +
-            '&YIOOP_TOKEN=' + csrf_token +
+            '&'+ csrf_token_key +'=' + csrf_token_value +
             '&group_id=' + group_id +
             '&arg=edit' +
             '&a=wiki' +
