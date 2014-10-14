@@ -360,10 +360,10 @@ function addDocIndexPostings(&$postings, $add_offset)
     $postings_len = strlen($postings);
     while($offset < $postings_len) {
         $post_string = nextPostString($postings, $offset);
-        if(!$post_string) {continue; }
+        if(!$post_string || !($tmp = unpack("N*", $post_string))) {continue; }
         $posting_list = call_user_func_array( "array_merge",
-            array_map("unpackListModified9", unpack("N*", $post_string)));
-        if($posting_list === false) { continue; }
+            array_map("unpackListModified9", $tmp));
+        if(!is_array($posting_list)) { continue; }
         $doc_index = array_shift($posting_list);
         if(($doc_index & (2 << 26)) > 0) {
             $post0 = ($doc_index & ((2 << 9) - 1));

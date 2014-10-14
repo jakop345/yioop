@@ -52,9 +52,8 @@ class UrlParser
     static function isSchemeCrawlable($url)
     {
         $url_parts = @parse_url($url);
-        $scheme = (isset($url_parts['scheme'])) ? $url_parts['scheme'] :
-            "no_crawl";
-        if(!in_array($scheme, array('http', 'https', 'gopher'))) {
+         if(isset($url_parts['scheme']) && $url_parts['scheme'] != "http" &&
+             $url_parts['scheme'] != "https") {
             return false;
         }
         return true;
@@ -122,9 +121,9 @@ class UrlParser
      */
     static function getScheme($url)
     {
-        $url_parts = @parse_url($url);
-        if(isset($url_parts['scheme'])) {
-            return $url_parts['scheme'];
+        $scheme = substr($url, 0, strpos($url, ":"));
+        if($scheme) {
+            return $scheme;
         }
         return "http";
     }

@@ -166,7 +166,7 @@ class CrawlDaemon implements CrawlConstants
                 $subname = (!isset($argv[2]) || $argv[2] == 'none') ?
                     'none' :self::$subname;
                 $name_prefix = (isset($argv[3])) ? $argv[3] : self::$subname;
-                $name_string = CrawlDaemon::getNameString($name,$name_prefix);
+                $name_string = CrawlDaemon::getNameString($name, $name_prefix);
                 echo "Starting $name_string...\n";
                 CrawlDaemon::start($name, $subname, $options, $exit_type);
             break;
@@ -215,7 +215,7 @@ class CrawlDaemon implements CrawlConstants
         $tmp_subname = ($subname == 'none') ? '' : $subname;
         $lock_file = CrawlDaemon::getLockFileName($name, $tmp_subname);
 
-        if(file_exists($lock_file)) {
+        if(file_exists($lock_file) && $exit < 3) {
             $time = intval(file_get_contents($lock_file));
             if(time() - $time < PROCESS_TIMEOUT) {
                 echo "$name appears to be already running...\n";

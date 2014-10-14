@@ -223,5 +223,24 @@ class UrlParserTest extends UnitTest
             $this->assertEqual($result, $test_url[1], $test_url[2]);
         }
     }
+    /**
+     * Checks if getScheme is working okay
+     */
+    function getSchemeTestCase()
+    {
+        $test_links = array(
+            array("http://www.example.com/",
+                "http", "Simple HTTP 1"),
+            array("https://www.example.com/",
+                "https", "Simple HTTPS 1"),
+            array("gopher://www.example.com/",
+                "gopher", "Simple GOPHER 1"),
+            array("./", "http", "Simple HTTP 2"),
+        );
+        foreach($test_links as $test_link) {
+            $result = UrlParser::getScheme($test_link[0]);
+            $this->assertEqual($result, $test_link[1], $test_link[2]);
+        }
+    }
 }
 ?>

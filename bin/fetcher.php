@@ -932,7 +932,7 @@ class Fetcher implements CrawlConstants
             }
         }
         $check_cull_fields = array(
-            self::RESTRICT_SITES_BY_URL => "restrict_sites_by_url", 
+            self::RESTRICT_SITES_BY_URL => "restrict_sites_by_url",
             self::ALLOWED_SITES => "allowed_sites",
             self::DISALLOWED_SITES => "disallowed_sites");
         $cull_now_non_crawlable = false;
