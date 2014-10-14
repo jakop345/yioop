@@ -77,13 +77,14 @@ abstract class Element
      * @param  $target_c - target controller to remember the view.
      * @return String button html.
      */
-    public function renderHelpButton($help_point_id, $csrf_token, $target_c) {
+    public function renderHelpButton($help_point_id, 
+            $csrf_token_value, $target_c) {
         $is_mobile = MOBILE ? "true" : "false";
         return '<button type="button" 
                     href="" 
                     onclick="javascript:displayHelpForId(this,'
-                . $is_mobile . ',\'' . $target_c . '\',\'' 
-                . $csrf_token . '\')" '
+                . $is_mobile . ',\'' . $target_c . '\',\''. CSRF_TOKEN .'\',\'' 
+                . $csrf_token_value . '\')" '
                 . 'data-pagename="' . $help_point_id . '">?</button>';
     }
 
