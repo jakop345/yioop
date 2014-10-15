@@ -73,7 +73,7 @@ abstract class Element
      * given a help point  csrf token and target controller name.
      * 
      * @param  $help_point_id - used to set as help button id
-     * @param  $csrf_token - csrf token to make api call/open edit link
+     * @param  $csrf_token_value - csrf token to make api call/open edit link
      * @param  $target_c - target controller to remember the view.
      * @return String button html.
      */
