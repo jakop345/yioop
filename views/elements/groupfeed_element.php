@@ -101,7 +101,7 @@ class GroupfeedElement extends Element implements CrawlConstants
                 }?> >
         <?php
         }
-        if($data['SUBTITLE'] != "" && $logged_in) { ?>
+        if(isset($data['SUBTITLE']) && $data['SUBTITLE'] != "" && $logged_in) { ?>
             <div class="float-opposite">
             <?php
             if(isset($data["WIKI_PAGE_NAME"])) { ?>
@@ -119,7 +119,7 @@ class GroupfeedElement extends Element implements CrawlConstants
         if($is_admin) {
             ?>
             <h2><?php
-            if($data['SUBTITLE'] == "") {
+            if(!isset($data['SUBTITLE']) || $data['SUBTITLE'] == "") {
                 e(tl('groupfeed_element_recent_activity'));
             } else {
                 if(isset($data['JUST_THREAD'])) {
@@ -152,18 +152,19 @@ class GroupfeedElement extends Element implements CrawlConstants
                     e(tl('groupfeed_element_user',
                         $data['PAGES'][0]["USER_NAME"]));
                 } else {
-                    e("[{$data['SUBTITLE']}]");
+                    if(isset($data['SUBTITLE'])) e("[{$data['SUBTITLE']}]");
                 }
             }
             ?>
-            </h2>
             <?php
             if(!isset($data['JUST_GROUP_ID'])){
-            e("<a href=\"" . $paging_query . "\">[U]</a>" . "  |  " );
-            e("<a href=\"" . $paging_query . "&amp;v=grouped\">[G]</a>". " " );
+            e("<a href=\"" . $paging_query . "\">"
+                    . "<img src=\"resources/list.png\" /></a>" . "  " );
+            e("<a href=\"" . $paging_query . "&amp;v=grouped\">"
+                    . "<img src=\"resources/grouped.png\" /></a>". " " );
             }
         }
-        ?>
+        ?></h2>
         <div>
         &nbsp;
         </div>
@@ -637,4 +638,4 @@ class GroupfeedElement extends Element implements CrawlConstants
         <?php
     }
 }
- ?>
+?>
