@@ -93,6 +93,7 @@ class ManagegroupsElement extends Element
         <?php
             $group_url = "?c=admin&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN];
             $base_url = $group_url . "&amp;a=manageGroups";
+            $wiki_url = $group_url . "&amp;a=wiki&amp;group_id=";
             $group_url .= "&amp;a=groupFeeds&amp;just_group_id=";
             if(isset($data['browse'])) {
                 $base_url .= "&amp;browse=".$data['browse'];
@@ -199,7 +200,15 @@ class ManagegroupsElement extends Element
                         ($group['MEMBER_ACCESS'] != GROUP_PRIVATE ||
                         $group["OWNER_ID"] == $_SESSION['USER_ID'])) {
                         e("<td><a href='".$group_url.$group['GROUP_ID']."' >".
-                            $group_column."</a></td>");
+                            $group_column."</a>".
+                                " <a href=\""
+                                . $wiki_url. $group['GROUP_ID']
+                                ."\">"
+                                ."["
+                                . (tl('manageaccount_element_group_wiki'))
+                                ."]"
+                                . "</a>"
+                                ."</td>");
                     } else {
                         e("<td>$group_column</td>");
                     }
@@ -317,7 +326,11 @@ class ManagegroupsElement extends Element
                 ?> /></td><?php
                 if($addgroup) { ?>
                     <td>[<a href="<?php e($browse_url); ?>"><?php 
-                        e(tl('managegroups_element_browse')); ?></a>]</td>
+                        e(tl('managegroups_element_browse')); ?></a>]
+                    <?php
+                    e($this->renderHelpButton("browse_url", $data[CSRF_TOKEN],
+                            $_REQUEST['c']));
+                    ?></td>
                 <?php
                 }
         ?></tr>
@@ -385,11 +398,11 @@ class ManagegroupsElement extends Element
                         if($data['CURRENT_GROUP']['owner'] ==
                             $user_array['USER_NAME']) {
                             e("<td>".
-                                $data['MEMBERSHIP_CODES'][$user_array['STATUS']] .
+                            $data['MEMBERSHIP_CODES'][$user_array['STATUS']] .
                                 "</td>");
                             e("<td>" . tl('managegroups_element_groupowner') .
                                 "</td><td><span class='gray'>".
-                                tl('managegroups_element_delete')."</span></td>");
+                            tl('managegroups_element_delete')."</span></td>");
                         } else {
                             e("<td>".$data['MEMBERSHIP_CODES'][
                                 $user_array['STATUS']]);

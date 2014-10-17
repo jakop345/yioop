@@ -718,6 +718,59 @@ class SocialComponent extends Component implements CrawlConstants
         }
         $possible_arguments = array("addcomment", "deletepost", "addgroup",
             "newthread", "updatepost", "status", "upvote", "downvote");
+        if (isset($_REQUEST['v']) && $_REQUEST['v'] == 'grouped') {
+            $data['MODE'] = 'grouped';
+            if(isset($_REQUEST['just_group_id'])){
+            $data['JUST_GROUP_ID'] = $_REQUEST['just_group_id'];
+            }
+            if (isset($_REQUEST['limit'])) {
+                $limit = $parent->clean($_REQUEST['limit'], "int");
+            } else {
+                $limit = 0;
+            }
+            //$data['NUM_SHOWN'] = (isset($_REQUEST['limit'])
+            //      && $_REQUEST['limit'] > 0 ) ? $_REQUEST['limit'] : 5;
+            $data['GROUPS'] = $group_model->getRows($limit, $results_per_page,
+                    $data['NUM_GROUPS'], array(), array($user_id, false));
+            $num_shown = count($data['GROUPS']);
+            for ($i = 0; $i < $num_shown; $i++) {
+                $search_array = array(array("group_id", "=",
+                        $data['GROUPS'][$i]['GROUP_ID'], ""),
+                    array("pub_date", "", "", "DESC"));
+                $item = $group_model->getGroupItems(
+                        0,
+                        1,
+                        $search_array,
+                        $user_id);
+                $data['GROUPS'][$i]['NUM_POSTS'] =
+                        $group_model->getGroupItemCount(
+                                $search_array, $user_id);
+                $data['GROUPS'][$i]['NUM_THREADS'] =
+                        $group_model->getGroupItemCount(
+                                $search_array,
+                                $user_id,
+                                $data['GROUPS'][$i]['GROUP_ID']
+                                );
+                $data['GROUPS'][$i]['NUM_PAGES'] =
+                        $group_model->getGroupPageCount(
+                        $data['GROUPS'][$i]['GROUP_ID']);
+                if (isset($item[0]['TITLE'])) {
+                    $data['GROUPS'][$i]["ITEM_TITLE"] = $item[0]['TITLE'];
+                    $data['GROUPS'][$i]["THREAD_ID"] = $item[0]['PARENT_ID'];
+                } else {
+                    $data['GROUPS'][$i]["ITEM_TITLE"] =
+                            tl('accountaccess_component_no_posts_yet');
+                    $data['GROUPS'][$i]["THREAD_ID"] = -1;
+                }
+            }
+            $data['NUM_SHOWN'] = $num_shown;
+            $data['LIMIT'] = $limit;
+            $data['RESULTS_PER_PAGE'] = $results_per_page;
+            $data['PAGING_QUERY'] = "./?c=$controller_name&amp;a=groupFeeds";
+            $data['OTHER_PAGING_QUERY'] =
+            "./?c=$other_controller_name&amp;a=groupFeeds";
+            return $data;
+        }
         if(isset($_REQUEST['arg']) &&
             in_array($_REQUEST['arg'], $possible_arguments)) {
             switch($_REQUEST['arg'])
@@ -1245,11 +1298,21 @@ EOD;
         }
         $group = $group_model->getGroupById($group_id, $user_id);
         $data["CAN_EDIT"] = false;
-        $data["MODE"] = "read";
+        if((isset($_REQUEST['c'])) && $_REQUEST['c'] == "api"){
+            $data['MODE'] = 'api';
+            $data['VIEW'] = 'api';
+        }else {
+            $data["MODE"] = "read";
+        }
         if(!$group) {
+            if($data['MODE'] !== 'api'){
             $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                 tl("group_controller_no_group_access").
                 "</h1>');";
+            }else{
+                $data['errors'] =  array();
+                $data['errors'][] = tl("group_controller_no_group_access");
+            }
             $group_id = PUBLIC_GROUP_ID;
             $group = $group_model->getGroupById($group_id, $user_id);
         } else {
@@ -1292,7 +1355,8 @@ EOD;
                 case "edit":
                     if(!$data["CAN_EDIT"]) { continue; }
                     if(isset($_REQUEST['caret']) &&
-                       isset($_REQUEST['scroll_top'])) {
+                       isset($_REQUEST['scroll_top'])
+                            && !isset($page)) {
                         $caret = $parent->clean($_REQUEST['caret'],
                             'int');
                         $scroll_top= $parent->clean($_REQUEST['scroll_top'],
@@ -1304,7 +1368,11 @@ EOD;
                             "} ".
                             "wiki.scrollTop = $scroll_top;";
                     }
-                    $data["MODE"] = "edit";
+                    if(isset($page)){
+                        $data["MODE"] = "read";
+                    }else{
+                        $data["MODE"] = "edit";
+                    }
                     $page_info = $group_model->getPageInfoByName($group_id,
                         $page_name, $locale_tag, 'resources');
                     /* if page not yet created than $page_info will be null
@@ -1609,7 +1677,7 @@ EOD;
             $page_name = tl('group_controller_main');
         }
         $data["GROUP"] = $group;
-        if(in_array($data["MODE"], array("read", "edit", "media"))) {
+        if(in_array($data["MODE"], array("read", "edit", "media","api"))) {
             if(!isset($data["PAGE"]) || !$data['PAGE']) {
                 $data["PAGE_NAME"] = $page_name;
                 if(isset($search_page_info) && $search_page_info) {

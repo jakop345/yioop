@@ -75,6 +75,7 @@ class AdminView extends View
         if(!MOBILE) {e(' ['.$data['CURRENT_ACTIVITY'].']');}?></span></h1>
         <?php
         $this->element("activity")->render($data);
+        $this->element("help")->render($data);
         if(isset($data['ELEMENT'])) {
             $element = $data['ELEMENT'];
             $this->element($element)->render($data);

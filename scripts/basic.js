@@ -180,3 +180,303 @@ function toggleDisplay(id)
     }
     obj.style.display = value;
 }
+
+current_activity_closed = true;
+current_activity_top = 0;
+/*
+ * Toggles Help element from display:none and display block.
+ * Also changes the width of the Current activity accordingly.
+ * @param {String} help element's id to toggle.
+ * @param {String} isMobile flag true/false.
+ */
+function toggleHelp(id, isMobile, target_c)
+{
+    var activity = (target_c === "admin") ? 'current-activity'
+    : 'small-margin-current-activity';
+    var images = document.querySelectorAll(".wiki-resource-image");
+    var all_help_elements =
+            document.getElementsByClassName(activity);
+    var help_node = all_help_elements[0];
+    if (current_activity_closed === true) {
+        current_activity_top = getCssProperty(help_node, 'top');
+    }
+    obj = elt(id);
+
+    if (isMobile === false) {
+        toggleDisplay(id);
+        var new_width;
+        var decrease_width_by = Math.floor(getCssProperty(obj, 'width') / 3);
+        //Calculate pixel to inch. clientWidth only returns in pixels.
+        if (obj.style.display === "none") {
+            new_width = Math.floor(getCssProperty(help_node, 'width'))
+                    + decrease_width_by;
+        } else if (obj.style.display === "block") {
+            new_width = Math.floor(getCssProperty(help_node, 'width'))
+                    - decrease_width_by;
+        }
+
+        if (new_width !== undefined) {
+            help_node.style.maxWidth = new_width + "px";
+        }
+    } else {
+        toggleDisplay(id);
+        var height_after_toggle = (obj.clientHeight);
+        //Calculate pixel to inch. clientWidth only returns in pixels.
+        if (obj.style.display === "none") {
+            //on closing, restore top
+            help_node.style.top = current_activity_top + "px";
+            current_activity_closed = true;
+        } else if (obj.style.display === "block") {
+            help_node.style.top = current_activity_top
+                    + height_after_toggle + "px";
+            /* The div.clientHeight doesnt include the height
+            of the images inside the div before the images are completely
+            loaded. So we iterate through the
+            image elements, as each image loads add the image
+            height to the top of the current_activity div dynamically. */
+            for (var i = 0; i < images.length; i++) {
+                var image = images[i];
+                image.onload = function(){
+                    help_node.style.top =  getCssProperty(help_node, 'top')
+                            + this.height + 'px';
+                };
+            }
+            current_activity_closed = false;
+        }
+    }
+}
+
+/*
+ * gets the Css property given an element and property name.
+ * @param {Element} elm to get the Css property for
+ * @param {String} Css property name.
+ */
+function getCssProperty(elm, property)
+{
+    //always returns in px
+    return parseInt(window.getComputedStyle(elm, null)
+        .getPropertyValue(property));
+}
+
+/**
+ * This is a JS function to convert yioop wiki markup to
+ * html.
+ * @param {String} wiki_text tobe parsed as HTML
+ * @returns {String} parsed html
+ */
+function parseWikiContent(wiki_text, group_id, page_id)
+{
+    var html = wiki_text;
+
+    /* note that line breaks from a text area are sent
+    as \r\n , so make sure we clean them up to replace
+    all \r\n with \n */
+    html = html.replace(/\r\n/g, "\n");
+
+    html = parseLists(html);
+
+    //Regex replace normal links
+    html = html.replace(/[^\[](http[^\[\s]*)/g, function (m, l) {
+    // normal link
+        return '<a href="' + l + '">' + l + '</a>';
+    });
+
+    //Regex replace for external links
+    html = html.replace(/[\[](http.*)[!\]]/g, function (m, l) {
+    // external link
+        var p = l.replace(/[\[\]]/g, '').split(/ /);
+        var link = p.shift();
+        return '<a href="' + link + '">'
+        + (p.length ? p.join(' ') : link) + '</a>';
+    });
+
+    //Regex replace for headings
+    html = html.replace(/(?:^|\n)([=]+)(.*)\1/g,
+            function (match, contents, t) {
+                return '<h'
+                        + contents.length + '>'
+                        + t
+                        + '</h'
+                        + contents.length
+                        + '>';
+            });
+
+    //Regex replace for Bold characters
+    html = html.replace(/'''(.*?)'''/g, function (match, contents) {
+        return '<b>' + contents + '</b>';
+    });
+
+    //Regex replace for Italic characters
+    html = html.replace(/''(.*?)''/g, function (match, contents) {
+        return '<i>' + contents + '</i>';
+    });
+
+    //Regex for resource extraction.
+    html = html.replace(/{{resource:(.+?)\|(.+?)}}/g,
+            function (match, contents, desc) {
+                return '<img src="' + "?c=resource&a=get&f=resources&g="
+                + group_id
+                + "&p=" + page_id
+                + "&n=" + contents + '" alt="' + desc
+                + '" class="wiki-resource-image"/>';
+            });
+
+    //Regex replace for HR
+    html = html.replace(/----(.*?)/g, function (match, contents) {
+        return '<hr>' + contents + '</hr>';
+    });
+
+    //replace nowiki with pre tags
+    html = html.replace(/<nowiki>(.*?)<\/nowiki>/g, function(match, contents) {
+        return '<pre>' + contents + '</pre>';
+    });
+
+    //Regex replace for blocks
+    html = html.replace(/(?:^|\n+)([^# =\*<].+)(?:\n+|$)/gm,
+            function (match, contents) {
+                if (contents.match(/^\^+$/))
+                    return contents;
+                return "\n<div>" + contents + "</div>\n";
+            });
+
+    return html;
+}
+
+/**
+ * Lists need to be recursively parsed. So the below function is used
+ * to recursively convert wiki markup to html.
+ * @param {String} str
+ * @returns {String}
+ */
+function parseLists(str)
+{
+    return str.replace(/(?:(?:(?:^|\n)[\*#].*)+)/g, function (match) {
+        var listType = match.match(/(^|\n)#/) ? 'ol' : 'ul';
+        match = match.replace(/(^|\n)[\*#][ ]{0,1}/g, "$1");
+        match = parseLists(match);
+        return '<'
+                + listType + '><li>'
+                + match.replace(/^\n/, '')
+                .split(/\n/).join('</li><li>')
+                + '</li></' + listType
+                + '>';
+    });
+}
+
+/**
+ * get does a GET HTTP call on the url passed.
+ * Also fires the callback functions passed as
+ * params appropriately.
+ *
+ * @param {String} url
+ * @param {String} response_type
+ * @param {function} success_call_back
+ * @param {function} error_handler
+ */
+var get = function (url, response_type, success_call_back, error_handler)
+{
+    var request = makeRequest();
+    request.open('GET', url, true);
+    request.responseType = response_type;
+    request.onload = function () {
+        var status = request.status;
+        if (status == 200) {
+            success_call_back && success_call_back(request.response);
+        } else {
+            error_handler && error_handler(status);
+        }
+    };
+    request.send();
+};
+
+/**
+ * takes in the help point id, uses it to fetch wiki content, then
+ * wiki content is being eval'd to be painted int he help pane.
+ * Ajax call happens only if help needs to be displayed.
+ * @param {object} help_point element
+ * @param {String} is_mobile flag to check if the client is mobile
+ * or not.
+ */
+function displayHelpForId(help_point,
+                is_mobile,target_c,csrf_token_key,csrf_token_value)
+{
+    var help_group_id = 7;
+    var c = 'api';
+    var a = "wiki";
+    var arg = "read";
+
+    if ((elt("help-frame").style.display) === "block") {
+        toggleHelp('help-frame', is_mobile,target_c);
+        return;
+    }
+    get("?c=" + c + "&group_id=" + help_group_id + "&" +
+            "arg=" + arg + "&" +
+            "a=" + a + "&" +
+            csrf_token_key +'=' + csrf_token_value + "&" +
+            "page_name=" + help_point.getAttribute("data-pagename"),
+            'json',
+            function (data) {
+                elt("help-frame-body").innerHTML = parseWikiContent(
+                        data.wiki_content,
+                        data.group_id,
+                        data.page_id
+                        );
+                elt('page_name').innerHTML = data.page_name + ' <a href="'+
+                        getEditLink(
+                        target_c,
+                        csrf_token_key,
+                        csrf_token_value,
+                        help_group_id,
+                        data.page_name) +'">'+
+                        '[Edit]</a>' ;
+
+                toggleHelp('help-frame', is_mobile,target_c);
+            },
+            function (status) {
+                toggleHelp('help-frame', is_mobile,target_c);
+            });
+    event.preventDefault();
+}
+
+/**
+ * Simple function to construct the Wiki Edit hyperlink with passed in params.
+ * @param {type} target_c
+ * @param {type} csrf_token
+ * @param {type} group_id
+ * @param {type} page_name
+ * @returns {String}
+ */
+function getEditLink(target_c,
+                csrf_token_key, csrf_token_value, group_id, page_name)
+{
+    return '?c=' + target_c +
+            '&'+ csrf_token_key +'=' + csrf_token_value +
+            '&group_id=' + group_id +
+            '&arg=edit' +
+            '&a=wiki' +
+            '&page_name=' + page_name;
+}
+
+
+/**
+ * this function grabs the contents of the wiki text area,
+ * converts them into html then populates the preview
+ * div with parsed html contents. It takes in a page id and group id that are
+ * required to render image urls, If any exist.
+ * @param {type} page_id
+ * @param {type} group_id
+ */
+function renderPreview(page_id, group_id)
+{
+    if (event.preventDefault)
+        event.preventDefault();
+    event.returnValue = false;
+    var textArea = document.getElementById('wiki-page');
+    var div = document.getElementById('wiki-preview');
+    div.innerHTML = "<hr>"
+            + "<p>"
+            + parseWikiContent(
+            textArea.value,
+            group_id,
+            page_id) + "</p> <hr>";
+}

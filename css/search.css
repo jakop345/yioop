@@ -2199,7 +2199,7 @@ div.group-result
     font-size: 16pt;
     max-width: 9in;
     min-height: 6.5in;
-    min-width: 9in;
+    min-width: 8in;
     padding-left: 0.1in;
     padding-right: 0.1in;
     padding-bottom: 0.1in;
@@ -2763,3 +2763,85 @@ table.wikitable > caption
     z-index: 200;
 }
 
+.html-ltr #help
+{
+    border-radius: 8px;
+    float: left;
+    width: 4.0in;
+    position: absolute;
+    left: 11.5in;
+    top: 135px;
+}
+
+.html-rtl #help
+{
+    border-radius: 8px;
+    float: left;
+    width: 4.0in;
+    position: absolute;
+    right: 11.5in;
+    top: 135px;
+}
+
+.html-ltr #small-margin-help
+{
+    border-radius: 8px;
+    float: left;
+    width: 4.0in;
+    position: absolute;
+    left: 11.5in;
+    top: 135px;
+}
+
+.html-rtl #small-margin-help
+{
+    border-radius: 8px;
+    float: left;
+    width: 4.0in;
+    position: absolute;
+    right: 9.5in;
+    top: 135px;
+}
+
+.html-ltr #mobile-help
+{
+    float: left;
+    width: 3in;
+    position: absolute;
+    top: 142px;
+}
+
+.html-rtl #mobile-help
+{
+    float: left;
+    width: 3in;
+    position: absolute;
+    top: 142px;
+}
+
+.help-pane{
+    display : none;
+    width: 320px;
+    border:2px solid #0094ff;
+}
+
+.small-margin-help-pane {
+display: none;
+width: 380px;
+border: 2px solid #0094ff;
+left: -1in;
+top: 1in;
+}
+
+.help-pane h2 {
+    background:#0094ff;
+    color:white;
+    padding:10px;
+}
+.help-pane p {
+    color:#333;
+    padding:10px;
+}
+.wiki-resource-image{
+    max-width:100%;
+}

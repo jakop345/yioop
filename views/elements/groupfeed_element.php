@@ -77,7 +77,11 @@ class GroupfeedElement extends Element implements CrawlConstants
         if(!$is_status) { 
             if($is_admin || $logged_in) { ?>
                 <div class="float-same admin-collapse">[<a
-                href="<?php e($other_paging_query) ?>" ><?php
+                href="<?php e($other_paging_query);
+                if(isset($data['MODE']) && $data['MODE'] == 'grouped'){
+                    e("&amp;v=grouped");
+                }
+                ?>" ><?php
                 e($arrows); ?></a>]<?php
                 if(isset($data['SUBSCRIBE_LINK'])) {
                     if($data['SUBSCRIBE_LINK'] == PUBLIC_JOIN) {
@@ -101,7 +105,7 @@ class GroupfeedElement extends Element implements CrawlConstants
                 }?> >
         <?php
         }
-        if($data['SUBTITLE'] != "" && $logged_in) { ?>
+        if(isset($data['SUBTITLE']) && $data['SUBTITLE'] != "" && $logged_in) { ?>
             <div class="float-opposite">
             <?php
             if(isset($data["WIKI_PAGE_NAME"])) { ?>
@@ -115,11 +119,16 @@ class GroupfeedElement extends Element implements CrawlConstants
             <?php } ?>
             </div>
         <?php
+        }else if(isset($data['MODE']) && $data['MODE'] == 'grouped'
+                && isset ($data['JUST_GROUP_ID'])){
+            ?><div class="float-opposite"><a href="<?php
+                        e($base_query . "&amp;v=grouped")  ?>"><?php
+                        e(tl('groupfeed_element_back'))?></a></div><?php
         }
         if($is_admin) {
             ?>
             <h2><?php
-            if($data['SUBTITLE'] == "") {
+            if(!isset($data['SUBTITLE']) || $data['SUBTITLE'] == "") {
                 e(tl('groupfeed_element_recent_activity'));
             } else {
                 if(isset($data['JUST_THREAD'])) {
@@ -152,18 +161,81 @@ class GroupfeedElement extends Element implements CrawlConstants
                     e(tl('groupfeed_element_user',
                         $data['PAGES'][0]["USER_NAME"]));
                 } else {
-                    e("[{$data['SUBTITLE']}]");
+                    if(isset($data['SUBTITLE'])) e("[{$data['SUBTITLE']}]");
                 }
             }
             ?>
-            </h2>
             <?php
         }
-        ?>
+        if(!isset($data['JUST_THREAD']) && !isset($data['JUST_GROUP_ID'])){
+            e("<a href=\"" . $paging_query . "\">"
+                    . "<img src=\"resources/list.png\" /></a>" . "  " );
+            e("<a href=\"" . $paging_query . "&amp;v=grouped\">"
+                    . "<img src=\"resources/grouped.png\" /></a>". " " );
+            }
+        ?></h2>
         <div>
         &nbsp;
         </div>
         <?php
+      if(isset($data['MODE']) && $data['MODE'] == 'grouped'){
+        //Grouped View
+        //var_dump($data['GROUPS']);
+        if (isset($data['JUST_GROUP_ID'])) {
+                foreach ($data['GROUPS'] as $group) {
+                    if($group['GROUP_ID'] == $data['JUST_GROUP_ID']){
+                    e("<div class=\"access-result\">" .
+                            "<div><b>" .
+                            "<a href=\"$paging_query&amp;just_group_id=" .
+                            $group['GROUP_ID'] . "&amp;v=grouped" . "\" " .
+                            "rel=\"nofollow\">" .
+                            $group['GROUP_NAME'] . "</a> " .
+                            "[<a href=\"$paging_query&amp;group_id=" .
+                            $group['GROUP_ID'] . "&amp;a=wiki\">" .
+                            tl('manageaccount_element_group_wiki') . "</a>] " .
+                            "(" . tl('manageaccount_element_group_stats',
+                                    $group['NUM_POSTS'],
+                                    $group['NUM_THREADS']) . ")</b>" .
+                            "</div>" .
+                            "<div class=\"slight-pad\">" .
+                            "<b>" . tl('manageaccount_element_last_post')
+                            . "</b> " .
+                            "<a href=\"$paging_query&amp;just_thread=" .
+                            $group['THREAD_ID'] . "\">" .
+                            $group['ITEM_TITLE'] . "</a>" .
+                            "</div>" .
+                            "</div>");
+                    $data['TOTAL_ROWS'] = 1;
+                    }
+                }
+            } else {
+                foreach ($data['GROUPS'] as $group) {
+                    e("<div class=\"access-result\">" .
+                            "<div><b>" .
+                            "<a href=\"$paging_query&amp;just_group_id=" .
+                            $group['GROUP_ID'] . "&amp;v=grouped" . "\" " .
+                            "rel=\"nofollow\">" .
+                            $group['GROUP_NAME'] . "</a> " .
+                            "[<a href=\"$paging_query&amp;group_id=" .
+                            $group['GROUP_ID'] . "&amp;a=wiki\">" .
+                            tl('manageaccount_element_group_wiki') . "</a>] " .
+                            "(" . tl('manageaccount_element_group_stats',
+                                    $group['NUM_POSTS'],
+                                    $group['NUM_THREADS']) . ")</b>" .
+                            "</div>" .
+                            "<div class=\"slight-pad\">" .
+                            "<b>" . tl('manageaccount_element_last_post')
+                            . "</b> " .
+                            "<a href=\"$paging_query&amp;just_thread=" .
+                            $group['THREAD_ID'] . "\">" .
+                            $group['ITEM_TITLE'] . "</a>" .
+                            "</div>" .
+                            "</div>");
+                    $data['TOTAL_ROWS'] = $data['NUM_GROUPS'];
+                }
+            }
+        $paging_query .= "&amp;v=grouped";
+       }else{
         $open_in_tabs = $data['OPEN_IN_TABS'];
         $time = time();
         $can_comment = array(GROUP_READ_COMMENT, GROUP_READ_WRITE,
@@ -375,6 +447,7 @@ class GroupfeedElement extends Element implements CrawlConstants
             </div>
             <?php
             } //end foreach
+       }//No grouped View
             $data['FRAGMENT'] = "";
             if(isset($data['JUST_THREAD']) && $logged_in) {
                 $data['FRAGMENT'] = '#result-'.$page['ID'];
@@ -397,6 +470,7 @@ class GroupfeedElement extends Element implements CrawlConstants
         if(!$is_status) {
             $this->renderScripts($data);
         }
+
     }
     /**
      * Used to render the Javascript that appears at the non-status updating
@@ -462,7 +536,8 @@ class GroupfeedElement extends Element implements CrawlConstants
                     ?></label></b></h2>'+
                     '<textarea class="short-text-area" '+
                     'id="comment-'+ id +'" name="description" '+
-                    'data-buttons="all,!wikibtn-search,!wikibtn-heading,!wikibtn-slide" '+
+                    'data-buttons="all,!wikibtn-search,!wikibtn-heading,'+
+                    '!wikibtn-slide" '+
                     '></textarea>' +
                     '<button class="button-box float-opposite" ' +
                     'type="submit"><?php e(tl("groupfeed_element_save"));
@@ -603,4 +678,4 @@ class GroupfeedElement extends Element implements CrawlConstants
         <?php
     }
 }
- ?>
+?>
