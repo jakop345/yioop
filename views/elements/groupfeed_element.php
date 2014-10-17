@@ -77,7 +77,11 @@ class GroupfeedElement extends Element implements CrawlConstants
         if(!$is_status) { 
             if($is_admin || $logged_in) { ?>
                 <div class="float-same admin-collapse">[<a
-                href="<?php e($other_paging_query) ?>" ><?php
+                href="<?php e($other_paging_query);
+                if(isset($data['MODE']) && $data['MODE'] == 'grouped'){
+                    e("&amp;v=grouped");
+                }
+                ?>" ><?php
                 e($arrows); ?></a>]<?php
                 if(isset($data['SUBSCRIBE_LINK'])) {
                     if($data['SUBSCRIBE_LINK'] == PUBLIC_JOIN) {
@@ -162,13 +166,13 @@ class GroupfeedElement extends Element implements CrawlConstants
             }
             ?>
             <?php
-            if(!isset($data['JUST_THREAD']) && !isset($data['JUST_GROUP_ID'])){
+        }
+        if(!isset($data['JUST_THREAD']) && !isset($data['JUST_GROUP_ID'])){
             e("<a href=\"" . $paging_query . "\">"
                     . "<img src=\"resources/list.png\" /></a>" . "  " );
             e("<a href=\"" . $paging_query . "&amp;v=grouped\">"
                     . "<img src=\"resources/grouped.png\" /></a>". " " );
             }
-        }
         ?></h2>
         <div>
         &nbsp;
