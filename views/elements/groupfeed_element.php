@@ -75,7 +75,12 @@ class GroupfeedElement extends Element implements CrawlConstants
             $other_paging_query .= "&num=".$data['RESULTS_PER_PAGE'];
         }
         if(!$is_status) { 
-            if($is_admin || $logged_in) { ?>
+            if($is_admin || $logged_in) { 
+                if(isset($data['JUST_GROUP_ID'])){
+                    $other_paging_query .= "&amp;just_group_id=" 
+                            . $data['JUST_GROUP_ID'];
+                }
+                ?>
                 <div class="float-same admin-collapse">[<a
                 href="<?php e($other_paging_query);
                 if(isset($data['MODE']) && $data['MODE'] == 'grouped'){
