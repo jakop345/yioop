@@ -107,7 +107,7 @@ class WikiParser implements CrawlConstants
             array("/{{lang[\||\-](.+?)\|(.+?)}}/si", "$1 &rarr; $2"),
             array("/{{convert\|(.+?)\|(.+?)\|(.+?)}}/si", "$1$2"),
             array("/{{IPA-(.+?)\|(.+?)}}/si", "(IPA $2)"),
-            array("/{{dablink\|'.$not_braces.'}}/si", "($1)"),
+            array("/{{dablink\|'.$not_braces.'}}/", "($1)"),
         );
         $minimal_substitutions = array(
             array('/\[\[(http[^\s\|\]]+)\|([^\[\]]+?)\]\]/s',

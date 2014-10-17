@@ -70,10 +70,10 @@ class GroupView extends View implements CrawlConstants
         </div><?php
         }
         ?>
-        <h1 class="group-heading logo"><a href="./<?php if($logged_in) {
+        <h1 class="group-heading"><a href="./<?php if($logged_in) {
                 e('?'.CSRF_TOKEN."=".$data[CSRF_TOKEN]);
             }
-            ?>"><img
+            ?>"><img class='logo'
             src="<?php e($logo); ?>" alt="<?php e($this->logo_alt_text);
             ?>" /></a><small> - <?php
         if(isset($data['JUST_THREAD'])) {
@@ -106,6 +106,14 @@ class GroupView extends View implements CrawlConstants
                 $data['PAGES'][0]["USER_NAME"]));
         } else {
             e(tl('group_view_myfeeds'));
+        }
+        if(!isset($data['JUST_THREAD']) && !isset($data['JUST_GROUP_ID'])) {
+            ?><span style="position:relative;top:5px;" >
+            <a href="<?php e($base_query); ?>" ><img
+            src="resources/list.png" /></a>
+            <a href="<?php e($base_query. '&amp;v=grouped'); ?>" ><img
+            src="resources/grouped.png" /></a>
+            </span><?php
         }
         ?></small>
         </h1>

@@ -110,7 +110,8 @@ class GroupfeedElement extends Element implements CrawlConstants
                 }?> >
         <?php
         }
-        if(isset($data['SUBTITLE']) && $data['SUBTITLE'] != "" && $logged_in) { ?>
+        if(isset($data['SUBTITLE']) && 
+            $data['SUBTITLE'] != "" && $logged_in) { ?>
             <div class="float-opposite">
             <?php
             if(isset($data["WIKI_PAGE_NAME"])) { ?>
@@ -169,15 +170,18 @@ class GroupfeedElement extends Element implements CrawlConstants
                     if(isset($data['SUBTITLE'])) e("[{$data['SUBTITLE']}]");
                 }
             }
+            if(!isset($data['JUST_THREAD']) && !isset($data['JUST_GROUP_ID'])) {
+                ?><span style="position:relative;top:5px;" >
+                <a href="<?php e($paging_query); ?>" ><img
+                src="resources/list.png" /></a>
+                <a href="<?php e($paging_query. '&amp;v=grouped'); ?>" ><img
+                src="resources/grouped.png" /></a>
+                </span><?php
+            }
             ?>
             <?php
         }
-        if(!isset($data['JUST_THREAD']) && !isset($data['JUST_GROUP_ID'])){
-            e("<a href=\"" . $paging_query . "\">"
-                    . "<img src=\"resources/list.png\" /></a>" . "  " );
-            e("<a href=\"" . $paging_query . "&amp;v=grouped\">"
-                    . "<img src=\"resources/grouped.png\" /></a>". " " );
-            }
+
         ?></h2>
         <div>
         &nbsp;
