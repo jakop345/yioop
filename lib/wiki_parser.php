@@ -103,11 +103,11 @@ class WikiParser implements CrawlConstants
             array("/\n*?{{\s*Related articles\s*\|(.+?)\|(.+?)}}/si",
                 "$esc<div class='indent'>\n\n(<a href=\"".
                 $base_address . "$1\">$1?</a>)\n\n$esc</div>"),
-            array('/{{Hatnote\|(.+?)}}/si', "($1)"),
+            array('/{{Hatnote\|'.$not_braces.'}}/', "($1)"),
             array("/{{lang[\||\-](.+?)\|(.+?)}}/si", "$1 &rarr; $2"),
             array("/{{convert\|(.+?)\|(.+?)\|(.+?)}}/si", "$1$2"),
             array("/{{IPA-(.+?)\|(.+?)}}/si", "(IPA $2)"),
-            array("/{{dablink\|(.+?)}}/si", "($1)"),
+            array("/{{dablink\|'.$not_braces.'}}/si", "($1)"),
         );
         $minimal_substitutions = array(
             array('/\[\[(http[^\s\|\]]+)\|([^\[\]]+?)\]\]/s',
@@ -123,49 +123,13 @@ class WikiParser implements CrawlConstants
                 "&#039;&#039;&#039;&#039;&#039;/s", "<b><i>$1</i></b>\t"),
             array("/&#039;&#039;&#039;(.+?)&#039;&#039;&#039;/s","<b>$1</b>\t"),
             array("/&#039;&#039;(.+?)&#039;&#039;/s", "<i>$1</i>\t"),
-            array('/[^\n]{{\s*class\s*\=\s*'.
-                "&quot;([$class_or_id]+)&quot;\s+()}}/",
-                "$esc<span class=\"$1\" >\t\n$2$esc</span>\t"),
-            array('/[^\n]{{\s*class\s*\=\s*'.
-                "&#039;([$class_or_id]+)&#039;\s+(".$not_braces.")}}/",
-                "$esc<span class=\"$1\" >\t\n$2$esc</span>\t"),
-            array('/\n*?{{\s*class\s*\=\s*'.
-                "&quot;([$class_or_id]+)&quot;\s+(".$not_braces.")}}/",
-                "\n\n$esc<div class=\"$1\" >\n\n$2\n\n$esc</div>"),
-            array('/\n*?{{\s*class\s*\=\s*'.
-                "&#039;([$class_or_id]+)&#039;\s+(".$not_braces.")}}/",
-                "\n\n$esc<div class='$1' >\n\n$2\n\n$esc</div>"),
-            array("/\n*?{{\s*id\s*\=\s*&quot;([$class_or_id]+)&quot;\s+(".
-                $not_braces.')}}/',
-                "$esc<span id=\"$1\">$2$esc</span>"),
-            array("/\n*?{{\s*id\s*\=\s*&quot;([$class_or_id]+)&quot;\s+(".
-                $not_braces.')}}/',
-                "\n\n$esc<div id=\"$1\">\n\n$2\n\n$esc</div>"),
-            array("/\n*?{{\s*id\s*\=\s*&#039;([$class_or_id]+)&#039;\s+("
-                .$not_braces.')}}/',
-                "\n\n$esc<div id='$1'>\n\n$2\n\n$esc</div>"),
-            array('/\n*?{{\s*style\s*\=\s*'.
-                '&quot;([0-9a-zA-Z\/\#\_\-\.\;\:\s\n]+)&quot;\s+('.
-                 $not_braces.')}}/',
-                "$esc<span style=\"$1\">$2$esc</span>"),
-            array('/\n*?{{\s*style\s*\=\s*'.
-                '&quot;([0-9a-zA-Z\/\#\_\-\.\;\:\s\n]+)&quot;\s+('.
-                $not_braces.')}}/',
-                "\n\n$esc<div style=\"$1\">\n\n$2\n\n$esc</div>"),
-            array('/\n*?{{\s*style\s*\=\s*'.
-                '&#039;([0-9a-zA-Z\_\-\.\;\:\s\n]+)&#039;'.
-                '\s+('.$not_braces.')}}/',
-                "$esc<span style='$1'>\t$2$esc</span>\t"),
-            array('/\n*?{{\s*style\s*\=\s*'.
-                '&#039;([0-9a-zA-Z\_\-\.\;\:\s\n]+)&#039;\s+('.
-                $not_braces.')}}/',
-                "\n\n$esc<div style='$1'>\n\n$2\n\n$esc</div>"),
-            array('/\n*{{center\s*\|\s*('.$not_braces.')}}/',
-                "\n\n$esc<div class='center'>\n\n$1\n\n$esc</div>"),
-            array('/\n*?{{left\s*\|\s*('.$not_braces.')}}/',
-                "\n\n$esc<div class='align-left'>\n\n$1\n\n$esc</div>"),
-            array('/\n*?{{right\s*\|\s*('.$not_braces.')}}/',
-                "\n\n$esc<div class='align-right'>\n\n$1\n\n$esc</div>"),
+            array("/{{(".$not_braces."{{(".$not_braces."({{".$not_braces.
+                "({{".$not_braces."}})+".$not_braces."}})+".
+                $not_braces.")+}}".$not_braces.")}}/", "@@~3$1~3@@"),
+            array("/{{(".$not_braces."{{(".$not_braces."({{".$not_braces."}})+".
+                $not_braces.")+}}".$not_braces.")}}/", "@@~2$1~2@@"),
+            array("/{{(".$not_braces."({{".$not_braces."}})+".
+                $not_braces.")}}/", "@@~1$1~1@@"),
             array("/&lt;blockquote&gt;(.+?)&lt;\/blockquote&gt;/s",
                 "$esc<blockquote>\n\n$1\n\n$esc</blockquote>"),
             array("/&lt;pre&gt;(.+?)&lt;\/pre&gt;/s",
@@ -188,7 +152,7 @@ class WikiParser implements CrawlConstants
             array('/(\A|\n)\*(.+)(\n(\*|\n\s*|\Z|<|[\t\n\r]+\n)|\Z)/sU',
                 "\n<li>$2</li>\n$4"),
             array('/(\A|[^>])\n<li>/', "$1\n<ul>\n<li>"),
-            array('@</li>\n(\Z|([^<]|<[^l]))@', "</li>\n</ul>\n$1"),
+            array('@</li>\n(\Z|([^<]|<[^l\/]))@', "</li>\n</ul>\n$1"),
             array('@</li>\n<li>\*@', "\n**"),
             array('/\n\*\*(.+)(\n(\*|\n\s*|\Z|\<|[\t\n\r]+\n)|\Z)/sU',
                 "\n<li>$1</li>\n$3"),
@@ -201,7 +165,7 @@ class WikiParser implements CrawlConstants
             array('/(\A|\n)\#(.+)(\n(\#|\n\s*|\Z|<|[\t\n\r]+\n)|\Z)/sU',
                 "\n<li>$2</li>\n$4"),
             array('/(\A|[^>])\n<li>/', "$1\n<ol>\n<li>"),
-            array('@</li>\n(\Z|([^<]|<[^l]))@', "</li>\n</ol>\n$1"),
+            array('@</li>\n(\Z|([^<]|<[^l\/]))@', "</li>\n</ol>\n$1"),
             array('@</li>\n<li>\#@', "\n##"),
             array('/\n\#\#(.+)(\n(\#|\n\s*|\Z|\<|[\t\n\r]+\n)|\Z)/sU',
                 "\n<li>$1</li>\n$3"),
@@ -239,6 +203,51 @@ class WikiParser implements CrawlConstants
             array('/(\A|\n)----/', "$1<hr />"),
             array('/\r/', ""),
         );
+        $braces_substitutions = array(
+            array('/[^\n]{{\s*class\s*\=\s*'.
+                "&quot;([$class_or_id]+)&quot;\s+()}}/",
+                "$esc<span class=\"$1\" >\t\n$2$esc</span>\t"),
+            array('/[^\n]{{\s*class\s*\=\s*'.
+                "&#039;([$class_or_id]+)&#039;\s+(".$not_braces .")}}/",
+                "$esc<span class=\"$1\" >\t\n$2$esc</span>\t"),
+            array('/\n*?{{\s*class\s*\=\s*'.
+                "&quot;([$class_or_id]+)&quot;\s+(".$not_braces .")}}/",
+                "\n\n$esc<div class=\"$1\" >\n\n$2\n\n$esc</div>"),
+            array('/\n*?{{\s*class\s*\=\s*'.
+                "&#039;([$class_or_id]+)&#039;\s+(".$not_braces .")}}/",
+                "\n\n$esc<div class='$1' >\n\n$2\n\n$esc</div>"),
+            array("/\n*?{{\s*id\s*\=\s*&quot;([$class_or_id]+)&quot;\s+(".
+                $not_braces .')}}/',
+                "$esc<span id=\"$1\">$2$esc</span>"),
+            array("/\n*?{{\s*id\s*\=\s*&quot;([$class_or_id]+)&quot;\s+(".
+                $not_braces .')}}/',
+                "\n\n$esc<div id=\"$1\">\n\n$2\n\n$esc</div>"),
+            array("/\n*?{{\s*id\s*\=\s*&#039;([$class_or_id]+)&#039;\s+("
+                .$not_braces .')}}/',
+                "\n\n$esc<div id='$1'>\n\n$2\n\n$esc</div>"),
+            array('/\n*?{{\s*style\s*\=\s*'.
+                '&quot;([0-9a-zA-Z\/\#\_\-\.\;\:\s\n]+)&quot;\s+('.
+                 $not_braces .')}}/',
+                "$esc<span style=\"$1\">$2$esc</span>"),
+            array('/\n*?{{\s*style\s*\=\s*'.
+                '&quot;([0-9a-zA-Z\/\#\_\-\.\;\:\s\n]+)&quot;\s+('.
+                $not_braces .')}}/',
+                "\n\n$esc<div style=\"$1\">\n\n$2\n\n$esc</div>"),
+            array('/\n*?{{\s*style\s*\=\s*'.
+                '&#039;([0-9a-zA-Z\_\-\.\;\:\s\n]+)&#039;'.
+                '\s+('.$not_braces .')}}/',
+                "$esc<span style='$1'>\t$2$esc</span>\t"),
+            array('/\n*?{{\s*style\s*\=\s*'.
+                '&#039;([0-9a-zA-Z\_\-\.\;\:\s\n]+)&#039;\s+('.
+                $not_braces .')}}/',
+                "\n\n$esc<div style='$1'>\n\n$2\n\n$esc</div>"),
+            array('/\n*{{center\s*\|\s*('.$not_braces .')}}/',
+                "\n\n$esc<div class='center'>\n\n$1\n\n$esc</div>"),
+            array('/\n*?{{left\s*\|\s*('.$not_braces .')}}/',
+                "\n\n$esc<div class='align-left'>\n\n$1\n\n$esc</div>"),
+            array('/\n*?{{right\s*\|\s*('.$not_braces .')}}/',
+                "\n\n$esc<div class='align-right'>\n\n$1\n\n$esc</div>"),
+        );
         if($minimal) {
             $substitutions = array(
                 array('/(\A|\n)=\s*([^=]+)\s*=/',
@@ -249,12 +258,19 @@ class WikiParser implements CrawlConstants
             $minimal_substitutions);
         $this->matches = array();
         $this->replaces = array();
+        $this->braces_matches = array();
+        $this->braces_replaces = array();
         $this->base_address = $base_address;
         if($add_substitutions != array()) {
-            $substitutions = array_merge($add_substitutions, $substitutions);
+            $substitutions = array_merge($add_substitutions, $substitutions,
+                $braces_substitutions);
         }
         foreach($substitutions as $substitution) {
             list($this->matches[], $this->replaces[]) = $substitution;
+        }
+        foreach($braces_substitutions as $substitution) {
+            list($this->braces_matches[], $this->braces_replaces[]) =
+                $substitution;
         }
     }
     /**
@@ -324,8 +340,7 @@ class WikiParser implements CrawlConstants
             $div = "<div class='slide'>";
             foreach($lines as $line) {
                 if(trim($line) == "....") {
-                    $slide = preg_replace($this->matches, $this->replaces,
-                        $slide);
+                    $slide = $this->processRegexes($slide);
                     $out_document .= $div .$this->cleanLinksAndParagraphs(
                         $slide) ."</div>";
                     $slide = "";
@@ -333,27 +348,16 @@ class WikiParser implements CrawlConstants
                     $slide .= $line."\n";
                 }
             }
-            $document = $out_document. $div .
-                preg_replace($this->matches, $this->replaces,$slide) ."</div>";
+            $document = $out_document. $div . $this->processRegexes($slide) .
+                "</div>";
         } else if($handle_big_files) {
-            if(strlen($document) < MAX_GROUP_PAGE_LEN) {
-                $document = preg_replace($this->matches,
-                    $this->replaces, $document);
-            } else {
-                $num_matches = count($this->matches);
-                for($i = 0; $i < $num_matches; $i++) {
-                    crawlTimeoutLog("..Doing wiki substitutions..");
-                    $document = preg_replace($this->matches[$i],
-                        $this->replaces[$i], $document);
-                }
-            }
+            $document= $this->processRegexes($document);
             $document = $this->cleanLinksAndParagraphs($document);
         } else {
             if(strlen($document) > 0.9 * MAX_GROUP_PAGE_LEN) {
                 $document = substr($document, 0, 0.9*MAX_GROUP_PAGE_LEN);
             }
-            $document = 
-                preg_replace($this->matches, $this->replaces, $document);
+            $document = $this->processRegexes($document);
             $document = $this->cleanLinksAndParagraphs($document);
         }
         if(!$this->minimal) {
@@ -372,6 +376,41 @@ class WikiParser implements CrawlConstants
             $document = substr($document, 0, 0.9 * MAX_GROUP_PAGE_LEN);
             TextProcessor::closeDanglingTags($document);
             $document .="...";
+        }
+        return $document;
+    }
+    /**
+     *
+     */
+    function processRegexes($document)
+    {
+        $document = $this->processProvidedRegexes($this->matches,
+            $this->replaces, $document);
+        $i = 1;
+        while(strpos($document, "@@~$i") !== false) {
+            $document = str_replace("@@~$i", "{{", $document);
+            $document = str_replace("~$i@@", "}}", $document);
+            $document = $this->processProvidedRegexes($this->braces_matches,
+                $this->braces_replaces, $document);
+            $i++;
+        }
+        return $document;
+    }
+    /**
+     *
+     */
+    function processProvidedRegexes($matches, $replaces, $document)
+    {
+        if(strlen($document) < MAX_GROUP_PAGE_LEN) {
+            $document = preg_replace($matches,
+                $replaces, $document);
+        } else {
+            $num_matches = count($matches);
+            for($i = 0; $i < $num_matches; $i++) {
+                crawlTimeoutLog("..Doing wiki substitutions..");
+                $document = preg_replace($matches[$i],
+                    $replaces[$i], $document);
+            }
         }
         return $document;
     }
