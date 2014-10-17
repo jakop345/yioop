@@ -75,7 +75,12 @@ class GroupfeedElement extends Element implements CrawlConstants
             $other_paging_query .= "&num=".$data['RESULTS_PER_PAGE'];
         }
         if(!$is_status) { 
-            if($is_admin || $logged_in) { ?>
+            if($is_admin || $logged_in) { 
+                if(isset($data['JUST_GROUP_ID'])){
+                    $other_paging_query .= "&amp;just_group_id=" 
+                            . $data['JUST_GROUP_ID'];
+                }
+                ?>
                 <div class="float-same admin-collapse">[<a
                 href="<?php e($other_paging_query);
                 if(isset($data['MODE']) && $data['MODE'] == 'grouped'){
@@ -121,7 +126,7 @@ class GroupfeedElement extends Element implements CrawlConstants
         <?php
         }else if(isset($data['MODE']) && $data['MODE'] == 'grouped'
                 && isset ($data['JUST_GROUP_ID'])){
-            ?><div class="float-opposite"><a href="<?php 
+            ?><div class="float-opposite"><a href="<?php
                         e($base_query . "&amp;v=grouped")  ?>"><?php
                         e(tl('groupfeed_element_back'))?></a></div><?php
         }
@@ -193,12 +198,12 @@ class GroupfeedElement extends Element implements CrawlConstants
                             "[<a href=\"$paging_query&amp;group_id=" .
                             $group['GROUP_ID'] . "&amp;a=wiki\">" .
                             tl('manageaccount_element_group_wiki') . "</a>] " .
-                            "(" . tl('manageaccount_element_group_stats', 
-                                    $group['NUM_POSTS'], 
+                            "(" . tl('manageaccount_element_group_stats',
+                                    $group['NUM_POSTS'],
                                     $group['NUM_THREADS']) . ")</b>" .
                             "</div>" .
                             "<div class=\"slight-pad\">" .
-                            "<b>" . tl('manageaccount_element_last_post') 
+                            "<b>" . tl('manageaccount_element_last_post')
                             . "</b> " .
                             "<a href=\"$paging_query&amp;just_thread=" .
                             $group['THREAD_ID'] . "\">" .
@@ -219,12 +224,12 @@ class GroupfeedElement extends Element implements CrawlConstants
                             "[<a href=\"$paging_query&amp;group_id=" .
                             $group['GROUP_ID'] . "&amp;a=wiki\">" .
                             tl('manageaccount_element_group_wiki') . "</a>] " .
-                            "(" . tl('manageaccount_element_group_stats', 
-                                    $group['NUM_POSTS'], 
+                            "(" . tl('manageaccount_element_group_stats',
+                                    $group['NUM_POSTS'],
                                     $group['NUM_THREADS']) . ")</b>" .
                             "</div>" .
                             "<div class=\"slight-pad\">" .
-                            "<b>" . tl('manageaccount_element_last_post') 
+                            "<b>" . tl('manageaccount_element_last_post')
                             . "</b> " .
                             "<a href=\"$paging_query&amp;just_thread=" .
                             $group['THREAD_ID'] . "\">" .
@@ -470,7 +475,7 @@ class GroupfeedElement extends Element implements CrawlConstants
         if(!$is_status) {
             $this->renderScripts($data);
         }
-    
+
     }
     /**
      * Used to render the Javascript that appears at the non-status updating
