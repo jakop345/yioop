@@ -720,6 +720,7 @@ class SocialComponent extends Component implements CrawlConstants
             "newthread", "updatepost", "status", "upvote", "downvote");
         if (isset($_REQUEST['v']) && $_REQUEST['v'] == 'grouped') {
             $data['MODE'] = 'grouped';
+            $data['JUST_GROUP_ID'] = $_REQUEST['just_group_id'];
             if (isset($_REQUEST['limit'])) {
                 $limit = $parent->clean($_REQUEST['limit'], "int");
             } else {

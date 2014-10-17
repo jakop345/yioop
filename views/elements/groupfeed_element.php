@@ -115,6 +115,11 @@ class GroupfeedElement extends Element implements CrawlConstants
             <?php } ?>
             </div>
         <?php
+        }else if(isset($data['MODE']) && $data['MODE'] == 'grouped'
+                && isset ($data['JUST_GROUP_ID'])){
+            ?><div class="float-opposite"><a href="<?php 
+                        e($base_query . "&amp;v=grouped")  ?>"><?php
+                        e(tl('groupfeed_element_back'))?></a></div><?php
         }
         if($is_admin) {
             ?>
@@ -157,7 +162,7 @@ class GroupfeedElement extends Element implements CrawlConstants
             }
             ?>
             <?php
-            if(!isset($data['JUST_GROUP_ID'])){
+            if(!isset($data['JUST_THREAD']) && !isset($data['JUST_GROUP_ID'])){
             e("<a href=\"" . $paging_query . "\">"
                     . "<img src=\"resources/list.png\" /></a>" . "  " );
             e("<a href=\"" . $paging_query . "&amp;v=grouped\">"
@@ -172,28 +177,59 @@ class GroupfeedElement extends Element implements CrawlConstants
       if(isset($data['MODE']) && $data['MODE'] == 'grouped'){
         //Grouped View
         //var_dump($data['GROUPS']);
-        foreach($data['GROUPS'] as $group){
-            e("<div class=\"access-result\">" .
-                    "<div><b>" . 
-                    "<a href=\"$paging_query&amp;just_group_id=".
-                    $group['GROUP_ID']. "\" " .
-                    "rel=\"nofollow\">".
-                    $group['GROUP_NAME']."</a> " . 
-                    "[<a href=\"$paging_query&amp;group_id=".
-                    $group['GROUP_ID']. "&amp;a=wiki\">".
-                    tl('manageaccount_element_group_wiki') . "</a>] " .
-                    "(". tl('manageaccount_element_group_stats',
-                        $group['NUM_POSTS'], $group['NUM_THREADS']) . ")</b>" .
-                    "</div>" .
-                    "<div class=\"slight-pad\">" .
-                    "<b>" . tl('manageaccount_element_last_post') . "</b> " .
-                    "<a href=\"$paging_query&amp;just_thread=" .
-                    $group['THREAD_ID'] ."\">" .
-                    $group['ITEM_TITLE'] ."</a>" .
-                    "</div>" .
-                "</div>");
-        }
-        $data['TOTAL_ROWS'] = $data['NUM_GROUPS'];
+        if (isset($data['JUST_GROUP_ID'])) {
+                foreach ($data['GROUPS'] as $group) {
+                    if($group['GROUP_ID'] == $data['JUST_GROUP_ID']){
+                    e("<div class=\"access-result\">" .
+                            "<div><b>" .
+                            "<a href=\"$paging_query&amp;just_group_id=" .
+                            $group['GROUP_ID'] . "&amp;v=grouped" . "\" " .
+                            "rel=\"nofollow\">" .
+                            $group['GROUP_NAME'] . "</a> " .
+                            "[<a href=\"$paging_query&amp;group_id=" .
+                            $group['GROUP_ID'] . "&amp;a=wiki\">" .
+                            tl('manageaccount_element_group_wiki') . "</a>] " .
+                            "(" . tl('manageaccount_element_group_stats', 
+                                    $group['NUM_POSTS'], 
+                                    $group['NUM_THREADS']) . ")</b>" .
+                            "</div>" .
+                            "<div class=\"slight-pad\">" .
+                            "<b>" . tl('manageaccount_element_last_post') 
+                            . "</b> " .
+                            "<a href=\"$paging_query&amp;just_thread=" .
+                            $group['THREAD_ID'] . "\">" .
+                            $group['ITEM_TITLE'] . "</a>" .
+                            "</div>" .
+                            "</div>");
+                    $data['TOTAL_ROWS'] = 1;
+                    }
+                }
+            } else {
+                foreach ($data['GROUPS'] as $group) {
+                    e("<div class=\"access-result\">" .
+                            "<div><b>" .
+                            "<a href=\"$paging_query&amp;just_group_id=" .
+                            $group['GROUP_ID'] . "&amp;v=grouped" . "\" " .
+                            "rel=\"nofollow\">" .
+                            $group['GROUP_NAME'] . "</a> " .
+                            "[<a href=\"$paging_query&amp;group_id=" .
+                            $group['GROUP_ID'] . "&amp;a=wiki\">" .
+                            tl('manageaccount_element_group_wiki') . "</a>] " .
+                            "(" . tl('manageaccount_element_group_stats', 
+                                    $group['NUM_POSTS'], 
+                                    $group['NUM_THREADS']) . ")</b>" .
+                            "</div>" .
+                            "<div class=\"slight-pad\">" .
+                            "<b>" . tl('manageaccount_element_last_post') 
+                            . "</b> " .
+                            "<a href=\"$paging_query&amp;just_thread=" .
+                            $group['THREAD_ID'] . "\">" .
+                            $group['ITEM_TITLE'] . "</a>" .
+                            "</div>" .
+                            "</div>");
+                    $data['TOTAL_ROWS'] = $data['NUM_GROUPS'];
+                }
+            }
         $paging_query .= "&amp;v=grouped";
        }else{
         $open_in_tabs = $data['OPEN_IN_TABS'];
