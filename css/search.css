@@ -305,13 +305,13 @@ a.echo-link:hover
     clear: both;
 }
 
-.width-half
+.width-half,
 .width-half img
 {
     width:50%;
 }
 
-.width-three-quarter
+.width-three-quarter,
 .width-three-quarter img
 {
     width:75%;
