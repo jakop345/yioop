@@ -397,14 +397,13 @@ var get = function (url, response_type, success_call_back, error_handler)
  * @param {String} is_mobile flag to check if the client is mobile
  * or not.
  */
-function displayHelpForId(help_point,
-                is_mobile,target_c,csrf_token_key,csrf_token_value)
+function displayHelpForId(help_point, is_mobile,target_c, csrf_token_key,
+    csrf_token_value)
 {
-    var help_group_id = 7;
+    var help_group_id = 1;
     var c = 'api';
     var a = "wiki";
     var arg = "read";
-
     if ((elt("help-frame").style.display) === "block") {
         toggleHelp('help-frame', is_mobile,target_c);
         return;
@@ -428,7 +427,7 @@ function displayHelpForId(help_point,
                         csrf_token_value,
                         help_group_id,
                         data.page_name) +'">'+
-                        '[Edit]</a>' ;
+                        '[Edit]</a>';
 
                 toggleHelp('help-frame', is_mobile,target_c);
             },

@@ -1748,6 +1748,9 @@ function readMessage()
 function mimeType($file_name)
 {
     $mime_type = "unknown";
+    if(!file_exists($file_name)) {
+        return $mime_type;
+    }
     if(class_exists("finfo")) {
         $finfo = new finfo(FILEINFO_MIME);
         $mime_type = $finfo->file($file_name);

@@ -1148,7 +1148,7 @@ class GroupModel extends Model
             $page_id);
         if(!$folders) { return $parsed_page; }
         list($folder, $thumb_folder) = $folders;
-        if(!preg_match_all('/{{resource:(.+?)\|(.+?)}}/ui',
+        if(!preg_match_all('/\(\(resource:(.+?)\|(.+?)\)\)/ui',
             $parsed_page, $matches)){
             return $parsed_page;
         }
@@ -1193,7 +1193,8 @@ class GroupModel extends Model
                     }
                 }
                 $replace_string .= $resource_description."\n"."</video>";
-                $parsed_page = preg_replace('/'.preg_quote($match_string).'/u',
+                $parsed_page = preg_replace('/'.
+                    preg_quote($match_string, '/').'/u',
                     $replace_string, $parsed_page);
             } else if (in_array($mime_type, array('audio/basic', 'audio/L24',
                 'audio/mp4', 'audio/mpeg', 'audio/ogg', 'audio/opus',
@@ -1203,13 +1204,13 @@ class GroupModel extends Model
                     "<source src='$resource_url'  >\n".
                     $resource_description."\n".
                     "</audio>";
-                $parsed_page = preg_replace('/'.preg_quote($match_string).'/u',
-                    $replace_string, $parsed_page);
+                $parsed_page = preg_replace('/'.preg_quote($match_string, '/')
+                    .'/u', $replace_string, $parsed_page);
             } else {
-                $replace_string = "$mime_type<a href='$resource_url' >".
+                $replace_string = "<a href='$resource_url' >".
                     "$resource_description</a>";
-                $parsed_page = preg_replace('/'.preg_quote($match_string).'/u',
-                    $replace_string, $parsed_page);
+                $parsed_page = preg_replace('/'.preg_quote($match_string, '/')
+                    .'/u',  $replace_string, $parsed_page);
             }
         }
         return $parsed_page;

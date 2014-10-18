@@ -162,7 +162,7 @@ class ManagegroupsElement extends Element
                                 "</span>");
                         } else {
                         ?>
-                            <form  method="get" action='#' >
+                            <form  method="get" action='./' >
                             <input type="hidden" name="c" value="admin" />
                             <input type="hidden" name="<?php e(CSRF_TOKEN); ?>"
                                 value="<?php e($data[CSRF_TOKEN]); ?>" />

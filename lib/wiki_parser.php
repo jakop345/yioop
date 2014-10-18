@@ -226,19 +226,19 @@ class WikiParser implements CrawlConstants
                 .$not_braces .')}}/',
                 "\n\n$esc<div id='$1'>\n\n$2\n\n$esc</div>"),
             array('/\n*?{{\s*style\s*\=\s*'.
-                '&quot;([0-9a-zA-Z\/\#\_\-\.\;\:\s\n]+)&quot;\s+('.
+                '&quot;([0-9a-zA-Z\/\#\_\-\.\;\:\s\n\%]+)&quot;\s+('.
                  $not_braces .')}}/',
                 "$esc<span style=\"$1\">$2$esc</span>"),
             array('/\n*?{{\s*style\s*\=\s*'.
-                '&quot;([0-9a-zA-Z\/\#\_\-\.\;\:\s\n]+)&quot;\s+('.
+                '&quot;([0-9a-zA-Z\/\#\_\-\.\;\:\s\n\%]+)&quot;\s+('.
                 $not_braces .')}}/',
                 "\n\n$esc<div style=\"$1\">\n\n$2\n\n$esc</div>"),
             array('/\n*?{{\s*style\s*\=\s*'.
-                '&#039;([0-9a-zA-Z\_\-\.\;\:\s\n]+)&#039;'.
+                '&#039;([0-9a-zA-Z\_\-\.\;\:\s\n\%]+)&#039;'.
                 '\s+('.$not_braces .')}}/',
                 "$esc<span style='$1'>\t$2$esc</span>\t"),
             array('/\n*?{{\s*style\s*\=\s*'.
-                '&#039;([0-9a-zA-Z\_\-\.\;\:\s\n]+)&#039;\s+('.
+                '&#039;([0-9a-zA-Z\_\-\.\;\:\s\n\%]+)&#039;\s+('.
                 $not_braces .')}}/',
                 "\n\n$esc<div style='$1'>\n\n$2\n\n$esc</div>"),
             array('/\n*{{center\s*\|\s*('.$not_braces .')}}/',
@@ -380,7 +380,7 @@ class WikiParser implements CrawlConstants
         return $document;
     }
     /**
-     *
+     * @param string $document
      */
     function processRegexes($document)
     {
@@ -397,7 +397,9 @@ class WikiParser implements CrawlConstants
         return $document;
     }
     /**
-     *
+     * @param array $matches
+     * @param array $replaces
+     * @param string $document
      */
     function processProvidedRegexes($matches, $replaces, $document)
     {
@@ -415,7 +417,7 @@ class WikiParser implements CrawlConstants
         return $document;
     }
     /**
-     *
+     *  @param string $document
      */
     function cleanLinksAndParagraphs($document)
     {

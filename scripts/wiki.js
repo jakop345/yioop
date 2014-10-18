@@ -131,7 +131,6 @@ function editorize(id)
     var editor_toolbar = '<div id="wiki-popup-prompt-' + id +
         '" class="wiki-popup-prompt" style="display: none;"></div>' +
         '<form><div class="wiki-buttons">' + button_string;
-
     /*
         check if heading was desired and render if was.
      */
@@ -175,7 +174,7 @@ function editorize(id)
 /**
  * Method to return standard buttons as an object.
  *
- * @returns Object
+ * @return Object
  */
 function getStandardButtonsObject()
 {
@@ -190,10 +189,10 @@ function getStandardButtonsObject()
         'wikibtn-numbers': ['# ' + tl['wiki_js_enum'] + ' \n'],
         'wikibtn-hr': ['---- \n'],
         'wikibtn-slide': ['='+ tl['wiki_js_slide_sample_title'] +'=\n'
-                    + '* '+ tl['wiki_js_slide_sample_bullet'] +'\n'
-                    + '* '+ tl['wiki_js_slide_sample_bullet'] + '\n'
-                    + '* '+ tl['wiki_js_slide_sample_bullet'] + '\n'
-                    + '....' + '\n']
+            + '* '+ tl['wiki_js_slide_sample_bullet'] +'\n'
+            + '* '+ tl['wiki_js_slide_sample_bullet'] + '\n'
+            + '* '+ tl['wiki_js_slide_sample_bullet'] + '\n'
+            + '....' + '\n']
     };
 }
 /**
@@ -290,11 +289,10 @@ function getSelection(id)
         text_area.selectionEnd = sleft.text.length + sel.text.length;
         text_area.selectedText = sel.text;
         var selected_text_prefix = text_area.value.substring(0,
-                text_area.selectionStart);
+            text_area.selectionStart);
         var selection = sel.text;
         var selected_text_suffix = text_area.value.substring(
-                text_area.selectionEnd,
-                text_area.textLength);
+            text_area.selectionEnd, text_area.textLength);
     } else if (typeof (text_area.selectionStart) !== "undefined") {
         /**
          Things are pretty straightforward in Mozilla based
@@ -304,12 +302,12 @@ function getSelection(id)
          Then compute the prefix and suffix using substr method.
          */
         var selected_text_prefix = text_area.value.substr(0,
-                text_area.selectionStart);
+            text_area.selectionStart);
         var selection = text_area.value.substr(
-                text_area.selectionStart,
-                text_area.selectionEnd - text_area.selectionStart);
+            text_area.selectionStart,
+            text_area.selectionEnd - text_area.selectionStart);
         var selected_text_suffix = text_area.value.substr(
-                text_area.selectionEnd);
+            text_area.selectionEnd);
     }
     var obj = {};
     obj.selection = selection;
@@ -470,7 +468,6 @@ function createWikiTable(rows, cols, example_text, header_text)
         }
         table = table + "|- " + br;
         table = table + "| ";
-
         for(j = 0; j < cols; j++) {
             table = table + example_text + " ";
             if (j < (cols - 1)) {
