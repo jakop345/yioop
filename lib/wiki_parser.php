@@ -75,6 +75,7 @@ class WikiParser implements CrawlConstants
     {
         $esc = $this->esc;
         $not_braces = '(?:[^\}]|\}[^\}])*';
+        $not_paragraph = '(?:\A|[^\n]|[^\n]\n)';
         $class_or_id = '0-9a-zA-Z\_\-\s';
         $this->minimal = $minimal;
         //assume substitutions are applied after htmlentities called on string
@@ -204,10 +205,10 @@ class WikiParser implements CrawlConstants
             array('/\r/', ""),
         );
         $braces_substitutions = array(
-            array('/[^\n]{{\s*class\s*\=\s*'.
+            array('/'.$not_paragraph.'{{\s*class\s*\=\s*'.
                 "&quot;([$class_or_id]+)&quot;\s+()}}/",
                 "$esc<span class=\"$1\" >\t\n$2$esc</span>\t"),
-            array('/[^\n]{{\s*class\s*\=\s*'.
+            array('/'.$not_paragraph.'{{\s*class\s*\=\s*'.
                 "&#039;([$class_or_id]+)&#039;\s+(".$not_braces .")}}/",
                 "$esc<span class=\"$1\" >\t\n$2$esc</span>\t"),
             array('/\n*?{{\s*class\s*\=\s*'.
@@ -225,7 +226,7 @@ class WikiParser implements CrawlConstants
             array("/\n*?{{\s*id\s*\=\s*&#039;([$class_or_id]+)&#039;\s+("
                 .$not_braces .')}}/',
                 "\n\n$esc<div id='$1'>\n\n$2\n\n$esc</div>"),
-            array('/\n*?{{\s*style\s*\=\s*'.
+            array('/'.$not_paragraph.'{{\s*style\s*\=\s*'.
                 '&quot;([0-9a-zA-Z\/\#\_\-\.\;\:\s\n\%]+)&quot;\s+('.
                  $not_braces .')}}/',
                 "$esc<span style=\"$1\">$2$esc</span>"),
@@ -233,7 +234,7 @@ class WikiParser implements CrawlConstants
                 '&quot;([0-9a-zA-Z\/\#\_\-\.\;\:\s\n\%]+)&quot;\s+('.
                 $not_braces .')}}/',
                 "\n\n$esc<div style=\"$1\">\n\n$2\n\n$esc</div>"),
-            array('/\n*?{{\s*style\s*\=\s*'.
+            array('/'.$not_paragraph.'{{\s*style\s*\=\s*'.
                 '&#039;([0-9a-zA-Z\_\-\.\;\:\s\n\%]+)&#039;'.
                 '\s+('.$not_braces .')}}/',
                 "$esc<span style='$1'>\t$2$esc</span>\t"),
