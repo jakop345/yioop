@@ -73,7 +73,7 @@ class PartialZipArchive
      * and @see $zip_file_names. Offsets used in the code for extracting
      * various fields out of a zip archive local file header were gotten
      * from https://en.wikipedia.org/wiki/ZIP_%28file_format%29
-     * Note the code for the constructor justs splits the whole string into 
+     * Note the code for the constructor justs splits the whole string into
      * parts on the string @see LOCAL_FILE_HEADER. It doesn't bother to try
      * to use the zip archive's directory (which might not be in the portion
      * of this zip archive given). It is possible for a file contained
@@ -136,7 +136,7 @@ class PartialZipArchive
      * the provided path/filename if found, and false otherwise.
      *
      * @param string $file_name contains complete path and file_name of afile
-     * @return mixed uncompressed file contents if found and extractable, 
+     * @return mixed uncompressed file contents if found and extractable,
      *      false otherwise
      */
     function getFromName($file_name)
@@ -157,4 +157,3 @@ class PartialZipArchive
     }
 }
 ?>
-

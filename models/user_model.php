@@ -438,7 +438,7 @@ class UserModel extends Model
      * Used to update the fields stored in a USERS row according to
      * an array holding new values
      *
-     * @param array $user updated values for a USERS row 
+     * @param array $user updated values for a USERS row
      */
     function updateUser($user)
     {

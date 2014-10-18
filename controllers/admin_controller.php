@@ -481,7 +481,7 @@ class AdminController extends Controller implements CrawlConstants
      * @param array $comparison_fields those fields of the entity
      *     in question ( for example, users) which we can search both with
      *     string comparison operators and equality operators
-     * @param array $equal_comparison_fields those fields of the entity in 
+     * @param array $equal_comparison_fields those fields of the entity in
      *     question which can only be search by equality/inequality operators
      * @param string $field_postfix suffix to append onto field names in
      *     case there are multiple forms on the same page

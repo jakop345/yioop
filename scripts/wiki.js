@@ -341,7 +341,7 @@ function setCaretPosition(text_field, pos)
     }
 }
 /**
- * Looks up the name'd wiki formatting task, then uses it type to 
+ * Looks up the name'd wiki formatting task, then uses it type to
  * render it in the textarea with identifer id
  *
  * @param String name identifier of the wiki task to be performed
@@ -636,7 +636,7 @@ function addWikiHeading(id)
 }
 
 /**
- * Fills a character array and returns as a string consisting given count 
+ * Fills a character array and returns as a string consisting given count
  * of a given character.
  *
  * @param String c character to be filled into an array.
@@ -670,13 +670,13 @@ function createTableForm(id)
         '<tr><th class="float-opposite"><label for="wiki-cols-' + id + '">' +
             tl['wiki_js_for_table_cols'] + '</label></th>'+
         '<td><input id="wiki-cols-' + id +'" name="wiki-prompt-cols" '+
-            'type="text"></td></tr>'+ 
+            'type="text"></td></tr>'+
         '<tr><th  class="float-opposite"><label for="wiki-insert-heading-' +
             id + '" >' + tl['wiki_js_prompt_heading'] + '</label></th>' +
         '<td><input id="wiki-insert-heading-' + id + '"' +
             'name="wiki-insert-heading" type="checkbox"></td></tr>' +
         '</table>' +
-        '<div class="center"><button onmousedown="useInputForTable(\'' + id 
+        '<div class="center"><button onmousedown="useInputForTable(\'' + id
             +'\')" name="submit" class="button-box">'+ tl['wiki_js_submit'] +
         '</button> &nbsp;' +
         '<button onmousedown="toggleDisplay(\'wiki-popup-prompt-' + id +
@@ -697,7 +697,7 @@ function createTableForm(id)
 function createHyperlinkForm(id)
 {
     var wiki_prompt_for_hyperlink = ce("div");
-    wiki_prompt_for_hyperlink.innerHTML = 
+    wiki_prompt_for_hyperlink.innerHTML =
         '<div class="wiki-popup-content">' +
         '<h2 class="center">'+tl['wiki_js_add_hyperlink']+'</h2>' +
         '<form><table><tr><th><label for="wikify-link-text-'+id+'">' +
@@ -708,8 +708,8 @@ function createHyperlinkForm(id)
             tl['wiki_js_link_url'] + '</label></th>' +
         '<td><input id="wikify-link-url-'+id+'" ' +
             'name="wikify-enter-link" type="text"></td></tr></table>' +
-        '<div class="center"><button onmousedown="addWikiHyperlink(\''+ 
-            id +'\')" ' + 'name="submit" class="button-box">'+ 
+        '<div class="center"><button onmousedown="addWikiHyperlink(\''+
+            id +'\')" ' + 'name="submit" class="button-box">'+
             tl['wiki_js_submit'] +'</button> &nbsp;' +
         '<button onmousedown="toggleDisplay(\'wiki-popup-prompt-' + id +
             '\')" name="close" class="button-box">' + tl['wiki_js_cancel'] +
@@ -734,7 +734,7 @@ function createSearchWidgetForm(id)
         '<option value="medium">' + tl['wiki_js_medium'] + '</option>' +
         '<option value="large">' + tl['wiki_js_large'] + '</option>'+
         '</select></div>' +
-        '<div class="center"><button onmousedown="useInputForSearch(\'' + id + 
+        '<div class="center"><button onmousedown="useInputForSearch(\'' + id +
             '\');"'+ 'name="submit"  class="button-box">' +
             tl['wiki_js_submit'] + '</button> &nbsp;' +
         '<button onmousedown="toggleDisplay(\'wiki-popup-prompt-' + id +

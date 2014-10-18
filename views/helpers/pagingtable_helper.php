@@ -90,7 +90,7 @@ class PagingtableHelper extends Helper
             "&amp;a=$activity";
         $data_fields = array('NUM_TOTAL', 'NUM_SHOW', 'START_ROW', 'END_ROW',
             'NEXT_START', 'NEXT_END', 'PREV_START', 'PREV_END', 'FORM_TYPE');
-        $var_prefix = (isset($data['VAR_PREFIX'])) ? 
+        $var_prefix = (isset($data['VAR_PREFIX'])) ?
             strtoupper($data['VAR_PREFIX']) : "";
         foreach($data_fields as $field) {
             $d[$field] = $var_prefix . $field;

@@ -284,7 +284,7 @@ class IndexShard extends PersistentStructure implements
      * @param string $fname filename to store the index shard with
      * @param int $generation when returning documents from the shard
      *      pretend there ar ethis many earlier documents
-     * @param int $num_docs_per_generation the number of documents that a 
+     * @param int $num_docs_per_generation the number of documents that a
      *      given shard can hold.
      * @param bool $read_only_from_disk used to determined if this shard is
      *      going to be largely kept on disk and to be in read only mode.
@@ -750,7 +750,7 @@ class IndexShard extends PersistentStructure implements
      * @param int $num_docs either number of links or number of docs depending
      *     if item represents a link or a doc.
      * @param int $total_docs_or_links number of docs or links in corpus
-     * @param float $type_weight BM25F weight for this component 
+     * @param float $type_weight BM25F weight for this component
      *      (doc or link) of score
      */
     static function docStats(&$item, $occurrences, $doc_len, $num_doc_or_links,

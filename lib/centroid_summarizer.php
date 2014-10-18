@@ -263,7 +263,7 @@ class CentroidSummarizer
                 $sentence = preg_replace("/\s+/ui", " ", $sentence);
                 $out[] = trim($sentence);
                 $count++;
-                $theshold_factor = 
+                $theshold_factor =
                     pow(1.5, floor($count/self::LONG_SENTENCE_THRESHOLD));
             }
             $sentence = "";

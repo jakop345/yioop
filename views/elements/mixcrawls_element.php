@@ -61,7 +61,7 @@ class MixcrawlsElement extends Element
         } else {
             $this->renderMixForm($data);
         }
-        if($mixes_exist) { 
+        if($mixes_exist) {
         $data['TABLE_TITLE'] = tl('mixcrawls_element_available_mixes');
         $data['ACTIVITY'] = 'mixCrawls';
         $data['VIEW'] = $this->view;
@@ -86,9 +86,9 @@ class MixcrawlsElement extends Element
             <?php
             if(!MOBILE) {
                 e("<td>");
-                if(isset($mix['FRAGMENTS']) 
+                if(isset($mix['FRAGMENTS'])
                     && count($mix['FRAGMENTS'])  > 0) {
-                    foreach($mix['FRAGMENTS'] as 
+                    foreach($mix['FRAGMENTS'] as
                         $fragment_id=>$fragment_data) {
                         if(!isset($fragment_data['RESULT_BOUND']) ||
                            !isset($fragment_data['COMPONENTS']) ||

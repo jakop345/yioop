@@ -33,7 +33,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 /**
  * This class has a collection of methods for French locale specific
  * tokenization. In particular, it has a stemmer, a stop word remover (for
- * use mainly in word cloud creation). The stemmer is my stab at re-implementing 
+ * use mainly in word cloud creation). The stemmer is my stab at re-implementing
  * the stemmer algorithm given at http://snowball.tartarus.org and was
  * inspired by http://snowball.tartarus.org/otherlangs/french_javascript.txt
  * Here given a word, its stem is that part of the word that
@@ -85,7 +85,7 @@ class FrTokenizer
      */
     static $r1_index;
     /**
-     * $r2 is the region after the first non-vowel following a vowel in $r1, or 
+     * $r2 is the region after the first non-vowel following a vowel in $r1, or
      * the end of the word if there is no such non-vowel
      * @var string
      */
@@ -156,7 +156,7 @@ class FrTokenizer
         self::step1(); //suffix removal
         $word_step1 = self::$buffer;
         if(self::step2a($before_process) //verb suffixes beginning with i
-            && $word_step1 == self::$buffer) { 
+            && $word_step1 == self::$buffer) {
             self::step2b(); //other verb suffixes
         }
         if(mb_strtolower(self::$buffer, "UTF-8") != $before_process) {
@@ -189,7 +189,7 @@ class FrTokenizer
     /**
      * $r1 is the region after the first non-vowel following a vowel, or the end
      * of the word if there is no such non-vowel.
-     * $r2 is the region after the first non-vowel following a vowel in $r1, or 
+     * $r2 is the region after the first non-vowel following a vowel in $r1, or
      * the end of the word if there is no such non-vowel
      */
     static function computeNonVowelRegions()
@@ -216,7 +216,7 @@ class FrTokenizer
             PREG_OFFSET_CAPTURE);
         self::$r1 = "";
         $len = strlen($word);
-        self::$r1_index = isset($matches[0][1]) ? $matches[0][1] + 
+        self::$r1_index = isset($matches[0][1]) ? $matches[0][1] +
             strlen(mb_substr($word,$matches[0][1], 2, 'UTF-8')) : $len;
         if(self::$r1_index != $len) {
             self::$r1 = substr($word, self::$r1_index);
@@ -224,7 +224,7 @@ class FrTokenizer
         if(self::$r1_index != $len) {
             preg_match("/[$vowel][^$vowel]/", self::$r1, $matches,
                 PREG_OFFSET_CAPTURE);
-            self::$r2_index = isset($matches[0][1]) ? $matches[0][1] + 
+            self::$r2_index = isset($matches[0][1]) ? $matches[0][1] +
                 strlen(mb_substr(self::$r1, $matches[0][1], 2, 'UTF-8')) : $len;
             if(self::$r2_index != $len) {
                 self::$r2 = substr(self::$r1, self::$r2_index);
@@ -252,7 +252,7 @@ class FrTokenizer
             '/(atrice|ateur|ation|atrices|ateurs|ations)$/u',
             '/(logie|logies)$/u', '/(usion|ution|usions|utions)$/u',
             '/(ence|ences)$/u', '/(ement|ements)$/u', '/(ité|ités)$/u',
-            '/(if|ive|ifs|ives)$/u', '/(eaux)$/u', '/(aux)$/u', 
+            '/(if|ive|ifs|ives)$/u', '/(eaux)$/u', '/(aux)$/u',
             '/(euse|euses)$/u',
             "/[^$vowel](issement|issements)".'$/u', '/(amment)$/u',
             '/(emment)$/u', "/[$vowel]".'(ment|ments)$/u');
@@ -307,7 +307,7 @@ class FrTokenizer
                 }
             } else if (preg_search("/[^$vowel](issement|issements)".'$/u',
                 $word) > 0) {
-                $word = preg_replace("/(issement|issements)".'$/u', 
+                $word = preg_replace("/(issement|issements)".'$/u',
                     '', $word);
             }
         } else if($a_index[7] != -1 && $a_index[7] >= $r2_index) {
@@ -339,7 +339,7 @@ class FrTokenizer
                 $word = preg_replace('/(at)$/', '', $word);
                 if(preg_search('/(ic)$/', $word) >= $r2_index) {
                     $word = preg_replace('/(ic)$/u', '', $word);
-                } else { 
+                } else {
                     $word = preg_replace('/(ic)$/u', 'iqU', $word);
                 }
             }

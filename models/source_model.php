@@ -243,8 +243,8 @@ class SourceModel extends Model
     }
     /**
      * Return the media source by the name of the source
-     * @param string $folder_name 
-     * @return array 
+     * @param string $folder_name
+     * @return array
      */
     function getSubsearch($folder_name)
     {
@@ -473,7 +473,7 @@ class SourceModel extends Model
         return true;
     }
     /**
-     * Returns an array of DOMDocuments for the nodes that match an xpath 
+     * Returns an array of DOMDocuments for the nodes that match an xpath
      * query on $dom, a DOMDocument
      *
      * @param DOMDocument $dom document to run xpath query on

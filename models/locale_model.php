@@ -101,7 +101,7 @@ class LocaleModel extends Model
     /**
      * Associations of the form
      *     name of field for web forms => database column names/abbreviations
-     * In this case, things will in general map to the LOCALES tables in the 
+     * In this case, things will in general map to the LOCALES tables in the
      * Yioop database
      * @var array
      */
@@ -701,10 +701,10 @@ EOT;
         foreach($general_ini as $general_name => $general_value) {
             if(is_array($general_value)) {
                 $n[] = "[$general_name]";
-                $old_configure[$general_name] = 
+                $old_configure[$general_name] =
                     isset($old_configure[$general_name]) ?
                     $old_configure[$general_name] : array();
-                $fallback_configure[$general_name] = 
+                $fallback_configure[$general_name] =
                     isset($fallback_configure[$general_name]) ?
                     $fallback_configure[$general_name] : array();
                 foreach($general_value as $name => $value) {

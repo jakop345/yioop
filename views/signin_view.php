@@ -68,17 +68,17 @@ class SigninView extends View
                 <form  method="post" id="zkp-form" action="#"
                     onsubmit="generateKeys('zkp-form','username', <?php
                     ?>'password', 'fiat-shamir-modulus', '<?php
-                    e($_SESSION['SALT_VALUE']); ?>', <?php 
+                    e($_SESSION['SALT_VALUE']); ?>', <?php
                     e($data['AUTH_ITERATION']); ?>)" >
                 <input type="hidden" name="fiat_shamir_modulus"
                     id="fiat-shamir-modulus"
                     value="<?php e($data['FIAT_SHAMIR_MODULUS']) ?>"/>
                 <input type="hidden" id="salt-value" name="salt_value" />
                 <input type="hidden" id="auth-message"
-                    name="auth_message" value="<?php 
+                    name="auth_message" value="<?php
                     e(tl('sigin_view_signing_in')); ?>" />
                 <input type="hidden" id="auth-fail-message"
-                    name="auth_fail_message" value="<?php 
+                    name="auth_fail_message" value="<?php
                     e(tl('sigin_view_login_failed')); ?>" />
         <?php } else {?>
                 <form method="post" action="#">

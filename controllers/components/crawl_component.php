@@ -152,7 +152,7 @@ class CrawlComponent extends Component implements CrawlConstants
                     $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
                         tl('crawl_component_set_index')."</h1>')";
 
-                    $timestamp = substr($parent->clean($_REQUEST['timestamp'], 
+                    $timestamp = substr($parent->clean($_REQUEST['timestamp'],
                         "int"), 0,  TIMESTAMP_LEN);
                     $crawl_model->setCurrentIndexDatabaseName($timestamp);
                 break;
@@ -816,7 +816,7 @@ class CrawlComponent extends Component implements CrawlConstants
     function pageOptions()
     {
         global $INDEXED_FILE_TYPES;
-        /* get processors for different file types (populating 
+        /* get processors for different file types (populating
            $INDEXED_FILE_TYPES) */
         foreach(glob(BASE_DIR."/lib/processors/*_processor.php") as $filename) {
             require_once $filename;
@@ -1204,7 +1204,7 @@ class CrawlComponent extends Component implements CrawlConstants
                         $parent_processor = $processor_name;
                         do {
                             if ($supported_processor == $parent_processor) {
-                                $plugin_object = 
+                                $plugin_object =
                                     $parent->plugin(lcfirst($plugin));
                                 if(method_exists($plugin_name,
                                     "loadConfiguration")) {
@@ -1514,7 +1514,7 @@ class CrawlComponent extends Component implements CrawlConstants
                             $r[$clean_me] = UrlParser::canonicalLink(
                                 $r[$clean_me], NAME_SERVER);
                             if(!$r[$clean_me]) {
-                                $data['SCRIPT'] .= 
+                                $data['SCRIPT'] .=
                                     "doMessage('<h1 class=\"red\" >".
                                     tl('crawl_component_invalid_url').
                                     "</h1>');";

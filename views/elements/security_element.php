@@ -73,7 +73,7 @@ class SecurityElement extends Element
                         "authentication-mode", "AUTHENTICATION_MODE",
                          $data['AUTHENTICATION_MODES'],
                          $data['AUTHENTICATION_MODE']);
-                    if(isset($data['ZKP_UNAVAILABLE']) && 
+                    if(isset($data['ZKP_UNAVAILABLE']) &&
                         $data['ZKP_UNAVAILABLE']) {
                         e('<div class="red">'.
                             tl('security_element_zero_unavailable')."</div>");
@@ -95,7 +95,7 @@ class SecurityElement extends Element
                 ?>
             </fieldset>
             </div>
-            <div class="top-margin center"><button 
+            <div class="top-margin center"><button
                 class="button-box" type="submit"><?php
                 e(tl('security_element_save')); ?></button>
             </div>
@@ -105,12 +105,12 @@ class SecurityElement extends Element
         ?></h2>
         <?php
         if($data['CAN_LOCALIZE']) { ?>
-            <div class="top-margin">[<a href="<?php 
+            <div class="top-margin">[<a href="<?php
                 e($localize_url.'&amp;filter=register_view_recovery'.
                     '&amp;previous_activity=security');
                     ?>" ><?php e(tl('security_element_edit_recovery')); ?></a>]
             </div>
-            <div class="top-margin">[<a href="<?php 
+            <div class="top-margin">[<a href="<?php
                 e($localize_url.'&amp;filter=register_view_question'.
                     '&amp;previous_activity=security');
                     ?>" ><?php e(tl('security_element_edit_captcha')); ?></a>]

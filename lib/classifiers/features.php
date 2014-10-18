@@ -508,7 +508,7 @@ class SparseMatrix implements Iterator //Iterator is built-in to PHP
      * Accessor method which the number of rows in the matrix
      * @return number of rows
      */
-    function rows() 
+    function rows()
     {
         return $this->m;
     }
@@ -516,7 +516,7 @@ class SparseMatrix implements Iterator //Iterator is built-in to PHP
      * Accessor method which the number of columns in the matrix
      * @return number of columns
      */
-    function columns() 
+    function columns()
     {
         return $this->n;
     }

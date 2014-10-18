@@ -561,7 +561,7 @@ class WikiParser implements CrawlConstants
                         if(!isset($ref_data["author$i"])) {break; }
                         if(isset($ref_data["authorlink$i"]) ) {
                             if(!isset($ref_data["author$i"])) {
-                                $ref_data["author$i"] = 
+                                $ref_data["author$i"] =
                                     $ref_data["authorlink$i"];
                             }
                             $ref_data["author$i"] = "<a href=\"$base_address".

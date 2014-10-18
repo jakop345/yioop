@@ -93,7 +93,7 @@ class CrawlModel extends ParallelModel implements CrawlConstants
      * {@inheritDoc}
      *
      * @param array $row row as retrieved from database query
-     * @param mixed $args additional arguments that might be used by this 
+     * @param mixed $args additional arguments that might be used by this
      *      callback. In this case, should be a boolean flag that says whether
      *      or not to add information about the components of the crawl mix
      * @return array $row after callback manipulation
@@ -175,7 +175,7 @@ class CrawlModel extends ParallelModel implements CrawlConstants
      * Sets the IndexArchive that will be used for search results
      *
      * @param $timestamp  the timestamp of the index archive. The timestamp is
-     *      when the crawl was started. Currently, the timestamp appears as 
+     *      when the crawl was started. Currently, the timestamp appears as
      *      substring of the index archives directory name
      */
     function setCurrentIndexDatabaseName($timestamp)

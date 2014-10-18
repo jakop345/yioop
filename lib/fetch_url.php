@@ -268,7 +268,7 @@ class FetchUrl implements CrawlConstants
                     $sites[$i][self::TIMESTAMP] = time();
                     if($is_gopher) {
                         $path = UrlParser::getPath($sites[$i][self::URL]);
-                        $filename = 
+                        $filename =
                             UrlParser::getDocumentFilename(
                                 $sites[$i][self::URL]);
                         if(isset($path[1])) {

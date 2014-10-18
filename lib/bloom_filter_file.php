@@ -126,7 +126,7 @@ class BloomFilterFile extends PersistentStructure
      * Hashes $value to a bit position in the BloomFilter
      *
      * @param string $value value to map to a bit position in the filter
-     * @param int $num_keys number of bit positions in the Bloom filter 
+     * @param int $num_keys number of bit positions in the Bloom filter
      *      used to say an item isin the filter
      * @return int the bit position mapped to
      */

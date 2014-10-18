@@ -133,7 +133,7 @@ var w3c_slidy = {
     if (this.slides.length > 0)
     {
       var slide = this.slides[this.slide_number];
-   
+
       if (this.slide_number > 0)
       {
         this.set_visibility_all_incremental("visible");
@@ -262,13 +262,13 @@ var w3c_slidy = {
          w3c_slidy.hide_table_of_contents(true);
 
       w3c_slidy.stop_propagation(e);
-    
+
       if (e.cancel != undefined)
         e.cancel = true;
-      
+
       if (e.returnValue != undefined)
         e.returnValue = false;
-      
+
       return false;
     };
 
@@ -353,7 +353,7 @@ var w3c_slidy = {
     if (!event)
       var event = window.event;
 
-    // kludge around NS/IE differences 
+    // kludge around NS/IE differences
     if (window.event)
       key = window.event.keyCode;
     else if (event.which)
@@ -854,13 +854,13 @@ var w3c_slidy = {
     this.add_listener(prompt, "click", function (e) {
       document.body.removeChild(prompt);
       w3c_slidy.stop_propagation(e);
-    
+
       if (e.cancel != undefined)
         e.cancel = true;
-      
+
       if (e.returnValue != undefined)
         e.returnValue = false;
-      
+
       return false;
     });
 
@@ -1071,7 +1071,7 @@ var w3c_slidy = {
         node = document.body.removeChild(node);
         div.appendChild(node);
         node = next;
-      } 
+      }
     }
   },
 
@@ -1239,7 +1239,7 @@ var w3c_slidy = {
 
       if (w3c_slidy.time_left > 0)
         w3c_slidy.time_left -= 200;
-    } 
+    }
   },
 
   get_timer: function () {
@@ -1689,7 +1689,7 @@ var w3c_slidy = {
         continue;
 
       if (result[i] == "background")
-	continue;
+    continue;
 
       ++count;
     }
@@ -1882,7 +1882,7 @@ var w3c_slidy = {
     if (window.pageXOffset)
       return self.pageXOffset;
 
-    if (document.documentElement && 
+    if (document.documentElement &&
              document.documentElement.scrollLeft)
       return document.documentElement.scrollLeft;
 
@@ -1896,7 +1896,7 @@ var w3c_slidy = {
     if (window.pageYOffset)
       return self.pageYOffset;
 
-    if (document.documentElement && 
+    if (document.documentElement &&
              document.documentElement.scrollTop)
       return document.documentElement.scrollTop;
 
@@ -1999,10 +1999,10 @@ var w3c_slidy = {
 
       if (mimeType == "image/svg+xml" || mimeType == "application/x-shockwave-flash")
       {
-        if ( !obj.initialWidth ) 
+        if ( !obj.initialWidth )
           obj.initialWidth = obj.getAttribute("width");
 
-        if ( !obj.initialHeight ) 
+        if ( !obj.initialHeight )
           obj.initialHeight = obj.getAttribute("height");
 
         if ( obj.initialWidth && obj.initialWidth.charAt(obj.initialWidth.length-1) == "%" )
@@ -2045,7 +2045,7 @@ var w3c_slidy = {
     if (!event)
       event = window.event;
 
-    // kludge around NS/IE differences 
+    // kludge around NS/IE differences
     if (window.event)
     {
       key = window.event.keyCode;
@@ -2134,7 +2134,7 @@ var w3c_slidy = {
           w3c_slidy.fold(w3c_slidy.outline);
         else
           w3c_slidy.unfold(w3c_slidy.outline);
-          
+
        return w3c_slidy.cancel(event);
       }
     }
@@ -2714,7 +2714,7 @@ var w3c_slidy = {
   {
     var key;
 
-    // kludge around NS/IE differences 
+    // kludge around NS/IE differences
     if (typeof window.event != "undefined")
       key = window.event.keyCode;
     else if (e.which)
@@ -2748,7 +2748,7 @@ var w3c_slidy = {
            tag == "li" || tag == "table" || tag == "pre" ||
            tag == "h1" || tag == "h2" || tag == "h3" ||
            tag == "h4" || tag == "h5" || tag == "h6" ||
-           tag == "blockquote" || tag == "address"; 
+           tag == "blockquote" || tag == "address";
   },
 
   add_listener: function (element, event, handler) {

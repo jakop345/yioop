@@ -139,7 +139,7 @@ class WikiView extends View
         }
         $this->element("wiki")->render($data);
         if(!$is_admin &&
-            isset($data['PAGE_FOOTER']) && 
+            isset($data['PAGE_FOOTER']) &&
             isset($data["HEAD"]['page_type']) &&
             $data["HEAD"]['page_type'] != 'presentation') {
             e("<div class='current-activity-footer'>".

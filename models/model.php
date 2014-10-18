@@ -601,7 +601,7 @@ class Model implements CrawlConstants
      * its components. By default this method just returns this row unchanged.
      *
      * @param array $row row as retrieved from database query
-     * @param mixed $args additional arguments that might be used by this 
+     * @param mixed $args additional arguments that might be used by this
      *     callback
      * @return array $row after callback manipulation
      */

@@ -98,7 +98,7 @@ class WikiElement extends Element implements CrawlConstants
             e('<div class="presentation-activity">');
         } else {
             $page_border = "";
-            if(isset($data["HEAD"]['page_border']) && 
+            if(isset($data["HEAD"]['page_border']) &&
                 $data["HEAD"]['page_border'] &&
                 $data['HEAD']['page_border'] != 'none') {
                 $page_border = $data['HEAD']['page_border'];
@@ -136,7 +136,7 @@ class WikiElement extends Element implements CrawlConstants
             $modes["pages"] = tl('wiki_view_pages');
             $bar = "";
             foreach($modes as $name => $translation) {
-                if($data["MODE"] == $name) { 
+                if($data["MODE"] == $name) {
                     e($bar); ?><b><?php e($translation); ?></b><?php
                 } else if(!isset($data["PAGE_NAME"]) ||
                     $data["PAGE_NAME"]=="")
@@ -235,7 +235,7 @@ class WikiElement extends Element implements CrawlConstants
             e("<h2>".tl("wiki_view_page_no_exist", $data["PAGE_NAME"]).
                 "</h2>");
         }
-        if($is_admin && 
+        if($is_admin &&
             isset($data['PAGE_FOOTER']) && isset($data["HEAD"]['page_type']) &&
             $data["HEAD"]['page_type'] != 'presentation') {
             e($data['PAGE_FOOTER']);
@@ -269,7 +269,7 @@ class WikiElement extends Element implements CrawlConstants
             elt('wiki-page').selectionStart : 0;
             elt('scroll-top').value= (elt('wiki-page').scrollTop) ?
             elt('wiki-page').scrollTop : 0;" >
-            <input type="hidden" name="c" value="<?php e($data['CONTROLLER']); 
+            <input type="hidden" name="c" value="<?php e($data['CONTROLLER']);
             ?>" />
             <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
                 e($data[CSRF_TOKEN]); ?>" />
@@ -367,7 +367,7 @@ class WikiElement extends Element implements CrawlConstants
             </div>
             <div id='page-container'><textarea id="wiki-page"
                 class="tall-text-area" name="page"
-                <?php 
+                <?php
                 if((!isset($data['page_type']) ||
                         $data['page_type'] != 'presentation')){
                     $data_buttons = 'all,!wikibtn-slide';
@@ -499,7 +499,7 @@ class WikiElement extends Element implements CrawlConstants
                 e(tl("wiki_element_upload_error")); ?></h1>');
         }
 
-        function uploadCanceled(event) 
+        function uploadCanceled(event)
         {
             doMessage('<h1 class=\"red\" ><?php
                 e(tl("wiki_element_upload_cancelled")); ?></h1>');
@@ -599,7 +599,7 @@ class WikiElement extends Element implements CrawlConstants
             $data["GROUP"]["GROUP_NAME"]). "</h2>");
         ?>
         <form id="editpageForm" method="get" action='#'>
-        <input type="hidden" name="c" value="<?php e($data['CONTROLLER']); 
+        <input type="hidden" name="c" value="<?php e($data['CONTROLLER']);
             ?>" />
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />
@@ -609,7 +609,7 @@ class WikiElement extends Element implements CrawlConstants
             e($data['GROUP']['GROUP_ID']); ?>" />
         <input type="text" name="filter" class="extra-wide-field"
             maxlength="<?php e(SHORT_TITLE_LEN); ?>"
-            placeholder="<?php e(tl("wiki_view_filter_or_create")); 
+            placeholder="<?php e(tl("wiki_view_filter_or_create"));
             ?>" value="<?php e($data['FILTER'])?>" />
         <button class="button-box" type="submit"><?php
             e(tl('wiki_element_go')); ?></button>
@@ -670,7 +670,7 @@ class WikiElement extends Element implements CrawlConstants
             <input type="hidden" name="arg" value="history" />
             <input type="hidden" name="group_id" value="<?php
                 e($data['GROUP']['GROUP_ID']); ?>" />
-            <input type="hidden" name="page_id" value="<?php 
+            <input type="hidden" name="page_id" value="<?php
                 e($data["page_id"]); ?>" />
             <input type="hidden" name="diff" value="1" />
             <b><?php e(tl('wiki_view_difference')); ?></b>
@@ -720,7 +720,7 @@ class WikiElement extends Element implements CrawlConstants
             e(tl("wiki_view_page_len", $item["PAGE_LEN"])." ");
             if($first && $data['LIMIT'] == 0) {
                 e("[<b>".tl("wiki_view_revert")."</b>].");
-            } else { 
+            } else {
                 e("[<a href='$base_query&amp;revert=".$item['PUBDATE'].
                 "'>".tl("wiki_view_revert")."</a>].");
             }

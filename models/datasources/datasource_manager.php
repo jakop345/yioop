@@ -344,8 +344,8 @@ abstract class DatasourceManager
         return $bounds;
     }
     /**
-     * Copies the contents of from_table in the first database into the 
-     * to a to_table of suitable schema in a second database. It assumes the 
+     * Copies the contents of from_table in the first database into the
+     * to a to_table of suitable schema in a second database. It assumes the
      * table exists in both databases
      *
      * @param string $from_table name of the table to be copied from

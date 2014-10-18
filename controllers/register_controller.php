@@ -726,7 +726,7 @@ class RegisterController extends Controller implements CrawlConstants
             }
             $suggest_host = UrlParser::getHost($url);
             $scheme = UrlParser::getScheme($url);
-            if(strlen($suggest_host) < 12 || !$suggest_host || 
+            if(strlen($suggest_host) < 12 || !$suggest_host ||
                 !in_array($scheme, array("http", "https"))) {
                 $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
                     tl('register_controller_invalid_url')."</h1>');";
@@ -767,7 +767,7 @@ class RegisterController extends Controller implements CrawlConstants
                     for($i = 0; $i < $num_captchas; $i++) {
                         $data["question_$i"] = "-1";
                     }
-                    list($captchas, $answers) = 
+                    list($captchas, $answers) =
                         $this->selectQuestionsAnswers($this->captchas_qa,
                             $num_captchas, self::NUM_CAPTCHA_CHOICES);
                     $data['CAPTCHA'] = $captchas;
@@ -940,7 +940,7 @@ class RegisterController extends Controller implements CrawlConstants
                 $question_choice = mt_rand(0, $size_qa - 1);
             } while (isset($questions[$question_choice]));
             $more_less = rand(0, 1);
-            $answer_possibilities = 
+            $answer_possibilities =
                 explode(",", $question_answers[$question_choice][2]);
             $selected_possibilities = array();
             $size_possibilities = count($answer_possibilities);

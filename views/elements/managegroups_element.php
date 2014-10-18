@@ -217,7 +217,7 @@ class ManagegroupsElement extends Element
                 <td><?php
                     if($group['OWNER_ID'] != $_SESSION['USER_ID']||
                         $group['GROUP_NAME'] == 'Public') {
-                        if(isset($group['STATUS']) && 
+                        if(isset($group['STATUS']) &&
                             $group['STATUS'] == INVITED_STATUS) {
                             ?><a href="<?php e($join_url . 'group_id='.
                                 $group['GROUP_ID'].'&amp;user_id=' .
@@ -237,7 +237,7 @@ class ManagegroupsElement extends Element
                     if($group['GROUP_NAME'] == 'Public') {
                         e('<span class="gray">'.
                             tl('managegroups_element_delete').'</span>');
-                    } else if(isset($data['browse']) && 
+                    } else if(isset($data['browse']) &&
                         $data['browse'] == 'true') {
                         if( $group['REGISTER_TYPE'] == NO_JOIN &&
                             $_SESSION['USER_ID']  != ROOT_ID) {
@@ -325,7 +325,7 @@ class ManagegroupsElement extends Element
                 }
                 ?> /></td><?php
                 if($addgroup) { ?>
-                    <td>[<a href="<?php e($browse_url); ?>"><?php 
+                    <td>[<a href="<?php e($browse_url); ?>"><?php
                         e(tl('managegroups_element_browse')); ?></a>]
                     <?php
                     e($this->renderHelpButton("browse_url", $data[CSRF_TOKEN],
@@ -334,7 +334,7 @@ class ManagegroupsElement extends Element
                 <?php
                 }
         ?></tr>
-        <?php 
+        <?php
         if($creategroup || $editgroup) { ?>
             <tr><th class="table-label"><label for="register-type"><?php
                 e(tl('managegroups_element_register'))?></label>:</th>
@@ -361,7 +361,7 @@ class ManagegroupsElement extends Element
                 e(tl('managegroups_element_post_lifetime'))?></label>:</th>
                 <td><?php
                     $this->view->helper("options")->render(
-                        "post-lifetime", "post_lifetime", 
+                        "post-lifetime", "post_lifetime",
                         $data["POST_LIFETIMES"],
                         $data['CURRENT_GROUP']['post_lifetime']);
                     ?></td></tr>
@@ -456,7 +456,7 @@ class ManagegroupsElement extends Element
                             </td>
                             <td colspan="2" class="center">
                                 <input class="very-narrow-field center"
-                                    name="user_filter" type="text" 
+                                    name="user_filter" type="text"
                                     maxlength="<?php e(NAME_LEN)?>"
                                     value='<?php
                                     e($data['USER_FILTER']); ?>' /><br />

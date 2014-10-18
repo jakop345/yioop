@@ -116,7 +116,7 @@ class SearchsourcesElement extends Element
                 value="<?php e($data['CURRENT_SOURCE']['aux_info']); ?>"
                 maxlength="<?php e($aux_info_len);
                 ?>" class="wide-field" /></td></tr>
-        <tr><td colspan="2"><span id='instruct'><?php 
+        <tr><td colspan="2"><span id='instruct'><?php
             e(tl('searchsources_element_feed_instruct'));
             ?></span></td></tr>
         <tr><td><label for="item-path"><b id="channel-text"><?php
@@ -216,7 +216,7 @@ class SearchsourcesElement extends Element
             <div id='subsearch-section'
                 class='float-opposite'><a href='<?php e($base_url); ?>'><?php
                 e(tl('searchsources_element_addsearch_form')); ?></a></div>
-            <h2 id="subsearch-head"><?php 
+            <h2 id="subsearch-head"><?php
                 e(tl('searchsources_element_edit_subsearch'));?></h2>
             <?php
         } else {
@@ -231,7 +231,7 @@ class SearchsourcesElement extends Element
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" name="a" value="searchSources" />
-        <input type="hidden" name="arg" value="<?php 
+        <input type="hidden" name="arg" value="<?php
             e($data['SEARCH_FORM_TYPE']); ?>" />
         <table class="name-table">
         <tr><td><label for="subsearch-folder-name"><b><?php
@@ -304,7 +304,7 @@ class SearchsourcesElement extends Element
                 "#subsearch-section"); ?>"><?php
                 e(tl('searchsources_element_editsource'));
             ?></a></td>
-            <td><?php 
+            <td><?php
             if($data['CAN_LOCALIZE']) { ?>
                 <a href='<?php e($localize_url."&amp;filter=".
                     $search['LOCALE_STRING']);
@@ -312,7 +312,7 @@ class SearchsourcesElement extends Element
                 e(tl('searchsources_element_localize'));
                 ?></a><?php
             } else { ?>
-                <span class="gray"><?php 
+                <span class="gray"><?php
                 e(tl('searchsources_element_localize')); ?></span>
                 <?php
             }

@@ -94,7 +94,7 @@ class ManagelocalesElement extends Element
                 e("<td>".$locale['WRITING_MODE']."</td>");
                 $gr_class = ($locale['ACTIVE']) ? " class='green' " :
                     " class='red' ";
-                e("<td $gr_class>".($locale['ACTIVE'] ? 
+                e("<td $gr_class>".($locale['ACTIVE'] ?
                     tl('managelocales_element_true') :
                     tl('managelocales_element_false'))."</td>");
             }
@@ -140,7 +140,7 @@ class ManagelocalesElement extends Element
         <input type="hidden" name="a" value="manageLocales" />
         <input type="hidden" name="arg" value="<?php
             e($data['FORM_TYPE']);?>" />
-        <?php 
+        <?php
         if($editlocale) {
         ?>
             <input type="hidden" name="selectlocale" value="<?php
@@ -151,7 +151,7 @@ class ManagelocalesElement extends Element
             <tr><th><label for="locale-name"><?php
                 e(tl('managelocales_element_localenamelabel'))?></label></th>
                 <td><input type="text" id="locale-name"
-                    name="localename" maxlength="<?php e(LONG_NAME_LEN); 
+                    name="localename" maxlength="<?php e(LONG_NAME_LEN);
                     ?>" class="narrow-field"
                     value="<?php e($data['CURRENT_LOCALE']['localename']); ?>"
                     <?php

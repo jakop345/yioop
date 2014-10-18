@@ -89,7 +89,7 @@ class SigninModel extends Model
     /**
      * Checks one round of username and password in case of ZKP authentication
      * via the Fiat Shamir protocol. Let S be the user's password (not stored
-     * on server, secret, and co-prime to some public $n = pq). 
+     * on server, secret, and co-prime to some public $n = pq).
      * V = S^2 mod $n is stored on the server and is assumed to be publicly
      * known.
      * Idea is that previously

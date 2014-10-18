@@ -1287,7 +1287,7 @@ class SearchController extends Controller implements CrawlConstants
             $instance_num);
         if(!isset($cache_item[self::PAGE])) {
             $data["URL"] = $url;
-            $data["SUMMARY_STRING"] = 
+            $data["SUMMARY_STRING"] =
                 "\n\n". tl('search_controller_download_fetcher',
                 $robot_instance) ."\n\n". $summary_string;
             $this->displayView("nocache", $data);
@@ -1464,7 +1464,7 @@ class SearchController extends Controller implements CrawlConstants
                 "<a><table><tr><td><th><dt><dir><dl><dd><pre>";
             $cache_file = strip_tags($cache_file, $body_tags);
             $cache_file = wordwrap($cache_file, 80);
-            $cache_file = "<html><head><title>". 
+            $cache_file = "<html><head><title>".
                 tl('search_controller_yioop_cache') . "</title></head>".
                 "<body>".$cache_file."</body></html>";
             $dom = new DOMDocument();
@@ -1595,7 +1595,7 @@ class SearchController extends Controller implements CrawlConstants
         $summaryNode = $body->insertBefore($summaryNode, $first_child);
         $summary_string_prefix = "";
         if(isset($cache_item[self::ROBOT_INSTANCE])) {
-            $summary_string_prefix = 
+            $summary_string_prefix =
                 "\n\n". tl('search_controller_download_fetcher',
                 $cache_item[self::ROBOT_INSTANCE]) ."\n\n";
         }

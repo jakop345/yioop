@@ -236,7 +236,7 @@ class CrawlstatusView extends View
                     }
                     ?>
                     <td><?php if($crawl['RESUMABLE']) { ?>
-                        <a href="<?php e($base_url); 
+                        <a href="<?php e($base_url);
                             ?>resume&amp;timestamp=<?php
                             e($crawl['CRAWL_TIME']); ?>"><?php
                             e(tl('crawlstatus_view_resume'));?></a>

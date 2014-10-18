@@ -192,7 +192,7 @@ class ManageusersElement extends Element
                 <form action="#" method="post"
                     onsubmit="registration('pass-word','retype-password',
                     'fiat-shamir-modulus')">
-                <input type="hidden" name="fiat_shamir_modulus" 
+                <input type="hidden" name="fiat_shamir_modulus"
                     id="fiat-shamir-modulus"
                     value="<?php e($data['FIAT_SHAMIR_MODULUS']) ?>"/>
        <?php } else { ?>
@@ -295,7 +295,7 @@ class ManageusersElement extends Element
                     if($data['ROLE_FILTER'] != "" ||
                         (isset($data['NUM_USER_ROLES']) &&
                         $data['NUM_USER_ROLES'] > NUM_RESULTS_PER_PAGE)) {
-                        $limit = isset($data['ROLE_LIMIT']) ? 
+                        $limit = isset($data['ROLE_LIMIT']) ?
                             $data['ROLE_LIMIT']: 0;
                     ?>
                         <div class="center">
@@ -311,7 +311,7 @@ class ManageusersElement extends Element
                                 >&lt;&lt;</a><?php
                             }
                             ?>
-                        <input class="very-narrow-field center" 
+                        <input class="very-narrow-field center"
                             name="role_filter" type="text" maxlength="<?php
                             e(NAME_LEN); ?>"
                             value='<?php e($data['ROLE_FILTER']); ?>' />
@@ -381,7 +381,7 @@ class ManageusersElement extends Element
                     if($data['GROUP_FILTER'] != "" ||
                         (isset($data['NUM_USER_GROUPS']) &&
                         $data['NUM_USER_GROUPS'] > NUM_RESULTS_PER_PAGE)) {
-                        $limit = isset($data['GROUP_LIMIT']) ? 
+                        $limit = isset($data['GROUP_LIMIT']) ?
                             $data['GROUP_LIMIT']: 0;
                     ?>
                         <div class="center">
@@ -397,7 +397,7 @@ class ManageusersElement extends Element
                                 >&lt;&lt;</a><?php
                             }
                             ?>
-                        <input class="very-narrow-field center" 
+                        <input class="very-narrow-field center"
                             name="group_filter" type="text" maxlength="<?php
                             e(SHORT_TITLE_LEN); ?>"
                             value='<?php  e($data['GROUP_FILTER']); ?>' />
@@ -406,14 +406,14 @@ class ManageusersElement extends Element
                                 NUM_RESULTS_PER_PAGE) {
                                 ?><a href='<?php e(
                                 "$action_url&amp;arg=edituser&amp;group_limit=".
-                                ($limit + NUM_RESULTS_PER_PAGE)); 
+                                ($limit + NUM_RESULTS_PER_PAGE));
                                 ?>'>&gt;&gt;</a>
                             <?php
                             }
                         ?><br />
                         <button type="submit" name="change_filter"
                             value="group"><?php
-                        e(tl('manageusers_element_filter')); 
+                        e(tl('manageusers_element_filter'));
                         ?></button><br />&nbsp;
                     </div>
                     <?php
@@ -425,7 +425,7 @@ class ManageusersElement extends Element
                     <button type="submit"
                         class="button-box">
                         <label for='select-group'><?php
-                        e(tl('manageusers_element_add_group')); 
+                        e(tl('manageusers_element_add_group'));
                         ?></label></button>
                     </div>
                     </div>

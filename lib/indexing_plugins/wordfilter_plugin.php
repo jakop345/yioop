@@ -151,7 +151,7 @@ class WordfilterPlugin extends IndexingPlugin implements CrawlConstants
 ; -canada,-canadian:NOPROCESS
 ;
 ; A filter rule is specified in a single line that contains a ':'
-; All lines in a rule file without a ':' are treated as comments. 
+; All lines in a rule file without a ':' are treated as comments.
 ;
 ; A rule has the format:
 ; PRECONDITIONS:ACTIONS
@@ -180,8 +180,8 @@ class WordfilterPlugin extends IndexingPlugin implements CrawlConstants
 ; JUSTFOLLOW, and NOPROCESS. These say how the summary
 ; of whole page should be processed and  most of them correspond to robot
 ; meta tag directives. We indicate here the non standard directives. The crawl
-; makes use of the meta word info when performing indexing. In the case 
-; where the actions contain NOPROCESS the summary returned from 
+; makes use of the meta word info when performing indexing. In the case
+; where the actions contain NOPROCESS the summary returned from
 ; pageSummaryProcessing will be false, and this will prevent
 ; any indexing of this document from occuring at all. This is different from
 ; NOINDEX which says the document should not show up in the index as search

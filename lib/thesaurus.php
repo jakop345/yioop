@@ -40,12 +40,12 @@ require_once BASE_DIR."/lib/phrase_parser.php";
  * To enable, you this have to define WORDNET_EXEC in your local_config file.
  * The idea behind thresaurus reordering is that given a query, it
  * is tagged for parts of speech. Each term is then looked up in thesaurus for
- * those parts of speech. Representative phrases for those term senses are 
+ * those parts of speech. Representative phrases for those term senses are
  * extracted from the ranked thesaurus output and a set of rewrites of the
  * original query are created. By looking up the number
- * of times these rewrites occur in the searched index the top two phrases 
- * that represent the original query are computed.The BM25 similarity of these 
- * phrases is then scored against each of the 10 output summaries of 
+ * of times these rewrites occur in the searched index the top two phrases
+ * that represent the original query are computed.The BM25 similarity of these
+ * phrases is then scored against each of the 10 output summaries of
  * PhraseModel and used to reorder the results.
  * To add thesaurus reordering for a different locale, two methods need to be
  * written in that locale tokenizer.php file
@@ -57,7 +57,7 @@ require_once BASE_DIR."/lib/phrase_parser.php";
  *     a term from an original whole_query which has been tagged to be
  *     one of the types VB (for verb), NN (for noun), AJ (for adjective),
  *     AV (for adverb), or NA (for anything else), it outputs
- *     a sequence of  (score => array of thesaurus terms) associations. 
+ *     a sequence of  (score => array of thesaurus terms) associations.
  *     The score representing one word sense of term
  * Given that these methods have been implemented if the use_thesaurus field
  * of that language tokenizer is set to true, the thesaurus will be used.
@@ -69,7 +69,7 @@ class Thesaurus
      * Part of speech tagging is processed on input and the output is
      * looked up in the thesaurus. USing this a ranked list of alternate
      * query phrases is created.
-     * For those phrases, counts in the Yioop index are calculated 
+     * For those phrases, counts in the Yioop index are calculated
      * and the top two phrases are selected.
      * @param string $orig_query input query from user
      * @param string $index_name selected index for search engine
@@ -83,8 +83,8 @@ class Thesaurus
     {
         $num_docs = array();
         $scores = array();
-        
-        $suggested_queries = 
+
+        $suggested_queries =
             self::getInitialSuggestions($orig_query, $lang);
         foreach($suggested_queries as $suggestion) {
             $num_docs[$suggestion] =
@@ -194,7 +194,7 @@ class Thesaurus
                 }
                 $modified_query = preg_replace(
                     '/' . $words . '/', trim($phrase), $query);
-                if(mb_strlen($modified_query) < $max_len && 
+                if(mb_strlen($modified_query) < $max_len &&
                     mb_strpos($modified_query, $query) === false) {
                     $suggestions[$i] = $modified_query;
                     $i++;

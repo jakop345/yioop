@@ -150,7 +150,7 @@ class StaticController extends Controller
             $page_header = $group_model->getPageInfoByName(PUBLIC_GROUP_ID,
                 $head_info['page_header'], $locale_tag, "read");
             if(isset($page_header['PAGE'])) {
-                $header_parts = 
+                $header_parts =
                     explode("END_HEAD_VARS", $page_header['PAGE']);
             }
             $data["PAGE_HEADER"] = (isset($header_parts[1])) ?
@@ -163,7 +163,7 @@ class StaticController extends Controller
             $page_footer = $group_model->getPageInfoByName(PUBLIC_GROUP_ID,
                 $head_info['page_footer'], $locale_tag, "read");
             if(isset($page_footer['PAGE'])) {
-                $footer_parts = 
+                $footer_parts =
                     explode("END_HEAD_VARS", $page_footer['PAGE']);
             }
             $data['PAGE_FOOTER'] = (isset($footer_parts[1])) ?

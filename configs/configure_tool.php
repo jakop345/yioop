@@ -457,7 +457,7 @@ class ConfigureTool
         {
             case "confirm":
                 $component = "system";
-                foreach($COMPONENT_ACTIVITIES as $available_component => 
+                foreach($COMPONENT_ACTIVITIES as $available_component =>
                     $activities) {
                     if(in_array($admin_method, $activities)) {
                         $component = $available_component;

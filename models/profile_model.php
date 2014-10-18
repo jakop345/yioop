@@ -109,7 +109,7 @@ class ProfileModel extends Model
             "ACTIVITY" => "CREATE TABLE ACTIVITY (ACTIVITY_ID $serial
                 PRIMARY KEY $auto_increment, TRANSLATION_ID INTEGER,
                 METHOD_NAME VARCHAR(".LONG_NAME_LEN."))",
-            "ACTIVITY_TRANSLATION_ID_INDEX" => "CREATE INDEX 
+            "ACTIVITY_TRANSLATION_ID_INDEX" => "CREATE INDEX
                 ACTIVITY_TRANSLATION_ID_INDEX ON ACTIVITY (TRANSLATION_ID)",
             "CRAWL_MIXES" => "CREATE TABLE CRAWL_MIXES (TIMESTAMP NUMERIC(".
                 TIMESTAMP_LEN.")
@@ -222,7 +222,7 @@ class ProfileModel extends Model
                 TRANSLATION VARCHAR(".MAX_GROUP_POST_LEN."),
                 PRIMARY KEY(TRANSLATION_ID, LOCALE_ID))",
             "USERS" => "CREATE TABLE USERS(USER_ID $serial PRIMARY KEY
-                $auto_increment, FIRST_NAME VARCHAR(".NAME_LEN."), 
+                $auto_increment, FIRST_NAME VARCHAR(".NAME_LEN."),
                 LAST_NAME VARCHAR(".NAME_LEN."), USER_NAME VARCHAR(".NAME_LEN
                 .") UNIQUE, EMAIL VARCHAR(".LONG_NAME_LEN."),
                 PASSWORD VARCHAR(".LONG_NAME_LEN."), STATUS INTEGER,
@@ -489,7 +489,7 @@ EOT;
                 $table_or_index, $test_dbm)) {return false;}
         }
         if(stristr($dbinfo["DB_HOST"], "pgsql") !== false) {
-            /* For postgres count initial values of SERIAL sequences 
+            /* For postgres count initial values of SERIAL sequences
                will be screwed up unless do
              */
             $auto_tables = array("ACTIVITY" =>"ACTIVITY_ID",
@@ -564,7 +564,7 @@ EOT;
                 $dbinfo[$field] = constant($field);
             }
         }
-        $host = $dbinfo['DB_HOST']; 
+        $host = $dbinfo['DB_HOST'];
             // for postgress database needs to already exists
         $host = str_ireplace("database=".$dbinfo['DB_NAME'],"",
             $host); // informix, ibm (use connection string DSN)

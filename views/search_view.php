@@ -207,7 +207,7 @@ class SearchView extends View implements CrawlConstants
                 foreach ($similar_words as $word) {
                     e("<br />");
                     ?><span><a href="?<?php e($token_string_amp);
-                    ?>its=<?php e($data['its']);?>&amp;q=<?php 
+                    ?>its=<?php e($data['its']);?>&amp;q=<?php
                         e($word);?>"><?php e($word); ?></a></span>
                     <?php
                 }

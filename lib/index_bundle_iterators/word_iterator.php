@@ -145,7 +145,7 @@ class WordIterator extends IndexBundleIterator
      * @param bool $raw whether the $word_key is our variant of base64 encoded
      * @param array $filter an array of hashes of domains to filter from
      *     results
-     * @param int $results_per_block the maximum number of results that can 
+     * @param int $results_per_block the maximum number of results that can
      *      be returned by a findDocsWithWord call
      * @param bool $limit_news news results appear before all others when
      *      gotten out of this iterator (may be reordered later). This flag

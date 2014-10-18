@@ -84,7 +84,7 @@ class ManageaccountElement extends Element
                 <input type="hidden" name="fiat_shamir_modulus"
                     id="fiat-shamir-modulus"
                     value="<?php e($data['FIAT_SHAMIR_MODULUS']) ?>"/>
-                <?php 
+                <?php
             } else { ?>
                 <form id="changeUserForm" method="post" action='#'
                     autocomplete="off" enctype="multipart/form-data">

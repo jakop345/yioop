@@ -72,7 +72,7 @@ class WebLayout extends Layout
             isset($this->view->head_objects[$data['page']]['description']))
                 e($this->view->head_objects[$data['page']]['description']);
         else e(tl('web_layout_description')); ?>" />
-        <meta name="Author" content="<?php 
+        <meta name="Author" content="<?php
             e(tl('web_layout_site_author')); ?>" />
         <meta charset="utf-8" />
         <?php if(MOBILE) {?>

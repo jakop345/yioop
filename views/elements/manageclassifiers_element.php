@@ -61,7 +61,7 @@ class ManageclassifiersElement extends Element
         $base_url = "?c=admin&amp;a=manageClassifiers&amp;".CSRF_TOKEN."=".
             $data[CSRF_TOKEN]."&amp;arg=";
         if (!empty($data['classifiers'])) {
-            $data['TABLE_TITLE'] = 
+            $data['TABLE_TITLE'] =
                 tl('manageclassifiers_available_classifiers');
             $data['ACTIVITY'] = 'manageClassifiers';
             $data['VIEW'] = $this->view;
@@ -104,7 +104,7 @@ class ManageclassifiersElement extends Element
                     <td><?php
                     if ($classifier->finalized == Classifier::FINALIZED) {
                         e(tl('manageclassifiers_finalized'));
-                    } else if ($classifier->finalized == 
+                    } else if ($classifier->finalized ==
                         Classifier::UNFINALIZED) {
                         if ($classifier->total > 0) {
                             ?><a href="<?php e($base_url)
@@ -127,11 +127,11 @@ class ManageclassifiersElement extends Element
             <?php } // end foreach over classifiers ?>
             </table>
             <?php
-            } // endif for available classifiers 
+            } // endif for available classifiers
             ?>
         </div>
         <?php
-        if($data['reload']) { 
+        if($data['reload']) {
             ?>
             <script type="text/javascript">
             var sec = 1000;

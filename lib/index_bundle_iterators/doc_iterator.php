@@ -102,7 +102,7 @@ class DocIterator extends IndexBundleIterator
      *     iterated over
      * @param array& $filter an array of hashes of domains to filter from
      *     results
-     * @param int $results_per_block the maximum number of results that can 
+     * @param int $results_per_block the maximum number of results that can
      *      be returned by a findDocsWithWord call
      */
     function __construct($index_name, &$filter = NULL,

@@ -314,7 +314,7 @@ You can also apply inline styles to a block of text
 using the syntax:<br />
 `{{`style="inline styles" some text`}}`.<br />
 For example, `{{`style="color:red" some text`}}` looks
-like {{style="color:red" some text}}. 
+like {{style="color:red" some text}}.
 
 ==Lists==
 The Yioop Wiki Syntax supported of ways of listing items:
@@ -797,7 +797,7 @@ $db->execute("INSERT INTO TRANSLATION_LOCALE VALUES
         (1004, 20, 'اخبار' )");
 
 if(stristr(DB_HOST, "pgsql") !== false) {
-    /* For postgres count initial values of SERIAL sequences 
+    /* For postgres count initial values of SERIAL sequences
        will be screwed up unless do
      */
     $auto_tables = array("ACTIVITY" =>"ACTIVITY_ID",

@@ -163,11 +163,11 @@ function addBigIntToInt(x, n)
     }
 }
 /*
- * Converts a string into a BigInt. It pads the array with leading zeros 
+ * Converts a string into a BigInt. It pads the array with leading zeros
  * so that it has at least min_size elements.
  * The array will always have at least one leading zero, unless base=-1
  * If base is less than 36 we use the digit_str below to convert (say for hex
- * or decimal numbers). Otherwise, we assume the base is 256 and just use 
+ * or decimal numbers). Otherwise, we assume the base is 256 and just use
  * charCode
  *
  * @param String s input string
@@ -178,11 +178,11 @@ function addBigIntToInt(x, n)
 function str2BigInt(s, base, min_size)
 {
     var d, i, j, x, y, kk;
-    var digits_str = 
+    var digits_str =
         '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
     var k = s.length;
     var x = int2BigInt(0, base * k, 0);
-    
+
     for (i = 0; i < k; i++) {
         d = (base > 36) ? s.charCodeAt(i) :
             digits_str.indexOf(s.substring(i, i + 1), 0);
@@ -452,7 +452,7 @@ function leftShift(x, n)
         }
         for (;i >= 0; i--) {
             x[i] = 0;
-        }    
+        }
         n %= bits_per_element;
     }
     if (!n) { return; }

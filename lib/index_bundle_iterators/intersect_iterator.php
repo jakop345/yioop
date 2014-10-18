@@ -115,7 +115,7 @@ class IntersectIterator extends IndexBundleIterator
      * @param array $word_iterator_map ssociative array (
      *      term position in original query => iterator index
      *      of an iterator for that term)
-     * @param array $quote_positions Each element in this array corresponds 
+     * @param array $quote_positions Each element in this array corresponds
      *      to one quoted phrase in the original query. @see $quote_positions
      *      field variable in this class for more info
      * @param float $weight multiplicative factor to apply to scores returned
@@ -324,7 +324,7 @@ class IntersectIterator extends IndexBundleIterator
      * Given the position_lists of a collection of terms computes
      * a score for how close those words were in the given document
      *
-     * @param array& $word_position_lists a 2D array item 
+     * @param array& $word_position_lists a 2D array item
      *      number => position_list (locations in doc where item occurred) for
      *      that item.
      * @param array& $word_len_lists length for each item of its position list

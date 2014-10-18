@@ -41,8 +41,8 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 /**
  * This class has a collection of methods for Spanish locale specific
  * tokenization. In particular, it has a stemmer, a stop word remover (for
- * use mainly in word cloud creation). The stemmer is my stab at re-implementing 
- * the stemmer algorithm given at http://snowball.tartarus.org 
+ * use mainly in word cloud creation). The stemmer is my stab at re-implementing
+ * the stemmer algorithm given at http://snowball.tartarus.org
  * Here given a word, its stem is that part of the word that
  * is common to all its inflected variants. For example,
  * tall is common to tall, taller, tallest. A stemmer takes
@@ -92,7 +92,7 @@ class EsTokenizer
      */
     static $r1_index;
     /**
-     * $r2 is the region after the first non-vowel following a vowel in $r1, or 
+     * $r2 is the region after the first non-vowel following a vowel in $r1, or
      * the end of the word if there is no such non-vowel
      * @var string
      */
@@ -213,7 +213,7 @@ class EsTokenizer
      *   found.
      * $r1 is the region after the first non-vowel following a vowel, or the end
      * of the word if there is no such non-vowel.
-     * $r2 is the region after the first non-vowel following a vowel in $r1, or 
+     * $r2 is the region after the first non-vowel following a vowel in $r1, or
      * the end of the word if there is no such non-vowel
      */
     static function computeRegions()
@@ -240,7 +240,7 @@ class EsTokenizer
             PREG_OFFSET_CAPTURE);
         self::$r1 = "";
         $len = strlen($word);
-        self::$r1_index = isset($matches[0][1]) ? $matches[0][1] + 
+        self::$r1_index = isset($matches[0][1]) ? $matches[0][1] +
             strlen(mb_substr($word,$matches[0][1], 2, 'UTF-8')) : $len;
         if(self::$r1_index != $len) {
             self::$r1 = substr($word, self::$r1_index);
@@ -248,7 +248,7 @@ class EsTokenizer
         if(self::$r1_index != $len) {
             preg_match("/[$vowel][^$vowel]/u", self::$r1, $matches,
                 PREG_OFFSET_CAPTURE);
-            self::$r2_index = isset($matches[0][1]) ? $matches[0][1] + 
+            self::$r2_index = isset($matches[0][1]) ? $matches[0][1] +
                 strlen(mb_substr(self::$r1, $matches[0][1], 2, 'UTF-8')) : $len;
             if(self::$r2_index != $len) {
                 self::$r2 = substr(self::$r1, self::$r2_index);
@@ -370,10 +370,10 @@ class EsTokenizer
             $word = preg_offset_replace($pattern, '', $word, $rv_index +
                 $first_char_len);
         } else if(preg_search('/gu(en|es|éis|emos)$/u', $word, $rv_index -
-            $first_char_len) 
+            $first_char_len)
             != -1) {
             $word = preg_replace('/u(en|es|éis|emos)$/u', '', $word);
-        } else if(preg_search('/(en|es|éis|emos)$/u', $word, $rv_index + 
+        } else if(preg_search('/(en|es|éis|emos)$/u', $word, $rv_index +
             $first_char_len)  != -1){
             $word = preg_replace('/(en|es|éis|emos)$/u', '', $word);
         }
@@ -395,7 +395,7 @@ class EsTokenizer
         } else if(($loc = preg_search('/gu(e|é)$/u', $word)) != -1 &&
             $loc >= $rv_index - 1) {
             $word = preg_replace('/u(e|é)$/u', '', $word);
-        } else if(($loc = preg_search('/(e|é)$/u', $word, $rv_index + 
+        } else if(($loc = preg_search('/(e|é)$/u', $word, $rv_index +
             $first_char_len)) !=-1){
             $word = preg_replace('/(e|é)$/u', '', $word);
         }

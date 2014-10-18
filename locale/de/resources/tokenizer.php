@@ -41,8 +41,8 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 /**
  * This class has a collection of methods for German locale specific
  * tokenization. In particular, it has a stemmer, a stop word remover (for
- * use mainly in word cloud creation). The stemmer is my stab at re-implementing 
- * the stemmer algorithm given at 
+ * use mainly in word cloud creation). The stemmer is my stab at re-implementing
+ * the stemmer algorithm given at
  * http://snowball.tartarus.org/algorithms/german/stemmer.html
  * Here given a word, its stem is that part of the word that
  * is common to all its inflected variants. For example,
@@ -80,7 +80,7 @@ class DeTokenizer
      */
     static $r1_index;
     /**
-     * $r2 is the region after the first non-vowel following a vowel in $r1, or 
+     * $r2 is the region after the first non-vowel following a vowel in $r1, or
      * the end of the word if there is no such non-vowel
      * @var string
      */
@@ -125,7 +125,7 @@ class DeTokenizer
             'als', 'as', 'also', 'am', 'an', 'ander', 'andere', 'anderem',
             'anderen', 'anderer', 'anderes', 'anderm', 'andern', 'anderr',
             'anders', 'auch', 'auf', 'aus', 'bei', 'bin', 'bis', 'bist',
-            'da', 'damit', 'dann', 'der', 'den', 'des', 'dem', 'die', 'das', 
+            'da', 'damit', 'dann', 'der', 'den', 'des', 'dem', 'die', 'das',
             'daß', 'derselbe', 'derselben', 'denselben', 'desselben',
             'demselben', 'dieselbe', 'dieselben', 'dasselbe', 'dazu', 'dein',
             'deine', 'deinem', 'deinen', 'deiner', 'deines', 'denn', 'derer',
@@ -194,12 +194,12 @@ class DeTokenizer
         self::$buffer = $word;
     }
     /**
-     * Computes locations of rv - RV is the region after the third letter, 
-     * otherwise the region after the first vowel 
-     * not at the beginning of the word, or the end of the word if 
-     * these positions cannot be found. , r1 is the region after the first 
+     * Computes locations of rv - RV is the region after the third letter,
+     * otherwise the region after the first vowel
+     * not at the beginning of the word, or the end of the word if
+     * these positions cannot be found. , r1 is the region after the first
      * non-vowel following a vowel, or the end of the word if there is no such
-     * non-vowel and R2 is the region after the first non-vowel following a 
+     * non-vowel and R2 is the region after the first non-vowel following a
      * vowel in R1, or the end of the word if there is no such non-vowel.
      *
      */
@@ -267,7 +267,7 @@ class DeTokenizer
         }
         /*
             and delete if in R1. (Of course the letter of the valid s-ending is
-            not necessarily in R1.) If an ending of group (b) is deleted, and 
+            not necessarily in R1.) If an ending of group (b) is deleted, and
             the ending is preceded by niss, delete the final s. (For example,
             äckern -> äck, ackers -> acker, armes -> arm,
             bedürfnissen -> bedürfnis)
@@ -287,9 +287,9 @@ class DeTokenizer
         Search for the longest among the following suffixes,
         (a) en   er   est
         (b) st (preceded by a valid st-ending, itself preceded by at least 3
-        letters) 
+        letters)
         */
-        
+
         $a2_index = preg_search('/(en|er|est)$/u', $word);
         $st_ending = self::$st_ending;
         $b2_index = -1;
@@ -310,10 +310,10 @@ class DeTokenizer
             $option_used2 = 'b';
             $index2 = $b2_index;
         }
-        
+
         /*
         and delete if in R1.
-        (For example, derbsten -> derbst by step 1, and derbst -> derb by 
+        (For example, derbsten -> derbst by step 1, and derbst -> derb by
         step 2, since b is a valid st-ending, and is preceded by just 3 letters)
         */
         if($index2 != $infty && self::$r1_index != -1) {
@@ -323,19 +323,19 @@ class DeTokenizer
         }
         /*
         Step 3: d-suffixes (*)
-        Search for the longest among the following suffixes, and perform 
+        Search for the longest among the following suffixes, and perform
         the action indicated.
         end   ung
-            delete if in R2 
+            delete if in R2
             if preceded by ig, delete if in R2 and not preceded by e
         ig   ik   isch
             delete if in R2 and not preceded by e
         lich   heit
-            delete if in R2 
+            delete if in R2
             if preceded by er or en, delete if in R1
         keit
-            delete if in R2 
-            if preceded by lich or ig, delete if in R2 
+            delete if in R2
+            if preceded by lich or ig, delete if in R2
         */
         $a3_index = preg_search('/(end|ung)$/', $word);
         $b3_index = preg_search('/[^e](ig|ik|isch)$/', $word);
@@ -353,7 +353,7 @@ class DeTokenizer
         if($b3_index != -1 && $b3_index < $index3) {
             $option_used3 = 'b';
             $index3 = $b3_index;
-            
+
         }
         if($c3_index != -1 && $c3_index < $index3) {
             $option_used3 = 'c';
@@ -367,7 +367,7 @@ class DeTokenizer
             if($index3 >= self::$r2_index) {
                 $word = substr($word, 0, $index3);
                 $option_index = -1;
-                $option_subsrt = ''; 
+                $option_subsrt = '';
                 if($option_used3 == 'a') {
                     $option_index = preg_search('/[^e](ig)$/u', $word);
                     if($option_index != -1) {

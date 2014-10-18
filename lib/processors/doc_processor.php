@@ -115,7 +115,7 @@ class DocProcessor extends TextProcessor
      * @param int $pos position to start scanning
      * @return whether the eight next characters were ASCII printable
      */
-    static function checkPageForText($doc, $pos) 
+    static function checkPageForText($doc, $pos)
     {
         $is_text = true;
         for($i = 0; $i < 8; $i++) {
@@ -137,7 +137,7 @@ class DocProcessor extends TextProcessor
      * @param int $pos position to start scanning
      * @return whether the eight next characters were \0
      */
-    static function checkAllZeros($doc, $pos) 
+    static function checkAllZeros($doc, $pos)
     {
         $is_zero = true;
         for($i = 0; $i < 8; $i++) {
@@ -158,7 +158,7 @@ class DocProcessor extends TextProcessor
      * @param int $pos position to start scanning
      * @return substring of ASCII printable characters
      */
-    static function cleanTextBlock($doc, $pos) 
+    static function cleanTextBlock($doc, $pos)
     {
         $text = "";
         for($i = 0; $i < 8; $i++) {

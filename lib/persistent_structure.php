@@ -82,7 +82,7 @@ class PersistentStructure
     /**
      * Load a PersistentStructure from a file
      *
-     * @param string $fname the name of the file to load the 
+     * @param string $fname the name of the file to load the
      *      PersistentStructure from
      * @return object the PersistentStructure loaded
      */

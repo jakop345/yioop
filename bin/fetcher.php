@@ -1622,7 +1622,7 @@ class Fetcher implements CrawlConstants
                 } else {
                     $type = $site[self::TYPE];
                     if($response_code != 404) {
-                        /* 
+                        /*
                             disallow crawling if robots.txt was any error other
                             that not found
                          */

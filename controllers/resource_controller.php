@@ -117,7 +117,7 @@ class ResourceController extends Controller implements CrawlConstants
         if(file_exists($path)) {
             $mime_type = mimeType($path);
             $size = filesize($path);
-            $start = 0; 
+            $start = 0;
             $end = $size - 1;
             header("Content-type: $mime_type");
             header("Accept-Ranges: bytes");

@@ -43,7 +43,7 @@ define('CHAR_LENGTH', 2);
 /**
  * This class has a collection of methods for Russian locale specific
  * tokenization. In particular, it has a stemmer, a stop word remover (for
- * use mainly in word cloud creation). The stemmer is a modification 
+ * use mainly in word cloud creation). The stemmer is a modification
  * (with bug fixes ) of  Dennis Kreminsky's stemmer from:
  * http://snowball.tartarus.org/otherlangs/russian_php5.txt
  * Here given a word, its stem is that part of the word that
@@ -150,11 +150,11 @@ class RuTokenizer
         return array($start, $rv);
     }
     /**
-     * Search for a PERFECTIVE GERUND ending. If one is found remove it, 
+     * Search for a PERFECTIVE GERUND ending. If one is found remove it,
      * and that is then the end of step 1. Otherwise try and remove a REFLEXIVE
-     * ending, and then search in turn for (1) an ADJECTIVAL, (2) a VERB or 
+     * ending, and then search in turn for (1) an ADJECTIVAL, (2) a VERB or
      * (3) a NOUN ending.
-     * As soon as one of the endings (1) to (3) is found remove it, and 
+     * As soon as one of the endings (1) to (3) is found remove it, and
      * terminate step 1.
      * @param string $word word to stem
      * @return string $word after step
@@ -191,7 +191,7 @@ class RuTokenizer
         $participle2 = array('ивш', 'ывш', 'ующ');
         foreach ($adjective as $adj_suffix) {
             $len = strlen($adj_suffix);
-            if(substr($word, -$len) != $adj_suffix) { 
+            if(substr($word, -$len) != $adj_suffix) {
                 continue;
             }
             $word = substr($word, 0, -$len);
@@ -256,7 +256,7 @@ class RuTokenizer
         return $word;
     }
     /**
-     * Search for a DERIVATIONAL ending in R2 (i.e. the entire ending must 
+     * Search for a DERIVATIONAL ending in R2 (i.e. the entire ending must
      * lie in R2), and if one is found, remove it.
      * @param string $word word to stem
      * @return string $word after step
@@ -293,7 +293,7 @@ class RuTokenizer
     }
     /**
      * 1) Undouble н (n), or, (2) if the word ends with a SUPERLATIVE ending,
-     * remove it and undouble н (n), or (3) if the word ends ь (') (soft sign) 
+     * remove it and undouble н (n), or (3) if the word ends ь (') (soft sign)
      * remove it.
      * @param string $word word to stem
      * @return string $word after step
@@ -314,7 +314,7 @@ class RuTokenizer
                 $word = substr($word, 0, -CHAR_LENGTH);
             }
         }
-        /* should there be a guard flag? can't think of a russian word 
+        /* should there be a guard flag? can't think of a russian word
          that ends with ейшь or ннь anyways, though the algorithm states
          this is an "otherwise" case
         */

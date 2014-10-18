@@ -119,8 +119,8 @@ class EnTokenizer
      * Computes similar words and scores from WordNet output based on word type.
      *
      * @param string $term term to find related thesaurus terms
-     * @param string $word_type is the type of word such as "NN" (noun), 
-     *     "VB" (verb), "AJ" (adjective), or "AV" (adverb) 
+     * @param string $word_type is the type of word such as "NN" (noun),
+     *     "VB" (verb), "AJ" (adjective), or "AV" (adverb)
      *     (all other types will be ignored)
      * @param string $whole_query the original query $term came from
      * @return array a sequence of
@@ -187,7 +187,7 @@ class EnTokenizer
                 order digits 99 - the definition it was
              */
             if ($num_example_sentences > 0) {
-                $definition_score = 
+                $definition_score =
                     100*round(100*(array_sum($score) / $num_example_sentences))
                         + (99 - $i);
             } else {
@@ -720,7 +720,7 @@ class EnTokenizer
     //private methods for part of speech taggin
     /**
      * Split input text into terms and output an array with one element
-     * per term, that element consisting of array with the term token 
+     * per term, that element consisting of array with the term token
      * and the part of speech tag.
      *
      * @param string $text string to tag and tokenize
@@ -840,7 +840,7 @@ class EnTokenizer
     /**
      * Takes an array of pairs (token, tag) that came from phrase
      * and builds a new phrase where terms look like token~tag.
-     * 
+     *
      * @param array $tagged_tokens array of pairs as might come from tagTokenize
      * @return $tagged_phrase a phrase with terms in the format token~tag
      */

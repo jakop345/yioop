@@ -112,7 +112,7 @@ class GroupController extends Controller implements CrawlConstants
         $this->displayView($view, $data);
     }
     /**
-     * Used to perform the actual activity call to be done by the 
+     * Used to perform the actual activity call to be done by the
      * group_controller.
      * processSession is called from @see processRequest, which does some
      * cleaning of fields if the CSRFToken is not valid. It is more likely
@@ -143,7 +143,7 @@ class GroupController extends Controller implements CrawlConstants
     /**
      * Responsible for setting the view for a feed if something other
      * than HTML (for example, RSS or JSON) is desired. It also
-     * sets up any particular $data fields needed for displaying that 
+     * sets up any particular $data fields needed for displaying that
      * view correctly.
      *
      * @param string $format can be one of rss, json, or serialize,
@@ -184,7 +184,7 @@ class GroupController extends Controller implements CrawlConstants
             case "json":
                 $out_data = array();
                 $out_data["language"] = getLocaleTag();
-                $out_data["link"] = 
+                $out_data["link"] =
                     NAME_SERVER."?f=$format&amp;q={$data['QUERY']}";
                 $out_data["totalResults"] = $data['TOTAL_ROWS'];
                 $out_data["startIndex"] = $data['LIMIT'];

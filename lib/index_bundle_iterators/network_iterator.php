@@ -116,7 +116,7 @@ class NetworkIterator extends IndexBundleIterator
      *      archive bundles that we look in for results
      * @param array& $filter an array of hashes of domains to filter from
      *      results
-     * @param string $save_timestamp_name if this timestamp is nonzero, then 
+     * @param string $save_timestamp_name if this timestamp is nonzero, then
      *      when making queries to separate machines the save_timestamp is sent
      *      so the queries on those machine can make savepoints. Note the
      *      format of save_timestamp is timestamp-query_part where query_part

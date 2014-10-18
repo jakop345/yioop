@@ -627,7 +627,7 @@ function upgradeDatabaseVersion20(&$db)
             $sha1_of_upgrade_code = bchexdec(sha1($v20check));
             $temp = bcpow($sha1_of_upgrade_code . '', '2');
             $zkp_password = bcmod($temp, $new_profile['FIAT_SHAMIR_MODULUS']);
-            $user_tables_sql = array("SELECT USER_NAME FROM USER", 
+            $user_tables_sql = array("SELECT USER_NAME FROM USER",
                 "SELECT USER_NAME, FIRST_NAME, LAST_NAME, EMAIL FROM USERS");
             $i = 0;
             foreach($user_tables_sql as $sql) {
@@ -637,10 +637,10 @@ function upgradeDatabaseVersion20(&$db)
                         $setup_user_fields = array();
                         if($users[$i]["USER_NAME"] == "root" ||
                             $users[$i]["USER_NAME"] == "public") { continue; }
-                        $users[$i]["FIRST_NAME"] = 
+                        $users[$i]["FIRST_NAME"] =
                             (isset($users[$i]["FIRST_NAME"])) ?
                             $users[$i]["FIRST_NAME"] : "FIRST_$i";
-                        $users[$i]["LAST_NAME"] = 
+                        $users[$i]["LAST_NAME"] =
                             (isset($users[$i]["LAST_NAME"])) ?
                             $users[$i]["LAST_NAME"] : "LAST_$i";
                         $users[$i]["EMAIL"] =
@@ -668,7 +668,7 @@ function upgradeDatabaseVersion20(&$db)
             $database_tables = array_diff(
                 array_keys($profile_model->create_statements),
                 $save_tables);
-            $database_tables = array_merge($database_tables, 
+            $database_tables = array_merge($database_tables,
                 array("BLOG_DESCRIPTION", "USER_OLD", "ACCESS"));
             foreach($database_tables as $table) {
                 if(!in_array($table, $save_tables)){
@@ -849,7 +849,7 @@ function upgradeDatabaseVersion24(&$db)
                 echo $statement." ERROR!";
                 exit();
             }
-            DatasourceManager::copyTable($object_name."_OLD", $db, 
+            DatasourceManager::copyTable($object_name."_OLD", $db,
                 $object_name, $db);
             $db->execute("DROP TABLE ".$object_name."_OLD");
         }

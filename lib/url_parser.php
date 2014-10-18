@@ -232,7 +232,7 @@ class UrlParser
      * Get the host name portion of a url if present; if not return false
      *
      * @param string $url the url to parse
-     * @param bool $with_login_and_port whether to include user,password,port 
+     * @param bool $with_login_and_port whether to include user,password,port
      *      if present
      * @return the host portion of the url if present; false otherwise
      */

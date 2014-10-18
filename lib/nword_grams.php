@@ -141,7 +141,7 @@ class NWordGrams
     }
     /**
      * Used to create a filter file suitable for use in word segmentation
-     * (splitting text like "thiscontainsnospaces" into 
+     * (splitting text like "thiscontainsnospaces" into
      * "this contains no spaces"). Used by @see token_tool.php
      *
      * @param string $dict_file file to use as a dictionary to make filter from

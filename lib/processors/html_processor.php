@@ -89,7 +89,7 @@ class HtmlProcessor extends TextProcessor
         if(is_string($page)) {
             $page = preg_replace('/\&nbsp\;|\&rdquo\;|\&ldquo\;|\&mdash\;/si',
                 ' ',$page);
-            $page = 
+            $page =
                 preg_replace('@<script[^>]*?>.*?</script>@si', ' ', $page);
             $dom_page = preg_replace('@<style[^>]*?>.*?</style>@si', ' ',
                 $page);
@@ -423,7 +423,7 @@ class HtmlProcessor extends TextProcessor
                 if(isset($urls[1]) && !UrlParser::checkRecursiveUrl($urls[1]) &&
                     strlen($urls[1]) < MAX_URL_LEN) {
                     $refresh_url = @trim($urls[1]);
-                    if($refresh_url != $url) { 
+                    if($refresh_url != $url) {
                         //ignore refresh if points to same place
                         return $refresh_url;
                     }
@@ -433,7 +433,7 @@ class HtmlProcessor extends TextProcessor
         return false;
     }
     /**
-     * If a canonical link element 
+     * If a canonical link element
      * (https://en.wikipedia.org/wiki/Canonical_link_element)
      * is in $dom, then this function extracts it
      *

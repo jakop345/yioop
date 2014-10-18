@@ -212,7 +212,7 @@ class GroupModel extends Model
      * @param int $member flag that says how members other than the owner can
      *      access this group GROUP_READ, GROUP_READ_COMMENT (can comment
      *      on threads but not start. i.e., a blog), GROUP_READ_WRITE,
-     *      (can read, comment, start threads), GROUP_READ_WIKI, (can read, 
+     *      (can read, comment, start threads), GROUP_READ_WIKI, (can read,
      *      comment, start threads, and edit the wiki)
      * @param int $voting flag that says how members can vote on each others
      *      posts: NON_VOTING_GROUP, UP_VOTING_GROUP, UP_DOWN_VOTING_GROUP
@@ -700,7 +700,7 @@ class GroupModel extends Model
         if($for_group >= 0) {
             $group_by = " GROUP BY GI.PARENT_ID";
             $order_by = " ORDER BY E.PUBDATE DESC ";
-            $select = "SELECT E.*, I.TITLE AS TITLE, 
+            $select = "SELECT E.*, I.TITLE AS TITLE,
                 I.DESCRIPTION AS DESCRIPTION,
                 I.USER_ID AS USER_ID, II.USER_ID AS LAST_POSTER_ID,
                 U.USER_NAME AS USER_NAME, P.USER_NAME AS LAST_POSTER,
@@ -896,7 +896,7 @@ class GroupModel extends Model
      *     this should be the body of the first post in discussion thread
      * @param string $base_address default url to be used in links
      *     on wiki page that use short syntax
-     * @param array $additional_substitutions list of pairs additional wiki 
+     * @param array $additional_substitutions list of pairs additional wiki
      *      page rewrites to do when parsing wiki pages
      */
     function setPageName($user_id, $group_id, $page_name, $page, $locale_tag,
@@ -914,7 +914,7 @@ class GroupModel extends Model
             $sql = "UPDATE GROUP_PAGE SET PAGE=? WHERE ID = ?";
             $result = $db->execute($sql, array($parsed_page, $page_id));
         } else {
-            $discuss_thread = $this->addGroupItem(0, $group_id, $user_id, 
+            $discuss_thread = $this->addGroupItem(0, $group_id, $user_id,
                 $thread_title, $thread_description." ".date("r", $pubdate),
                 WIKI_GROUP_ITEM);
             $sql = "INSERT INTO GROUP_PAGE (DISCUSS_THREAD, GROUP_ID,
@@ -1196,7 +1196,7 @@ class GroupModel extends Model
                 $parsed_page = preg_replace('/'.preg_quote($match_string).'/u',
                     $replace_string, $parsed_page);
             } else if (in_array($mime_type, array('audio/basic', 'audio/L24',
-                'audio/mp4', 'audio/mpeg', 'audio/ogg', 'audio/opus', 
+                'audio/mp4', 'audio/mpeg', 'audio/ogg', 'audio/opus',
                 'audio/vorbis', 'audio/vnd.rn-realaudio', 'audio/vnd.wave',
                 'audio/webm'))) {
                 $replace_string = "<audio controls='controls' >\n".
@@ -1215,7 +1215,7 @@ class GroupModel extends Model
         return $parsed_page;
     }
     /**
-     * Deletes a resource (image, video, etc) associated with a wiki page 
+     * Deletes a resource (image, video, etc) associated with a wiki page
      * belonging to a group.
      *
      * @param int $group_id group identifier of group wiki page belongs to
@@ -1275,7 +1275,7 @@ class GroupModel extends Model
                 FFMPEG." -i \"$folder/$file_name\" -vframes 1 -map 0:v:0".
                 " -vf \"scale=".THUMB_DIM.":".THUMB_DIM."\" ".
                 "\"$thumb_folder/$file_name.jpg\" 2>&1";
-            exec($make_thumb_string); 
+            exec($make_thumb_string);
             clearstatcache("$thumb_folder/$file_name.jpg");
         }
     }
@@ -1390,7 +1390,7 @@ class GroupModel extends Model
         if($total > 0) {
             $sql = "SELECT TITLE, PAGE AS DESCRIPTION
                 FROM GROUP_PAGE WHERE GROUP_ID = ? AND
-                LOCALE_TAG= ? AND LENGTH(PAGE) > 0 
+                LOCALE_TAG= ? AND LENGTH(PAGE) > 0
                 $like ORDER BY UPPER(TITLE) ASC ".
                 $db->limitOffset($limit, $num);
             $result = $db->execute($sql, $params);

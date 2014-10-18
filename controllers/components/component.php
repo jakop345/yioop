@@ -55,7 +55,7 @@ class Component
      * Sets up this component by storing in its parent field a reference to
      *  controller this component lives on
      *
-     * @param object $parent_controller reference to the controller this 
+     * @param object $parent_controller reference to the controller this
      *      component lives on
      */
     function __construct($parent_controller)

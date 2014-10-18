@@ -1013,7 +1013,7 @@ class PhraseParser
         }
         $norm2 = sqrt($norm2);
         foreach($unique_terms as $term) {
-            $inner_prod_term = 
+            $inner_prod_term =
                 (isset($term_vector1[$term]) && isset($term_vector2[$term])) ?
                 $term_vector1[$term] * $term_vector2[$term]: 0;
             $result += $inner_prod_term;

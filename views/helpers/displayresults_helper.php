@@ -49,7 +49,7 @@ class DisplayresultsHelper extends Helper
 {
     /**
      * Used to draw a web page summary/snippets in a search engine result.
-     * If the summary has recipe data each ingredient is displayed in 
+     * If the summary has recipe data each ingredient is displayed in
      * seperate line.
      *
      * @param string $summary summary/snippet to draw

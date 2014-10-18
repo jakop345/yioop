@@ -1859,7 +1859,7 @@ function diff($data1, $data2, $html = false)
     $first_diff = 0;
     // trim off the starts and end lines of the strings that are same
     $head_lcs = array();
-    
+
     while($first_diff < $shorter_len &&
         strcmp($lines1[$first_diff], $lines2[$first_diff]) == 0) {
         $head_lcs[] = array($first_diff, $first_diff, $lines1[$first_diff]);
@@ -1886,7 +1886,7 @@ function diff($data1, $data2, $html = false)
     $tail_lcs = array();
     $index1 = $num_lines1 - 1 - $last_diff;
     $index2 = $num_lines2 - 1 - $last_diff;
-    while($shorter_len - $last_diff > $first_diff && 
+    while($shorter_len - $last_diff > $first_diff &&
         $lines1[$index1] == $lines2[$index2]) {
         array_unshift($tail_lcs, array($index1, $index2, $lines1[$index1]));
         $last_diff++;
@@ -1939,7 +1939,7 @@ function diff($data1, $data2, $html = false)
             $previous_second = $current_second;
             $old_line = $line;
         }
-        if($current_first < $num_lines1 - 1 || 
+        if($current_first < $num_lines1 - 1 ||
             $current_second < $num_lines2 - 1) {
             $gap1 = $num_lines1 - $current_first;
             $gap2 = $num_lines2 - $current_second;
@@ -2015,7 +2015,7 @@ function computeLCS($lines1, $lines2, $offset = 0)
  * @param int $offset a number to add to each line number output into $lcs.
  *     This is useful if we have trimmed off the initially common lines from
  *     our two strings we are trying to compute the LCS of
- * @param array& $lcs an array of triples 
+ * @param array& $lcs an array of triples
  *     (index_string1, index_string2, line)
  *     the indexes indicate the line number in each string, line is the line
  *     in common the two strings

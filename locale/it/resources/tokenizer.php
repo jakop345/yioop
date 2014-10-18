@@ -133,7 +133,7 @@ class ItTokenizer
             "avrai", "avrà", "avremo", "avrete", "avranno", "avrei", "avresti",
             "avrebbe", "avremmo", "avreste", "avrebbero", "avevo", "avevi",
             "aveva", "avevamo", "avevate", "avevano", "ebbi", "avesti", "ebbe",
-            "avemmo", "aveste", "ebbero", "avessi", "avesse", "avessimo", 
+            "avemmo", "aveste", "ebbero", "avessi", "avesse", "avessimo",
             "avessero", "avendo", "avuto", "avuta", "avuti", "avute", "sono",
             "sei", "è", "siamo", "siete", "sia", "siate", "siano", "sarò",
             "sarai", "sarà", "saremo", "sarete", "saranno", "sarei", "saresti",

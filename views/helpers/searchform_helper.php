@@ -36,7 +36,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  */
 require_once BASE_DIR."/views/helpers/helper.php";
 /**
- * Used to draw the form to do advanced search for items in a user, group, 
+ * Used to draw the form to do advanced search for items in a user, group,
  * locale, etc folder
  *
  * @author Chris Pollett

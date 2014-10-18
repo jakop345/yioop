@@ -208,7 +208,7 @@ class ConfigureElement extends Element
                     name="SIDEBAR_COLOR" class="narrow-field" value='<?php
                     e($data["SIDEBAR_COLOR"]); ?>' /></div>
                 <div class="top-margin"><label for="site-logo"><?php
-                    e(tl('configure_element_site_logo')); 
+                    e(tl('configure_element_site_logo'));
                     ?></label>
                 <input type="file" id="site-logo"
                     onchange="checkUploadIcon('site-logo')"
@@ -235,7 +235,7 @@ class ConfigureElement extends Element
                 <input type="file" id="favicon"
                     onchange="checkUploadIcon('favicon')"
                     name="FAVICON" class='icon-upload' />
-                <img id='current-favicon' class="small-icon" 
+                <img id='current-favicon' class="small-icon"
                     src="<?php e($data['FAVICON']); ?>" alt="<?php
                     e(tl('configure_element_favicon')); ?>" />
                 <span id='info-favicon'></span>

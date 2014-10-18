@@ -1061,7 +1061,7 @@ EOD;
                     foreach($profile as $key => $value) {
                         $data[$key] = $value;
                         if(in_array($key, array('BACKGROUND_IMAGE',
-                            'LOGO', 'M_LOGO', 'FAVICON', 'SEARCHBAR_PATH') ) 
+                            'LOGO', 'M_LOGO', 'FAVICON', 'SEARCHBAR_PATH') )
                             && $old_profile[$key] != "") {
                             $resource_name = APP_DIR ."/resources/".
                                 $old_profile[$key];

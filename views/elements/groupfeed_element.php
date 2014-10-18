@@ -74,10 +74,10 @@ class GroupfeedElement extends Element implements CrawlConstants
         if(isset($data['RESULTS_PER_PAGE'])) {
             $other_paging_query .= "&num=".$data['RESULTS_PER_PAGE'];
         }
-        if(!$is_status) { 
-            if($is_admin || $logged_in) { 
+        if(!$is_status) {
+            if($is_admin || $logged_in) {
                 if(isset($data['JUST_GROUP_ID'])){
-                    $other_paging_query .= "&amp;just_group_id=" 
+                    $other_paging_query .= "&amp;just_group_id="
                             . $data['JUST_GROUP_ID'];
                 }
                 ?>
@@ -110,7 +110,7 @@ class GroupfeedElement extends Element implements CrawlConstants
                 }?> >
         <?php
         }
-        if(isset($data['SUBTITLE']) && 
+        if(isset($data['SUBTITLE']) &&
             $data['SUBTITLE'] != "" && $logged_in) { ?>
             <div class="float-opposite">
             <?php
@@ -361,7 +361,7 @@ class GroupfeedElement extends Element implements CrawlConstants
                         $page["VOTE_ACCESS"] == UP_DOWN_VOTING_GROUP ) {
                         e(' (+'.$page['UPS'].'/'.($page['UPS'] +
                             $page['DOWNS']).')');
-                    } else if(isset($page["VOTE_ACCESS"]) && 
+                    } else if(isset($page["VOTE_ACCESS"]) &&
                         $page["VOTE_ACCESS"] == UP_VOTING_GROUP) {
                         e(' (+'.$page['UPS'].')');
                     }
@@ -378,7 +378,7 @@ class GroupfeedElement extends Element implements CrawlConstants
                     $page[self::DESCRIPTION] : "";?>
                 <div id='description<?php e($page['ID']);?>'><?php
                     e($description); ?></div>
-                <?php 
+                <?php
                 if(!isset($page['NO_EDIT']) && isset($page['OLD_DESCRIPTION'])){
                     ?>
                     <div id='old-description<?php e($page['ID']);?>'
@@ -505,7 +505,7 @@ class GroupfeedElement extends Element implements CrawlConstants
         if(isset($data['RESULTS_PER_PAGE'])) {
             $paging_query .= "&num=".$data['RESULTS_PER_PAGE'];
         }
-        $just_fields = array("LIMIT" => "limit", "RESULTS_PER_PAGE" => "num", 
+        $just_fields = array("LIMIT" => "limit", "RESULTS_PER_PAGE" => "num",
             "JUST_THREAD" => 'just_thread', "JUST_USER_ID" => "just_user_id",
             "JUST_GROUP_ID" => "just_group_id");
         $hidden_form = "\n";

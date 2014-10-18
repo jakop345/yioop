@@ -334,7 +334,7 @@ class SocialComponent extends Component implements CrawlConstants
                         array('register', 'REGISTER_TYPE','REGISTER_CODES'),
                         array('member_access', 'MEMBER_ACCESS', 'ACCESS_CODES'),
                         array('vote_access', 'VOTE_ACCESS', 'VOTING_CODES'),
-                        array('post_lifetime', 'POST_LIFETIME', 
+                        array('post_lifetime', 'POST_LIFETIME',
                             'POST_LIFETIMES')
                         );
                     $this->updateGroup($data, $group, $update_fields);
@@ -673,7 +673,7 @@ class SocialComponent extends Component implements CrawlConstants
             $user_id = $_SESSION['USER_ID'];
         } else {
             $user_id = PUBLIC_GROUP_ID;
-            
+
         }
         $username = $user_model->getUsername($user_id);
         if(isset($_REQUEST['num'])) {
@@ -1204,7 +1204,7 @@ class SocialComponent extends Component implements CrawlConstants
     function wiki()
     {
         $parent = $this->parent;
-        $controller_name = 
+        $controller_name =
             (get_class($parent) == "AdminController") ? "admin" : "group";
         $data = array();
         $data["CONTROLLER"] = $controller_name;
@@ -1380,7 +1380,7 @@ EOD;
                      */
                     if($missing_fields) {
                         $data['SCRIPT'] .=
-                            "doMessage('<h1 class=\" red\" >". 
+                            "doMessage('<h1 class=\" red\" >".
                             tl("group_controller_missing_fields").
                             "</h1>')";
                     } else if(!$missing_fields && isset($page)) {
@@ -1475,7 +1475,7 @@ EOD;
                                 tl('social_component_resource_uploaded').
                                 "</h1>');";
                         } else {
-                            $data['SCRIPT'] .= 
+                            $data['SCRIPT'] .=
                                 "doMessage('<h1 class=\"red\" >".
                                 tl('social_component_upload_error').
                                 "</h1>');";
@@ -1504,7 +1504,7 @@ EOD;
                     }
                 break;
                 case "history":
-                    if(!$data["CAN_EDIT"] || !$page_id) { 
+                    if(!$data["CAN_EDIT"] || !$page_id) {
                         continue;
                     }
                     $data["MODE"] = "history";
@@ -1525,7 +1525,7 @@ EOD;
                                 $additional_substitutions);
                             $parsed_page = $parser->parse($page_info["PAGE"]);
                             $data["PAGE_ID"] = $page_id;
-                            $data[CSRF_TOKEN] = 
+                            $data[CSRF_TOKEN] =
                                 $parent->generateCSRFToken($user_id);
                             $history_link = "?c=group&amp;a=wiki&amp;".
                                 CSRF_TOKEN.'='.$data[CSRF_TOKEN].
@@ -1540,7 +1540,7 @@ EOD;
                                 tl("group_controller_history_page",
                                 $data["PAGE_NAME"], date("c", $show)) .
                                 "</div>" . $parsed_page;
-                            $data["DISCUSS_THREAD"] = 
+                            $data["DISCUSS_THREAD"] =
                                 $page_info["DISCUSS_THREAD"];
                         }
                     } else if(isset($diff) && $diff &&
@@ -1553,7 +1553,7 @@ EOD;
                         $default_history = false;
                         $data["PAGE_NAME"] = $page_info2["PAGE_NAME"];
                         $data["PAGE_ID"] = $page_id;
-                        $data[CSRF_TOKEN] = 
+                        $data[CSRF_TOKEN] =
                             $parent->generateCSRFToken($user_id);
                         $history_link = "?c=group&amp;a=wiki&amp;".
                             CSRF_TOKEN.'='.$data[CSRF_TOKEN].
@@ -1590,7 +1590,7 @@ EOD;
                                 break;
                             }
                             $group_model->setPageName($user_id,
-                                $group_id, $page_info["PAGE_NAME"], 
+                                $group_id, $page_info["PAGE_NAME"],
                                 $page_info["PAGE"],
                                 $locale_tag,
                                 tl('group_controller_page_revert_to',
@@ -1611,7 +1611,7 @@ EOD;
                         $data["LIMIT"] = $limit;
                         $data["RESULTS_PER_PAGE"] = $num;
                         list($data["TOTAL_ROWS"], $data["PAGE_NAME"],
-                            $data["HISTORY"]) = 
+                            $data["HISTORY"]) =
                             $group_model->getPageHistoryList($page_id, $limit,
                             $num);
                         if((!isset($diff1) || !isset($diff2))) {
@@ -1690,7 +1690,7 @@ EOD;
                 $data["PAGE_ID"] = $page_info["ID"];
                 $data["DISCUSS_THREAD"] = $page_info["DISCUSS_THREAD"];
             }
-            if((!isset($data["PAGE"]) || !$data["PAGE"]) && 
+            if((!isset($data["PAGE"]) || !$data["PAGE"]) &&
                 $locale_tag != DEFAULT_LOCALE) {
                 //fallback to default locale for translation
                 $page_info = $group_model->getPageInfoByName(
@@ -1709,7 +1709,7 @@ EOD;
                 $page_header = $group_model->getPageInfoByName($group_id,
                     $data["HEAD"]['page_header'], $locale_tag, $data["MODE"]);
                 if(isset($page_header['PAGE'])) {
-                    $header_parts = 
+                    $header_parts =
                         explode("END_HEAD_VARS", $page_header['PAGE']);
                 }
                 $data["PAGE_HEADER"] = (isset($header_parts[1])) ?
@@ -1722,7 +1722,7 @@ EOD;
                 $page_footer = $group_model->getPageInfoByName($group_id,
                     $data["HEAD"]['page_footer'], $locale_tag, $data["MODE"]);
                 if(isset($page_footer['PAGE'])) {
-                    $footer_parts = 
+                    $footer_parts =
                         explode("END_HEAD_VARS", $page_footer['PAGE']);
                 }
                 $data['PAGE_FOOTER'] = (isset($footer_parts[1])) ?
@@ -1764,7 +1764,7 @@ EOD;
                 $data['current_page_type'] = $data["page_type"];
                 $data['SCRIPT'] .= <<< EOD
                 setDisplay('page-settings', {$data['settings']});
-                function toggleSettings() 
+                function toggleSettings()
                 {
                     var settings = elt('p-settings');
                     settings.value = (settings.value =='true')

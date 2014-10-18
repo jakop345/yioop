@@ -346,11 +346,11 @@ class AccountaccessComponent extends Component
                         $norm_password = "";
                         $zkp_password = "";
                         if(AUTHENTICATION_MODE == ZKP_AUTHENTICATION) {
-                            $zkp_password = 
+                            $zkp_password =
                                 substr($parent->clean($_REQUEST['password'],
                                     "string"), 0, ZKP_PASSWORD_LEN);
                         } else {
-                            $norm_password = 
+                            $norm_password =
                                 substr($parent->clean($_REQUEST['password'],
                                 "string"), 0, LONG_NAME_LEN);
                         }

@@ -119,7 +119,7 @@ function getR(range)
     } else if (window.msCrypto && window.msCrypto.getRandomValues) {
         random_words = new Int32Array(Math.floor(len/4) + 1);
         window.msCrypto.getRandomValues(random_words);
-    } else { 
+    } else {
         /*  if you're in this case you are using an old browser and someone
             might be able to fool you (still hard)
          */
@@ -201,7 +201,7 @@ function generateKeys(zkp_form_id, username_id, password_id,
 /*
  * Sends Fiat-Shamir via AJAX parameters and receives parameter e from server
  *
- * @param BigInt x Fiat-Shamir parameter x 
+ * @param BigInt x Fiat-Shamir parameter x
  *     (@see SigninModel::checkValidSigninForZKP for details)
  * @param BigInt y Fiat-Shamir parameter y
  * @param String u username provided by user

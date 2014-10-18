@@ -188,7 +188,7 @@ class PdoManager extends DatasourceManager
         }
         return $out_row;
     }
-    /** 
+    /**
      * {@inheritDoc}
      *
      * @param string $str  string to escape

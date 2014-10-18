@@ -296,7 +296,7 @@ abstract class Controller
      {
         $data_fields = array();
         $r = array();
-        $request_fields = array('num_show' => DEFAULT_ADMIN_PAGING_NUM, 
+        $request_fields = array('num_show' => DEFAULT_ADMIN_PAGING_NUM,
             'start_row' => 0, 'end_row' => DEFAULT_ADMIN_PAGING_NUM);
         foreach($request_fields as $field => $default) {
             if(isset($_REQUEST[$var_prefix . $field])) {
@@ -557,11 +557,11 @@ abstract class Controller
                         "mediumvioletred", "midnightblue", "mintcream",
                         "mistyrose", "moccasin", "navajowhite", "oldlace",
                         "olivedrab", "orangered", "orchid", "palegoldenrod",
-                        "palegreen", "paleturquoise", "palevioletred", 
+                        "palegreen", "paleturquoise", "palevioletred",
                         "papayawhip", "peachpuff", "peru", "pink", "plum",
                         "powderblue", "rosybrown", "royalblue", "saddlebrown",
                         "salmon", "sandybrown", "seagreen", "seashell",
-                        "sienna",  "skyblue", "slateblue", "slategray", 
+                        "sienna",  "skyblue", "slateblue", "slategray",
                         "slategrey", "snow", "springgreen", "steelblue",
                         "tan", "thistle", "tomato", "turquoise", "violet",
                         "wheat", "whitesmoke", "yellowgreen", "rebeccapurple"
@@ -708,7 +708,7 @@ abstract class Controller
      *  Used to parse head meta variables out of a data string provided either
      *  from a wiki page or a static page. Meta data is stored in lines
      *  before the first occurrence of END_HEAD_VARS. Head variables
-     *  are name=value pairs. An example of head 
+     *  are name=value pairs. An example of head
      *  variable might be:
      *  title = This web page's title
      *  Anything after a semi-colon on a line in the head section is treated as
