@@ -42,18 +42,18 @@
  * @subpackage javascript
  */
 var Classifier = (function() {
-    /**
+    /*
      * Maximum size of the document candidate pool. This constant is used to
      * decide when to display, e.g., 50+ instead of just 50.
      * @var int
      */
     var MAX_UNLABELLED_BUFFER_SIZE = 51;
-    /**
+    /*
      * The maximum number of previously-labeled document records to display.
      * @var int
      */
     var MAX_LABELLED = 20;
-    /**
+    /*
      * How long to wait before adding another '.' to the end of a loading
      * message. The advantage of choosing 333 is that the time to display three
      * periods is roughly one second.
@@ -62,7 +62,7 @@ var Classifier = (function() {
     var LOADING_REDRAW = 333;
     // We return this at the bottom, so this is Classifier's public interface.
     var self = {};
-    /**
+    /*
      * Gathers references to all relevant DOM elements, initializes state, and
      * adds event handlers. Because AJAX requests to the administrative areas
      * of Yioop must be authenticated, this method expects to be called with
@@ -114,7 +114,7 @@ var Classifier = (function() {
             return false;
         }
     };
-    /**
+    /*
      * Event handler called when the user clicks on any of the "In class", "Not
      * in class", and "Skip" links associated with a document. This method
      * updates the display and sends a request to the server to inform it of
@@ -163,7 +163,7 @@ var Classifier = (function() {
         return false;
     }
     /* PRIVATE INTERFACE */
-    /**
+    /*
      * Sends a request to load up a new candidate pool based on the selected
      * index, index action, and optional query. The response behavior differs
      * according to whether the index action specifies marking all candidates
@@ -268,7 +268,7 @@ var Classifier = (function() {
 
     }
 
-    /**
+    /*
      * Sends a request to the server to initiate an accuracy update, and on
      * response updates the statistics (which includes reporting the current
      * accuracy estimate, if any). Normally, the accuracy is only estimated
@@ -306,7 +306,8 @@ var Classifier = (function() {
         });
     }
 
-    /** Builds and displays a new active document record for the document data
+    /**
+     * Builds and displays a new active document record for the document data
      * received from the server. This method both registers the document data
      * in internal data structures, and creates the DOM structure to display
      * the document to the user. If this is the very first document to be
@@ -339,7 +340,7 @@ var Classifier = (function() {
             self.elt.label_docs_queue.appendChild(newRow);
         }
     }
-    /**
+    /*
      * Removes the active document from the DOM and from the internal set of
      * documents completely. This is done when abandoning the current candidate
      * pool for another, and is NOT the same as skipping the active document.
@@ -353,7 +354,7 @@ var Classifier = (function() {
         }
         self.activeDocument = null;
     }
-    /**
+    /*
      * Updates the display of the counts of positive and negative examples and
      * the estimated accuracy.  Each time the server responds to a request, it
      * passes along the classifier's current counts and accuracy estimate to
@@ -372,7 +373,7 @@ var Classifier = (function() {
                 (response.accuracy * 100).toFixed(1));
         }
     }
-    /**
+    /*
      * Updates the display of the number of documents currently in the
      * candidate pool. Since candidates are being iterated over on the server
      * rather than loaded in all at once, it is unknown exactly how many there
@@ -400,7 +401,7 @@ var Classifier = (function() {
         }
         self.setStatus(msg);
     }
-    /**
+    /*
      * A shortcut for setting the HTML of the element that displays document
      * counts.
      */
@@ -408,8 +409,7 @@ var Classifier = (function() {
     {
         self.elt.label_docs_status.innerHTML = msg;
     }
-
-    /**
+    /*
      * Builds the DOM element representing a document. Each document is
      * represented by a row in a table, where the row has two cells, the first
      * dedicated to action links (e.g., for marking a document as a positive
@@ -444,7 +444,7 @@ var Classifier = (function() {
         return tr;
     }
 
-    /**
+    /*
      * Builds an anchor element used to allow a user to mark a document as a
      * positive or negative example, or to skip it. The anchor has an onclick
      * attribute that calls the handleAction method with the document id and
@@ -467,7 +467,7 @@ var Classifier = (function() {
         }, label);
         return tags('p', {}, '[', link, ']');
     }
-    /**
+    /*
      * Builds an HTML string that displays the classification confidence and
      * disagreement score associated with a document, using data sent from the
      * server.
@@ -486,7 +486,7 @@ var Classifier = (function() {
         return format('<b>{1}</b> ({2})', prediction, scores);
     }
     /* UTILITY FUNCTIONS */
-    /**
+    /*
      * Builds a string containing a pair of HTML tags with optional attributes
      * and nested elements. All arguments but the tag name are optional, but if
      * nested elements are to be supplied, then attributes for the opening tag
@@ -524,7 +524,7 @@ var Classifier = (function() {
         element.push('</' + tagname + '>');
         return element.join('');
     }
-    /**
+    /*
      * This function is just like the tags function, but creates a self-closing
      * tag (e.g., <img.../>), which by necessity cannot contain nested
      * elements.
@@ -538,7 +538,7 @@ var Classifier = (function() {
     {
         return makeOpenTag(tagname, attributes, ' />');
     }
-    /**
+    /*
      * A utility function to construct the opening tag of an HTML element, or a
      * self-closing tag, along with optional attributes.
      *
@@ -558,7 +558,7 @@ var Classifier = (function() {
         tag.push(endtag);
         return tag.join('');
     }
-    /**
+    /*
      * A simple string formatter that substitutes string arguments into a
      * template string. The template string should contain substrings with the
      * pattern '{\d+}' (e.g., {1}, {2}, ...), which will be replaced with the
@@ -581,7 +581,7 @@ var Classifier = (function() {
             return typeof arg == 'object' ? JSON.stringify(arg) : arg;
         });
     }
-    /**
+    /*
      * Builds an XmlHttpRequest with optional POST data to be sent to the
      * server, and calls the appropriate continuation function when the request
      * completes or fails. The request is carried out asynchronously, and the
@@ -672,7 +672,7 @@ var Classifier = (function() {
             request.send();
         }
     }
-    /**
+    /*
      * Recursively builds a query string from an object, URI-encoding any
      * strings. Nested objects are handled using the standard HTTP notation for
      * nested arrays; for example, the element accessed in object notation by
@@ -697,7 +697,7 @@ var Classifier = (function() {
         }
         return str.join("&");
     }
-    /**
+    /*
      * Removes a particular class from the passed-in element if it's present;
      * otherwise does nothing.
      *
@@ -710,7 +710,7 @@ var Classifier = (function() {
         el.className = el.className.replace(re, '$1');
     }
 
-    /**
+    /*
      * Adds a particular class to the passed-in element; if the element already
      * has the class then it is deleted and the re-added, which should have no
      * significant effect.
@@ -724,7 +724,7 @@ var Classifier = (function() {
         el.className += ' ' + className;
     }
 
-    /**
+    /*
      * Returns true if the passed in element has a particular class, and false
      * otherwise.
      *
@@ -737,7 +737,7 @@ var Classifier = (function() {
         var re = RegExp('(^| )'+className+'( |$)');
         return el.className.search(re) != -1;
     }
-    /**
+    /*
      * Places an element into a loading state, optionally adding a class and
      * setting some text, and provides a method to call in order to cancel the
      * loading state. The basic use case is to replace some text element with

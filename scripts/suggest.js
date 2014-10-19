@@ -744,8 +744,8 @@ tag("body")[0].onload = loadFiles;
 var ip_field = elt("query-field");
 ip_field.onpaste = function(e) {
     setTimeout(function(){
-            onTypeTerm(e,ip_field);
-            }, 0);
+        onTypeTerm(e,ip_field);
+        }, 0);
 }
 ip_field.oncut = function(e) {
     setTimeout(function(){

@@ -384,7 +384,7 @@ class WikiElement extends Element implements CrawlConstants
             <label for="edit-reason"><b><?php
             e(tl('wiki_element_edit_reason'));
             ?></b></label><input type="text" id='edit-reason' name="edit_reason"
-                  value="" maxlength="<?php e(SHORT_TITLE_LEN); ?>" 
+                  value="" maxlength="<?php e(SHORT_TITLE_LEN); ?>"
                   class="wide-field"/></div>
             </div>
             <div id="save-container" class="top-margin center">

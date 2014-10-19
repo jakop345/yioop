@@ -200,15 +200,10 @@ class ManagegroupsElement extends Element
                         ($group['MEMBER_ACCESS'] != GROUP_PRIVATE ||
                         $group["OWNER_ID"] == $_SESSION['USER_ID'])) {
                         e("<td><a href='".$group_url.$group['GROUP_ID']."' >".
-                            $group_column."</a>".
-                                " <a href=\""
-                                . $wiki_url. $group['GROUP_ID']
-                                ."\">"
-                                ."["
-                                . (tl('manageaccount_element_group_wiki'))
-                                ."]"
-                                . "</a>"
-                                ."</td>");
+                            $group_column."</a> [<a href=\""
+                            . $wiki_url. $group['GROUP_ID'] ."\">"
+                            . (tl('manageaccount_element_group_wiki'))
+                            . "</a>]</td>");
                     } else {
                         e("<td>$group_column</td>");
                     }
@@ -431,7 +426,6 @@ class ManagegroupsElement extends Element
                                 e("<td></td>");
                                 break;
                             }
-
                             e("<td><a href='$action_url&amp;arg=deleteuser'>".
                                 tl('managegroups_element_delete')."</a></td>");
                         }
@@ -491,7 +485,7 @@ class ManagegroupsElement extends Element
                 </td></tr>
             <?php
             }
-                }
+        }
         ?>
         <tr><td></td><td class="center"><button class="button-box"
             type="submit"><?php e(tl('managegroups_element_save'));

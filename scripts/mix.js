@@ -242,7 +242,8 @@ function removeCrawl(i, j)
  *     for
  * @param int selected_weight the originally selected weight value
  */
-function drawWeightSelect(i, j, selected_weight) {
+function drawWeightSelect(i, j, selected_weight)
+{
     var weights = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1,
         2, 3, 4, 5, 6, 7, 8, 9, 10];
     var select =
@@ -265,7 +266,8 @@ function drawWeightSelect(i, j, selected_weight) {
  *
  * @param int i which crawl fragment to draw this for
  */
-function drawCrawlSelect(i) {
+function drawCrawlSelect(i)
+{
     select = "<select id=\'add-crawls-"+i+"\' name=\'add_crawls_"+i+"\'>";
     for ( var crawl in c) {
         val = c[crawl];
@@ -284,7 +286,8 @@ function drawCrawlSelect(i) {
  * @param int i which crawl fragment this selection drop down is for
  * @param int selected_num what number of results should be initially selected
  */
-function drawNumResultSelect(i, selected_num) {
+function drawNumResultSelect(i, selected_num)
+{
     var num_results = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 100];
 
     var select = "<select id=\'num-results-"+i+

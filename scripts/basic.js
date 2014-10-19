@@ -188,9 +188,9 @@ current_activity_top = 0;
  * @param String help element's id to toggle.
  * @param String isMobile flag true/false.
  * @param String target_controller Edit page's controller name.
- * @return none
  */
-function toggleHelp(id, isMobile, target_controller) {
+function toggleHelp(id, isMobile, target_controller)
+{
     var activity = (target_controller === "admin") ? 'current-activity' :
         'small-margin-current-activity';
     var images = document.querySelectorAll(".wiki-resource-image");
@@ -245,7 +245,6 @@ function toggleHelp(id, isMobile, target_controller) {
         }
     }
 }
-
 /*
  * Gets the Css property given an element and property name.
  * @param Object elm Element to get the Css property for.
@@ -257,29 +256,25 @@ function getCssProperty(elm, property) {
     return parseInt(window.getComputedStyle(elm, null)
         .getPropertyValue(property));
 }
-
-/**
+/*
  * This is a JS function to convert yioop wiki markup to
  * html.
  * @param String wiki_text to be parsed as HTML
  * @return String parsed html.
  */
-function parseWikiContent(wiki_text, group_id, page_id) {
+function parseWikiContent(wiki_text, group_id, page_id)
+{
     var html = wiki_text;
-
     /* note that line breaks from a text area are sent
     as \r\n , so make sure we clean them up to replace
     all \r\n with \n */
     html = html.replace(/\r\n/g, "\n");
-
     html = parseLists(html);
-
     //Regex replace normal links
     html = html.replace(/[^\[](http[^\[\s]*)/g, function(m, l) {
         // normal link
         return '<a href="' + l + '">' + l + '</a>';
     });
-
     //Regex replace for external links
     html = html.replace(/[\[](http.*)[!\]]/g, function(m, l) {
         // external link
@@ -288,24 +283,20 @@ function parseWikiContent(wiki_text, group_id, page_id) {
         return '<a href="' + link + '">' + (p.length ? p.join(' ') :
             link) + '</a>';
     });
-
     //Regex replace for headings
     html = html.replace(/(?:^|\n)([=]+)(.*)\1/g,
         function(match, contents, t) {
             return '<h' + contents.length + '>' + t + '</h' + contents.length +
                 '>';
         });
-
     //Regex replace for Bold characters
     html = html.replace(/'''(.*?)'''/g, function(match, contents) {
         return '<b>' + contents + '</b>';
     });
-
     //Regex replace for Italic characters
     html = html.replace(/''(.*?)''/g, function(match, contents) {
         return '<i>' + contents + '</i>';
     });
-
     //Regex for resource extraction.
     html = html.replace(/{{resource:(.+?)\|(.+?)}}/g,
         function(match, contents, desc) {
@@ -313,18 +304,15 @@ function parseWikiContent(wiki_text, group_id, page_id) {
                 group_id + "&p=" + page_id + "&n=" + contents +
                 '" alt="' + desc + '" class="wiki-resource-image"/>';
         });
-
     //Regex replace for HR
     html = html.replace(/----(.*?)/g, function(match, contents) {
         return contents + '<hr />';
     });
-
     //replace nowiki with pre tags
     html = html.replace(/<nowiki>(.*?)<\/nowiki>/g, function(match,
         contents) {
         return '<pre>' + contents + '</pre>';
     });
-
     //Regex replace for blocks
     html = html.replace(/(?:^|\n+)([^# =\*<].+)(?:\n+|$)/gm,
         function(match, contents) {
@@ -332,18 +320,17 @@ function parseWikiContent(wiki_text, group_id, page_id) {
                 return contents;
             return "\n<div>" + contents + "</div>\n";
         });
-
     return html;
 }
-
-/**
+/*
  * Lists need to be recursively parsed. So the below function is used
  * to recursively convert wiki markup to html.
  * @param String str usually the content string in which the UL/OL lists are
  * needed to be parsed to html.
  * @return String parsed html.
- **/
-function parseLists(str) {
+ */
+function parseLists(str)
+{
     return str.replace(/(?:(?:(?:^|\n)[\*#].*)+)/g, function(match) {
         var listType = match.match(/(^|\n)#/) ? 'ol' : 'ul';
         match = match.replace(/(^|\n)[\*#][ ]{0,1}/g, "$1");
@@ -354,7 +341,7 @@ function parseLists(str) {
     });
 }
 
-/**
+/*
  * getPageWithCallback does a GET HTTP call on the url passed.
  * Also fires the callback functions passed as
  * params appropriately.
@@ -363,10 +350,10 @@ function parseLists(str) {
  * @param String response_type The response type expected.
  * @param Function object success_call_back Callback function on success.
  * @param Function object error_handler Callback function on failure.
- * @return none
- * */
-function getPageWithCallback(url, response_type,
-    success_call_back, error_handler) {
+ */
+function getPageWithCallback(url, response_type, success_call_back,
+    error_handler)
+{
     var request = makeRequest();
     request.open('GET', url, true);
     request.responseType = response_type;
@@ -381,9 +368,8 @@ function getPageWithCallback(url, response_type,
     request.send();
 };
 
-/**
- * /**
- * takes in the help point id, uses it to fetch wiki content, then
+/*
+ * Takes in the help point id, uses it to fetch wiki content, then
  * wiki content is being eval'd to be painted int he help pane.
  * Ajax call happens only if help needs to be displayed.
  * @param Object help_point element
@@ -396,18 +382,11 @@ function getPageWithCallback(url, response_type,
  * @param String api_controller api's controller name.
  * @param String api_action api's action name.
  * @param String mode r/w mode , usually read.
- * @return none
  */
-function displayHelpForId(
-    help_point,
-    is_mobile,
-    target_controller,
-    csrf_token_key,
-    csrf_token_value,
-    help_group_id,
-    api_controller,
-    api_action,
-    mode) {
+function displayHelpForId( help_point, is_mobile, target_controller,
+    csrf_token_key, csrf_token_value, help_group_id, api_controller,
+    api_action, mode)
+{
     if ((elt("help-frame").style.display) === "block") {
         toggleHelp('help-frame', is_mobile, target_controller);
         return;
@@ -443,17 +422,18 @@ function displayHelpForId(
     event.preventDefault();
 }
 
-/**
+/*
  * Simple function to construct the Wiki Edit hyperlink with passed in params.
  * @param String target_controller Edit page's controller name.
  * @param String csrf_token_key teh dynamic name used for CSRF token var.
  * @param String csrf_token_value The CSRF token to render edit page.
  * @param String group_id GroupId of the group which has the wiki.
  * @param String page_name Page name,unique Identifier for wiki edit page.
- * @return String
+ * @return String the edit link
  */
 function getEditLink(target_controller, csrf_token_key, csrf_token_value,
-    group_id, page_name) {
+    group_id, page_name)
+{
     return '?c=' + target_controller +
         '&' + csrf_token_key + '=' + csrf_token_value +
         '&group_id=' + group_id +

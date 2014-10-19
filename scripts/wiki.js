@@ -29,7 +29,7 @@
  * @copyright 2014
  * @filesource
  */
-/**
+/*
  * This script adds buttons to textareas on a page which when clicked insert
  * the relevant way to format something using wiki syntax.
  *
@@ -52,22 +52,22 @@
  * "wikibtn-slide"
  * }
  */
-/**
+/*
  * Used to contain formatting info about all buttons on the wiki editor
  * @var Array
  */
 var editor_all_buttons = [];
-/**
+/*
  * Used to store formatting info buttons on a particular textarea
  * @var Array
  */
 var editor_buttons = [];
-/**
+/*
  * Object that buffers selection information.
  * @var Object
  */
 var editor_buffer = {};
-/**
+/*
  * Add buttons for common wiki operation before the textareas on a page.
  */
 function editorizeAll()
@@ -83,7 +83,7 @@ function editorizeAll()
         }
     }
 }
-/**
+/*
  * Adds Wiki editor buttons to a textarea with the given id
  *
  * @param String id identifier of the text area to have wiki buttons added to
@@ -171,7 +171,7 @@ function editorize(id)
 
     return;
 }
-/**
+/*
  * Method to return standard buttons as an object.
  *
  * @return Object
@@ -195,7 +195,7 @@ function getStandardButtonsObject()
             + '....' + '\n']
     };
 }
-/**
+/*
  * Filters the buttons according to exclusion/inclusion rules.
  * If the 'data-buttons' attribute value starts with 'all' - Only the buttons
  * need to be excluded should be followed, with their name specified with a '!'
@@ -259,7 +259,7 @@ function filterButtons(id)
         editor_buttons[id] = editor_all_buttons[id];
     }
 }
-/**
+/*
  * This function returns the selected text from text_area.
  * The returned Object has properties for
  * selected text, entire prefix and entire suffix strings to the
@@ -317,7 +317,7 @@ function getSelection(id)
     return obj;
 }
 
-/**
+/*
  * This function can be used to set
  * the caret position in a text field object like a text area.
  *
@@ -338,7 +338,7 @@ function setCaretPosition(text_field, pos)
         range.select();
     }
 }
-/**
+/*
  * Looks up the name'd wiki formatting task, then uses it type to
  * render it in the textarea with identifer id
  *
@@ -359,7 +359,7 @@ function wikifySelection(name, id)
     }
 }
 
-/**
+/*
  * This is the main function that takes  prefix and suffix characters for
  * wikifying selected text. Selected text will be obtained using
  * the getSelection();
@@ -437,7 +437,7 @@ function addWikiHyperlink(id)
     }
     insertTextAtCursor("[[" + out + "]]" + '\n', id);
 }
-/**
+/*
  * This function takes in number of rows, columns and
  * header_text(if desired) and constructs a table in wiki markup.
  *
@@ -480,7 +480,7 @@ function createWikiTable(rows, cols, example_text, header_text)
     table = table + "|}";
     return table;
 }
-/**
+/*
  * Inserts wiki search widget in textarea indentified by id
  *
  * @param String id of textarea to insert wiki search widget
@@ -501,7 +501,7 @@ function addWikiSearch(id)
     toggleDisplay('wiki-popup-prompt-'+id);
 }
 
-/**
+/*
  * Gets the size of the search widget to load.
  *
  * @param String id identifier of the textarea to put search form on
@@ -514,7 +514,7 @@ function useInputForSearch(id)
     insertTextAtCursor( "{{search:default|size:" + size+ "|placeholder:" +
         tl['wiki_js_placeholder'] + "}}\n", id);
 }
-/**
+/*
  * Util function to Stringify an JS Object
  *
  * @param Object js_object the javascript object to be converted to string.
@@ -531,7 +531,7 @@ function objToString(js_object)
     json_string.push();
     return '{' + json_string.join(',') + '}';
 }
-/**
+/*
  * This is invoked by the editor to insert a wiki table.
  * This functions takes care okf the user input for rows/columns/etc
  * and leverages createWikiTable function to construct the table.
@@ -553,7 +553,7 @@ function addWikiTable(id)
     wiki_popup_prompt.appendChild(createTableForm(id));
     toggleDisplay('wiki-popup-prompt-'+id);
 }
-/**
+/*
  * Prompt/Draws a form to get input from a user, then uses that input to draw
  * a wiki table in the textarea with indentifier id
  *
@@ -566,7 +566,7 @@ function useInputForTable(id)
     var head_checked = elt('wiki-insert-heading-'+id).checked;
     addWikiTableFromInput(rows, cols, head_checked, id);
 }
-/**
+/*
  * Using the input from the user, like number of rows,cols etc.
  * builds a table in wiki markup and inserts at cursor.
  * @param int rows number of rows desired
@@ -587,7 +587,7 @@ function addWikiTableFromInput(rows, cols, head_checked, id)
     }
     insertTextAtCursor(table + '\n', id);
 }
-/**
+/*
  * Accepts text as parameter to be inserted at caret's
  * current position.
  *
@@ -617,7 +617,7 @@ function insertTextAtCursor(text, textarea_id)
     }
 }
 
-/**
+/*
  * Used to mark-up selected text in textarea given by id with a heading whose
  * size is decided by a select drop down
  *
@@ -632,7 +632,7 @@ function addWikiHeading(id)
     wikify(markup_text, markup_text, "wikibtn-heading" + heading_size , id);
 }
 
-/**
+/*
  * Fills a character array and returns as a string consisting given count
  * of a given character.
  *
@@ -648,7 +648,7 @@ function fillChars(c, n)
     return e;
 }
 
-/**
+/*
  * Created an input prompt HTML element with 2 text fields and a checkbox.
  * @param String id
  * @return HTMLFormElement
@@ -683,7 +683,7 @@ function createTableForm(id)
     return wiki_prompt_for_table;
 }
 
-/**
+/*
  * Creates an HTMLFormElement with two text fields to get the URL and text of
  * a link
  * @param String id identifier of the text area that we want to add a wiki link
@@ -713,7 +713,7 @@ function createHyperlinkForm(id)
         '</button></div></form></div>';
     return wiki_prompt_for_hyperlink;
 }
-/**
+/*
  * Creates an an HTMLFormElement with a form to get the kind of search bar
  * that is desired to be inserted into a wiki document
  * @param String id identifier of the textarea used to insert wiki text
