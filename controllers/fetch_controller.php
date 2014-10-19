@@ -378,11 +378,23 @@ class FetchController extends Controller implements CrawlConstants
                     $info[self::MEMORY_USAGE];
                 $change = true;
             }
+            if(!isset($crawl_status[self::CRAWL_TIME])) {
+                $network_filename = CRAWL_DIR."/schedules/network_status.txt";
+                if(file_exists($network_filename)){
+                    $info[self::CRAWL_TIME] = unserialize(file_get_contents(
+                        $network_filename));
+                    $change = true;
+                } else {
+                    $info[self::CRAWL_TIME] = 0;
+                }
+            } else {
+                $info[self::CRAWL_TIME] = $crawl_status['CRAWL_TIME'];
+            }
             if($change == true) {
                 file_put_contents(CRAWL_DIR."/schedules/crawl_status.txt",
                     serialize($crawl_status), LOCK_EX);
             }
-            $info[self::CRAWL_TIME] = $crawl_status['CRAWL_TIME'];
+            
         } else {
             $info[self::CRAWL_TIME] = 0;
         }
