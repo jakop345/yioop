@@ -75,6 +75,7 @@ class ApiElement extends Element implements CrawlConstants {
      */
     function renderJsonDocument($data, $can_edit, $logged_in) {
         $out_array = array();
+        $http_code = 0;
         if ($data["PAGE"]) {
             $out_array["wiki_content"] = html_entity_decode($data['PAGE'],
                     ENT_QUOTES);

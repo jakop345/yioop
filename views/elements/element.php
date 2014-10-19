@@ -67,27 +67,6 @@ abstract class Element
      * that should be used in drawing the view
      */
     public abstract function render($data);
-
-    /**
-     * This method is used to render the help button,
-     * given a help point  csrf token and target controller name.
-     *
-     * @param  $help_point_id - used to set as help button id
-     * @param  $csrf_token_value - csrf token to make api call/open edit link
-     * @param  $target_c - target controller to remember the view.
-     * @return String button html.
-     */
-    public function renderHelpButton($help_point_id,
-            $csrf_token_value, $target_c) {
-        $is_mobile = MOBILE ? "true" : "false";
-        return '<button type="button"
-                    href=""
-                    onclick="javascript:displayHelpForId(this,'
-                . $is_mobile . ',\'' . $target_c . '\',\''. CSRF_TOKEN .'\',\''
-                . $csrf_token_value . '\')" '
-                . 'data-pagename="' . $help_point_id . '">?</button>';
-    }
-
 }
 
 ?>

@@ -70,6 +70,8 @@ class HelpElement extends Element {
                     </div>
                 </div>
             <?php } else {
+                $help_class_add = "";
+                $help_id = "";
                 if($data['c'] != 'admin'){
                     $help_class_add = "small-margin-help-pane";
                     $help_id ="small-margin-help";

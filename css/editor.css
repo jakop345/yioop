@@ -161,13 +161,11 @@
 }
 .wikibtn-table
 {
-    background: url(
-        ../resources/wiki_button_images/wikibtn-table.png) no-repeat;
+    background: url(../resources/wiki_button_images/wikibtn-table.png) no-repeat;
 }
 .wikibtn-search-widget
 {
-    background: url(
-        ../resources/wiki_button_images/wikibtn-search-widget.png)
+    background: url(../resources/wiki_button_images/wikibtn-search-widget.png)
         no-repeat;
 }
 

@@ -383,25 +383,15 @@ class WikiElement extends Element implements CrawlConstants
             <div class="top-margin">
             <label for="edit-reason"><b><?php
             e(tl('wiki_element_edit_reason'));
-            ?></b></label><input type="text" id='edit-reason'
-                name="edit_reason" value=""
-                maxlength="<?php e(SHORT_TITLE_LEN); ?>" class="wide-field"/>
-            </div>
+            ?></b></label><input type="text" id='edit-reason' name="edit_reason"
+                  value="" maxlength="<?php e(SHORT_TITLE_LEN); ?>" 
+                  class="wide-field"/></div>
             </div>
             <div id="save-container" class="top-margin center">
             <button class="button-box" type="submit"><?php
                 e(tl('wiki_element_savebutton')); ?></button>
-            <button id="wiki-preview-btn"
-                    onclick="javascript:renderPreview('<?php
-                        e($data["PAGE_ID"] . "','"
-                      . $data['GROUP']['GROUP_ID']);
-            ?>')" class="button-box"><?php
-                e(tl('wiki_element_previewbutton')); ?></button>
             </div>
         </form>
-        <div id="wiki-preview">
-
-        </div>
         <div class="top-margin" id="media-list-page">
         <h2><?php e(tl('wiki_element_media_list'))?></h2>
         <p><?php e(tl('wiki_element_ml_description'))?></p>
