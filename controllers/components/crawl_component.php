@@ -1495,8 +1495,7 @@ class CrawlComponent extends Component implements CrawlConstants
                             "</h1>');";
                         break;
                     }
-                    $must_have = array("name", "type",
-                        'source_url');
+                    $must_have = array("name", "type", 'source_url');
                     $is_html_feed = false;
                     if(isset($_REQUEST['type']) && $_REQUEST['type'] == 'html'){
                         $is_html_feed = true;
@@ -1513,13 +1512,14 @@ class CrawlComponent extends Component implements CrawlConstants
                         if($clean_me == "source_url") {
                             $r[$clean_me] = UrlParser::canonicalLink(
                                 $r[$clean_me], NAME_SERVER);
+                                 echo $r[$clean_me]."\n";
                             if(!$r[$clean_me]) {
                                 $data['SCRIPT'] .=
                                     "doMessage('<h1 class=\"red\" >".
                                     tl('crawl_component_invalid_url').
                                     "</h1>');";
+                                break 2;
                             }
-                            break 2;
                         }
                         if(in_array($clean_me, $must_have) &&
                             $r[$clean_me] == "" ) {
