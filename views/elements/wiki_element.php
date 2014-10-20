@@ -69,6 +69,9 @@ class WikiElement extends Element implements CrawlConstants
         $other_base_query = "?c=$other_controller&amp;a=wiki&amp;group_id=".
             $data["GROUP"]["GROUP_ID"]."&amp;arg=".$data['MODE']."&amp;".
             "page_name=".$data['PAGE_NAME'];
+        if(isset($data['OTHER_BACK_URL'])){
+            $other_base_query .= $data['OTHER_BACK_URL'];
+         }
         if($logged_in) {
             $other_base_query .= $csrf_token;
             $csrf_token = "&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN];
@@ -104,6 +107,14 @@ class WikiElement extends Element implements CrawlConstants
                 $page_border = $data['HEAD']['page_border'];
             }
             e('<div class="small-margin-current-activity '.$page_border.'">');
+        }
+        if (isset($data['BACK_URL'])) {
+            e("<div class=\"float-opposite back-button\">" .
+                "<a href=\"?" . $data['BACK_URL'] . "&amp;" . CSRF_TOKEN
+                . "=" . $data[CSRF_TOKEN] . "\">" .
+                "<img src=\"resources/back.png\" />" .
+                "</a>" .
+                "</div>");
         }
         if(isset($data['MEDIA_NAME'])) {
             ?>
@@ -147,6 +158,9 @@ class WikiElement extends Element implements CrawlConstants
                     $append = "";
                     if($name != 'pages') {
                         $append = '&amp;page_name='. $data['PAGE_NAME'];
+                    }
+                    if (isset($data['OTHER_BACK_URL'])) {
+                        $append .= $data['OTHER_BACK_URL'];
                     }
                     e($bar); ?><a href="<?php e($base_query .
                         '&amp;arg='.$name.'&amp;a=wiki'.$append); ?>"><?php
@@ -275,6 +289,19 @@ class WikiElement extends Element implements CrawlConstants
                 e($data[CSRF_TOKEN]); ?>" />
             <input type="hidden" name="a" value="wiki" />
             <input type="hidden" name="arg" value="edit" />
+            <?php
+            if(isset($data['BACK_PARAMS']))
+            {
+                foreach($data["BACK_PARAMS"] as
+                        $back_param_key => $back_param_value){
+                    e('<input type="hidden" '
+                        . 'name="'.$back_param_key.
+                        '" value="'.
+                        $back_param_value
+                        .'" />');
+                }
+            }
+            ?>
             <input type="hidden" name="group_id" value="<?php
                 e($data['GROUP']['GROUP_ID']); ?>" />
             <input type="hidden" name="page_name" value="<?php

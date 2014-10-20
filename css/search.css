@@ -2861,3 +2861,7 @@ top: 1in;
 .wiki-resource-image{
     max-width:100%;
 }
+.back-button{
+    margin-top : 5px;
+    margin-bottom : 10px;
+}

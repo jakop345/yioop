@@ -255,7 +255,45 @@ abstract class Controller
             }
         }
         $data['c'] = isset($_REQUEST['c']) ? $_REQUEST['c'] : NULL;
+        $data = array_merge($data,$this->setupWikiHelpBackLogic());
         $this->view($view)->render($data);
+    }
+    /**
+     * This is a helper method that sets proper data vars required to perform
+     * Back page logic when the user is navigating from help article to edit
+     * page,and then back to help article.
+     * @param type $data to add data vars
+     * @return string $data
+     */
+    function setupWikiHelpBackLogic() {
+        $data =  array();
+        $data["OTHER_BACK_URL"] = "";
+        if(isset($_REQUEST['back_params'])){
+            foreach($_REQUEST['back_params'] as
+                    $back_param_key => $back_param_value){
+                $data['BACK_PARAMS']["back_params[$back_param_key]"]
+                    = $back_param_value;
+                $data["OTHER_BACK_URL"] .= "&amp;back_params[$back_param_key]"
+                    ."=" . $back_param_value;
+            }
+            $data['BACK_URL'] = http_build_query($_REQUEST["back_params"]);
+        }
+
+        if (isset($_REQUEST['open_help_page'])) {
+            $data['OPEN_HELP_PAGE'] = $_REQUEST['open_help_page'];
+            if (!isset($data['SCRIPT'])) {
+                $data['SCRIPT'] = "";
+            }
+
+            $data['SCRIPT'] .= "\n" .
+                'var matches = '
+                . 'document.querySelectorAll("[data-pagename='
+                . $data['OPEN_HELP_PAGE']
+                . ']");'
+                . "matches[0].click();"
+                . "\n";
+        }
+        return $data;
     }
     /**
      * When an activity involves displaying tabular data (such as rows of
