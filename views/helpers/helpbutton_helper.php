@@ -65,11 +65,11 @@ class HelpbuttonHelper extends Helper
      *
      * @param  $help_point_id - used to set as help button id
      * @param  $csrf_token_value - csrf token to make api call/open edit link
-     * @param  $target_c - target controller to remember the view.
+     * @param  $target_controller - target controller to remember the view.
      * @return String button html.
      */
     public function render($help_point_id,
-                           $csrf_token_value, $target_c) {
+                           $csrf_token_value, $target_controller) {
         $is_mobile = MOBILE ? "true" : "false";
         $wiki_group_id = "7";
         $api_controller = "api";
@@ -77,10 +77,14 @@ class HelpbuttonHelper extends Helper
         $api_wiki_mode = "read";
 
         return '<button type="button"
-                    data-tl=\''.$this->localizationdata.'\'
-                    onclick="javascript:displayHelpForId(this,'
-        . $is_mobile . ',\'' . $target_c . '\',\''. CSRF_TOKEN .'\',\''
-        . $csrf_token_value ."','$wiki_group_id','$api_controller',"
+                    data-tl=\'' . $this->localizationdata . '\'
+                    onclick="javascript:displayHelpForId(
+                    this,'
+        . $is_mobile . ',\''
+        . $target_controller . '\',\''
+        . $_REQUEST['a'] . '\',\''
+        . CSRF_TOKEN . '\',\''
+        . $csrf_token_value . "','$wiki_group_id','$api_controller',"
         . "'$api_wiki_action','$api_wiki_mode" . '\')" '
         . 'data-pagename="' . $help_point_id . '">?</button>';
     }
