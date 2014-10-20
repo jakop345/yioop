@@ -383,15 +383,15 @@ function getPageWithCallback(url, response_type, success_call_back,
  * @param String api_action api's action name.
  * @param String mode r/w mode , usually read.
  */
-function displayHelpForId( help_point, is_mobile, target_controller,
-    csrf_token_key, csrf_token_value, help_group_id, api_controller,
-    api_action, mode)
-{
+function displayHelpForId(help_point, is_mobile, target_controller,
+                          current_action, csrf_token_key, csrf_token_value,
+                          help_group_id,
+                          api_controller, api_action, mode) {
     if ((elt("help-frame").style.display) === "block") {
         toggleHelp('help-frame', is_mobile, target_controller);
         return;
     }
-    var tl = eval( '(' + help_point.getAttribute("data-tl") + ')' );
+    var tl = eval('(' + help_point.getAttribute("data-tl") + ')');
     getPageWithCallback("?c=" + api_controller + "&group_id=" +
         help_group_id + "&" +
         "arg=" + mode + "&" +
@@ -399,24 +399,25 @@ function displayHelpForId( help_point, is_mobile, target_controller,
         csrf_token_key + '=' + csrf_token_value + "&" +
         "page_name=" + help_point.getAttribute("data-pagename"),
         'json',
-        function(data) {
+        function (data) {
             elt("help-frame-body").innerHTML = parseWikiContent(
                 data.wiki_content,
                 data.group_id,
                 data.page_id
             );
             elt('page_name').innerHTML = data.page_name + ' [<a href="' +
-                getEditLink(
-                    target_controller,
-                    csrf_token_key,
-                    csrf_token_value,
-                    help_group_id,
-                    data.page_name) + '">' +
-                tl["wiki_view_edit"] + '</a>]';
+            getEditLink(
+                target_controller,
+                current_action,
+                csrf_token_key,
+                csrf_token_value,
+                help_group_id,
+                data.page_name) + '">' +
+            tl["wiki_view_edit"] + '</a>]';
 
             toggleHelp('help-frame', is_mobile, target_controller);
         },
-        function(status) {
+        function (status) {
             toggleHelp('help-frame', is_mobile, target_controller);
         });
     event.preventDefault();
@@ -431,13 +432,15 @@ function displayHelpForId( help_point, is_mobile, target_controller,
  * @param String page_name Page name,unique Identifier for wiki edit page.
  * @return String the edit link
  */
-function getEditLink(target_controller, csrf_token_key, csrf_token_value,
-    group_id, page_name)
-{
+function getEditLink(target_controller, current_action, csrf_token_key,
+                     csrf_token_value, group_id, page_name) {
     return '?c=' + target_controller +
-        '&' + csrf_token_key + '=' + csrf_token_value +
-        '&group_id=' + group_id +
-        '&arg=edit' +
-        '&a=wiki' +
-        '&page_name=' + page_name;
+    '&' + csrf_token_key + '=' + csrf_token_value +
+    '&group_id=' + group_id +
+    '&arg=edit' +
+    '&a=wiki' +
+    '&page_name=' + page_name +
+    '&back_params[open_help_page]=' + page_name +
+    '&back_params[c]=' + target_controller +
+    '&back_params[a]=' + current_action;
 }
