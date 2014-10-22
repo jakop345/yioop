@@ -34,7 +34,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 /**
  * Load base helper class if needed
  */
-require_once BASE_DIR."/views/helpers/helper.php";
+require_once BASE_DIR . "/views/helpers/helper.php";
 /**
  * This is a helper class is used to
  * draw help button for context sensitive
@@ -52,30 +52,29 @@ class HelpbuttonHelper extends Helper
      */
     function __construct()
     {
-        $this->localizationdata = "{".
-            'wiki_view_edit :"'.tl('wiki_view_edit').'",'.
-            'wiki_view_read :"'.tl('wiki_view_read').'"'.
+        $this->localizationdata = "{" .
+            'wiki_view_edit :"' . tl('wiki_view_edit') . '",' .
+            'wiki_view_read :"' . tl('wiki_view_read') . '"' .
             "}";
         parent::__construct();
     }
-
     /**
      * This method is used to render the help button,
-     * given a help point  csrf token and target controller name.
+     * given a help point  CSRF token and target controller name.
      *
      * @param  $help_point_id - used to set as help button id
-     * @param  $csrf_token_value - csrf token to make api call/open edit link
+     * @param  $csrf_token_value - CSRF token to make api call/open edit link
      * @param  $target_controller - target controller to remember the view.
      * @return String button html.
      */
-    public function render($help_point_id,
-                           $csrf_token_value, $target_controller) {
+    public function render($help_point_id, $csrf_token_value,
+        $target_controller)
+    {
         $is_mobile = MOBILE ? "true" : "false";
         $wiki_group_id = "7";
         $api_controller = "api";
-        $api_wiki_action ="wiki";
+        $api_wiki_action = "wiki";
         $api_wiki_mode = "read";
-
         return '<button type="button"
                     data-tl=\'' . $this->localizationdata . '\'
                     onclick="javascript:displayHelpForId(

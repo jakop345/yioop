@@ -262,64 +262,86 @@ function getCssProperty(elm, property) {
  * @param String wiki_text to be parsed as HTML
  * @return String parsed html.
  */
-function parseWikiContent(wiki_text, group_id, page_id)
+function parseWikiContent( wiki_text, group_id, page_id, controller_name,
+    csrf_token_key, csrf_token_value)
 {
     var html = wiki_text;
     /* note that line breaks from a text area are sent
-    as \r\n , so make sure we clean them up to replace
-    all \r\n with \n */
+     as \r\n , so make sure we clean them up to replace
+     all \r\n with \n */
     html = html.replace(/\r\n/g, "\n");
     html = parseLists(html);
     //Regex replace normal links
-    html = html.replace(/[^\[](http[^\[\s]*)/g, function(m, l) {
+    html = html.replace(/[^\[](http[^\[\s]*)/g, function ( m, l )
+    {
         // normal link
         return '<a href="' + l + '">' + l + '</a>';
     });
     //Regex replace for external links
-    html = html.replace(/[\[](http.*)[!\]]/g, function(m, l) {
+    html = html.replace(/[\[](http.*)[!\]]/g, function ( m, l )
+    {
         // external link
         var p = l.replace(/[\[\]]/g, '').split(/ /);
         var link = p.shift();
-        return '<a href="' + link + '">' + (p.length ? p.join(' ') :
-            link) + '</a>';
+        return '[<a href="' + link + '">' + (p.length ? p.join(' ') :
+            link) + '</a>]';
     });
     //Regex replace for headings
     html = html.replace(/(?:^|\n)([=]+)(.*)\1/g,
-        function(match, contents, t) {
+        function ( match, contents, t )
+        {
             return '<h' + contents.length + '>' + t + '</h' + contents.length +
-                '>';
+            '>';
         });
     //Regex replace for Bold characters
-    html = html.replace(/'''(.*?)'''/g, function(match, contents) {
+    html = html.replace(/'''(.*?)'''/g, function ( match, contents )
+    {
         return '<b>' + contents + '</b>';
     });
     //Regex replace for Italic characters
-    html = html.replace(/''(.*?)''/g, function(match, contents) {
+    html = html.replace(/''(.*?)''/g, function ( match, contents )
+    {
         return '<i>' + contents + '</i>';
     });
     //Regex for resource extraction.
     html = html.replace(/{{resource:(.+?)\|(.+?)}}/g,
-        function(match, contents, desc) {
+        function ( match, contents, desc )
+        {
             return '<img src="' + "?c=resource&a=get&f=resources&g=" +
-                group_id + "&p=" + page_id + "&n=" + contents +
-                '" alt="' + desc + '" class="wiki-resource-image"/>';
+            group_id + "&p=" + page_id + "&n=" + contents +
+            '" alt="' + desc + '" class="wiki-resource-image"/>';
         });
     //Regex replace for HR
-    html = html.replace(/----(.*?)/g, function(match, contents) {
+    html = html.replace(/----(.*?)/g, function ( match, contents )
+    {
         return contents + '<hr />';
     });
     //replace nowiki with pre tags
-    html = html.replace(/<nowiki>(.*?)<\/nowiki>/g, function(match,
-        contents) {
+    html = html.replace(/<nowiki>(.*?)<\/nowiki>/g, function ( match,
+        contents )
+    {
         return '<pre>' + contents + '</pre>';
     });
     //Regex replace for blocks
     html = html.replace(/(?:^|\n+)([^# =\*<].+)(?:\n+|$)/gm,
-        function(match, contents) {
+        function ( match, contents )
+        {
             if (contents.match(/^\^+$/))
                 return contents;
             return "\n<div>" + contents + "</div>\n";
         });
+    //Internal links to other pages.
+    html = html.replace(/\[\[(.*?)\]\]/g, function ( matches, internal_link )
+    {
+        var internal_link_array = internal_link.split(/\|/);
+        var page_name = internal_link_array.shift();
+        return '<a href="' + '?c=' + controller_name
+        + '&a=wiki&arg=read&group_id=' + group_id + '&page_name=' + page_name
+        +"&"+csrf_token_key + '=' + csrf_token_value + '">'
+        + (internal_link_array.length ? internal_link_array.join('|')
+            : page_name)
+        + '</a>';
+    });
     return html;
 }
 /*
@@ -403,7 +425,10 @@ function displayHelpForId(help_point, is_mobile, target_controller,
             elt("help-frame-body").innerHTML = parseWikiContent(
                 data.wiki_content,
                 data.group_id,
-                data.page_id
+                data.page_id,
+                target_controller,
+                csrf_token_key,
+                csrf_token_value
             );
             elt('page_name').innerHTML = data.page_name + ' [<a href="' +
             getEditLink(

@@ -324,7 +324,7 @@ class ManagegroupsElement extends Element
                         e(tl('managegroups_element_browse')); ?></a>]
                     <?php
                     e($this->view->helper("helpbutton")->render(
-                            "browse_url", $data[CSRF_TOKEN],$_REQUEST['c']));
+                            "Main", $data[CSRF_TOKEN],$_REQUEST['c']));
                     ?></td>
                 <?php
                 }
