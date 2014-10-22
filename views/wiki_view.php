@@ -108,7 +108,7 @@ class WikiView extends View
                     if($name != 'pages') {
                         $append = '&amp;page_name='. $data['PAGE_NAME'];
                     }
-                    if (isset($data['OTHER_BACK_URL'])) {
+                    if(isset($data['OTHER_BACK_URL'])) {
                         $append .= $data['OTHER_BACK_URL'];
                     }
                     ?>
