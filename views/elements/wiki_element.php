@@ -58,6 +58,7 @@ class WikiElement extends Element implements CrawlConstants
         $can_edit = $logged_in && isset($data["CAN_EDIT"]) && $data["CAN_EDIT"];
         $is_admin = ($data["CONTROLLER"] == "admin");
         $arrows = ($is_admin) ? "&lt;&lt;" : "&gt;&gt;";
+        $back_arrows = "&lt;&lt;";
         $other_controller = ($is_admin) ? "group" : "admin";
         $base_query = "?c={$data['CONTROLLER']}";
         $csrf_token = "";
@@ -108,11 +109,12 @@ class WikiElement extends Element implements CrawlConstants
             }
             e('<div class="small-margin-current-activity '.$page_border.'">');
         }
-        if (isset($data['BACK_URL'])) {
+        if (isset($data['BACK_URL']))
+        {
             e("<div class=\"float-opposite back-button\">" .
                 "<a href=\"?" . $data['BACK_URL'] . "&amp;" . CSRF_TOKEN
                 . "=" . $data[CSRF_TOKEN] . "\">" .
-                "<img src=\"resources/back.png\" />" .
+                "$back_arrows " . tl('wiki_view_back') .
                 "</a>" .
                 "</div>");
         }
