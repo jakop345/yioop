@@ -856,6 +856,74 @@ function upgradeDatabaseVersion24(&$db)
     }
 }
 /**
+ * Upgrades a Version 24 version of the Yioop! database to a Version 25 version
+ *
+ * @param object $db datasource to use to upgrade
+ */
+function upgradeDatabaseVersion25(&$db) {
+    /** For reading HELP_GROUP_ID**/
+    require_once BASE_DIR . "/configs/config.php";
+    /** For GroupModel::setPageName method */
+    require_once BASE_DIR . "/models/group_model.php";
+    $db->execute("DELETE FROM VERSION WHERE ID < 24");
+    $db->execute("UPDATE VERSION SET ID=25 WHERE ID=24");
+    $sql = "SELECT COUNT(*) AS NUM FROM GROUPS WHERE GROUP_ID=".HELP_GROUP_ID;
+    $result = $db->execute($sql);
+    $row = ($db->fetchArray($result));
+    $is_taken = intval($row['NUM']);
+    if ($is_taken > 0) {
+        //Get the max group Id , increment it to push the old group
+        $sql = "SELECT MAX(GROUP_ID) AS MAX_GROUP_ID FROM GROUPS";
+        $result = $db->execute($sql);
+        $row = $db->fetchArray($result);
+        $max_group_id = $row['MAX_GROUP_ID'] + 1;
+        $tables_to_update_group_id = array("GROUPS", "GROUP_ITEM", "GROUP_PAGE",
+            "GROUP_PAGE_HISTORY", "USER_GROUP");
+        foreach ($tables_to_update_group_id as $table) {
+            $sql = "UPDATE $table "
+                    . "Set GROUP_ID=$max_group_id "
+                    . "WHERE "
+                    . "GROUP_ID=". HELP_GROUP_ID;
+            $db->execute($sql);
+        }
+    }
+    //Insert the Help Group
+    $creation_time = microTimestamp();
+    $sql = "INSERT INTO GROUPS VALUES(" . HELP_GROUP_ID . ",'Help','"
+            . $creation_time . "','" . ROOT_ID . "','" . PUBLIC_JOIN . "', '"
+            . GROUP_READ . "', " . NON_VOTING_GROUP . ", " . FOREVER . ")";
+    $db->execute($sql);
+    $now = time();
+    $db->execute("INSERT INTO USER_GROUP VALUES (" . ROOT_ID . ", " .
+            HELP_GROUP_ID . ", " . ACTIVE_STATUS . ", $now)");
+    $db->execute("INSERT INTO USER_GROUP VALUES (" . PUBLIC_USER_ID . ", " .
+            HELP_GROUP_ID . ", " . ACTIVE_STATUS . ", $now)");
+    //Insert into Groups
+    $help_pages = array();
+    $help_pages = getWikiHelpPages();
+    foreach ($help_pages as $page_name => $page_content) {
+        $page_content = str_replace("&amp;", "&", $page_content);
+        $page_content = @htmlentities($page_content, ENT_QUOTES, "UTF-8");
+        $group_model = new GroupModel(DB_NAME, false);
+        $group_model->db = $db;
+        $group_model->setPageName(ROOT_ID, HELP_GROUP_ID, $page_name,
+                $page_content, "en-US", "Creating Default Pages", "$page_name "
+                . "Help Page Created!", "Discuss the page in this thread!");
+    }
+}
+
+function getWikiHelpPages()
+{
+    $help_pages = array();
+    $help_pages["Help Page 1"] = <<<EOD
+title=Help Page One
+description=This is a test page for Wiki help insertion.
+END_HEAD_VARS
+==Please ignore this page.==
+EOD;
+    return $help_pages;
+}
+/**
  * Used to insert a new activity into the database at a given acitivity_id
  *
  * Inserting at an ID rather than at the end is useful since activities are

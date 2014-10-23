@@ -37,7 +37,7 @@ if(!defined('BASE_DIR') ||
 /** Version number for upgrade function
  * @var int
  */
-define('YIOOP_VERSION', 24);
+define('YIOOP_VERSION', 25);
 /*
     pcre is an external library to php which can cause Yioop
     to seg fault if given instances of reg expressions with
@@ -272,6 +272,8 @@ define('USER_ROLE', 2);
 define('PUBLIC_GROUP_ID', 2);
 /** ID of the group to which all Yioop users belong */
 define('PUBLIC_USER_ID', 2);
+/** ID of the group to which all Yioop Help Wiki articles belong */
+define('HELP_GROUP_ID', 3);
 if(!PROFILE) {
     return;
 }
