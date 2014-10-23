@@ -271,8 +271,8 @@ abstract class Controller
         $data = array();
         $data["OTHER_BACK_URL"] = "";
         if(isset($_REQUEST['back_params'])) {
-            foreach ($_REQUEST['back_params'] as
-                     $back_param_key => $back_param_value) {
+            foreach($_REQUEST['back_params'] as
+                    $back_param_key => $back_param_value) {
                 $data['BACK_PARAMS']["back_params[$back_param_key]"]
                     = $back_param_value;
                 $data["OTHER_BACK_URL"] .= "&amp;back_params[$back_param_key]"
