@@ -60,7 +60,9 @@ class ManagelocalesElement extends Element
         } else {
             $this->renderLocaleForm($data);
         }
-        $data['TABLE_TITLE'] = tl('managelocales_element_locale_list');
+        $data['TABLE_TITLE'] = tl('managelocales_element_locale_list')
+            ."&nbsp;" . $this->view->helper("helpbutton")->render(
+            "Locale List", $data[CSRF_TOKEN],$_REQUEST['c']);
         $data['NO_FLOAT_TABLE'] = true;
         $data['ACTIVITY'] = 'manageLocales';
         $data['VIEW'] = $this->view;
@@ -128,10 +130,13 @@ class ManagelocalesElement extends Element
         if($editlocale) {
             e("<div class='float-opposite'><a href='$base_url'>".
                 tl('manageloecales_element_add_locale_form')."</a></div>");
-            e("<h2>".tl('managelocales_element_locale_info'). "</h2>");
+            e("<h2>".tl('managelocales_element_locale_info'). "&nbsp;");
         } else {
-            e("<h2>".tl('managelocales_element_add_locale'). "</h2>");
+            e("<h2>".tl('managelocales_element_add_locale'). "&nbsp;");
         }
+        e($this->view->helper("helpbutton")->render(
+            "Add Locale", $data[CSRF_TOKEN],$_REQUEST['c']));
+        e("</h2>");
         ?>
         <form id="addLocaleForm" method="post" action=''>
         <input type="hidden" name="c" value="admin" />
