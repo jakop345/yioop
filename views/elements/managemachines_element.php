@@ -52,7 +52,10 @@ class ManagemachinesElement extends Element
     function render($data)
     {?>
         <div class="current-activity">
-        <h2><?php e(tl('managemachines_element_add_machine'))?></h2>
+        <h2><?php e(tl('managemachines_element_add_machine') . "&nbsp;");
+            e($this->view->helper("helpbutton")->render(
+                "Manage Machines", $data[CSRF_TOKEN],$_REQUEST['c']));
+            ?></h2>
         <form id="addMachineForm" method="post" action=''>
         <input type="hidden" name="c" value="admin" />
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
@@ -96,7 +99,10 @@ class ManagemachinesElement extends Element
         </table>
         </form>
 
-        <h2><?php e(tl('managemachines_element_machine_info'))?></h2>
+        <h2><?php e(tl('managemachines_element_machine_info'). "&nbsp;");
+            e($this->view->helper("helpbutton")->render(
+                "Machine Information", $data[CSRF_TOKEN],$_REQUEST['c']));
+            ?></h2>
         <div id="machinestatus" >
         <p class="red"><?php
             e(tl('managemachines_element_awaiting_status'))?></p>

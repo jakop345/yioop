@@ -71,7 +71,7 @@ class HelpbuttonHelper extends Helper
         $target_controller)
     {
         $is_mobile = MOBILE ? "true" : "false";
-        $wiki_group_id = "7";
+        $wiki_group_id = HELP_GROUP_ID;
         $api_controller = "api";
         $api_wiki_action = "wiki";
         $api_wiki_mode = "read";

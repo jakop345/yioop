@@ -857,21 +857,27 @@ function upgradeDatabaseVersion24(&$db)
 }
 /**
  * Upgrades a Version 24 version of the Yioop! database to a Version 25 version
+ * This version upgrade includes creation of Help group that holds help pages.
+ * Help Group is created with GROUP_ID=HELP_GROUP_ID. If a Group with
+ * Group_ID=HELP_GROUP_ID already exists,
+ * then that GROUP is moved to the end of the GROUPS table(Max group id is
+ * used).
  *
  * @param object $db datasource to use to upgrade
  */
-function upgradeDatabaseVersion25(&$db) {
+function upgradeDatabaseVersion25(&$db)
+{
     /** For reading HELP_GROUP_ID**/
     require_once BASE_DIR . "/configs/config.php";
     /** For GroupModel::setPageName method */
     require_once BASE_DIR . "/models/group_model.php";
     $db->execute("DELETE FROM VERSION WHERE ID < 24");
     $db->execute("UPDATE VERSION SET ID=25 WHERE ID=24");
-    $sql = "SELECT COUNT(*) AS NUM FROM GROUPS WHERE GROUP_ID=".HELP_GROUP_ID;
+    $sql = "SELECT COUNT(*) AS NUM FROM GROUPS WHERE GROUP_ID=" . HELP_GROUP_ID;
     $result = $db->execute($sql);
     $row = ($db->fetchArray($result));
     $is_taken = intval($row['NUM']);
-    if ($is_taken > 0) {
+    if($is_taken > 0) {
         //Get the max group Id , increment it to push the old group
         $sql = "SELECT MAX(GROUP_ID) AS MAX_GROUP_ID FROM GROUPS";
         $result = $db->execute($sql);
@@ -879,48 +885,62 @@ function upgradeDatabaseVersion25(&$db) {
         $max_group_id = $row['MAX_GROUP_ID'] + 1;
         $tables_to_update_group_id = array("GROUPS", "GROUP_ITEM", "GROUP_PAGE",
             "GROUP_PAGE_HISTORY", "USER_GROUP");
-        foreach ($tables_to_update_group_id as $table) {
+        foreach($tables_to_update_group_id as $table) {
             $sql = "UPDATE $table "
-                    . "Set GROUP_ID=$max_group_id "
-                    . "WHERE "
-                    . "GROUP_ID=". HELP_GROUP_ID;
+                . "Set GROUP_ID=$max_group_id "
+                . "WHERE "
+                . "GROUP_ID=" . HELP_GROUP_ID;
             $db->execute($sql);
         }
     }
     //Insert the Help Group
     $creation_time = microTimestamp();
-    $sql = "INSERT INTO GROUPS VALUES(" . HELP_GROUP_ID . ",'Help','" 
-            . $creation_time . "','" . ROOT_ID . "','" . PUBLIC_JOIN . "', '" 
-            . GROUP_READ . "', " . NON_VOTING_GROUP . ", " . FOREVER . ")";
+    $sql = "INSERT INTO GROUPS VALUES(" . HELP_GROUP_ID . ",'Help','"
+        . $creation_time . "','" . ROOT_ID . "','" . PUBLIC_JOIN . "', '"
+        . GROUP_READ . "', " . NON_VOTING_GROUP . ", " . FOREVER . ")";
     $db->execute($sql);
     $now = time();
     $db->execute("INSERT INTO USER_GROUP VALUES (" . ROOT_ID . ", " .
-            HELP_GROUP_ID . ", " . ACTIVE_STATUS . ", $now)");
+        HELP_GROUP_ID . ", " . ACTIVE_STATUS . ", $now)");
     $db->execute("INSERT INTO USER_GROUP VALUES (" . PUBLIC_USER_ID . ", " .
-            HELP_GROUP_ID . ", " . ACTIVE_STATUS . ", $now)");
+        HELP_GROUP_ID . ", " . ACTIVE_STATUS . ", $now)");
     //Insert into Groups
-    $help_pages = array();
     $help_pages = getWikiHelpPages();
-    foreach ($help_pages as $page_name => $page_content) {
+    foreach($help_pages as $page_name => $page_content) {
         $page_content = str_replace("&amp;", "&", $page_content);
         $page_content = @htmlentities($page_content, ENT_QUOTES, "UTF-8");
         $group_model = new GroupModel(DB_NAME, false);
         $group_model->db = $db;
-        $group_model->setPageName(ROOT_ID, HELP_GROUP_ID, $page_name, 
-                $page_content, "en-US", "Creating Default Pages", "$page_name "
-                . "Help Page Created!", "Discuss the page in this thread!");
+        $group_model->setPageName(ROOT_ID, HELP_GROUP_ID, $page_name,
+            $page_content, "en-US", "Creating Default Pages", "$page_name "
+            . "Help Page Created!", "Discuss the page in this thread!");
     }
 }
-
+/**
+ * Reads the Help articles from default db and returns the array of pages.
+ */
 function getWikiHelpPages()
 {
     $help_pages = array();
-    $help_pages["Help Page 1"] = <<<EOD
-title=Help Page One
-description=This is a test page for Wiki help insertion.
-END_HEAD_VARS
-==Please ignore this page.==
-EOD;
+    require_once(BASE_DIR . "/models/datasources/sqlite3_manager.php");
+    $default_dbm = new Sqlite3Manager();
+    $default_dbm->connect("", "", "", BASE_DIR . "/data/default.db");
+    if(!$default_dbm) {
+        return false;
+    }
+    $group_model = new GroupModel(DB_NAME, true);
+    $group_model->db = $default_dbm;
+    $page_list = $group_model->getPageList(HELP_GROUP_ID, "en-US", '', 0, 200);
+    foreach($page_list[1] as $page) {
+        if(isset($page['TITLE'])) {
+            $page_info = $group_model->getPageInfoByName(
+                HELP_GROUP_ID, $page['TITLE'], "en-US", "api");
+            $page_content = str_replace("&amp;", "&", $page_info['PAGE']);
+            $page_content = html_entity_decode($page_content, ENT_QUOTES,
+                "UTF-8");
+            $help_pages[$page['TITLE']] = $page_content;
+        }
+    }
     return $help_pages;
 }
 /**

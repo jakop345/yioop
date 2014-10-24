@@ -125,6 +125,17 @@ $db->execute("INSERT INTO USER_GROUP VALUES (".ROOT_ID.", ".
     PUBLIC_GROUP_ID.", ".ACTIVE_STATUS.", $now)");
 $db->execute("INSERT INTO USER_GROUP VALUES (".PUBLIC_USER_ID.", ".
     PUBLIC_GROUP_ID.", ".ACTIVE_STATUS.", $now)");
+//Create a Group for Wiki HELP.
+$sql = "INSERT INTO GROUPS VALUES(" . HELP_GROUP_ID . ",'Help','" .
+    $creation_time . "','" . ROOT_ID . "',
+    '" . PUBLIC_JOIN . "', '" . GROUP_READ .
+    "', " . NON_VOTING_GROUP . ", " . FOREVER . ")";
+$db->execute($sql);
+$now = time();
+$db->execute("INSERT INTO USER_GROUP VALUES (" . ROOT_ID . ", " .
+    HELP_GROUP_ID . ", " . ACTIVE_STATUS . ", $now)");
+$db->execute("INSERT INTO USER_GROUP VALUES (" . PUBLIC_USER_ID . ", " .
+    HELP_GROUP_ID . ", " . ACTIVE_STATUS . ", $now)");
 $public_pages = array();
 $public_pages["404"] = <<<EOD
 title=Page Not Found
@@ -537,6 +548,41 @@ foreach($public_pages as $page_name => $page_content) {
         $page_content, "en-US", "Creating Default Pages",
         "$page_name Wiki Page Created!", "Discuss the page in this thread!");
 }
+//Insert Help pages
+$help_pages = getWikiHelpPages();
+foreach($help_pages as $page_name => $page_content) {
+    $page_content = str_replace("&amp;", "&", $page_content);
+    $page_content = @htmlentities($page_content, ENT_QUOTES, "UTF-8");
+    $group_model->setPageName(ROOT_ID, HELP_GROUP_ID, $page_name,
+        $page_content, "en-US", "Creating Default Pages",
+        "$page_name Help Page Created!", "Discuss the page in this thread!");
+}
+function getWikiHelpPages()
+{
+    $help_pages = array();
+    require_once(BASE_DIR . "/models/datasources/sqlite3_manager.php");
+    $default_dbm = new Sqlite3Manager();
+    $default_dbm->connect("", "", "", BASE_DIR . "/data/default_help.db");
+    if(!$default_dbm) {
+        return false;
+    }
+    $group_model = new GroupModel(DB_NAME, true);
+    $group_model->db = $default_dbm;
+    $page_list = $group_model->getPageList(HELP_GROUP_ID, "en-US", '', 0, 200);
+    foreach($page_list[1] as $page) {
+        if(isset($page['TITLE'])) {
+            $page_info = $group_model->getPageInfoByName(
+                HELP_GROUP_ID, $page['TITLE'], "en-US", "api");
+            $page_content = str_replace("&amp;", "&", $page_info['PAGE']);
+            $page_content = html_entity_decode($page_content, ENT_QUOTES,
+                "UTF-8");
+            $help_pages[$page['TITLE']] = $page_content;
+        }
+    }
+    return $help_pages;
+}
+
+/* End Help content insertion. */
 /* we insert 1 by 1 rather than comma separate as sqlite
    does not support comma separated inserts
  */
@@ -821,7 +867,5 @@ $db->disconnect();
 if(in_array(DBMS, array('sqlite','sqlite3' ))){
     chmod(CRAWL_DIR."/data/".DB_NAME.".db", 0666);
 }
-
-
 echo "Create DB succeeded\n";
 ?>
