@@ -413,6 +413,8 @@ function displayHelpForId(help_point, is_mobile, target_controller,
         toggleHelp('help-frame', is_mobile, target_controller);
     }
     var tl = eval('(' + help_point.getAttribute("data-tl") + ')');
+    var back_params = eval('(' + help_point.getAttribute("data-back-params")
+    + ')');
     getPageWithCallback("?c=" + api_controller + "&group_id=" +
         help_group_id + "&" +
         "arg=" + mode + "&" +
@@ -437,7 +439,8 @@ function displayHelpForId(help_point, is_mobile, target_controller,
                 csrf_token_key,
                 csrf_token_value,
                 help_group_id,
-                data.page_name) + '">' +
+                data.page_name,
+                back_params) + '">' +
             tl["wiki_view_edit"] + '</a>]';
             toggleHelp('help-frame', is_mobile, target_controller);
         },
@@ -457,15 +460,20 @@ function displayHelpForId(help_point, is_mobile, target_controller,
  * @return String the edit link
  */
 function getEditLink(target_controller, current_action, csrf_token_key,
-    csrf_token_value, group_id, page_name)
+    csrf_token_value, group_id, page_name, back_params)
 {
-    return '?c=' + target_controller +
-    '&' + csrf_token_key + '=' + csrf_token_value +
-    '&group_id=' + group_id +
-    '&arg=edit' +
-    '&a=wiki' +
-    '&page_name=' + page_name +
-    '&back_params[open_help_page]=' + page_name +
-    '&back_params[c]=' + target_controller +
-    '&back_params[a]=' + current_action;
+    var edit_link = '?c=' + target_controller +
+        '&' + csrf_token_key + '=' + csrf_token_value +
+        '&group_id=' + group_id +
+        '&arg=edit' +
+        '&a=wiki' +
+        '&page_name=' + page_name +
+        '&back_params[open_help_page]=' + page_name +
+        '&back_params[c]=' + target_controller +
+        '&back_params[a]=' + current_action;
+    for (var key in back_params) {
+        var value = back_params[key];
+        edit_link += "&back_params[" + key + "]=" + value;
+    }
+    return edit_link;
 }

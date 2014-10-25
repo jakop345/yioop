@@ -56,6 +56,18 @@ class HelpbuttonHelper extends Helper
             'wiki_view_edit :"' . tl('wiki_view_edit') . '",' .
             'wiki_view_read :"' . tl('wiki_view_read') . '"' .
             "}";
+        $this->backParams = "{";
+        $back_params_array = array_diff_key($_REQUEST, array_flip(
+            array("a", "c", CSRF_TOKEN, "open_help_page")
+        ));
+        $last_key = end(array_keys($back_params_array));
+        foreach($back_params_array as $key => $value) {
+            $this->backParams .= $key . ' : "' . $value . '"';
+            if($key != $last_key) {
+                $this->backParams .= ',';
+            }
+        }
+        $this->backParams .= "}";
         parent::__construct();
     }
     /**
@@ -76,6 +88,7 @@ class HelpbuttonHelper extends Helper
         $api_wiki_mode = "read";
         return '<button type="button"
                     data-tl=\'' . $this->localizationdata . '\'
+                    data-back-params=\'' . $this->backParams . '\'
                     onclick="javascript:displayHelpForId(
                     this,'
         . $is_mobile . ',\''
