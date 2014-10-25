@@ -80,9 +80,7 @@ class SystemComponent extends Component
             8 => 8,
             16 => 16
         );
-
         $tmp = tl('system_component_select_machine');
-
         if(!isset($_REQUEST["has_queue_server"]) ||
             isset($_REQUEST['is_replica'])) {
             $_REQUEST["has_queue_server"] = false;

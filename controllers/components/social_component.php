@@ -728,8 +728,6 @@ class SocialComponent extends Component implements CrawlConstants
             } else {
                 $limit = 0;
             }
-            //$data['NUM_SHOWN'] = (isset($_REQUEST['limit'])
-            //      && $_REQUEST['limit'] > 0 ) ? $_REQUEST['limit'] : 5;
             $data['GROUPS'] = $group_model->getRows($limit, $results_per_page,
                     $data['NUM_GROUPS'], array(), array($user_id, false));
             $num_shown = count($data['GROUPS']);
@@ -834,10 +832,17 @@ class SocialComponent extends Component implements CrawlConstants
                     $server = new MailServer(MAIL_SENDER, MAIL_SERVER,
                         MAIL_SERVERPORT, MAIL_USERNAME, MAIL_PASSWORD,
                         MAIL_SECURITY);
+                    $post_url = "";
+                    if(in_array($group['REGISTER_TYPE'], array(
+                        PUBLIC_BROWSE_REQUEST_JOIN, PUBLIC_JOIN))) {
+                        $post_url = BASE_URL . "?c=group&a=groupFeeds&".
+                            "just_thread=" . $parent_item["ID"] . "\n";
+                    }
                     $subject = tl('social_component_thread_notification',
                         $parent_item['TITLE']);
                     $body = tl('social_component_notify_body')."\n".
-                        $parent_item['TITLE']."\n\n".
+                        $parent_item['TITLE']."\n".
+                        $post_url .
                         tl('social_component_notify_closing')."\n".
                         tl('social_component_notify_signature');
                     foreach($followers as $follower) {
