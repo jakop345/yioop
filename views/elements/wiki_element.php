@@ -268,9 +268,13 @@ class WikiElement extends Element implements CrawlConstants
         $base_url = "?c=".$data['CONTROLLER']."&amp;a=wiki&amp;".
             CSRF_TOKEN.'='.$data[CSRF_TOKEN]."&amp;group_id=".
             $data['GROUP']['GROUP_ID'];
+        $append = "";
+        if(isset($data['OTHER_BACK_URL'])) {
+            $append = $data['OTHER_BACK_URL'];
+        }
         ?>
         <div class="float-opposite" style="position:relative; top:35px;">
-        [<a href="<?php e($base_url); ?>&amp;<?php
+        [<a href="<?php e($base_url . $append); ?>&amp;<?php
             e('&amp;arg=history&amp;page_id='.$data['PAGE_ID']); ?>"
         ><?php e(tl('wiki_element_history'))?></a>]
         [<a href="?c=<?php e($data['CONTROLLER']); ?>&amp;a=groupFeeds&amp;<?php
@@ -432,6 +436,18 @@ class WikiElement extends Element implements CrawlConstants
             e($data[CSRF_TOKEN]); ?>" />
         <input type="hidden" name="a" value="wiki" />
         <input type="hidden" name="arg" value="edit" />
+        <?php
+            if(isset($data['BACK_PARAMS'])) {
+                foreach ($data["BACK_PARAMS"] as
+                         $back_param_key => $back_param_value) {
+                    e('<input type="hidden" '
+                        . 'name="' . $back_param_key .
+                        '" value="' .
+                        $back_param_value
+                        . '" />');
+                }
+            }
+        ?>
         <input type="hidden" name="group_id" value="<?php
             e($data['GROUP']['GROUP_ID']); ?>" />
         <input type="hidden" name="page_name" value="<?php
@@ -581,9 +597,13 @@ class WikiElement extends Element implements CrawlConstants
                             "</button></td>");
                     }
                     if(!$read_mode) {
+                        $append = "";
+                        if(isset($data['OTHER_BACK_URL'])) {
+                            $append .= $data['OTHER_BACK_URL'];
+                        }
                         e("<td>[<a href='$base_url&amp;arg=edit&amp;page_name=".
                             $data['PAGE_NAME'].
-                            "&amp;delete=$name'>X</a>]</td>");
+                            "&amp;delete=$name$append'>X</a>]</td>");
                     }
                     e("</tr>");
                 }
@@ -671,12 +691,14 @@ class WikiElement extends Element implements CrawlConstants
         $base_query = "?c={$data['CONTROLLER']}&amp;".CSRF_TOKEN."=".
             $data[CSRF_TOKEN] . "&amp;group_id=".
             $data["GROUP"]["GROUP_ID"]."&amp;a=wiki";
-        ?>
-        <div class="float-opposite"><a href="<?php e($base_query .
-                    '&amp;arg=edit&amp;a=wiki&amp;page_name='.
+        //For now, Do not duplicate the back button if back url is present.
+        if(!isset($data['OTHER_BACK_URL']) || $data['OTHER_BACK_URL'] == '') {
+        ?><div class="float-opposite"><a href="<?php e($base_query .
+                    '&amp;arg=edit&amp;a=wiki&amp;page_name=' .
                     $data['PAGE_NAME']); ?>"><?php
             e(tl("wiki_view_back")); ?></a></div>
         <?php
+        }
         if(count($data['HISTORY']) > 1) { ?>
             <div>
             <form id="differenceForm" method="get" action='#'>

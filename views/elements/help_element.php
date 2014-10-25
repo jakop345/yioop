@@ -57,8 +57,14 @@ class HelpElement extends Element {
             if (MOBILE) { ?>
                 <div id="mobile-help">
                     <div id="help-frame" class="frame help-pane">
+                        <div class="float-opposite">
+                            <input id="help-close" type="button"
+                                   onclick="toggleHelp('help-frame', 'true',
+                                   '<?php e($_REQUEST['c']);?>');"
+                                   value="X" />
+                        </div>
                         <div id="help-frame-head">
-                            <h2 id="page_name"></h2>
+                            <h2 id="page_name" class="help-title"></h2>
                         </div>
 
                         <div id="help-frame-body" class="wordwrap">
@@ -82,8 +88,14 @@ class HelpElement extends Element {
                 <div id="<?php e($help_id); ?>">
                   <div id="help-frame" class="frame help-pane <?php
                   e($help_class_add); ?>">
+                      <div class="float-opposite">
+                          <input id="help-close" type="button"
+                                 onclick="toggleHelp('help-frame', false,
+                                     '<?php e($_REQUEST['c']);?>');"
+                                 value="X" />
+                      </div>
                       <div id="help-frame-head">
-                          <h2 id="page_name"></h2>
+                          <h2 id="page_name" class="help-title"></h2>
                       </div>
 
                     <div id="help-frame-body" class="wordwrap">

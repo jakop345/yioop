@@ -287,9 +287,9 @@ abstract class Controller
             }
             $data['SCRIPT'] .= "\n" .
                 'var matches = '
-                . 'document.querySelectorAll("[data-pagename='
+                . 'document.querySelectorAll(\'[data-pagename="'
                 . $data['OPEN_HELP_PAGE']
-                . ']");'
+                . '"]\');'
                 . "matches[0].click();"
                 . "\n";
         }

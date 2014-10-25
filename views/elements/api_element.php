@@ -101,7 +101,7 @@ class ApiElement extends Element implements CrawlConstants {
         }
 
         header("Content-Type: application/json");
-        http_response_code($http_code);
+        header('X-PHP-Response-Code: '.$http_code, true, $http_code);
         e(json_encode($out_array));
         exit();
     }

@@ -54,7 +54,7 @@ class ManagemachinesElement extends Element
         <div class="current-activity">
         <h2><?php e(tl('managemachines_element_add_machine') . "&nbsp;");
             e($this->view->helper("helpbutton")->render(
-                "Manage Machines", $data[CSRF_TOKEN],$_REQUEST['c']));
+                "Manage Machines", $data[CSRF_TOKEN]));
             ?></h2>
         <form id="addMachineForm" method="post" action=''>
         <input type="hidden" name="c" value="admin" />
@@ -101,7 +101,7 @@ class ManagemachinesElement extends Element
 
         <h2><?php e(tl('managemachines_element_machine_info'). "&nbsp;");
             e($this->view->helper("helpbutton")->render(
-                "Machine Information", $data[CSRF_TOKEN],$_REQUEST['c']));
+                "Machine Information", $data[CSRF_TOKEN]));
             ?></h2>
         <div id="machinestatus" >
         <p class="red"><?php

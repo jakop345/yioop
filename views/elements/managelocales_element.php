@@ -62,7 +62,7 @@ class ManagelocalesElement extends Element
         }
         $data['TABLE_TITLE'] = tl('managelocales_element_locale_list')
             ."&nbsp;" . $this->view->helper("helpbutton")->render(
-            "Locale List", $data[CSRF_TOKEN],$_REQUEST['c']);
+            "Locale List", $data[CSRF_TOKEN]);
         $data['NO_FLOAT_TABLE'] = true;
         $data['ACTIVITY'] = 'manageLocales';
         $data['VIEW'] = $this->view;

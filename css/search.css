@@ -2842,14 +2842,14 @@ table.wikitable > caption
 }
 
 .small-margin-help-pane {
-display: none;
-width: 380px;
-border: 2px solid #0094ff;
-left: -1in;
-top: 1in;
+    display: none;
+    width: 380px;
+    border: 2px solid #0094ff;
+    left: -1in;
+    top: 1in;
 }
 
-.help-pane h2 {
+.help-title {
     background:#0094ff;
     color:white;
     padding:10px;
@@ -2860,4 +2860,19 @@ top: 1in;
 }
 .wiki-resource-image{
     max-width:100%;
+}
+
+#help-close{
+    margin-top: -25px;
+    bottom: 50px;
+    cursor: pointer;
+    color: white;
+    border: 1px solid #0094ff;
+    background: #0094ff;
+    font-size: 24px;
+    font-weight: bold;
+    line-height: 1px;
+    padding: 11px 3px;
+    border-radius: 20px;
+    margin-right: -10px;
 }

@@ -67,8 +67,7 @@ class HelpbuttonHelper extends Helper
      * @param  $target_controller - target controller to remember the view.
      * @return String button html.
      */
-    public function render($help_point_id, $csrf_token_value,
-        $target_controller)
+    public function render($help_point_id, $csrf_token_value)
     {
         $is_mobile = MOBILE ? "true" : "false";
         $wiki_group_id = HELP_GROUP_ID;
@@ -80,7 +79,7 @@ class HelpbuttonHelper extends Helper
                     onclick="javascript:displayHelpForId(
                     this,'
         . $is_mobile . ',\''
-        . $target_controller . '\',\''
+        . $_REQUEST['c'] . '\',\''
         . $_REQUEST['a'] . '\',\''
         . CSRF_TOKEN . '\',\''
         . $csrf_token_value . "','$wiki_group_id','$api_controller',"

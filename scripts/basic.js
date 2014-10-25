@@ -411,7 +411,6 @@ function displayHelpForId(help_point, is_mobile, target_controller,
 {
     if((elt("help-frame").style.display) === "block") {
         toggleHelp('help-frame', is_mobile, target_controller);
-        return;
     }
     var tl = eval('(' + help_point.getAttribute("data-tl") + ')');
     getPageWithCallback("?c=" + api_controller + "&group_id=" +
