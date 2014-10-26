@@ -2852,7 +2852,9 @@ table.wikitable > caption
 .help-title {
     background:#0094ff;
     color:white;
-    padding:10px;
+    font-size: 16pt;
+    margin: 0;
+    padding: .05in;
 }
 .help-pane p {
     color:#333;
@@ -2862,17 +2864,22 @@ table.wikitable > caption
     max-width:100%;
 }
 
-#help-close{
-    margin-top: -25px;
+.help-button{
     bottom: 50px;
     cursor: pointer;
-    color: white;
-    border: 1px solid #0094ff;
-    background: #0094ff;
-    font-size: 24px;
+    border: 1px solid #2d2bdb;
+    font-size: 20px;
     font-weight: bold;
-    line-height: 1px;
-    padding: 11px 3px;
-    border-radius: 20px;
-    margin-right: -10px;
+    line-height: 0.5px;
+    padding: 10px 3px;
+}
+
+button.close{
+    background: #dc143c;
+    color: whitesmoke;
+}
+
+button.default{
+    background: #d3d3d3;
+    color: black;
 }

@@ -34,69 +34,39 @@ if (!defined('BASE_DIR')) {
     echo "BAD REQUEST";
     exit();
 }
-
 /**
  * This element is used to display the list of available activities
  * in the AdminView
  *
  * @author Eswara Rajesh Pinapala
- *
  * @package seek_quarry
  * @subpackage element
  */
-class HelpElement extends Element {
-
+class HelpElement extends Element
+{
     /**
      * Displays a list of admin activities
      *
-     * @param array $data  available activities and CSRF token
+     * @param array $data available activities and CSRF token
      */
-    function render($data) {
+    function render($data)
+    {
         ?>
         <?php
-            if (MOBILE) { ?>
-                <div id="mobile-help">
-                    <div id="help-frame" class="frame help-pane">
-                        <div class="float-opposite">
-                            <input id="help-close" type="button"
-                                   onclick="toggleHelp('help-frame', 'true',
-                                   '<?php e($_REQUEST['c']);?>');"
-                                   value="X" />
-                        </div>
-                        <div id="help-frame-head">
-                            <h2 id="page_name" class="help-title"></h2>
-                        </div>
-
-                        <div id="help-frame-body" class="wordwrap">
-
-                        </div>
-                        <div id="help-frame-editor" class="wordwrap">
-
-                        </div>
+        if(MOBILE) {
+            ?>
+            <div id="mobile-help">
+                <div id="help-frame" class="frame help-pane">
+                    <div class="float-opposite">
+                        <button id="help-close" type="button"
+                                class="help-button close"
+                                onclick="toggleHelp('help-frame', 'true',
+                                    '<?php e($_REQUEST['c']); ?>');">X
+                        </button>
                     </div>
-                </div>
-            <?php } else {
-                $help_class_add = "";
-                $help_id = "";
-                if($data['c'] != 'admin'){
-                    $help_class_add = "small-margin-help-pane";
-                    $help_id ="small-margin-help";
-                }else{
-                    $help_id = "help";
-                }
-                ?>
-                <div id="<?php e($help_id); ?>">
-                  <div id="help-frame" class="frame help-pane <?php
-                  e($help_class_add); ?>">
-                      <div class="float-opposite">
-                          <input id="help-close" type="button"
-                                 onclick="toggleHelp('help-frame', false,
-                                     '<?php e($_REQUEST['c']);?>');"
-                                 value="X" />
-                      </div>
-                      <div id="help-frame-head">
-                          <h2 id="page_name" class="help-title"></h2>
-                      </div>
+                    <div id="help-frame-head">
+                        <h2 id="page_name" class="help-title"></h2>
+                    </div>
 
                     <div id="help-frame-body" class="wordwrap">
 
@@ -104,11 +74,43 @@ class HelpElement extends Element {
                     <div id="help-frame-editor" class="wordwrap">
 
                     </div>
-                  </div>
                 </div>
-                <?php
+            </div>
+        <?php
+        } else {
+            $help_class_add = "";
+            $help_id = "";
+            if($data['c'] != 'admin') {
+                $help_class_add = "small-margin-help-pane";
+                $help_id = "small-margin-help";
+            } else {
+                $help_id = "help";
             }
-    }
+            ?>
+            <div id="<?php e($help_id); ?>">
+                <div id="help-frame" class="frame help-pane <?php
+                e($help_class_add); ?>">
+                    <div class="float-opposite">
+                        <button id="help-close" type="button"
+                                class="help-button close"
+                                onclick="toggleHelp('help-frame', false,
+                                    '<?php e($_REQUEST['c']); ?>');">X
+                        </button>
+                    </div>
+                    <div id="help-frame-head">
+                        <h2 id="page_name" class="help-title"></h2>
+                    </div>
 
+                    <div id="help-frame-body" class="wordwrap">
+
+                    </div>
+                    <div id="help-frame-editor" class="wordwrap">
+
+                    </div>
+                </div>
+            </div>
+        <?php
+        }
+    }
 }
 ?>

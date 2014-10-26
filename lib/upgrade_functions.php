@@ -863,7 +863,7 @@ function upgradeDatabaseVersion24(&$db)
  * then that GROUP is moved to the end of the GROUPS table(Max group id is
  * used).
  *
- * @param object $db datasource to use to upgrade
+ * @param object $db data source to use to upgrade
  */
 function upgradeDatabaseVersion25(&$db)
 {
@@ -873,7 +873,8 @@ function upgradeDatabaseVersion25(&$db)
     require_once BASE_DIR . "/models/group_model.php";
     $db->execute("DELETE FROM VERSION WHERE ID < 24");
     $db->execute("UPDATE VERSION SET ID=25 WHERE ID=24");
-    $sql = "SELECT COUNT(*) AS NUM FROM GROUPS WHERE GROUP_ID=" . HELP_GROUP_ID;
+    $sql = "SELECT COUNT(*) AS NUM FROM GROUPS WHERE GROUP_ID=" .
+        HELP_GROUP_ID;
     $result = $db->execute($sql);
     $row = ($db->fetchArray($result));
     $is_taken = intval($row['NUM']);
@@ -883,7 +884,8 @@ function upgradeDatabaseVersion25(&$db)
         $result = $db->execute($sql);
         $row = $db->fetchArray($result);
         $max_group_id = $row['MAX_GROUP_ID'] + 1;
-        $tables_to_update_group_id = array("GROUPS", "GROUP_ITEM", "GROUP_PAGE",
+        $tables_to_update_group_id = array("GROUPS", "GROUP_ITEM",
+            "GROUP_PAGE",
             "GROUP_PAGE_HISTORY", "USER_GROUP");
         foreach($tables_to_update_group_id as $table) {
             $sql = "UPDATE $table "
@@ -916,6 +918,7 @@ function upgradeDatabaseVersion25(&$db)
             . "Help Page Created!", "Discuss the page in this thread!");
     }
 }
+
 /**
  * Reads the Help articles from default db and returns the array of pages.
  */

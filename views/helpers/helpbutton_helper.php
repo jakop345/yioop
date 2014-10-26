@@ -87,6 +87,7 @@ class HelpbuttonHelper extends Helper
         $api_wiki_action = "wiki";
         $api_wiki_mode = "read";
         return '<button type="button"
+                    class="help-button default"
                     data-tl=\'' . $this->localizationdata . '\'
                     data-back-params=\'' . $this->backParams . '\'
                     onclick="javascript:displayHelpForId(
