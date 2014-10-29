@@ -2869,17 +2869,22 @@ table.wikitable > caption
     cursor: pointer;
     border: 1px solid #2d2bdb;
     font-size: 20px;
-    font-weight: bold;
     line-height: 0.5px;
     padding: 10px 3px;
-}
-
-button.close{
-    background: #dc143c;
-    color: whitesmoke;
 }
 
 button.default{
     background: #d3d3d3;
     color: black;
+}
+
+.close{
+    cursor: pointer;
+    font-weight: bold;
+    line-height: 0.5px;
+    padding: 5px 0px 4px 4px;
+}
+
+#help-close {
+    color: #F5F5F5;
 }

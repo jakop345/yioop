@@ -51,7 +51,7 @@ class ManagecrawlsElement
     {?>
         <div class="current-activity">
         <h2><?php e(tl('managecrawls_element_create_crawl'))?></h2>
-        <form id="crawlStartForm" method="get" action=''>
+        <form id="crawlStartForm" method="get">
         <input type="hidden" name="c" value="admin" />
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />

@@ -58,7 +58,6 @@ class WikiElement extends Element implements CrawlConstants
         $can_edit = $logged_in && isset($data["CAN_EDIT"]) && $data["CAN_EDIT"];
         $is_admin = ($data["CONTROLLER"] == "admin");
         $arrows = ($is_admin) ? "&lt;&lt;" : "&gt;&gt;";
-        $back_arrows = "&lt;&lt;";
         $other_controller = ($is_admin) ? "group" : "admin";
         $base_query = "?c={$data['CONTROLLER']}";
         $csrf_token = "";
@@ -112,8 +111,7 @@ class WikiElement extends Element implements CrawlConstants
         if(isset($data['BACK_URL'])) {
             e("<div class=\"float-opposite back-button\">" .
                 "<a href=\"?" . $data['BACK_URL'] . "&amp;" . CSRF_TOKEN
-                . "=" . $data[CSRF_TOKEN] . "\">" .
-                "$back_arrows " . tl('wiki_view_back') .
+                . "=" . $data[CSRF_TOKEN] . "\">" . tl('wiki_view_back') .
                 "</a>" .
                 "</div>");
         }
@@ -469,9 +467,9 @@ class WikiElement extends Element implements CrawlConstants
         <script type="text/javascript">
         function addToPage(resource_name)
         {
-            wikify("{{resource:","|<?php
+            wikify("((resource:","|<?php
                 e(tl('wiki_element_resource_description'));
-                ?>}}", resource_name, "wiki-page");
+                ?>))", resource_name, "wiki-page");
         }
         function checkUploadResource()
         {
@@ -691,14 +689,15 @@ class WikiElement extends Element implements CrawlConstants
         $base_query = "?c={$data['CONTROLLER']}&amp;".CSRF_TOKEN."=".
             $data[CSRF_TOKEN] . "&amp;group_id=".
             $data["GROUP"]["GROUP_ID"]."&amp;a=wiki";
-        //For now, Do not duplicate the back button if back url is present.
-        if(!isset($data['OTHER_BACK_URL']) || $data['OTHER_BACK_URL'] == '') {
+        $append = "";
+        if(isset($data['OTHER_BACK_URL']) && $data['OTHER_BACK_URL'] != '') {
+            $append = $data['OTHER_BACK_URL'];
+        }
         ?><div class="float-opposite"><a href="<?php e($base_query .
                     '&amp;arg=edit&amp;a=wiki&amp;page_name=' .
-                    $data['PAGE_NAME']); ?>"><?php
+                    $data['PAGE_NAME'] . $append); ?>"><?php
             e(tl("wiki_view_back")); ?></a></div>
         <?php
-        }
         if(count($data['HISTORY']) > 1) { ?>
             <div>
             <form id="differenceForm" method="get" action='#'>

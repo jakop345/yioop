@@ -270,7 +270,8 @@ abstract class Controller
     {
         $data = array();
         $data["OTHER_BACK_URL"] = "";
-        if(isset($_REQUEST['back_params'])) {
+        if(isset($_REQUEST['back_params']) && isset($_REQUEST['arg']) &&
+            in_array($_REQUEST['arg'], array('edit','read'))) {
             foreach ($_REQUEST['back_params'] as
                      $back_param_key => $back_param_value) {
                 $data['BACK_PARAMS']["back_params[$back_param_key]"]

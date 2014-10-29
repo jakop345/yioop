@@ -303,8 +303,8 @@ function parseWikiContent(wiki_text, group_id, page_id, controller_name,
     {
         return '<i>' + contents + '</i>';
     });
-    //Regex for resource extraction.
-    html = html.replace(/{{resource:(.+?)\|(.+?)}}/g,
+    //Regex for yioop resource extraction.
+    html = html.replace(/\(\(resource:(.+?)\|(.+?)\)\)/g,
         function (match, contents, desc)
         {
             return '<img src="' + "?c=resource&a=get&f=resources&g=" +
@@ -378,12 +378,12 @@ function getPageWithCallback(url, response_type, success_call_back,
 {
     var request = makeRequest();
     request.open('GET', url, true);
-    request.responseType = response_type;
     request.onload = function ()
     {
         var status = request.status;
         if(status == 200) {
-            success_call_back && success_call_back(request.response);
+            success_call_back && success_call_back(
+                    JSON.parse(request.responseText));
         } else {
             error_handler && error_handler(status);
         }

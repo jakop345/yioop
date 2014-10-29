@@ -128,8 +128,8 @@ $db->execute("INSERT INTO USER_GROUP VALUES (".PUBLIC_USER_ID.", ".
 //Create a Group for Wiki HELP.
 $sql = "INSERT INTO GROUPS VALUES(" . HELP_GROUP_ID . ",'Help','" .
     $creation_time . "','" . ROOT_ID . "',
-    '" . PUBLIC_JOIN . "', '" . GROUP_READ .
-    "', " . NON_VOTING_GROUP . ", " . FOREVER . ")";
+    '" . PUBLIC_BROWSE_REQUEST_JOIN . "', '" . GROUP_READ_WIKI .
+    "', " . UP_DOWN_VOTING_GROUP . ", " . FOREVER . ")";
 $db->execute($sql);
 $now = time();
 $db->execute("INSERT INTO USER_GROUP VALUES (" . ROOT_ID . ", " .

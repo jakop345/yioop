@@ -58,11 +58,10 @@ class HelpElement extends Element
             <div id="mobile-help">
                 <div id="help-frame" class="frame help-pane">
                     <div class="float-opposite">
-                        <button id="help-close" type="button"
-                                class="help-button close"
-                                onclick="toggleHelp('help-frame', 'true',
-                                    '<?php e($_REQUEST['c']); ?>');">X
-                        </button>
+                        [<a class="close" onclick="toggleHelp('help-frame',
+                            true,'<?php e($_REQUEST['c']);?>');return
+                            false; ">X
+                        </a>]
                     </div>
                     <div id="help-frame-head">
                         <h2 id="page_name" class="help-title"></h2>
@@ -90,12 +89,11 @@ class HelpElement extends Element
             <div id="<?php e($help_id); ?>">
                 <div id="help-frame" class="frame help-pane <?php
                 e($help_class_add); ?>">
-                    <div class="float-opposite">
-                        <button id="help-close" type="button"
-                                class="help-button close"
-                                onclick="toggleHelp('help-frame', false,
-                                    '<?php e($_REQUEST['c']); ?>');">X
-                        </button>
+                    <div id="help-close" class="float-opposite">
+                        [<a class="close" onclick="toggleHelp('help-frame',
+                            false,'<?php e($_REQUEST['c']);?>');return
+                            false; ">X
+                        </a>]
                     </div>
                     <div id="help-frame-head">
                         <h2 id="page_name" class="help-title"></h2>

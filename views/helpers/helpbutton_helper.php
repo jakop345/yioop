@@ -58,9 +58,10 @@ class HelpbuttonHelper extends Helper
             "}";
         $this->backParams = "{";
         $back_params_array = array_diff_key($_REQUEST, array_flip(
-            array("a", "c", CSRF_TOKEN, "open_help_page")
+            array("a", "c", "u","p", CSRF_TOKEN, "open_help_page")
         ));
-        $last_key = end(array_keys($back_params_array));
+        $back_params_only_keys = array_keys($back_params_array);
+        $last_key = end($back_params_only_keys);
         foreach($back_params_array as $key => $value) {
             $this->backParams .= $key . ' : "' . $value . '"';
             if($key != $last_key) {
@@ -98,7 +99,8 @@ class HelpbuttonHelper extends Helper
         . CSRF_TOKEN . '\',\''
         . $csrf_token_value . "','$wiki_group_id','$api_controller',"
         . "'$api_wiki_action','$api_wiki_mode" . '\')" '
-        . 'data-pagename="' . $help_point_id . '">?</button>';
+        . 'data-pagename="' . $help_point_id . '"> '
+        . tl('wiki_question_mark') .'</button>';
     }
 }
 ?>

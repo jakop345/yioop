@@ -77,7 +77,7 @@ class ApiElement extends Element implements CrawlConstants
     function renderJsonDocument($data, $can_edit, $logged_in)
     {
         $out_array = array();
-        $http_code = 0;
+        $http_code = "500 Internal Server Error";
         if($data["PAGE"]) {
             $out_array["wiki_content"] = html_entity_decode($data['PAGE'],
                 ENT_QUOTES, 'UTF-8');
@@ -85,11 +85,11 @@ class ApiElement extends Element implements CrawlConstants
             $out_array['group_name'] = $data['GROUP']['GROUP_NAME'];
             $out_array['page_id'] = $data['PAGE_ID'];
             $out_array['page_name'] = $data['PAGE_NAME'];
-            $http_code = 200;
+            $http_code = "200 OK";
         } else {
             if(!$logged_in) {
                 $out_array["logged_in"] = false;
-                $http_code = 401;
+                $http_code = "401 Unauthorized";
             }
         }
         if($can_edit) {
@@ -104,7 +104,7 @@ class ApiElement extends Element implements CrawlConstants
                     }, $data['errors']));
         }
         header("Content-Type: application/json");
-        header('X-PHP-Response-Code: ' . $http_code, true, $http_code);
+        header("HTTP/1.1 " . $http_code);
         e(json_encode($out_array));
         exit();
     }
