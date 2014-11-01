@@ -52,7 +52,7 @@ class ServersettingsElement extends Element
     {
     ?>
         <div class="current-activity">
-        <form id="serverSettingsForm" method="post" action=''>
+        <form id="serverSettingsForm" method="post">
         <input type="hidden" name="c" value="admin" />
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />

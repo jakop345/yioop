@@ -156,7 +156,7 @@ class ManageclassifiersElement extends Element
      {
         ?>
         <h2><?php e(tl('manageclassifiers_manage_classifiers')) ?></h2>
-        <form id="classifiersForm" method="get" action=''>
+        <form id="classifiersForm" method="get">
         <input type="hidden" name="c" value="admin" />
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />

@@ -53,7 +53,7 @@ class ResultsEditorElement extends Element
     ?>
         <div class="current-activity">
         <h2><?php e(tl('resultseditor_element_edit_page'))?></h2>
-        <form id="urlLookupForm" method="post" action=''>
+        <form id="urlLookupForm" method="post">
         <div  class="top-margin"><b><label for="edited-result-pages"><?php
             e(tl('resultseditor_element_edited_pages'))?></label></b>
         <input type="hidden" name="c" value="admin" />

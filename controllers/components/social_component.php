@@ -1887,6 +1887,10 @@ EOD;
                 'wiki_js_link_text :"'. tl('wiki_js_link_text').'",'.
                 'wiki_js_link_url :"'. tl('wiki_js_link_url').'",'.
                 'wiki_js_placeholder :"'. tl('wiki_js_placeholder').'",'.
+                'wiki_js_definitionlist_item :"'.
+                tl('wiki_js_definitionlist_item').'",'.
+                'wiki_js_definitionlist_definition :"'.
+                tl('wiki_js_definitionlist_definition').'",'.
                 'wiki_js_slide_sample_title :"'.
                     tl('wiki_js_slide_sample_title').'",'.
                 'wiki_js_slide_sample_bullet :"'.

@@ -193,7 +193,7 @@ class MixcrawlsElement extends Element
     {
         ?>
         <h2><?php e(tl('mixcrawls_element_make_mix'))?></h2>
-        <form id="mixForm" method="get" action=''>
+        <form id="mixForm" method="get">
         <input type="hidden" name="c" value="admin" />
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />

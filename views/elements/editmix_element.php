@@ -55,7 +55,7 @@ class EditmixElement extends Element
         ><?php e(tl('editmix_element_back_to_mix'))?></a>
         </div>
         <h2><?php e(tl('mixcrawls_element_edit_mix'))?></h2>
-        <form id="mixForm" method="get" action=''>
+        <form id="mixForm" method="get">
         <input type="hidden" name="c" value="admin" />
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />

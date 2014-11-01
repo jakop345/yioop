@@ -56,7 +56,7 @@ class ManagemachinesElement extends Element
             e($this->view->helper("helpbutton")->render(
                 "Manage Machines", $data[CSRF_TOKEN]));
             ?></h2>
-        <form id="addMachineForm" method="post" action=''>
+        <form id="addMachineForm" method="post">
         <input type="hidden" name="c" value="admin" />
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />

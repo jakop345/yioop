@@ -64,7 +64,7 @@ class MachinestatusView extends View
             $off_news_updater = $base_url ."newsmode&amp;news_mode=news_off";
             $caution = ($data['MACHINES']['NAME_SERVER']["news_updater"] == 0);
         ?></h3>
-        <form id="newsModeForm" method="post" action=''>
+        <form id="newsModeForm" method="post">
         <input type="hidden" name="c" value="admin" />
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />

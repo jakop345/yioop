@@ -138,7 +138,7 @@ class ManagelocalesElement extends Element
             "Add Locale", $data[CSRF_TOKEN],$_REQUEST['c']));
         e("</h2>");
         ?>
-        <form id="addLocaleForm" method="post" action=''>
+        <form id="addLocaleForm" method="post">
         <input type="hidden" name="c" value="admin" />
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />

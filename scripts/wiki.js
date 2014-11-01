@@ -50,6 +50,7 @@
  * "wikibtn-search"
  * "wikibtn-table"
  * "wikibtn-slide"
+ * "wikibtn-definitionlist"
  * }
  */
 /*
@@ -94,12 +95,18 @@ function editorize(id)
      check if the editor div exists.
      */
     var node = elt(id);
+
     if (node === null) {
         /*
          If the div to render wiki_editor is not found, do nothing.
          */
         alert("No textarea found with id = " + id);
         return false;
+    }else{
+        node.addEventListener("focus",function(event)
+        {
+            enableKBShortcuts(id);
+        }, true);
     }
 
     var button_string = "";
@@ -188,11 +195,18 @@ function getStandardButtonsObject()
         'wikibtn-bullets': ['* ' + tl['wiki_js_bullet'] + ' \n'],
         'wikibtn-numbers': ['# ' + tl['wiki_js_enum'] + ' \n'],
         'wikibtn-hr': ['---- \n'],
-        'wikibtn-slide': ['='+ tl['wiki_js_slide_sample_title'] +'=\n'
-            + '* '+ tl['wiki_js_slide_sample_bullet'] +'\n'
-            + '* '+ tl['wiki_js_slide_sample_bullet'] + '\n'
-            + '* '+ tl['wiki_js_slide_sample_bullet'] + '\n'
-            + '....' + '\n']
+        'wikibtn-slide': ['=' + tl['wiki_js_slide_sample_title'] + '=\n'
+        + '* ' + tl['wiki_js_slide_sample_bullet'] + '\n'
+        + '* ' + tl['wiki_js_slide_sample_bullet'] + '\n'
+        + '* ' + tl['wiki_js_slide_sample_bullet'] + '\n'
+        + '....' + '\n'],
+        'wikibtn-definitionlist': [
+            '; ' + tl['wiki_js_definitionlist_item']
+            + ' : ' + tl['wiki_js_definitionlist_definition']
+            + '' + '\n'
+            + '; ' + tl['wiki_js_definitionlist_item']
+            + ' : ' + tl['wiki_js_definitionlist_definition']
+            + '' + '\n']
     };
 }
 /*
@@ -739,4 +753,29 @@ function createSearchWidgetForm(id)
         '</button></form></div></div>';
     search_elt.innerHTML = search_form;
     return search_elt;
+}
+
+function enableKBShortcuts(id)
+{
+    var ctrl_down = false;
+    document.onkeyup = function keyUp(e)
+    {
+        if(e.which == 17) ctrl_down = false;
+    };
+    document.onkeydown = function keyDown(e)
+    {
+        if(e.which == 17) ctrl_down = true;
+        if(e.which == 66 && ctrl_down == true) {
+            wikifySelection('wikibtn-bold', id);
+            return false;
+        }
+        if(e.which == 73 && ctrl_down == true) {
+            wikifySelection('wikibtn-italic', id);
+            return false;
+        }
+        if(e.which == 85 && ctrl_down == true) {
+            wikifySelection('wikibtn-underline', id);
+            return false;
+        }
+    };
 }

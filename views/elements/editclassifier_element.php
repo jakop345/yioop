@@ -62,7 +62,7 @@ class EditclassifierElement extends Element
             e(tl('editclassifier_back')) ?></a>
         </div>
         <h2><?php e(tl('editclassifier_edit_classifier')) ?></h2>
-        <form id="classifierForm" method="get" action="">
+        <form id="classifierForm" method="get">
         <input type="hidden" name="c" value="admin" />
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />
@@ -100,7 +100,7 @@ class EditclassifierElement extends Element
                 e('class="disabled"');
             } ?>><?php e(tl('editclassifier_update')) ?></a>]</p>
         <h3><?php e(tl('editclassifier_add_examples')) ?></h3>
-        <form id="label-docs-form" action="" method="GET">
+        <form id="label-docs-form" method="GET">
         <?php
             $td = (MOBILE) ? "</tr><td>" : "<td>";
         ?>

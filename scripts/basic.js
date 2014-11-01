@@ -278,13 +278,13 @@ function parseWikiContent(wiki_text, group_id, page_id, controller_name,
         return '<a href="' + l + '">' + l + '</a>';
     });
     //Regex replace for external links
-    html = html.replace(/[\[](http.*)[!\]]/g, function (m, l)
+    html = html.replace(/\[[\[](http.*)[!\]]/g, function (m, l)
     {
         // external link
-        var p = l.replace(/[\[\]]/g, '').split(/ /);
+        var p = l.replace(/[\[\]]/g, '').split(/\|/);
         var link = p.shift();
-        return '[<a href="' + link + '">' + (p.length ? p.join(' ') :
-            link) + '</a>]';
+        return '<a href="' + link + '">' + (p.length ? p.join(' ') :
+            link) + '</a>';
     });
     //Regex replace for headings
     html = html.replace(/(?:^|\n)([=]+)(.*)\1/g,
@@ -316,6 +316,14 @@ function parseWikiContent(wiki_text, group_id, page_id, controller_name,
     {
         return contents + '<hr />';
     });
+    //Regex replace for def list
+    html = html.replace
+    (/(\A|\n);([^:]+):(.+)/g,
+        function (match, match2, match3, match4)
+        {
+            return "<dl><dt>" + match3 + "</dt><dd>"+
+            match4 + "</dd></dl>";
+        });
     //replace nowiki with pre tags
     html = html.replace(/<nowiki>(.*?)<\/nowiki>/g, function (match,
         contents)
@@ -334,7 +342,7 @@ function parseWikiContent(wiki_text, group_id, page_id, controller_name,
     html = html.replace(/\[\[(.*?)\]\]/g, function (matches, internal_link)
     {
         var internal_link_array = internal_link.split(/\|/);
-        var page_name = internal_link_array.shift();
+        var page_name = internal_link_array.shift().replace(/ /g,"_");
         return '<a href="' + '?c=' + controller_name
         + '&a=wiki&arg=read&group_id=' + group_id + '&page_name=' + page_name
         + "&" + csrf_token_key + '=' + csrf_token_value + '">'

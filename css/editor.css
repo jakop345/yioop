@@ -174,6 +174,12 @@
     background: url(../resources/wiki_button_images/wikibtn-slide.png)
         no-repeat;
 }
+
+.wikibtn-definitionlist
+{
+    background: url(../resources/wiki_button_images/wikibtn-definitionlist.png)
+    no-repeat;
+}
 .wikibtn-bold:hover,
 .wikibtn-bullets:hover,
 .wikibtn-heading:hover,
@@ -187,6 +193,7 @@
 .wikibtn-table:hover,
 .wikibtn-underline:hover,
 .wikibtn-slide:hover
+.wikibtn-definitionlist:hover
 {
     background-position: 0 -36px;
 }
