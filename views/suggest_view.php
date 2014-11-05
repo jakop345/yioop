@@ -72,7 +72,7 @@ class SuggestView extends View
                 ?>"/></a><span> - <?php e(tl('suggest_view_suggest_url'));
                 ?></span></h1>
             <p class="center"><?php e(tl('suggest_view_instructions'));?></p>
-            <form method="post" action="#">
+            <form method="post">
             <?php  if(isset($_SESSION["random_string"])) { ?>
             <input type='hidden' name='nonce_for_string'
             id='nonce_for_string' />

@@ -147,7 +147,7 @@ class MixcrawlsElement extends Element
         <div class="float-opposite"><a  href="javascript:setDisplay(
             'share-mix',false);"><?php e(tl('mixcrawls_view_back'));?></a></div>
         <h2><?php e(tl('mixcrawls_element_share_mix_group')); ?></h2>
-        <form action="./" >
+        <form>
         <input type="hidden" name="c" value="admin" />
         <input type="hidden" name="a" value="mixCrawls" />
         <input type="hidden" name="arg" value="sharemix" />

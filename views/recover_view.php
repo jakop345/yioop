@@ -72,7 +72,7 @@ class RecoverView extends View
                 src="<?php e($logo); ?>" alt="<?php e($this->logo_alt_text);
                 ?>"/></a><span> - <?php e(tl('recover_view_recover_password'));
                 ?></span></h1>
-            <form method="post" action="./">
+            <form method="post">
             <input type="hidden" name="c" value="register" />
             <input type="hidden" name="a" value="<?php e($activity); ?>" />
             <?php if(isset($_SESSION["random_string"])) { ?>

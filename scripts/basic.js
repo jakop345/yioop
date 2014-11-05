@@ -307,9 +307,21 @@ function parseWikiContent(wiki_text, group_id, page_id, controller_name,
     html = html.replace(/\(\(resource:(.+?)\|(.+?)\)\)/g,
         function (match, contents, desc)
         {
-            return '<img src="' + "?c=resource&a=get&f=resources&g=" +
-            group_id + "&p=" + page_id + "&n=" + contents +
-            '" alt="' + desc + '" class="wiki-resource-image"/>';
+            if((/\.(gif|jpg|jpeg|tiff|png|bmp|tif)$/i).test(contents)) {
+                return '<img src="' + "?c=resource&a=get&f=resources&g=" +
+                group_id + "&p=" + page_id + "&n=" + contents +
+                '" alt="' + desc + '" class="wiki-resource-image"/>';
+            } else if((/\.(avi|m4v|flv|wmv|mp4|webm|ogg|mov|mpg)$/i)
+                    .test(contents)) {
+                return '<video style="width:100%" controls="controls">' +
+                '<source src="./?c=resource&amp;a=get&amp;f=resources&amp;g=' +
+                group_id + '&amp;p=' + page_id + '&amp;n=' + contents +
+                '" type="video/mp4">' + desc + '</video>';
+            } else {
+                return '<a href="' + "?c=resource&a=get&f=resources&g=" +
+                group_id + "&p=" + page_id + "&n=" + contents +
+                '" alt="' + desc + '"/>' + desc + '</a>';
+            }
         });
     //Regex replace for HR
     html = html.replace(/----(.*?)/g, function (match, contents)
@@ -321,7 +333,7 @@ function parseWikiContent(wiki_text, group_id, page_id, controller_name,
     (/(\A|\n);([^:]+):(.+)/g,
         function (match, match2, match3, match4)
         {
-            return "<dl><dt>" + match3 + "</dt><dd>"+
+            return "<dl><dt>" + match3 + "</dt><dd>" +
             match4 + "</dd></dl>";
         });
     //replace nowiki with pre tags
@@ -334,7 +346,7 @@ function parseWikiContent(wiki_text, group_id, page_id, controller_name,
     html = html.replace(/(?:^|\n+)([^# =\*<].+)(?:\n+|$)/gm,
         function (match, contents)
         {
-            if (contents.match(/^\^+$/))
+            if(contents.match(/^\^+$/))
                 return contents;
             return "\n<div>" + contents + "</div>\n";
         });
@@ -342,7 +354,7 @@ function parseWikiContent(wiki_text, group_id, page_id, controller_name,
     html = html.replace(/\[\[(.*?)\]\]/g, function (matches, internal_link)
     {
         var internal_link_array = internal_link.split(/\|/);
-        var page_name = internal_link_array.shift().replace(/ /g,"_");
+        var page_name = internal_link_array.shift().replace(/ /g, "_");
         return '<a href="' + '?c=' + controller_name
         + '&a=wiki&arg=read&group_id=' + group_id + '&page_name=' + page_name
         + "&" + csrf_token_key + '=' + csrf_token_value + '">'

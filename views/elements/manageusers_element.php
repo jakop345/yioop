@@ -108,7 +108,7 @@ class ManageusersElement extends Element
                                 "</span>");
                         } else {
                         ?>
-                        <form  method="get" action='#' >
+                        <form  method="get">
                         <input type="hidden" name="c" value="admin" />
                         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>"
                             value="<?php e($data[CSRF_TOKEN]); ?>" />
@@ -189,14 +189,14 @@ class ManageusersElement extends Element
         }
         ?>
        <?php if($data['AUTHENTICATION_MODE'] == ZKP_AUTHENTICATION) { ?>
-                <form action="#" method="post"
+                <form method="post"
                     onsubmit="registration('pass-word','retype-password',
                     'fiat-shamir-modulus')">
                 <input type="hidden" name="fiat_shamir_modulus"
                     id="fiat-shamir-modulus"
                     value="<?php e($data['FIAT_SHAMIR_MODULUS']) ?>"/>
        <?php } else { ?>
-               <form id="user-form" method="post" action='#' autocomplete="off">
+               <form id="user-form" method="post" autocomplete="off">
        <?php }?>
         <input type="hidden" name="c" value="admin" />
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php

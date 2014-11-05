@@ -78,7 +78,7 @@ class ManageaccountElement extends Element
             <?php
             if(isset($data['EDIT_PASSWORD']) &&
                 AUTHENTICATION_MODE == ZKP_AUTHENTICATION) { ?>
-                <form action="#" method="post"
+                <form method="post"
                     onsubmit="registration('new-password','retype-password',
                     'fiat-shamir-modulus')">
                 <input type="hidden" name="fiat_shamir_modulus"
@@ -86,7 +86,7 @@ class ManageaccountElement extends Element
                     value="<?php e($data['FIAT_SHAMIR_MODULUS']) ?>"/>
                 <?php
             } else { ?>
-                <form id="changeUserForm" method="post" action='#'
+                <form id="changeUserForm" method="post"
                     autocomplete="off" enctype="multipart/form-data">
             <?php
             }?>

@@ -157,7 +157,7 @@ class RegisterView extends View
                 ?></span></h1>
             <?php
             if($data['AUTHENTICATION_MODE'] == ZKP_AUTHENTICATION) { ?>
-                <form action="#" method="post"
+                <form method="post"
                     onsubmit="registration('pass-word', 'retype-password', <?php
                     ?>'fiat-shamir-modulus')">
                 <input type="hidden" name="fiat_shamir_modulus"
@@ -166,7 +166,7 @@ class RegisterView extends View
                 <?php
             } else {
                 ?>
-                <form method="post" action="#">
+                <form method="post">
                 <?php
             }
             ?>

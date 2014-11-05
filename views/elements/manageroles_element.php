@@ -134,7 +134,7 @@ class ManagerolesElement extends Element
             e("<h2>".tl('manageroles_element_add_role'). "</h2>");
         }
         ?>
-        <form id="addRoleForm" method="post" action='#'>
+        <form id="addRoleForm" method="post">
         <input type="hidden" name="c" value="admin" />
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />

@@ -68,7 +68,7 @@ class SearchsourcesElement extends Element
             <?php
         }
         ?>
-        <form id="addSearchSourceForm" method="post" action='#'>
+        <form id="addSearchSourceForm" method="post">
         <input type="hidden" name="c" value="admin" />
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />

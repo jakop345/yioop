@@ -109,7 +109,7 @@ class PagingtableHelper extends Helper
         <div>
         <?php
             if(isset($data["NO_FORM_TAG"]) && $data["NO_FORM_TAG"]) {
-                e('<form  method="get" action="#" >');
+                e('<form  method="get">');
             }
             $name = isset($data['NAME']) ? $data['NAME'] : "";
             $bound_url = $base_url."&amp;arg=".$data[$d['FORM_TYPE']];

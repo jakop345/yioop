@@ -56,7 +56,7 @@ class SecurityElement extends Element
         ?>
         <div class = "current-activity">
         <h2><?php e(tl('security_element_auth_captcha'));?></h2>
-        <form class="top-margin" method="post" action="#">
+        <form class="top-margin" method="post">
             <input type="hidden" name="c" value="admin" />
             <input type="hidden" name="a" value="security"/>
             <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php

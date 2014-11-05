@@ -65,7 +65,7 @@ class SigninView extends View
                 e($this->logo_alt_text); ?>" /></a><span> - <?php
                 e(tl('signin_view_signin')); ?></span></h1>
         <?php if (isset($data['AUTH_ITERATION'])) { ?>
-                <form  method="post" id="zkp-form" action="#"
+                <form  method="post" id="zkp-form"
                     onsubmit="generateKeys('zkp-form','username', <?php
                     ?>'password', 'fiat-shamir-modulus', '<?php
                     e($_SESSION['SALT_VALUE']); ?>', <?php
@@ -81,7 +81,7 @@ class SigninView extends View
                     name="auth_fail_message" value="<?php
                     e(tl('sigin_view_login_failed')); ?>" />
         <?php } else {?>
-                <form method="post" action="#">
+                <form method="post">
         <?php } ?>
         <div class="login">
             <table>

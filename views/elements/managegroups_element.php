@@ -162,7 +162,7 @@ class ManagegroupsElement extends Element
                                 "</span>");
                         } else {
                         ?>
-                            <form  method="get" action='./' >
+                            <form  method="get">
                             <input type="hidden" name="c" value="admin" />
                             <input type="hidden" name="<?php e(CSRF_TOKEN); ?>"
                                 value="<?php e($data[CSRF_TOKEN]); ?>" />
@@ -297,7 +297,7 @@ class ManagegroupsElement extends Element
         }
 
         ?>
-        <form id="group-form" method="post" action='./'>
+        <form id="group-form" method="post">
         <input type="hidden" name="c" value="admin" />
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />
@@ -519,7 +519,7 @@ class ManagegroupsElement extends Element
         <div class='float-opposite'><a href='<?php e($base_url); ?>'><?php
             e(tl('managegroups_element_group_info')); ?></a></div>
         <h2><?php e(tl('managegroups_element_invite_users_group')); ?></h2>
-        <form id="group-form" method="post" action='./'>
+        <form id="group-form" method="post">
         <input type="hidden" name="c" value="admin" />
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />
@@ -565,7 +565,7 @@ class ManagegroupsElement extends Element
         <div class='float-opposite'><a href='<?php e($base_url); ?>'><?php
             e(tl('managegroups_element_addgroup_form')); ?></a></div>
         <h2><?php e(tl('managegroups_element_transfer_group_owner')); ?></h2>
-        <form id="group-form" method="post" action='./'>
+        <form id="group-form" method="post">
         <input type="hidden" name="c" value="admin" />
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />

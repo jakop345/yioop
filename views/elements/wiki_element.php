@@ -220,7 +220,7 @@ class WikiElement extends Element implements CrawlConstants
                 "</h2>");
             e("<p>".tl("wiki_view_create_edit")."</p>");
             e("<p>".tl("wiki_view_use_form_below")."</p>");?>
-            <form id="editpageForm" method="get" action='#'>
+            <form id="editpageForm" method="get">
             <input type="hidden" name="c" value="<?php e($data['CONTROLLER']);
                 ?>" />
             <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
@@ -280,7 +280,7 @@ class WikiElement extends Element implements CrawlConstants
             '&amp;just_thread='.$data['DISCUSS_THREAD']);?>" ><?php
             e(tl('wiki_element_discuss'))?></a>]
         </div>
-        <form id="editpageForm" method="post" action='./'
+        <form id="editpageForm" method="post"
             onsubmit="elt('caret-pos').value =
             (elt('wiki-page').selectionStart) ?
             elt('wiki-page').selectionStart : 0;
@@ -426,7 +426,7 @@ class WikiElement extends Element implements CrawlConstants
         <p><?php e(tl('wiki_element_ml_description'))?></p>
         </div>
         <div>
-        <form id="resourceUploadForm" method="post" action='./'
+        <form id="resourceUploadForm" method="post"
             enctype="multipart/form-data">
         <input type="hidden" name="c" value="<?php e($data['CONTROLLER']);
             ?>" />
@@ -633,7 +633,7 @@ class WikiElement extends Element implements CrawlConstants
         e("<h2>".tl("wiki_view_wiki_page_list",
             $data["GROUP"]["GROUP_NAME"]). "</h2>");
         ?>
-        <form id="editpageForm" method="get" action='#'>
+        <form id="editpageForm" method="get">
         <input type="hidden" name="c" value="<?php e($data['CONTROLLER']);
             ?>" />
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
@@ -700,7 +700,7 @@ class WikiElement extends Element implements CrawlConstants
         <?php
         if(count($data['HISTORY']) > 1) { ?>
             <div>
-            <form id="differenceForm" method="get" action='#'>
+            <form id="differenceForm" method="get">
             <input type="hidden" name="c" value="group" />
             <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
                 e($data[CSRF_TOKEN]); ?>" />

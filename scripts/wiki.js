@@ -194,7 +194,6 @@ function getStandardButtonsObject()
         'wikibtn-hyperlink': ['[[', ']]'],
         'wikibtn-bullets': ['* ' + tl['wiki_js_bullet'] + ' \n'],
         'wikibtn-numbers': ['# ' + tl['wiki_js_enum'] + ' \n'],
-        'wikibtn-hr': ['---- \n'],
         'wikibtn-slide': ['=' + tl['wiki_js_slide_sample_title'] + '=\n'
         + '* ' + tl['wiki_js_slide_sample_bullet'] + '\n'
         + '* ' + tl['wiki_js_slide_sample_bullet'] + '\n'
@@ -206,7 +205,8 @@ function getStandardButtonsObject()
             + '' + '\n'
             + '; ' + tl['wiki_js_definitionlist_item']
             + ' : ' + tl['wiki_js_definitionlist_definition']
-            + '' + '\n']
+            + '' + '\n'],
+        'wikibtn-hr': ['---- \n'],
     };
 }
 /*

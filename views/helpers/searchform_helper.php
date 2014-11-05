@@ -82,7 +82,7 @@ class SearchformHelper extends Helper
         e("</h2>");
         $item_sep = (MOBILE) ? "<br />" : "</td><td>";
         ?>
-        <form id="search-form" method="post" action='./' autocomplete="off">
+        <form id="search-form" method="post" autocomplete="off">
         <input type="hidden" name="c" value="<?php e($controller); ?>" />
         <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
             e($data[CSRF_TOKEN]); ?>" />
