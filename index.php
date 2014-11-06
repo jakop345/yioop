@@ -60,6 +60,17 @@ if(!isset($_SERVER["PATH_INFO"])) {
     $_SERVER["PATH_INFO"] = ".";
 }
 /**
+ * Make an initial setting of controllers. This can be overridden in
+ * local_config
+ */
+$available_controllers = array( "admin", "api", "archive",  "cache",
+    "classifier", "crawl", "fetch", "group", "machine", "resource", "search",
+    "settings", "statistics", "static");
+if(in_array(REGISTRATION_TYPE, array('no_activation', 'email_registration',
+    'admin_activation'))) {
+    $available_controllers[] = "register";
+}
+/**
  * Load the configuration file
  */
 require_once(BASE_DIR.'configs/config.php');
@@ -124,17 +135,9 @@ if (function_exists('lcfirst') === false) {
         return (string)(strtolower(substr($str, 0, 1)).substr($str, 1));
     }
 }
-$available_controllers = array( "admin", "api", "archive",  "cache", "classifier",
-    "crawl", "fetch", "group", "machine", "resource", "search",
-    "settings",
-    "statistics", "static");
-if(!WEB_ACCESS) {
+if(!WEB_ACCESS && !defined("CONTROLLER_OVERRIDE")) {
 $available_controllers = array("admin", "archive", "cache", "crawl", "fetch",
      "machine");
-}
-if(in_array(REGISTRATION_TYPE, array('no_activation', 'email_registration',
-    'admin_activation'))) {
-    $available_controllers[] = "register";
 }
 //the request variable c is used to determine the controller
 if(!isset($_REQUEST['c'])) {
@@ -196,7 +199,6 @@ $controller->processRequest();
 function checkAllowedController($controller_name)
 {
     global $available_controllers;
-
     return in_array($controller_name, $available_controllers) ;
 }
 
