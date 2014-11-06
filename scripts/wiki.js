@@ -192,13 +192,13 @@ function getStandardButtonsObject()
         'wikibtn-strike': ['<s>', '</s>'],
         'wikibtn-nowiki': ['<nowiki>', '</nowiki>'],
         'wikibtn-hyperlink': ['[[', ']]'],
-        'wikibtn-bullets': ['* ' + tl['wiki_js_bullet'] + ' \n'],
-        'wikibtn-numbers': ['# ' + tl['wiki_js_enum'] + ' \n'],
         'wikibtn-slide': ['=' + tl['wiki_js_slide_sample_title'] + '=\n'
         + '* ' + tl['wiki_js_slide_sample_bullet'] + '\n'
         + '* ' + tl['wiki_js_slide_sample_bullet'] + '\n'
         + '* ' + tl['wiki_js_slide_sample_bullet'] + '\n'
         + '....' + '\n'],
+        'wikibtn-bullets': ['* ' + tl['wiki_js_bullet'] + ' \n'],
+        'wikibtn-numbers': ['# ' + tl['wiki_js_enum'] + ' \n'],
         'wikibtn-definitionlist': [
             '; ' + tl['wiki_js_definitionlist_item']
             + ' : ' + tl['wiki_js_definitionlist_definition']
