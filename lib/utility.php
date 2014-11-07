@@ -1757,6 +1757,9 @@ function mimeType($file_name)
     } else {
         $mime_type = exec('file -b --mime-type ' . $file_name);
     }
+    if(substr($file_name, -4) == ".css") {
+        $mime_type = "text/css";
+    }
     $mime_type = str_replace('application/ogg', 'video/ogg', $mime_type);
     return $mime_type;
 }

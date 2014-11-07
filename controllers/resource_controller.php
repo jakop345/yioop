@@ -96,8 +96,7 @@ class ResourceController extends Controller implements CrawlConstants
             if(isset($_REQUEST['t'])) {
                 $name .= ".jpg";
             }
-        } else if(in_array(
-            $_REQUEST['f'], array("cache"))) {
+        } else if(in_array($_REQUEST['f'], array("cache"))) {
             /*  perform check since these request should come from a known
                 machine
             */

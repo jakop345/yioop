@@ -82,11 +82,19 @@ class WebLayout extends Layout
         <?php }
             $path_info = (isset($_SERVER["PATH_INFO"])) ?
                 $_SERVER["PATH_INFO"].'/' : '.';
+            $aux_css = false;
+            if(file_exists(APP_DIR.'/css/auxiliary.css')) {
+                $aux_css = "./?c=resource&a=get&f=css&n=auxiliary.css";
+            }
         ?>
         <link rel="shortcut icon"
             href="<?php e(FAVICON); ?>" />
         <link rel="stylesheet" type="text/css"
             href="<?php e($path_info); ?>/css/search.css" />
+        <?php if($aux_css) { ?>
+        <link rel="stylesheet" type="text/css"
+            href="<?php e($aux_css); ?>" />
+        <?php }?>
         <link rel="search" type="application/opensearchdescription+xml"
             href="<?php e(SEARCHBAR_PATH); ?>"
             title="Content search" />
@@ -94,7 +102,7 @@ class WebLayout extends Layout
             foreach($data['INCLUDE_STYLES'] as $style_name) {
                 e('<link rel="stylesheet" type="text/css"
                     href="'.$_SERVER["PATH_INFO"].'/css/'.
-                    $style_name.'.css" />');
+                    $style_name.'.css" />'."\n");
             }
         }
         ?>
