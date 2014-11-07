@@ -66,10 +66,6 @@ if(!isset($_SERVER["PATH_INFO"])) {
 $available_controllers = array( "admin", "api", "archive",  "cache",
     "classifier", "crawl", "fetch", "group", "machine", "resource", "search",
     "settings", "statistics", "static");
-if(in_array(REGISTRATION_TYPE, array('no_activation', 'email_registration',
-    'admin_activation'))) {
-    $available_controllers[] = "register";
-}
 /**
  * Load the configuration file
  */
@@ -135,9 +131,13 @@ if (function_exists('lcfirst') === false) {
         return (string)(strtolower(substr($str, 0, 1)).substr($str, 1));
     }
 }
-if(!WEB_ACCESS && !defined("CONTROLLER_OVERRIDE")) {
-$available_controllers = array("admin", "archive", "cache", "crawl", "fetch",
-     "machine");
+if(in_array(REGISTRATION_TYPE, array('no_activation', 'email_registration',
+    'admin_activation'))) {
+    $available_controllers[] = "register";
+}
+if(!WEB_ACCESS) {
+    $available_controllers = array("admin", "archive", "cache", "crawl","fetch",
+        "machine");
 }
 //the request variable c is used to determine the controller
 if(!isset($_REQUEST['c'])) {

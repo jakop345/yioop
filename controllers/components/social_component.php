@@ -1219,6 +1219,7 @@ class SocialComponent extends Component implements CrawlConstants
         $data["ELEMENT"] = "wiki";
         $data["VIEW"] = "wiki";
         $data["SCRIPT"] = "";
+        $data["INCLUDE_STYLES"] = array("editor");
         $group_model = $parent->model("group");
         $locale_tag = getLocaleTag();
         $data['CURRENT_LOCALE_TAG'] = $locale_tag;

@@ -69,9 +69,11 @@ class WebLayout extends Layout
     <?php } ?>
         <meta name="description" content="<?php
         if(isset($data['page']) &&
-            isset($this->view->head_objects[$data['page']]['description']))
+            isset($this->view->head_objects[$data['page']]['description'])) {
                 e($this->view->head_objects[$data['page']]['description']);
-        else e(tl('web_layout_description')); ?>" />
+        } else {
+            e(tl('web_layout_description')); 
+        } ?>" />
         <meta name="Author" content="<?php
             e(tl('web_layout_site_author')); ?>" />
         <meta charset="utf-8" />
@@ -85,8 +87,6 @@ class WebLayout extends Layout
             href="<?php e(FAVICON); ?>" />
         <link rel="stylesheet" type="text/css"
             href="<?php e($path_info); ?>/css/search.css" />
-            <link rel="stylesheet" type="text/css"
-                  href="<?php e($path_info); ?>/css/editor.css" />
         <link rel="search" type="application/opensearchdescription+xml"
             href="<?php e(SEARCHBAR_PATH); ?>"
             title="Content search" />
