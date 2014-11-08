@@ -71,10 +71,10 @@ class CaptchaModel extends Model
         }
         // creates image
         ob_start();
-        imagepng($image);
+        imagejpeg($image);
         $image_data = ob_get_contents();
         ob_end_clean();
-        $data_url = "data:image/png;base64," . base64_encode($image_data);
+        $data_url = "data:image/jpeg;base64," . base64_encode($image_data);
         imagedestroy($image);
         return $data_url;
     }
