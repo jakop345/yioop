@@ -669,6 +669,7 @@ class SocialComponent extends Component implements CrawlConstants
         }
         $data["ELEMENT"] = "groupfeed";
         $data['SCRIPT'] = "";
+        $data["INCLUDE_STYLES"] = array("editor");
         if(isset($_SESSION['USER_ID'])) {
             $user_id = $_SESSION['USER_ID'];
         } else {
