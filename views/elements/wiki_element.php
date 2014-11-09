@@ -135,7 +135,8 @@ class WikiElement extends Element implements CrawlConstants
                 "</a>|".tl('wiki_view_wiki')."]" ); ?></h2>
             <div class="top-margin"><b>
             <?php
-            e(tl('wiki_view_page', $data['PAGE_NAME']) . " - [");
+            $human_page_name = str_replace("_", " ", $data['PAGE_NAME']);
+            e(tl('wiki_view_page', $human_page_name) . " - [");
             $modes = array();
             if($can_edit) {
                 $modes = array(
@@ -162,7 +163,8 @@ class WikiElement extends Element implements CrawlConstants
                         $append .= $data['OTHER_BACK_URL'];
                     }
                     e($bar); ?><a href="<?php e($base_query .
-                        '&amp;arg=' . $name . '&amp;a=wiki' . $append); ?>"><?php
+                        '&amp;arg=' . $name . '&amp;a=wiki' . $append);
+                        ?>"><?php
                     e($translation); ?></a><?php
                 }
                 $bar = "|";
@@ -318,7 +320,8 @@ class WikiElement extends Element implements CrawlConstants
                     $data['CURRENT_LOCALE_TAG']));
                 ?></b><br />
                 <label for="page-data"><b><?php
-                e(tl('wiki_element_page', $data['PAGE_NAME']));
+                $human_page_name = str_replace("_", " ", $data['PAGE_NAME']);
+                e(tl('wiki_element_page', $human_page_name));
                 ?></b></label> [<a href="javascript:toggleSettings()"><?php
             e(tl('configure_element_toggle_page_settings')); ?></a>]
             </div>

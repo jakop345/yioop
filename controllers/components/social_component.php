@@ -1280,6 +1280,9 @@ EOD;
                 if(isset($strings_array[$field])) {
                     $tmp = substr($tmp, 0, $strings_array[$field]);
                 }
+                if($field == "page_name") {
+                    $tmp = str_replace(" ", "_", $tmp);
+                }
                 $$field = $tmp;
                 if($user_id == PUBLIC_USER_ID) {
                     $_SESSION['LAST_ACTIVITY'][$field] = $tmp;
@@ -1809,26 +1812,36 @@ EOD;
         return $data;
     }
     /**
+     *  The controller used to display a wiki page might vary (could be
+     *  admin, group or static). Links within a wiki page need to be updated
+     *  to reflect which controller is being used. This method does the
+     *  update.
      *
+     *  @param int $group_id id of wiki page the passed page belongs to
+     *  @param array $data fields etc which will be sent to the view
+     *  @param string $pre_page a wiki page where links,etc have not yet
+     *      had dynamic substitutions applied
+     *  @return string page after subustitutions
      */
     function dynamicSubstitutions($group_id, $data, $pre_page)
     {
         $csrf_token = "";
         if(isset($data['ADMIN']) && $data['ADMIN']) {
-            $csrf_token =
-                CSRF_TOKEN."=".$this->parent->generateCSRFToken(
-                $_SESSION['USER_ID']). "&amp;";
+            $no_right_amp_csrf_token = 
+                "&amp;".CSRF_TOKEN."=".$this->parent->generateCSRFToken(
+                $_SESSION['USER_ID']);
+            $csrf_token = $no_right_amp_csrf_token . "&amp;";
         }
         if($data['CONTROLLER'] == 'static') {
             $address = "?c=static&amp;{$csrf_token}p=";
         } else {
-            $address = "?c={$data['CONTROLLER']}&amp;{$csrf_token}a=wiki&amp;".
+            $address = "?c={$data['CONTROLLER']}{$csrf_token}a=wiki&amp;".
                 "arg=read&amp;group_id=$group_id&amp;page_name=";
         }
         $pre_page = preg_replace('/\[{controller_and_page}\]/', $address,
             $pre_page);
-        $pre_page = preg_replace('/\[{controller}\]/', $data['CONTROLLER'],
-            $pre_page);
+        $pre_page = preg_replace('/\[{controller}\]/', $data['CONTROLLER'].
+            $no_right_amp_csrf_token, $pre_page);
         return $pre_page;
     }
     /**
