@@ -248,15 +248,19 @@ class WebLayout extends Layout
             }
         }
         if(isset($data['INCLUDE_LOCALE_SCRIPT'])) {
-                e('<script type="text/javascript"
-                    src="./locale/'.$data["LOCALE_TAG"].
-                    '/resources/locale.js" ></script>');
+            e('<script type="text/javascript"
+                src="./locale/'.$data["LOCALE_TAG"].
+                '/resources/locale.js" ></script>');
         }
         ?>
         <script type="text/javascript" >
         <?php
         if(isset($data['SCRIPT'])) {
             e($data['SCRIPT']);
+        }
+        if(isset($data['DISPLAY_MESSAGE'])){
+            e("\ndoMessage('<h1 class=\"red\" >".$data['DISPLAY_MESSAGE'].
+                "</h1>');");
         }
         ?></script>
         </body>

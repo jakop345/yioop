@@ -767,7 +767,7 @@ class SocialComponent extends Component implements CrawlConstants
             $data['RESULTS_PER_PAGE'] = $results_per_page;
             $data['PAGING_QUERY'] = "./?c=$controller_name&amp;a=groupFeeds";
             $data['OTHER_PAGING_QUERY'] =
-            "./?c=$other_controller_name&amp;a=groupFeeds";
+                "./?c=$other_controller_name&amp;a=groupFeeds";
             return $data;
         }
         if(isset($_REQUEST['arg']) &&
@@ -778,16 +778,12 @@ class SocialComponent extends Component implements CrawlConstants
                     if(!isset($_REQUEST['parent_id']) || !$_REQUEST['parent_id']
                         ||!isset($_REQUEST['group_id'])||
                         !$_REQUEST['group_id']){
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('social_component_comment_error').
-                            "</h1>');";
-                        break;
+                        $parent->redirectWithMessage(
+                            tl('social_component_comment_error'));
                     }
                     if(!$description) {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('social_component_no_comment').
-                            "</h1>');";
-                        break;
+                        $parent->redirectWithMessage(
+                            tl('social_component_no_comment'));
                     }
                     $parent_id = $parent->clean($_REQUEST['parent_id'], "int");
                     $group_id = $parent->clean($_REQUEST['group_id'], "int");
@@ -799,18 +795,14 @@ class SocialComponent extends Component implements CrawlConstants
                     if(!$group || ($group["OWNER_ID"] != $user_id &&
                         !in_array($group["MEMBER_ACCESS"], $read_comment) &&
                         $user_id != ROOT_ID)) {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('social_component_no_post_access').
-                            "</h1>');";
-                        break;
+                        $parent->redirectWithMessage(
+                            tl('social_component_no_post_access'));
                     }
                     if($parent_id >= 0) {
                         $parent_item = $group_model->getGroupItem($parent_id);
                         if(!$parent_item) {
-                            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                                tl('social_component_no_post_access').
-                                "</h1>');";
-                            break;
+                            $parent->redirectWithMessage(
+                                tl('social_component_no_post_access'));
                         }
                     } else {
                         $parent_item = array(
@@ -853,8 +845,8 @@ class SocialComponent extends Component implements CrawlConstants
                         $server->send($subject, MAIL_SENDER,
                             $follower['EMAIL'], $message);
                     }
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('social_component_comment_added'). "</h1>');";
+                    $parent->redirectWithMessage(
+                        tl('social_component_comment_added'));
                 break;
                 case "addgroup":
                     $register =
@@ -863,38 +855,32 @@ class SocialComponent extends Component implements CrawlConstants
                         $this->addGroup($data, $just_group_id, $register);
                         unset($data['SUBSCRIBE_LINK']);
                     } else {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('social_component_groupname_cant_add').
-                            "</h1>')";
+                        $parent->redirectWithMessage(
+                            tl('social_component_groupname_cant_add'));
                     }
                 break;
                 case "deletepost":
                     if(!isset($_REQUEST['post_id'])) {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('social_component_delete_error').
-                            "</h1>');";
+                        $parent->redirectWithMessage(
+                            tl('social_component_delete_error'));
                         break;
                     }
                     $post_id = $parent->clean($_REQUEST['post_id'], "int");
                     $success=$group_model->deleteGroupItem($post_id, $user_id);
                     if($success) {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('social_component_item_deleted').
-                            "</h1>');";
+                        $parent->redirectWithMessage(
+                            tl('social_component_item_deleted'));
                     } else {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('social_component_no_item_deleted').
-                            "</h1>');";
+                        $parent->redirectWithMessage(
+                            tl('social_component_no_item_deleted'));
                     }
                 break;
                 case "downvote":
                     if(!isset($_REQUEST['group_id']) || !$_REQUEST['group_id']
                         ||!isset($_REQUEST['post_id']) ||
                         !$_REQUEST['post_id']){
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('social_component_vote_error').
-                            "</h1>');";
-                        break;
+                        $parent->redirectWithMessage(
+                            tl('social_component_vote_error'));
                     }
                     $post_id = $parent->clean($_REQUEST['post_id'], "int");
                     $group_id = $parent->clean($_REQUEST['group_id'], "int");
@@ -902,42 +888,31 @@ class SocialComponent extends Component implements CrawlConstants
                         $user_id, true);
                     if(!$group || (!in_array($group["VOTE_ACCESS"],
                         array(UP_DOWN_VOTING_GROUP) ) ) ) {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('social_component_no_vote_access').
-                            "</h1>');";
-                        break;
+                        $parent->redirectWithMessage(
+                            tl('social_component_no_vote_access'));
                     }
                     $post_item = $group_model->getGroupItem($post_id);
                     if(!$post_item || $post_item['GROUP_ID'] != $group_id) {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('social_component_no_post_access').
-                            "</h1>');";
-                        break;
+                        $parent->redirectWithMessage(
+                            tl('social_component_no_post_access'));
                     }
                     if($group_model->alreadyVoted($user_id, $post_id)) {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('social_component_already_voted').
-                            "</h1>');";
-                        break;
+                        $parent->redirectWithMessage(
+                            tl('social_component_already_voted'));
                     }
                     $group_model->voteDown($user_id, $post_id);
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('social_component_vote_recorded').
-                        "</h1>');";
+                    $parent->redirectWithMessage(
+                        tl('social_component_vote_recorded'));
                 break;
                 case "newthread":
                     if(!isset($_REQUEST['group_id']) || !$_REQUEST['group_id']){
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('social_component_comment_error').
-                            "</h1>');";
-                        break;
+                        $parent->redirectWithMessage(
+                            tl('social_component_comment_error'));
                     }
-                    $group_id =$parent->clean($_REQUEST['group_id'], "int");
+                    $group_id = $parent->clean($_REQUEST['group_id'], "int");
                     if(!$description || !$title) {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('social_component_need_title_description').
-                            "</h1>');";
-                        break;
+                        $parent->redirectWithMessage(
+                            tl('social_component_need_title_description'));
                     }
                     $group_id = $parent->clean($_REQUEST['group_id'], "int");
                     $group =
@@ -947,49 +922,39 @@ class SocialComponent extends Component implements CrawlConstants
                     if(!$group || ($group["OWNER_ID"] != $user_id &&
                         !in_array($group["MEMBER_ACCESS"], $new_thread) &&
                         $user_id != ROOT_ID)) {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('social_component_no_post_access').
-                            "</h1>');";
-                        break;
+                        $parent->redirectWithMessage(
+                            tl('social_component_no_post_access'));
                     }
                     $group_model->addGroupItem(0,
                         $group_id, $user_id, $title, $description);
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('social_component_thread_created'). "</h1>');";
+                    $parent->redirectWithMessage(
+                        tl('social_component_thread_created'));
                 break;
                 case "status":
                     $data['REFRESH'] = "feedstatus";
                 break;
                 case "updatepost":
                     if(!isset($_REQUEST['post_id'])) {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('social_component_comment_error').
-                            "</h1>');";
-                        break;
+                        $parent->redirectWithMessage(
+                            tl('social_component_comment_error'));
                     }
                     if(!$description || !$title) {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('social_component_need_title_description').
-                            "</h1>');";
-                        break;
+                        $parent->redirectWithMessage(
+                            tl('social_component_need_title_description'));
                     }
                     $post_id =$parent->clean($_REQUEST['post_id'], "int");
                     $action = "updatepost" . $post_id;
                     if(!$parent->checkCSRFTime(CSRF_TOKEN, $action)) {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('social_component_post_edited_elsewhere').
-                            "</h1>');";
-                        break;
+                        $parent->redirectWithMessage(
+                            tl('social_component_post_edited_elsewhere'));
                     }
                     $items = $group_model->getGroupItems(0, 1, array(
                         array("post_id", "=", $post_id, "")), $user_id);
                     if(isset($items[0])) {
                         $item = $items[0];
                     } else {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('social_component_no_update_access').
-                            "</h1>');";
-                        break;
+                        $parent->redirectWithMessage(
+                            tl('social_component_no_update_access'));
                     }
                     $group_id = $item['GROUP_ID'];
                     $group =  $group_model->getGroupById($group_id, $user_id,
@@ -998,24 +963,21 @@ class SocialComponent extends Component implements CrawlConstants
                     if(!$group || ($group["OWNER_ID"] != $user_id &&
                         in_array($group["MEMBER_ACCESS"], $update_thread) &&
                         $user_id != ROOT_ID)) {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('social_component_no_update_access').
-                            "</h1>')";
+                        $parent->redirectWithMessage(
+                            tl('social_component_no_update_access'));
                         break;
                     }
                     $group_model->updateGroupItem($post_id, $title,
                         $description);
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('social_component_post_updated'). "</h1>');";
+                    $parent->redirectWithMessage(
+                        tl('social_component_post_updated'));
                 break;
                 case "upvote":
                     if(!isset($_REQUEST['group_id']) || !$_REQUEST['group_id']
                         ||!isset($_REQUEST['post_id']) ||
                         !$_REQUEST['post_id']){
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('social_component_vote_error').
-                            "</h1>');";
-                        break;
+                        $parent->redirectWithMessage(
+                            tl('social_component_vote_error'));
                     }
                     $post_id = $parent->clean($_REQUEST['post_id'], "int");
                     $group_id = $parent->clean($_REQUEST['group_id'], "int");
@@ -1023,28 +985,21 @@ class SocialComponent extends Component implements CrawlConstants
                         true);
                     if(!$group || (!in_array($group["VOTE_ACCESS"],
                         array(UP_VOTING_GROUP, UP_DOWN_VOTING_GROUP) ) ) ) {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('social_component_no_vote_access').
-                            "</h1>');";
-                        break;
+                        $parent->redirectWithMessage(
+                            tl('social_component_no_vote_access'));
                     }
                     $post_item = $group_model->getGroupItem($post_id);
                     if(!$post_item || $post_item['GROUP_ID'] != $group_id) {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('social_component_no_post_access').
-                            "</h1>');";
-                        break;
+                        $parent->redirectWithMessage(
+                            tl('social_component_no_post_access'));
                     }
                     if($group_model->alreadyVoted($user_id, $post_id)) {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('social_component_already_voted').
-                            "</h1>');";
-                        break;
+                        $parent->redirectWithMessage(
+                            tl('social_component_already_voted'));
                     }
                     $group_model->voteUp($user_id, $post_id);
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('social_component_vote_recorded').
-                        "</h1>');";
+                    $parent->redirectWithMessage(
+                        tl('social_component_vote_recorded'));
                 break;
             }
         }
@@ -1316,9 +1271,8 @@ EOD;
         }
         if(!$group) {
             if($data['MODE'] !== 'api'){
-            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                tl("group_controller_no_group_access").
-                "</h1>');";
+                $parent->redirectWithMessage(
+                    tl("group_controller_no_group_access"));
             }else{
                 $data['errors'] =  array();
                 $data['errors'][] = tl("group_controller_no_group_access");
@@ -1389,10 +1343,8 @@ EOD;
                        so in the below $page_info['ID'] won't be set.
                      */
                     if($missing_fields) {
-                        $data['SCRIPT'] .=
-                            "doMessage('<h1 class=\" red\" >".
-                            tl("group_controller_missing_fields").
-                            "</h1>')";
+                        $parent->redirectWithMessage(
+                            tl("group_controller_missing_fields"));
                     } else if(!$missing_fields && isset($page)) {
                         $action = "wikiupdate_".
                             "group=".$group_id."&page=".$page_name;
@@ -1451,17 +1403,14 @@ EOD;
                             tl('group_controller_page_created', $page_name),
                             tl('group_controller_page_discuss_here'),
                             $read_address, $additional_substitutions);
-                        $data['SCRIPT'] .=
-                            "doMessage('<h1 class=\"red\" >".
-                            tl("group_controller_page_saved").
-                            "</h1>');";
+                        $parent->redirectWithMessage(
+                            tl("group_controller_page_saved"));
                     } else if(!$missing_fields &&
                         isset($_FILES['page_resource']['name']) &&
                         $_FILES['page_resource']['name'] !="") {
                         if(!isset($page_info['ID'])) {
-                            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                                tl('social_component_resource_save_first').
-                                "</h1>');";
+                            $parent->redirectWithMessage(
+                                tl('social_component_resource_save_first'));
                         } else {
                             $upload_parts = array('name', 'type', 'tmp_name');
                             $file = array();
@@ -1481,14 +1430,11 @@ EOD;
                             $group_model->copyFileToGroupPageResource(
                                 $file['tmp_name'], $file['name'], $file['type'],
                                 $group_id, $page_info['ID']);
-                            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                                tl('social_component_resource_uploaded').
-                                "</h1>');";
+                            $parent->redirectWithMessage(
+                                tl('social_component_resource_uploaded'));
                         } else {
-                            $data['SCRIPT'] .=
-                                "doMessage('<h1 class=\"red\" >".
-                                tl('social_component_upload_error').
-                                "</h1>');";
+                            $parent->redirectWithMessage(
+                                tl('social_component_upload_error'));
                         }
                     } else if(!$missing_fields && isset($_REQUEST['delete'])) {
                         $resource_name = $parent->clean($_REQUEST['delete'],
@@ -1496,13 +1442,11 @@ EOD;
                         if(isset($page_info['ID']) &&
                             $group_model->deleteResource($resource_name,
                             $group_id, $page_info['ID'])) {
-                            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                                tl('social_component_resource_deleted').
-                                "</h1>');";
+                            $parent->redirectWithMessage(
+                                tl('social_component_resource_deleted'));
                         } else {
-                            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                                tl('social_component_resource_not_deleted').
-                                "</h1>');";
+                            $parent->redirectWithMessage(
+                                tl('social_component_resource_not_deleted'));
                         }
                     }
                     if(isset($page_info['ID'])) {
@@ -1606,15 +1550,11 @@ EOD;
                                 tl('group_controller_page_revert_to',
                                 date('c', $revert)), "", "", $read_address,
                                 $additional_substitutions);
-                            $data['SCRIPT'] .=
-                                "doMessage('<h1 class=\"red\" >".
-                                tl("group_controller_page_reverted").
-                                "</h1>')";
+                            $parent->redirectWithMessage(
+                                tl("group_controller_page_reverted"));
                         } else {
-                            $data['SCRIPT'] .=
-                                "doMessage('<h1 class=\"red\" >".
-                                tl("group_controller_revert_error").
-                                "</h1>')";
+                            $parent->redirectWithMessage(
+                                tl("group_controller_revert_error"));
                         }
                     }
                     if($default_history) {
@@ -1984,25 +1924,23 @@ EOD;
                         $mix['OWNER_ID'] = $user_id;
                         $mix['PARENT'] = -1;
                         $crawl_model->setCrawlMix($mix);
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('social_component_mix_created')."</h1>');";
+                        $parent->redirectWithMessage(
+                            tl('social_component_mix_created'));
                     } else {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('social_component_invalid_name')."</h1>');";
+                        $parent->redirectWithMessage(
+                            tl('social_component_invalid_name'));
                     }
                 break;
                 case "deletemix":
                     if(!isset($_REQUEST['timestamp'])||
                         !$crawl_model->isMixOwner($_REQUEST['timestamp'],
                             $user_id)) {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('social_component_mix_invalid_timestamp').
-                            "</h1>');";
-                        return $data;
+                        $parent->redirectWithMessage(
+                            tl('social_component_mix_invalid_timestamp'));
                     }
                     $crawl_model->deleteCrawlMix($_REQUEST['timestamp']);
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('social_component_mix_deleted')."</h1>');";
+                    $parent->redirectWithMessage(
+                        tl('social_component_mix_deleted'));
                 break;
                 case "editmix":
                     //$data passed by reference
@@ -2020,22 +1958,18 @@ EOD;
                         $import_success = false;
                     }
                     if(!$import_success) {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('social_component_mix_doesnt_exists').
-                            "</h1>');";
+                        $parent->redirectWithMessage(
+                            tl('social_component_mix_doesnt_exists'));
                         return $data;
                     }
                     $mix['PARENT'] = $mix['TIMESTAMP'];
                     $mix['OWNER_ID'] = $user_id;
                     $mix['TIMESTAMP'] = time();
                     $crawl_model->setCrawlMix($mix);
-
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('social_component_mix_imported')."</h1>');";
+                    $parent->redirectWithMessage(
+                        tl('social_component_mix_imported'));
                 break;
                 case "index":
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('social_component_set_index')."</h1>');";
                     $timestamp = substr(
                         $parent->clean($_REQUEST['timestamp'], "int"), 0,
                         TIMESTAMP_LEN);
@@ -2046,6 +1980,8 @@ EOD;
                         $_SESSION['its'] = $timestamp;
                         $user_model->setUserSession($user_id, $_SESSION);
                     }
+                    $parent->redirectWithMessage(
+                        tl('social_component_set_index'));
                 break;
                 case "search":
                     $search_array =
@@ -2054,18 +1990,14 @@ EOD;
                 break;
                 case "sharemix":
                     if(!isset($_REQUEST['group_name'])) {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('social_component_comment_error').
-                            "</h1>');";
-                        break;
+                        $parent->redirectWithMessage(
+                            tl('social_component_comment_error'));
                     }
                     if(!isset($_REQUEST['timestamp']) ||
                         !$crawl_model->isMixOwner($_REQUEST['timestamp'],
                             $user_id)) {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('social_component_invalid_timestamp').
-                            "</h1>');";
-                        break;
+                        $parent->redirectWithMessage(
+                            tl('social_component_invalid_timestamp'));
                     }
                     $timestamp = $parent->clean($_REQUEST['timestamp'], "int");
                     $group_model = $parent->model("group");
@@ -2075,18 +2007,15 @@ EOD;
                     $group_id = $group_model->getGroupId($group_name);
                     $group = NULL;
                     if($group_id) {
-                        $group =
-                            $group_model->getGroupById($group_id,
-                                $user_id, true);
+                        $group = $group_model->getGroupById($group_id,
+                            $user_id, true);
                     }
                     $share = array(GROUP_READ_WRITE, GROUP_READ_WIKI);
                     if(!$group || ($group["OWNER_ID"] != $user_id &&
                         !in_array($group["MEMBER_ACCESS"], $share) &&
                         $user_id != ROOT_ID)) {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('social_component_no_post_access').
-                            "</h1>');";
-                        break;
+                        $parent->redirectWithMessage(
+                            tl('social_component_no_post_access'));
                     }
                     $mix = $crawl_model->getCrawlMix($timestamp);
                     $user_name = $user_model->getUserName($user_id);
@@ -2096,8 +2025,8 @@ EOD;
                         $user_name,"[[{$mix['NAME']}:mix{$mix['TIMESTAMP']}]]");
                     $group_model->addGroupItem(0,
                         $group_id, $user_id, $title, $description);
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('social_component_thread_created'). "</h1>');";
+                    $parent->redirectWithMessage(
+                        tl('social_component_thread_created'));
                 break;
             }
         }
@@ -2148,17 +2077,14 @@ EOD;
         }
         if(!$crawl_model->isMixOwner($timestamp, $user_id)) {
             $data["ELEMENT"] = "mixcrawls";
-            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                tl('social_component_mix_not_owner').
-                "</h1>');";
-            return;
+            $parent->redirectWithMessage(
+                tl('social_component_mix_not_owner'));
         }
         $mix = $crawl_model->getCrawlMix($timestamp);
         $owner_id = $mix['OWNER_ID'];
         $parent_id = $mix['PARENT'];
         $data['MIX'] = $mix;
         $data['INCLUDE_SCRIPTS'] = array("mix");
-
         //set up an array of translation for javascript-land
         $data['SCRIPT'] .= "tl = {".
             'social_component_add_crawls:"'.
@@ -2185,8 +2111,7 @@ EOD;
             $mix['TIMESTAMP'] = $timestamp;
             $mix['OWNER_ID']= $owner_id;
             $mix['PARENT'] = $parent_id;
-            $mix['NAME'] =$parent->clean($mix['NAME'],
-                "string");
+            $mix['NAME'] = $parent->clean($mix['NAME'], "string");
             $comp = array();
             $save_mix = false;
             if(isset($mix['FRAGMENTS'])) {
@@ -2223,8 +2148,8 @@ EOD;
                     $save_mix = true;
                 } else if(count($mix['FRAGMENTS']) >= MAX_MIX_FRAGMENTS) {
                     $mix['FRAGMENTS'] = $data['MIX']['FRAGMENTS'];
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('social_component_too_many_fragments')."</h1>');";
+                    $parent->redirectWithMessage(
+                        tl('social_component_too_many_fragments'));
                 } else {
                     $mix['FRAGMENTS'] = $data['MIX']['FRAGMENTS'];
                 }
@@ -2234,8 +2159,8 @@ EOD;
             if($save_mix) {
                 $data['MIX'] = $mix;
                 $crawl_model->setCrawlMix($mix);
-                $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                    tl('social_component_mix_saved')."</h1>');";
+                $parent->redirectWithMessage(
+                    tl('social_component_mix_saved'));
             }
         }
         $data['SCRIPT'] .= 'fragments = [';

@@ -255,8 +255,36 @@ abstract class Controller
             }
         }
         $data['c'] = isset($_REQUEST['c']) ? $_REQUEST['c'] : NULL;
-        $data = array_merge($data,$this->setupWikiHelpBackLogic());
+        if(isset($_SESSION['DISPLAY_MESSAGE'])) {
+            $data['DISPLAY_MESSAGE'] = $_SESSION['DISPLAY_MESSAGE'];
+            unset($_SESSION['DISPLAY_MESSAGE']);
+        }
+        $data = array_merge($data, $this->setupWikiHelpBackLogic());
         $this->view($view)->render($data);
+    }
+    /**
+     *  Does a 301 redirect to the given location, sets a session variable
+     *  to display a message when get there.
+     *
+     *  @param string $message message to write
+     *  @param string $location where to redirect to
+     */
+    function redirectWithMessage($message, $location=false)
+    {
+        if(!$location) {
+            $location = "?c={$_REQUEST['c']}&a={$_REQUEST['a']}&".
+                CSRF_TOKEN."={$_REQUEST[CSRF_TOKEN]}";
+            $fields = array("just_thread", "just_group_id", "just_user_id",
+                "group_id", "limit", "num");
+            foreach($fields as $field) {
+                if(isset($_REQUEST[$field])) {
+                    $location .= "&$field=".$_REQUEST[$field];
+                }
+            }
+        }
+        header("Location: $location");
+        $_SESSION['DISPLAY_MESSAGE'] = $message;
+        exit();
     }
     /**
      * This is a helper method that sets proper data vars required to perform
@@ -274,6 +302,8 @@ abstract class Controller
             in_array($_REQUEST['arg'], array('edit','read'))) {
             foreach ($_REQUEST['back_params'] as
                      $back_param_key => $back_param_value) {
+                $back_param_key = $this->clean($back_param_key, "string");
+                $back_param_value = $this->clean($back_param_value, "string");
                 $data['BACK_PARAMS']["back_params[$back_param_key]"]
                     = $back_param_value;
                 $data["OTHER_BACK_URL"] .= "&amp;back_params[$back_param_key]"

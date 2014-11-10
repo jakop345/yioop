@@ -468,7 +468,6 @@ function displayHelpForId(help_point, is_mobile, target_controller,
         {
             toggleHelp('help-frame', is_mobile, target_controller);
         });
-    event.preventDefault();
 }
 /*
  * Simple function to construct the Wiki Edit hyperlink with passed in params.

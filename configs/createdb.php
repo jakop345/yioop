@@ -505,7 +505,7 @@ followed by a link [X] to delete the item. Clinking on the add button will
 insert into the wiki page a line like:
 
 <pre>
-{ {resource:myphoto.jpg|Resource Description}}
+( (resource:myphoto.jpg|Resource Description))
 </pre>
 
 Here  myphoto.jpg is the resource that will be inserted and Resource Description
