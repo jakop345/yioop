@@ -1,0 +1,1265 @@
+From 038e70c4c568012e96fda58cf3f14b576d38cf10 Mon Sep 17 00:00:00 2001
+From: epinapala <epinapala@ebay.com>
+Date: Sun, 9 Nov 2014 22:51:22 -0800
+Subject: [PATCH] - Execute Wiki help back logic only-> c=admin or group
+ &&a=wiki && arg= edit or read. - Move Help Javascript source to a new file.
+ Load the help.js only when atleast one button is rendered on the page. -
+ Fixes help issues that were caused by the latets changes to Pagetitle. -
+ Clean $_REQUEST params before using. - Populate help articles in create db by
+ directly, remove logic that fetches pages from sqlite db.
+
+Signed-off-by: epinapala <epinapala@ebay.com>
+---
+ configs/createdb.php                | 177 +++++++++++++++---
+ controllers/api_controller.php      |   3 +-
+ controllers/controller.php          |  30 ++--
+ data/default.db                     | Bin 124928 -> 128000 bytes
+ scripts/basic.js                    | 317 --------------------------------
+ scripts/help.js                     | 348 ++++++++++++++++++++++++++++++++++++
+ views/elements/api_element.php      |   3 +-
+ views/helpers/helpbutton_helper.php |  82 ++++++---
+ views/layouts/web_layout.php        |   7 +
+ 9 files changed, 583 insertions(+), 384 deletions(-)
+ create mode 100644 scripts/help.js
+
+diff --git a/configs/createdb.php b/configs/createdb.php
+index 7bf8f19..a9fe82b 100755
+--- a/configs/createdb.php
++++ b/configs/createdb.php
+@@ -548,8 +548,158 @@ foreach($public_pages as $page_name => $page_content) {
+         $page_content, "en-US", "Creating Default Pages",
+         "$page_name Wiki Page Created!", "Discuss the page in this thread!");
+ }
++$help_pages = array();
++$help_pages["Add_Locale"] = <<<EOD
++page_type=standard
++
++page_border=solid-border
++
++toc=true
++
++title=Add Locale
++
++description=Help article describing how to add a Locale.
++
++END_HEAD_VARS==Adding a Locale==
++
++The Manage Locales activity can be used to configure Yioop for use with different languages and for different regions.
++
++* The first form on this activity allows you to create a new &quot;Locale&quot; -- an object representing a language and a region.
++* The first field on this form should be filled in with a name for the locale in the language of the locale.
++* So for French you would put :Fran&ccedil;ais. The locale tag should be the IETF language tag.
++EOD;
++$help_pages["Database_Setup"] = <<<EOD
++page_type=standard
++
++page_border=solid-border
++
++title=Database Setup
++
++END_HEAD_VARSThe database is used to store information about what users are allowed to use the admin panel and what activities and roles these users have.
++* The Database Set-up field-set is used to specify what database management system should be used, how it should be connected to, and what user name and password should be used for the connection.
++
++* Supported Databases
++** PDO (PHP's generic DBMS interface).
++** Sqlite3 Database.
++** Mysql Database.
++
++* Unlike many database systems, if an sqlite3 database is being used then the connection is always a file on the current filesystem and there is no notion of login and password, so in this case only the name of the database is asked for. For sqlite, the database is stored in WORK_DIRECTORY/data.
++
++* For single user settings with a limited number of news feeds, sqlite is probably the most convenient database system to use with Yioop. If you think you are going to make use of Yioop's social functionality and have many users, feeds, and crawl mixes, using a system like Mysql or Postgres might be more appropriate.
++EOD;
++$help_pages["Locale_Writing_Mode"] = <<<EOD
++page_type=standard
++
++page_border=solid-border
++
++title=Locale Writing Mode
++
++END_HEAD_VARSThe last field on the form is to specify how the language is written. There are four options:
++# lr-tb -- from left-to-write from the top of the page to the bottom as in English.
++#  rl-tb from right-to-left from the top the page to the bottom as in Hebrew and Arabic.
++#  tb-rl from the top of the page to the bottom from right-to-left as in Classical Chinese.
++#  tb-lr from the top of the page to the bottom from left-to-right as in non-cyrillic Mongolian or American Sign Language.
++
++''lr-tb and rl-tb support work better than the vertical language support. As of this writing, Internet Explorer and WebKit based browsers (Chrome/Safari) have some vertical language support and the Yioop stylesheets for vertical languages still need some tweaking. For information on the status in Firefox check out this writing mode bug.''
++EOD;
++$help_pages["Locale_List"] = <<<EOD
++page_type=standard
++
++page_border=solid-border
++
++title=Locale List
++
++END_HEAD_VARSBeneath the Add Locale form is a table listing some of the current locales.
++
++
++* The Show Dropdown let's you control how many of these locales are displayed in one go.
++* The Search link lets you bring up an advance search form to search for particular locales and also allows you to control the direction of the listing.
++
++The Locale List table
++* The first column in the table  has a link with the name of the locale. Clicking on this link brings up a page where one can edit the strings for that locale.
++* The next two columns of the Locale List table give the locale tag and writing direction of the locale, this is followed by the percent of strings translated. Clicking the Edit link in the column let&amp;#039;s you edit the locale tag, and text direction of a locale.
++* Finally, clicking the Delete link let&amp;#039;s one delete a locale and all its strings.
++EOD;
++$help_pages["Browse_Groups"] = <<<EOD
++page_type=standard
++
++page_border=solid-border
++
++toc=true
++
++title=Browse Groups
++
++END_HEAD_VARS<br />
++Manage Groups is available to only those with a standard user role.
++<br />
++'''Groups''' are collections of users that have access to a group feed and a set of wiki pages. Any User with a &quot;Standard&quot; role can create or edit groups. The Create/Join Group form takes the name of a group, by which the user can select an existing group to Join. If you enter a name that currently does not exist, You will have the option to create a New group, which will be done on the Create Group form.
++EOD;
++$help_pages["Machine_Information"] = <<<EOD
++page_type=standard
++
++page_border=solid-border
++
++toc=true
++
++title=Machine Information
++
++END_HEAD_VARS<br />
++'''Machine Information listings:'''
++<br />
++This shows the currently known about machines. This list always begins with the Name Server itself and a toggle to control whether or not the News Updater process is running on the Name Server. This allows you to control whether or not Yioop attempts to update its RSS (or Atom) search sources on an hourly basis.There is also a link to the log file of the News Updater process. Under the Name Server information is a dropdown that can be used to control the number of current machine statuses that are displayed for all other machines that have been added. It also might have next and previous arrow links to go through the currently available machines.
++<br />
++For more information on prerequisites for crawling Visit full documentation [[https://www.seekquarry.com/?c=main&amp;p=documentation#prereqs| here]]
++EOD;
++$help_pages["Manage_Machines"] = <<<EOD
++page_type=standard
++
++page_border=solid-border
++
++toc=true
++
++title=Manage Machines
++
++END_HEAD_VARS<br />
++'''Add Machine:'''
++<br /><br />
++The Add machine form allows you to add a new machine to be controlled by this Yioop instance. The '''Machine Name''' field lets you give this machine an easy to remember name. The Machine URL field should be filled in with the URL to the installed Yioop instance.
++<br />
++The '''Mirror''' check-box says whether you want the given Yioop installation to act as a mirror for another Yioop installation. Checking it will reveal a drop-down menu that allows you to choose which installation among-st the previously entered machines you want to mirror. The '''Has Queue Server''' check-box is used to say whether the given Yioop installation will be running a queue server or not.
++<br />
++Finally, the '''Number of Fetchers''' drop down allows you to say how many fetcher instances you want to be able to manage for that machine.
++EOD;
++$help_pages["Discover_Groups"] = <<<EOD
++page_type=standard
++
++page_border=solid-border
++
++toc=true
++
++title=Discover Groups
++
++END_HEAD_VARS'''Name''' Field is used to specify the name of the Group to search for.
++'''Owner''' Field lets you search a Group using it's Owner name.
++<br />
++'''Register''' dropdown says how other users are allowed to join the group:
++* <u>No One</u> means no other user can join the group (you can still invite other users).
++* <u>By Request</u> means that other users can request the group owner to join the group.
++* <u>Anyone</u> means all users are allowed to join the group.
++<br />
++''It should be noted that the root account can always join any group.
++The root account can also always take over ownership of any group.''
++<br />
++The '''Access''' dropdown controls how users who belong/subscribe to a group other than the owner can access that group.
++* <u>No Read</u> means that a non-owner member of the group cannot read or write the group news feed and cannot read the group wiki.
++* <u>Read</u> means that a non-owner member of the group can read the group news feed and the groups wiki page.
++* <u>Read</u> Comment means that a non-owner member of the group can read the group feed and wikis and can comment on any existing threads, but cannot start new ones.
++* <u>Read Write</u>, means that a non-owner member of the group can start new threads and comment on existing ones in the group feed and can edit and create wiki pages for the group's wiki.
++<br />
++The access to a group can be changed by the owner after a group is created.
++* <u>No Read</u> and <u>Read</u> are often suitable if a group's owner wants to perform some kind of moderation.
++* <u>Read</u> and <u>Read Comment</u> groups are often suitable if someone wants to use a Yioop Group as a blog.
++* <u>Read</u> Write makes sense for a more traditional bulletin board.
++EOD;
+ //Insert Help pages
+-$help_pages = getWikiHelpPages();
+ foreach($help_pages as $page_name => $page_content) {
+     $page_content = str_replace("&amp;", "&", $page_content);
+     $page_content = @htmlentities($page_content, ENT_QUOTES, "UTF-8");
+@@ -557,31 +707,6 @@ foreach($help_pages as $page_name => $page_content) {
+         $page_content, "en-US", "Creating Default Pages",
+         "$page_name Help Page Created!", "Discuss the page in this thread!");
+ }
+-function getWikiHelpPages()
+-{
+-    $help_pages = array();
+-    require_once(BASE_DIR . "/models/datasources/sqlite3_manager.php");
+-    $default_dbm = new Sqlite3Manager();
+-    $default_dbm->connect("", "", "", BASE_DIR . "/data/default_help.db");
+-    if(!$default_dbm) {
+-        return false;
+-    }
+-    $group_model = new GroupModel(DB_NAME, true);
+-    $group_model->db = $default_dbm;
+-    $page_list = $group_model->getPageList(HELP_GROUP_ID, "en-US", '', 0, 200);
+-    foreach($page_list[1] as $page) {
+-        if(isset($page['TITLE'])) {
+-            $page_info = $group_model->getPageInfoByName(
+-                HELP_GROUP_ID, $page['TITLE'], "en-US", "api");
+-            $page_content = str_replace("&amp;", "&", $page_info['PAGE']);
+-            $page_content = html_entity_decode($page_content, ENT_QUOTES,
+-                "UTF-8");
+-            $help_pages[$page['TITLE']] = $page_content;
+-        }
+-    }
+-    return $help_pages;
+-}
+-
+ /* End Help content insertion. */
+ /* we insert 1 by 1 rather than comma separate as sqlite
+    does not support comma separated inserts
+diff --git a/controllers/api_controller.php b/controllers/api_controller.php
+index 641067a..0fec3da 100644
+--- a/controllers/api_controller.php
++++ b/controllers/api_controller.php
+@@ -113,12 +113,13 @@ class ApiController extends Controller implements CrawlConstants {
+     function processSession() {
+         if (isset($_REQUEST['a']) &&
+                 in_array($_REQUEST['a'], $this->activities)) {
+-            $activity = $_REQUEST['a'];
++            $activity = $this->clean($_REQUEST['a'],"string");
+         } else {
+             $activity = "groupFeeds";
+         }
+         $data = $this->call($activity);
+         $data['ACTIVITY_CONTROLLER'] = "group";
++        $data['PAGE_TITLE'] = $this->clean($_REQUEST['page_name'],"string");
+         $data['ACTIVITY_METHOD'] = $activity; //for settings controller
+         if (!is_array($data)) {
+             $data = array();
+diff --git a/controllers/controller.php b/controllers/controller.php
+index 73668b2..1afeba5 100755
+--- a/controllers/controller.php
++++ b/controllers/controller.php
+@@ -270,19 +270,29 @@ abstract class Controller
+     {
+         $data = array();
+         $data["OTHER_BACK_URL"] = "";
+-        if(isset($_REQUEST['back_params']) && isset($_REQUEST['arg']) &&
+-            in_array($_REQUEST['arg'], array('edit','read'))) {
+-            foreach ($_REQUEST['back_params'] as
+-                     $back_param_key => $back_param_value) {
+-                $data['BACK_PARAMS']["back_params[$back_param_key]"]
+-                    = $back_param_value;
+-                $data["OTHER_BACK_URL"] .= "&amp;back_params[$back_param_key]"
+-                    . "=" . $back_param_value;
++        if(isset($_REQUEST['a'])) {
++            $action = $this->clean($_REQUEST['a'], "string");
++            if($action == 'wiki' && isset($_REQUEST['back_params']) &&
++                isset($_REQUEST['arg']) && in_array(
++                    $this->clean($_REQUEST['arg'],"string"), array('edit',
++                    'read'))) {
++                foreach($_REQUEST['back_params'] as
++                        $back_param_key => $back_param_value) {
++                    $back_param_key = $this->clean($back_param_key, "string");
++                    $back_param_value = $this->clean($back_param_value,
++                        "string");
++                    $data['BACK_PARAMS']["back_params[$back_param_key]"]
++                        = $back_param_value;
++                    $data["OTHER_BACK_URL"] .=
++                        "&amp;back_params[$back_param_key]" . "=" .
++                        $back_param_value;
++                }
++                $data['BACK_URL'] = http_build_query($_REQUEST["back_params"]);
+             }
+-            $data['BACK_URL'] = http_build_query($_REQUEST["back_params"]);
+         }
+         if(isset($_REQUEST['open_help_page'])) {
+-            $data['OPEN_HELP_PAGE'] = $_REQUEST['open_help_page'];
++            $data['OPEN_HELP_PAGE'] = $this->clean($_REQUEST['open_help_page'],
++                "string");
+             if(!isset($data['SCRIPT'])) {
+                 $data['SCRIPT'] = "";
+             }
+diff --git a/data/default.db b/data/default.db
+index 325ec6216fab0f9a957d59ee3f85d77282d9ebb9..c4042b8e736d53a2511af7b97bc085902d4ec24d 100644
+GIT binary patch
+delta 10515
+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
+PF8&b>Z&erHCa(Vn@1%;N
+
+delta 6751
+zcmd^D3vg7`8NUC$yV=dnK8#=jNaX+l#Jo1yT|!8LY?37;<V79|G8pde-efP?-Mj3)
+zn-H`UbVg--V01^0m1(Wxj6$oHvPc-T)J~a>QyFd5u{eyP)CV1{=u|sQb=sbDcJm-m
+z*c3X`PRVfhyXXA(zvukl|2lWa8Pks6nMSV9E$29Hd-^|+-@-?VoW^pl`1FlG4`>2Z
+zBu@x`wddMxMqxfQbhLH1_q2N&y!Pa&8H<W6Abd+6;aY`n`R2qms}3*h3dW02xf8Yd
+zbyV&sa}m74UAdyH3>7;n9FDHWbH7Y{wrYJwa=o7JjO5<;tj$QSxwauAxkI&G8Oasb
+zWu_0;t-k5fb|EHgF^lAC7oJU+>gOeM&36gOXB##d1iNr3VQQu$BSPX(TPqpZn=s9!
+z19uC_y`6po#FLiw?+Tu+HliS8B^M=!TsBgDO=faw6qss$4<~#jd?-{42Zdw8kA=Gh
+zNoW%m2|4^({tx^pzlW%d^NG#3n}%DYh}0*e7Ret}BC;k&in}}Q^Nirk2O&L(8Y8`G
+zEG+4Y8e#Lcd?PF*^UbPX3dyKh(R4O$z1|3gWV~L{{OW)lLk%%C9!=@A%r?RjGFKZ@
+z2Q_(o#!g<BlV^naWXcl=poF96?FIJ#<@NjDHfIT^2^XA}u&jS7@q8dDkWfhaWg}3K
+z=<j`t{d)SIvJ<HYrEv?TF(@X!>YG7W-;^)~DeD!&uxJ1S*l8@;8MIMoW6(;Wl|c)I
+z76x-D%wbTZP-HNh!fXc36q*?{QD|Z?i^41hjT9OgG!#&5U|66~V34PfHyg4IOz(k^
+zfjaMt2~(7=`e7mYqBhgubd@=smF}{V@?|c!(=8bJzc1vox!I-J0A^^9`$CGp%tiht
+zNhQA<w1;3QY5C~SLe{osVw1t-KR(UM8m{x{b)79<cW|h+c3HzfL$JSZYg?x>AS+G1
+z@!nWTldrZpIM7~S)*Y8xN=sTw>r2Y{g7Tq)vhsrV)(wGM+Xj2x>elUpB`!z3Kh)4s
+z;utI&h`9Wn4p-RQ7wl6in@fW0og2F9yd~wgMAnY4%u!NaxlCB@tVle0R!W@t!aZEk
+z7i?HJ(A4ZJEAP}A9W5<&tJ}87<?H%eT%B8nqAp)Fw7s`nS?w$7yv^+;3u;^MYe=tU
+z`Su~XE4(!v-qN9Ib)NNQdP|)z?k;Vv^+crhmMv0!U0`dVL+WySE42Q&zpGT;E?u~m
+z<dbJ*!%QQ$kK^|78~J<rzX-3va;}&we#CQKqWJ4OlZU=(;**=dw!(pPCrmdIx<tX4
+z4cP|9Vh(Qvf_cWH2yBAkg8-J<!t-1fcZTE6fCkU-MZz*cCPO#DPw^ZJypC(_a1{T{
+z3ipo2EKmvfCJU_TBusTKT?#$A<O|9En9Op;#qPG(b$C5pUex8OZT6z`CDDy~IEoru
+zySxqFj-`jLfz7io8adcg2rtu_Lq#ykVhSHAh8j9D`nO`pO%2&f;Vd26?SNM^%JKh)
+zwW{*cwTjhnnx0JDJDiXZ7Vt0d%i%ZB%)OJyHNTRt+btY%q;+>$4Q6w;ozx3fOR(;O
+z>Z%M>Z?m!IH>94ojn^CenG0^tgfsjrH{=;v0m65>z~#x{rMhMEqAgR36~4m-?wd1E
+z6U$+0T2gDzIj^oUB{dl+QAMVtA*DoQ6);s)*>*BAL81bhG7&tq91IRK&z<80D|e3Y
+z_j&GvqG%=r&c|xLAkylK+kXHxb)v55A-P5rrMMncV+6!hpQ>vF1Z2%0Q=+sJAa_yH
+zIrIc&DIilJcGs(_I=RESPeWd(SRHgCB~Y`3?Md0LMEcMMMOC9nSCNET<w4XeMf&1I
+z&61Uum#HodI`N+#gU9gB-B6VkQfc>rPd)*z+^(REdX<=_ldDV|ws+Lp4__A0_<v>u
+z3<fg9;rSSD$2<1GT>LDCRe<oky|4)nJqPQc2*3UubeoEh?kkRk@C*B(7~l3hEV30L
+zDH0$`BT^_dRD}2LgKdCDYkmUlkSkV~29$x7BI|wF8!9lYNxk8Rd!YV`-+(_Xgt=C-
+z2O5LG&*k{Jq`qFu&v;;iD3ZXNzq`9K-;i<}M&0mLpiUIMt@S-?yq@}=TRa_|H8nMt
+zXNCw_MXT6_txrJQK;Z=x;cNH6LfW?WvCY5@9Na)QGZSXs)00EJaLEHR@`apqdx(ek
+zLw)rXdm#RNKUC&+Yory8sUf)}-FD(lN1<z3syRhcOh#drxB^HIl7_V}NPcNY%#zud
+zlwVf{6nzNcyH>%B;b07vu0&#YB&76@i_-UK%wN*ac93^!#HXfcL(-TspBz#neHsl1
+zDx~Se*`!zijjx!vUnryw(!h}-LnuynLWFBr;gs3CQfo(jtko_-9u1K$9r>jQ(qs}8
+zF*VF|D`DE^OFq(<W77d}WBmX)E7(-8I`$6Q=A%I+6hcxoDoe2y=ec-_I4cKMLYx43
+z_e6837cRN~`@{>!Ga#dG?UhhB#RD%z;_w(f(<5;(sQ7~@q^kWIq71IEipAs~vQC%L
+z;q*!7$|?Q#7&To$X~E?vWzk6!i-{x_mbLm%LF@Nu292tkrudYQqAN0SWMb1+6?KsO
+zjw2sKDSrEpBu~0ez^tsI@lgl<{3EdA!H;0U*ywvF;BiYz0^J%@bQy;~hW)tk6KK9B
+zt&ce_Q@sBZ=+0x>#>Y^d8V<`59k-l>wZ_z&UN{MrvoCN)o;%7x5qFdnvjeksF1FG%
+zvT$TkzF=i3D|Ir(yB;UWe8+Dgx8!0@Ni3i~)M%lP7Czz67cAq4*Q=9*=HPEm!?pO>
+z2e3Yi?7l4`;~%{TO~gR8Lu7AT<Fck><NM&vt6~=LM22YmhGi*2C<uk{=J%k0FG0BN
+zG}PlS-iO+3MCvNbKlsbjz>fX>jK_OUf$Klb<I}lPI9j#P;jFCENT%pl$jbgDv-1p8
+z7{BoeEX$B%R`KlVipO(99QP?VMCc9A*;#L;$!6imQj%<}lRrINl3-$(=q{UuK3cfP
+zO&*=p@G*jiFXj}PwmDNW6^)_A<Mz22>X7^B$CB8@oP7c^gx~!D>aLQfw3CFE&TE%n
+zn#b>#HEqgj7||1BxcwBk9mJ+#>TsD_i8X`Rb`a*zix8KN1|^@YE2MctN`z%A*2xv?
+zQV^FOBq?U&VOWa8hoK3dJP3FJUHYVWM(m84?)Lm@C?1aB*ItBSoO1+T71N$cLI{6&
+z1eW1BFTrB`&?w1X_x~DNS7hG7PNCMC`TFP31$PG3K~x`8qXBg=f<m&MB6sUym|>oL
+zw|d%pd`p<TxeY90XrD`>WZv$%U^H?IIBvlso>|x3x6ww^nse81zF-^smWP-A0vfME
+zXLaBMlGUn?fulU#1&h_J8LpKh<n*6vq3Dq!ocgecSZkq>R)-h|7rp{>NlqKxb__=N
+z;i+x(^p6`;$eM82i=i<~jD6L_Ymb4=d&#h+HFLTfdzi=iOE5Q0P2^FF!ORN<obaen
+zK-#BSLf%f7ou#D_AZcmh@O<QDSiSW8q(owE;J&zxN;`MmL8K=gl_{MoC&Y<pjK=1)
+z4{MkaI`|so&#YR^qG+t#GGg(n<1h<!+_n#{6IoBn`b;bxhdRrcMO&q?j1M1&1b*^3
+z7%eSIET+bgKPdbA@k76dojC7JsK%XdLRH=xNki-6a-2kp9HXC#Q&JDU4m|~{)2A)w
+zE3NUck4&q*Xtk^pA<|(7NLXR?2KZ@A-%5Nw%kU_%E3xWMVdl=+c2>(rgnYrC?!z&)
+z=>>_NSV^a*n%>EFTCPR|AZ?r#^DpL$6Jx~1u;)1B|Cia=$CI-h?H1F1TuS_S)NlsA
+N%OU1ID<qIP_n(-u63PGo
+
+diff --git a/scripts/basic.js b/scripts/basic.js
+index ab55bd5..c9f4d13 100755
+--- a/scripts/basic.js
++++ b/scripts/basic.js
+@@ -179,321 +179,4 @@ function toggleDisplay(id)
+         value = "block";
+     }
+     obj.style.display = value;
+-}
+-current_activity_closed = true;
+-current_activity_top = 0;
+-/*
+- * Toggles Help element from display:none and display block.
+- * Also changes the width of the Current activity accordingly.
+- * @param String help element's id to toggle.
+- * @param String isMobile flag true/false.
+- * @param String target_controller Edit page's controller name.
+- */
+-function toggleHelp(id, isMobile, target_controller)
+-{
+-    var activity = (target_controller === "admin") ? 'current-activity' :
+-        'small-margin-current-activity';
+-    var images = document.querySelectorAll(".wiki-resource-image");
+-    var all_help_elements =
+-        document.getElementsByClassName(activity);
+-    var help_node = all_help_elements[0];
+-    if (current_activity_closed === true) {
+-        current_activity_top = getCssProperty(help_node, 'top');
+-    }
+-    obj = elt(id);
+-    if (isMobile === false) {
+-        toggleDisplay(id);
+-        var new_width;
+-        var decrease_width_by = Math.floor(getCssProperty(obj, 'width') / 3);
+-        //Calculate pixel to inch. clientWidth only returns in pixels.
+-        if (obj.style.display === "none") {
+-            new_width = Math.floor(getCssProperty(help_node, 'width')) +
+-            decrease_width_by;
+-        } else if (obj.style.display === "block") {
+-            new_width = Math.floor(getCssProperty(help_node, 'width')) -
+-            decrease_width_by;
+-        }
+-        if (new_width !== undefined) {
+-            help_node.style.maxWidth = new_width + "px";
+-        }
+-    } else {
+-        toggleDisplay(id);
+-        var height_after_toggle = (obj.clientHeight);
+-        //Calculate pixel to inch. clientWidth only returns in pixels.
+-        if (obj.style.display === "none") {
+-            //on closing, restore top
+-            help_node.style.top = current_activity_top + "px";
+-            current_activity_closed = true;
+-        } else if (obj.style.display === "block") {
+-            help_node.style.top = current_activity_top +
+-            height_after_toggle + "px";
+-            /* The div.clientHeight doesnt include the height
+-             of the images inside the div before the images are completely
+-             loaded. So we iterate through the
+-             image elements, as each image loads add the image
+-             height to the top of the current_activity div dynamically. */
+-            for (var i = 0; i < images.length; i++) {
+-                var image = images[i];
+-                image.onload = function ()
+-                {
+-                    help_node.style.top = getCssProperty(help_node,
+-                        'top') + this.height + 'px';
+-                };
+-            }
+-            current_activity_closed = false;
+-        }
+-    }
+-}
+-/*
+- * Gets the Css property given an element and property name.
+- * @param Object elm Element to get the Css property for.
+- * @param String property Css property name.
+- * @return String Css property value
+- */
+-function getCssProperty(elm, property)
+-{
+-    //always returns in px
+-    return parseInt(window.getComputedStyle(elm, null)
+-        .getPropertyValue(property));
+-}
+-/*
+- * This is a JS function to convert yioop wiki markup to
+- * html.
+- * @param String wiki_text to be parsed as HTML
+- * @return String parsed html.
+- */
+-function parseWikiContent(wiki_text, group_id, page_id, controller_name,
+-    csrf_token_key, csrf_token_value)
+-{
+-    var html = wiki_text;
+-    /* note that line breaks from a text area are sent
+-     as \r\n , so make sure we clean them up to replace
+-     all \r\n with \n */
+-    html = html.replace(/\r\n/g, "\n");
+-    html = parseLists(html);
+-    //Regex replace normal links
+-    html = html.replace(/[^\[](http[^\[\s]*)/g, function (m, l)
+-    {
+-        // normal link
+-        return '<a href="' + l + '">' + l + '</a>';
+-    });
+-    //Regex replace for external links
+-    html = html.replace(/\[[\[](http.*)[!\]]/g, function (m, l)
+-    {
+-        // external link
+-        var p = l.replace(/[\[\]]/g, '').split(/\|/);
+-        var link = p.shift();
+-        return '<a href="' + link + '">' + (p.length ? p.join(' ') :
+-            link) + '</a>';
+-    });
+-    //Regex replace for headings
+-    html = html.replace(/(?:^|\n)([=]+)(.*)\1/g,
+-        function (match, contents, t)
+-        {
+-            return '<h' + contents.length + '>' + t + '</h' + contents.length +
+-            '>';
+-        });
+-    //Regex replace for Bold characters
+-    html = html.replace(/'''(.*?)'''/g, function (match, contents)
+-    {
+-        return '<b>' + contents + '</b>';
+-    });
+-    //Regex replace for Italic characters
+-    html = html.replace(/''(.*?)''/g, function (match, contents)
+-    {
+-        return '<i>' + contents + '</i>';
+-    });
+-    //Regex for yioop resource extraction.
+-    html = html.replace(/\(\(resource:(.+?)\|(.+?)\)\)/g,
+-        function (match, contents, desc)
+-        {
+-            if((/\.(gif|jpg|jpeg|tiff|png|bmp|tif)$/i).test(contents)) {
+-                return '<img src="' + "?c=resource&a=get&f=resources&g=" +
+-                group_id + "&p=" + page_id + "&n=" + contents +
+-                '" alt="' + desc + '" class="wiki-resource-image"/>';
+-            } else if((/\.(avi|m4v|flv|wmv|mp4|webm|ogg|mov|mpg)$/i)
+-                    .test(contents)) {
+-                return '<video style="width:100%" controls="controls">' +
+-                '<source src="./?c=resource&amp;a=get&amp;f=resources&amp;g=' +
+-                group_id + '&amp;p=' + page_id + '&amp;n=' + contents +
+-                '" type="video/mp4">' + desc + '</video>';
+-            } else {
+-                return '<a href="' + "?c=resource&a=get&f=resources&g=" +
+-                group_id + "&p=" + page_id + "&n=" + contents +
+-                '" alt="' + desc + '"/>' + desc + '</a>';
+-            }
+-        });
+-    //Regex replace for HR
+-    html = html.replace(/----(.*?)/g, function (match, contents)
+-    {
+-        return contents + '<hr />';
+-    });
+-    //Regex replace for def list
+-    html = html.replace
+-    (/(\A|\n);([^:]+):(.+)/g,
+-        function (match, match2, match3, match4)
+-        {
+-            return "<dl><dt>" + match3 + "</dt><dd>" +
+-            match4 + "</dd></dl>";
+-        });
+-    //replace nowiki with pre tags
+-    html = html.replace(/<nowiki>(.*?)<\/nowiki>/g, function (match,
+-        contents)
+-    {
+-        return '<pre>' + contents + '</pre>';
+-    });
+-    //Regex replace for blocks
+-    html = html.replace(/(?:^|\n+)([^# =\*<].+)(?:\n+|$)/gm,
+-        function (match, contents)
+-        {
+-            if(contents.match(/^\^+$/))
+-                return contents;
+-            return "\n<div>" + contents + "</div>\n";
+-        });
+-    //Internal links to other pages.
+-    html = html.replace(/\[\[(.*?)\]\]/g, function (matches, internal_link)
+-    {
+-        var internal_link_array = internal_link.split(/\|/);
+-        var page_name = internal_link_array.shift().replace(/ /g, "_");
+-        return '<a href="' + '?c=' + controller_name
+-        + '&a=wiki&arg=read&group_id=' + group_id + '&page_name=' + page_name
+-        + "&" + csrf_token_key + '=' + csrf_token_value + '">'
+-        + (internal_link_array.length ? internal_link_array.join('|')
+-            : page_name)
+-        + '</a>';
+-    });
+-    return html;
+-}
+-/*
+- * Lists need to be recursively parsed. So the below function is used
+- * to recursively convert wiki markup to html.
+- * @param String str usually the content string in which the UL/OL lists are
+- * needed to be parsed to html.
+- * @return String parsed html.
+- */
+-function parseLists(str)
+-{
+-    return str.replace(/(?:(?:(?:^|\n)[\*#].*)+)/g, function (match)
+-    {
+-        var listType = match.match(/(^|\n)#/) ? 'ol' : 'ul';
+-        match = match.replace(/(^|\n)[\*#][ ]{0,1}/g, "$1");
+-        match = parseLists(match);
+-        return '<' + listType + '><li>' + match.replace(/^\n/, '')
+-            .split(/\n/).join('</li><li>') + '</li></' + listType +
+-        '>';
+-    });
+-}
+-/*
+- * getPageWithCallback does a GET HTTP call on the url passed.
+- * Also fires the callback functions passed as
+- * params appropriately.
+- *
+- * @param String url the url used for making GET HTTP call.
+- * @param String response_type The response type expected.
+- * @param Function object success_call_back Callback function on success.
+- * @param Function object error_handler Callback function on failure.
+- */
+-function getPageWithCallback(url, response_type, success_call_back,
+-    error_handler)
+-{
+-    var request = makeRequest();
+-    request.open('GET', url, true);
+-    request.onload = function ()
+-    {
+-        var status = request.status;
+-        if(status == 200) {
+-            success_call_back && success_call_back(
+-                    JSON.parse(request.responseText));
+-        } else {
+-            error_handler && error_handler(status);
+-        }
+-    };
+-    request.send();
+-};
+-/*
+- * Takes in the help point id, uses it to fetch wiki content, then
+- * wiki content is being eval'd to be painted int he help pane.
+- * Ajax call happens only if help needs to be displayed.
+- * @param Object help_point element
+- * @param String is_mobile flag to check if the client is mobile
+- * or not.
+- * @param String target_controller Wiki page's controller name.
+- * @param String csrf_token_key teh dynamic name used for CSRF token var.
+- * @param String csrf_token_value The CSRF token to render edit page.
+- * @param String help_group_id  help's group_id required to render resources.
+- * @param String api_controller api's controller name.
+- * @param String api_action api's action name.
+- * @param String mode r/w mode , usually read.
+- */
+-function displayHelpForId(help_point, is_mobile, target_controller,
+-    current_action, csrf_token_key, csrf_token_value, help_group_id,
+-    api_controller, api_action, mode)
+-{
+-    if((elt("help-frame").style.display) === "block") {
+-        toggleHelp('help-frame', is_mobile, target_controller);
+-    }
+-    var tl = eval('(' + help_point.getAttribute("data-tl") + ')');
+-    var back_params = eval('(' + help_point.getAttribute("data-back-params")
+-    + ')');
+-    getPageWithCallback("?c=" + api_controller + "&group_id=" +
+-        help_group_id + "&" +
+-        "arg=" + mode + "&" +
+-        "a=" + api_action + "&" +
+-        csrf_token_key + '=' + csrf_token_value + "&" +
+-        "page_name=" + help_point.getAttribute("data-pagename"),
+-        'json',
+-        function (data)
+-        {
+-            elt("help-frame-body").innerHTML = parseWikiContent(
+-                data.wiki_content,
+-                data.group_id,
+-                data.page_id,
+-                target_controller,
+-                csrf_token_key,
+-                csrf_token_value
+-            );
+-            elt('page_name').innerHTML = data.page_name + ' [<a href="' +
+-            getEditLink(
+-                target_controller,
+-                current_action,
+-                csrf_token_key,
+-                csrf_token_value,
+-                help_group_id,
+-                data.page_name,
+-                back_params) + '">' +
+-            tl["wiki_view_edit"] + '</a>]';
+-            toggleHelp('help-frame', is_mobile, target_controller);
+-        },
+-        function (status)
+-        {
+-            toggleHelp('help-frame', is_mobile, target_controller);
+-        });
+-    event.preventDefault();
+-}
+-/*
+- * Simple function to construct the Wiki Edit hyperlink with passed in params.
+- * @param String target_controller Edit page's controller name.
+- * @param String csrf_token_key teh dynamic name used for CSRF token var.
+- * @param String csrf_token_value The CSRF token to render edit page.
+- * @param String group_id GroupId of the group which has the wiki.
+- * @param String page_name Page name,unique Identifier for wiki edit page.
+- * @return String the edit link
+- */
+-function getEditLink(target_controller, current_action, csrf_token_key,
+-    csrf_token_value, group_id, page_name, back_params)
+-{
+-    var edit_link = '?c=' + target_controller +
+-        '&' + csrf_token_key + '=' + csrf_token_value +
+-        '&group_id=' + group_id +
+-        '&arg=edit' +
+-        '&a=wiki' +
+-        '&page_name=' + page_name +
+-        '&back_params[open_help_page]=' + page_name +
+-        '&back_params[c]=' + target_controller +
+-        '&back_params[a]=' + current_action;
+-    for (var key in back_params) {
+-        var value = back_params[key];
+-        edit_link += "&back_params[" + key + "]=" + value;
+-    }
+-    return edit_link;
+ }
+\ No newline at end of file
+diff --git a/scripts/help.js b/scripts/help.js
+new file mode 100644
+index 0000000..1380661
+--- /dev/null
++++ b/scripts/help.js
+@@ -0,0 +1,348 @@
++/**
++ * SeekQuarry/Yioop --
++ * Open Source Pure PHP Search Engine, Crawler, and Indexer
++ *
++ * Copyright (C) 2009 - 2014  Chris Pollett chris@pollett.org
++ *
++ * LICENSE:
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, either version 3 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
++ *
++ * END LICENSE
++ *
++ * @author Eswara Rajesh Pinapala epinapala@live.com
++ * @package seek_quarry
++ * @subpackage javascript
++ * @license http://www.gnu.org/licenses/ GPL3
++ * @link http://www.seekquarry.com/
++ * @copyright 2009 - 2014
++ * @filesource
++ */
++current_activity_closed = true;
++current_activity_top = 0;
++/*
++ * Toggles Help element from display:none and display block.
++ * Also changes the width of the Current activity accordingly.
++ * @param String help element's id to toggle.
++ * @param String isMobile flag true/false.
++ * @param String target_controller Edit page's controller name.
++ */
++function toggleHelp(id, isMobile, target_controller)
++{
++    var activity = (target_controller === "admin") ? 'current-activity' :
++        'small-margin-current-activity';
++    var images = document.querySelectorAll(".wiki-resource-image");
++    var all_help_elements =
++        document.getElementsByClassName(activity);
++    var help_node = all_help_elements[0];
++    if (current_activity_closed === true) {
++        current_activity_top = getCssProperty(help_node, 'top');
++    }
++    obj = elt(id);
++    if (isMobile === false) {
++        toggleDisplay(id);
++        var new_width;
++        var decrease_width_by = Math.floor(getCssProperty(obj, 'width') / 3);
++        //Calculate pixel to inch. clientWidth only returns in pixels.
++        if (obj.style.display === "none") {
++            new_width = Math.floor(getCssProperty(help_node, 'width')) +
++            decrease_width_by;
++        } else if (obj.style.display === "block") {
++            new_width = Math.floor(getCssProperty(help_node, 'width')) -
++            decrease_width_by;
++        }
++        if (new_width !== undefined) {
++            help_node.style.maxWidth = new_width + "px";
++        }
++    } else {
++        toggleDisplay(id);
++        var height_after_toggle = (obj.clientHeight);
++        //Calculate pixel to inch. clientWidth only returns in pixels.
++        if (obj.style.display === "none") {
++            //on closing, restore top
++            help_node.style.top = current_activity_top + "px";
++            current_activity_closed = true;
++        } else if (obj.style.display === "block") {
++            help_node.style.top = current_activity_top +
++            height_after_toggle + "px";
++            /* The div.clientHeight doesnt include the height
++             of the images inside the div before the images are completely
++             loaded. So we iterate through the
++             image elements, as each image loads add the image
++             height to the top of the current_activity div dynamically. */
++            for (var i = 0; i < images.length; i++) {
++                var image = images[i];
++                image.onload = function ()
++                {
++                    help_node.style.top = getCssProperty(help_node,
++                        'top') + this.height + 'px';
++                };
++            }
++            current_activity_closed = false;
++        }
++    }
++}
++/*
++ * Gets the Css property given an element and property name.
++ * @param Object elm Element to get the Css property for.
++ * @param String property Css property name.
++ * @return String Css property value
++ */
++function getCssProperty(elm, property)
++{
++    //always returns in px
++    return parseInt(window.getComputedStyle(elm, null)
++        .getPropertyValue(property));
++}
++/*
++ * This is a JS function to convert yioop wiki markup to
++ * html.
++ * @param String wiki_text to be parsed as HTML
++ * @return String parsed html.
++ */
++function parseWikiContent(wiki_text, group_id, page_id, controller_name,
++    csrf_token_key, csrf_token_value)
++{
++    var html = wiki_text;
++    /* note that line breaks from a text area are sent
++     as \r\n , so make sure we clean them up to replace
++     all \r\n with \n */
++    html = html.replace(/\r\n/g, "\n");
++    html = parseLists(html);
++    //Regex replace normal links
++    html = html.replace(/[^\[](http[^\[\s]*)/g, function (m, l)
++    {
++        // normal link
++        return '<a href="' + l + '">' + l + '</a>';
++    });
++    //Regex replace for external links
++    html = html.replace(/\[[\[](http.*)[!\]]/g, function (m, l)
++    {
++        // external link
++        var p = l.replace(/[\[\]]/g, '').split(/\|/);
++        var link = p.shift();
++        return '<a href="' + link + '">' + (p.length ? p.join(' ') :
++            link) + '</a>';
++    });
++    //Regex replace for headings
++    html = html.replace(/(?:^|\n)([=]+)(.*)\1/g,
++        function (match, contents, t)
++        {
++            return '<h' + contents.length + '>' + t + '</h' + contents.length +
++            '>';
++        });
++    //Regex replace for Bold characters
++    html = html.replace(/'''(.*?)'''/g, function (match, contents)
++    {
++        return '<b>' + contents + '</b>';
++    });
++    //Regex replace for Italic characters
++    html = html.replace(/''(.*?)''/g, function (match, contents)
++    {
++        return '<i>' + contents + '</i>';
++    });
++    //Regex for yioop resource extraction.
++    html = html.replace(/\(\(resource:(.+?)\|(.+?)\)\)/g,
++        function (match, contents, desc)
++        {
++            if((/\.(gif|jpg|jpeg|tiff|png|bmp|tif)$/i).test(contents)) {
++                return '<img src="' + "?c=resource&a=get&f=resources&g=" +
++                group_id + "&p=" + page_id + "&n=" + contents +
++                '" alt="' + desc + '" class="wiki-resource-image"/>';
++            } else if((/\.(avi|m4v|flv|wmv|mp4|webm|ogg|mov|mpg)$/i)
++                    .test(contents)) {
++                return '<video style="width:100%" controls="controls">' +
++                '<source src="./?c=resource&amp;a=get&amp;f=resources&amp;g=' +
++                group_id + '&amp;p=' + page_id + '&amp;n=' + contents +
++                '" type="video/mp4">' + desc + '</video>';
++            } else {
++                return '<a href="' + "?c=resource&a=get&f=resources&g=" +
++                group_id + "&p=" + page_id + "&n=" + contents +
++                '" alt="' + desc + '"/>' + desc + '</a>';
++            }
++        });
++    //Regex replace for HR
++    html = html.replace(/----(.*?)/g, function (match, contents)
++    {
++        return contents + '<hr />';
++    });
++    //Regex replace for def list
++    html = html.replace
++    (/(\A|\n);([^:]+):(.+)/g,
++        function (match, match2, match3, match4)
++        {
++            return "<dl><dt>" + match3 + "</dt><dd>" +
++            match4 + "</dd></dl>";
++        });
++    //replace nowiki with pre tags
++    html = html.replace(/<nowiki>(.*?)<\/nowiki>/g, function (match,
++        contents)
++    {
++        return '<pre>' + contents + '</pre>';
++    });
++    //Regex replace for blocks
++    html = html.replace(/(?:^|\n+)([^# =\*<].+)(?:\n+|$)/gm,
++        function (match, contents)
++        {
++            if(contents.match(/^\^+$/))
++                return contents;
++            return "\n<div>" + contents + "</div>\n";
++        });
++    //Internal links to other pages.
++    html = html.replace(/\[\[(.*?)\]\]/g, function (matches, internal_link)
++    {
++        var internal_link_array = internal_link.split(/\|/);
++        var page_name = internal_link_array.shift().replace(/ /g, "_");
++        return '<a href="' + '?c=' + controller_name
++        + '&a=wiki&arg=read&group_id=' + group_id + '&page_name=' + page_name
++        + "&" + csrf_token_key + '=' + csrf_token_value + '">'
++        + (internal_link_array.length ? internal_link_array.join('|')
++            : page_name)
++        + '</a>';
++    });
++    return html;
++}
++/*
++ * Lists need to be recursively parsed. So the below function is used
++ * to recursively convert wiki markup to html.
++ * @param String str usually the content string in which the UL/OL lists are
++ * needed to be parsed to html.
++ * @return String parsed html.
++ */
++function parseLists(str)
++{
++    return str.replace(/(?:(?:(?:^|\n)[\*#].*)+)/g, function (match)
++    {
++        var listType = match.match(/(^|\n)#/) ? 'ol' : 'ul';
++        match = match.replace(/(^|\n)[\*#][ ]{0,1}/g, "$1");
++        match = parseLists(match);
++        return '<' + listType + '><li>' + match.replace(/^\n/, '')
++            .split(/\n/).join('</li><li>') + '</li></' + listType +
++        '>';
++    });
++}
++/*
++ * getPageWithCallback does a GET HTTP call on the url passed.
++ * Also fires the callback functions passed as
++ * params appropriately.
++ *
++ * @param String url the url used for making GET HTTP call.
++ * @param String response_type The response type expected.
++ * @param Function object success_call_back Callback function on success.
++ * @param Function object error_handler Callback function on failure.
++ */
++function getPageWithCallback(url, response_type, success_call_back,
++    error_handler)
++{
++    var request = makeRequest();
++    request.open('GET', url, true);
++    request.onload = function ()
++    {
++        var status = request.status;
++        if(status == 200) {
++            success_call_back && success_call_back(
++                JSON.parse(request.responseText));
++        } else {
++            error_handler && error_handler(status);
++        }
++    };
++    request.send();
++};
++/*
++ * Takes in the help point id, uses it to fetch wiki content, then
++ * wiki content is being eval'd to be painted int he help pane.
++ * Ajax call happens only if help needs to be displayed.
++ * @param Object help_point element
++ * @param String is_mobile flag to check if the client is mobile
++ * or not.
++ * @param String target_controller Wiki page's controller name.
++ * @param String csrf_token_key teh dynamic name used for CSRF token var.
++ * @param String csrf_token_value The CSRF token to render edit page.
++ * @param String help_group_id  help's group_id required to render resources.
++ * @param String api_controller api's controller name.
++ * @param String api_action api's action name.
++ * @param String mode r/w mode , usually read.
++ */
++function displayHelpForId(help_point, is_mobile, target_controller,
++    current_action, csrf_token_key, csrf_token_value, help_group_id,
++    api_controller, api_action, mode)
++{
++    if((elt("help-frame").style.display) === "block") {
++        toggleHelp('help-frame', is_mobile, target_controller);
++    }
++    var tl = eval('(' + help_point.getAttribute("data-tl") + ')');
++    var back_params = eval('(' + help_point.getAttribute("data-back-params")
++    + ')');
++    getPageWithCallback("?c=" + api_controller + "&group_id=" +
++        help_group_id + "&" +
++        "arg=" + mode + "&" +
++        "a=" + api_action + "&" +
++        csrf_token_key + '=' + csrf_token_value + "&" +
++        "page_name=" + help_point.getAttribute("data-pagename"),
++        'json',
++        function (data)
++        {
++            elt("help-frame-body").innerHTML = parseWikiContent(
++                data.wiki_content,
++                data.group_id,
++                data.page_id,
++                target_controller,
++                csrf_token_key,
++                csrf_token_value
++            );
++            elt('page_name').innerHTML = data.page_title + ' [<a href="' +
++            getEditLink(
++                target_controller,
++                current_action,
++                csrf_token_key,
++                csrf_token_value,
++                help_group_id,
++                data.page_title,
++                back_params) + '">' +
++            tl["wiki_view_edit"] + '</a>]';
++            toggleHelp('help-frame', is_mobile, target_controller);
++        },
++        function (status)
++        {
++            toggleHelp('help-frame', is_mobile, target_controller);
++        });
++    event.preventDefault();
++}
++/*
++ * Simple function to construct the Wiki Edit hyperlink with passed in params.
++ * @param String target_controller Edit page's controller name.
++ * @param String csrf_token_key teh dynamic name used for CSRF token var.
++ * @param String csrf_token_value The CSRF token to render edit page.
++ * @param String group_id GroupId of the group which has the wiki.
++ * @param String page_name Page name,unique Identifier for wiki edit page.
++ * @return String the edit link
++ */
++function getEditLink(target_controller, current_action, csrf_token_key,
++    csrf_token_value, group_id, page_name, back_params)
++{
++    var edit_link = '?c=' + target_controller +
++        '&' + csrf_token_key + '=' + csrf_token_value +
++        '&group_id=' + group_id +
++        '&arg=edit' +
++        '&a=wiki' +
++        '&page_name=' + page_name +
++        '&back_params[open_help_page]=' + page_name +
++        '&back_params[c]=' + target_controller +
++        '&back_params[a]=' + current_action;
++    for (var key in back_params) {
++        var value = back_params[key];
++        edit_link += "&back_params[" + key + "]=" + value;
++    }
++    return edit_link;
++}
+\ No newline at end of file
+diff --git a/views/elements/api_element.php b/views/elements/api_element.php
+index 64bfbcc..9c5d0fe 100644
+--- a/views/elements/api_element.php
++++ b/views/elements/api_element.php
+@@ -85,6 +85,7 @@ class ApiElement extends Element implements CrawlConstants
+             $out_array['group_name'] = $data['GROUP']['GROUP_NAME'];
+             $out_array['page_id'] = $data['PAGE_ID'];
+             $out_array['page_name'] = $data['PAGE_NAME'];
++            $out_array['page_title'] = $data['PAGE_TITLE'];
+             $http_code = "200 OK";
+         } else {
+             if(!$logged_in) {
+@@ -92,7 +93,7 @@ class ApiElement extends Element implements CrawlConstants
+                 $http_code = "401 Unauthorized";
+             }
+         }
+-        if($can_edit) {
++        if($can_edit && $data['PAGE']) {
+             $out_array["can_edit"] = true;
+         }
+         if(isset($data['errors']) && count($data['errors']) > 0) {
+diff --git a/views/helpers/helpbutton_helper.php b/views/helpers/helpbutton_helper.php
+index 9347d0b..5836ca5 100644
+--- a/views/helpers/helpbutton_helper.php
++++ b/views/helpers/helpbutton_helper.php
+@@ -52,23 +52,9 @@ class HelpbuttonHelper extends Helper
+      */
+     function __construct()
+     {
+-        $this->localizationdata = "{" .
+-            'wiki_view_edit :"' . tl('wiki_view_edit') . '",' .
+-            'wiki_view_read :"' . tl('wiki_view_read') . '"' .
+-            "}";
+-        $this->backParams = "{";
+-        $back_params_array = array_diff_key($_REQUEST, array_flip(
+-            array("a", "c", "u","p", CSRF_TOKEN, "open_help_page")
+-        ));
+-        $back_params_only_keys = array_keys($back_params_array);
+-        $last_key = end($back_params_only_keys);
+-        foreach($back_params_array as $key => $value) {
+-            $this->backParams .= $key . ' : "' . $value . '"';
+-            if($key != $last_key) {
+-                $this->backParams .= ',';
+-            }
+-        }
+-        $this->backParams .= "}";
++        $this->isHelpInitialized = false;
++        $this->localizationdata = NULL;
++        $this->backParams = NULL;
+         parent::__construct();
+     }
+     /**
+@@ -80,8 +66,29 @@ class HelpbuttonHelper extends Helper
+      * @param  $target_controller - target controller to remember the view.
+      * @return String button html.
+      */
+-    public function render($help_point_id, $csrf_token_value)
+-    {
++    public function render($help_point_id, $csrf_token_value) {
++        if ($this->isHelpInitialized == false) {
++            //Set only once.
++            $this->isHelpInitialized = true;
++            $this->localizationdata = "{" .
++                    'wiki_view_edit :"' . tl('wiki_view_edit') . '",' .
++                    'wiki_view_read :"' . tl('wiki_view_read') . '"' .
++                    "}";
++            $this->backParams = "{";
++            $back_params_array = array_diff_key($_REQUEST, array_flip(
++                array("a", "c", "u", "p", CSRF_TOKEN, "open_help_page")
++            ));
++            array_walk($back_params_array, array($this, 'clean'));
++            $back_params_only_keys = array_keys($back_params_array);
++            $last_key = end($back_params_only_keys);
++            foreach ($back_params_array as $key => $value) {
++                $this->backParams .= $key . ' : "' . $value . '"';
++                if ($key != $last_key) {
++                    $this->backParams .= ',';
++                }
++            }
++            $this->backParams .= "}";
++        }
+         $is_mobile = MOBILE ? "true" : "false";
+         $wiki_group_id = HELP_GROUP_ID;
+         $api_controller = "api";
+@@ -91,16 +98,33 @@ class HelpbuttonHelper extends Helper
+                     class="help-button default"
+                     data-tl=\'' . $this->localizationdata . '\'
+                     data-back-params=\'' . $this->backParams . '\'
+-                    onclick="javascript:displayHelpForId(
+-                    this,'
+-        . $is_mobile . ',\''
+-        . $_REQUEST['c'] . '\',\''
+-        . $_REQUEST['a'] . '\',\''
+-        . CSRF_TOKEN . '\',\''
+-        . $csrf_token_value . "','$wiki_group_id','$api_controller',"
+-        . "'$api_wiki_action','$api_wiki_mode" . '\')" '
+-        . 'data-pagename="' . $help_point_id . '"> '
+-        . tl('wiki_question_mark') .'</button>';
++                    onclick="javascript:displayHelpForId(this,'
++                . $is_mobile . ',\''
++                . $_REQUEST['c'] . '\',\''
++                . $_REQUEST['a'] . '\',\''
++                . CSRF_TOKEN . '\',\''
++                . $csrf_token_value . "','$wiki_group_id','$api_controller',"
++                . "'$api_wiki_action','$api_wiki_mode" . '\')" '
++                . 'data-pagename="' . $help_point_id . '"> '
++                . tl('wiki_question_mark') . '</button>';
++    }
++    /**
++     * Used to clean strings that might be tainted as originate from the user
++     *
++     * @param mixed $value tainted data
++     * @param mixed $default if $value is not set default value is returned,
++     *     this isn't used much since if the error_reporting is E_ALL
++     *     or -1 you would still get a Notice.
++     * @return string the clean input matching the type provided
++     */
++    private function clean($value, $default = NULL) {
++        if (isset($value)) {
++            $value2 = str_replace("&amp;", "&", $value);
++            $clean_value = @htmlentities($value2, ENT_QUOTES, "UTF-8");
++        } else {
++            $clean_value = $default;
++        }
+     }
++
+ }
+ ?>
+\ No newline at end of file
+diff --git a/views/layouts/web_layout.php b/views/layouts/web_layout.php
+index 9e63786..61e345a 100755
+--- a/views/layouts/web_layout.php
++++ b/views/layouts/web_layout.php
+@@ -234,6 +234,13 @@ class WebLayout extends Layout
+         ?>
+         <script type="text/javascript" src="./scripts/basic.js" ></script>
+         <?php
++        if($this->view->helper('helpbutton')->isHelpInitialized){
++            if (!isset($data["INCLUDE_SCRIPTS"])) {
++                $data["INCLUDE_SCRIPTS"] = array();
++            }
++
++            $data["INCLUDE_SCRIPTS"][] = "help";
++        }
+         if(isset($data['INCLUDE_SCRIPTS'])) {
+             foreach($data['INCLUDE_SCRIPTS'] as $script_name) {
+                 if($script_name == "math") {
+-- 
+1.9.3 (Apple Git-50)
+

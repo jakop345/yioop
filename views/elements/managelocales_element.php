@@ -108,8 +108,10 @@ class ManagelocalesElement extends Element
                 .tl('managelocales_element_edit')."</a></td>");
             e("<td><a href='$base_url"
                 ."&amp;arg=deletelocale&amp;selectlocale=".
-                $locale['LOCALE_TAG']."' >"
-                .tl('managelocales_element_delete')."</a></td></tr>");
+                $locale['LOCALE_TAG']."' ");?>
+                onclick='javascript:return confirm("<?php
+            e(tl('confirm_delete_operation')); ?>");'><?php
+            e(tl('managelocales_element_delete')."</a></td></tr>");
         }
         ?>
         </table>
@@ -135,7 +137,7 @@ class ManagelocalesElement extends Element
             e("<h2>".tl('managelocales_element_add_locale'). "&nbsp;");
         }
         e($this->view->helper("helpbutton")->render(
-            "Add Locale", $data[CSRF_TOKEN],$_REQUEST['c']));
+            "Add Locale", $data[CSRF_TOKEN]));
         e("</h2>");
         ?>
         <form id="addLocaleForm" method="post">
@@ -178,6 +180,8 @@ class ManagelocalesElement extends Element
                         "writing-mode", "writingmode",
                         $data['WRITING_MODES'],
                         $data['CURRENT_LOCALE']['writingmode']); ?>
+            <?php e($this->view->helper("helpbutton")->render(
+                "Locale Writing Mode", $data[CSRF_TOKEN])); ?>
             </td>
             </tr>
             <tr><th><label for="locale-active"><?php

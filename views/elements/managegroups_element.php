@@ -257,7 +257,9 @@ class ManagegroupsElement extends Element
                             }
                         ?></a></td><?php
                     }  else {?>
-                        <a href="<?php e($delete_url . 'group_id='.
+                        <a onclick='javascript:return confirm("<?php
+                        e(tl('confirm_delete_operation')); ?>");'
+                        href="<?php e($delete_url . 'group_id='.
                         $group['GROUP_ID']); ?>"><?php
                         e(tl('managegroups_element_delete'));
                     }?></a></td>

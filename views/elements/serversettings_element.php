@@ -107,7 +107,10 @@ class ServersettingsElement extends Element
             </div>
             <div class="top-margin">
             <fieldset><legend><?php
-                e(tl('configure_element_database_setup'))?></legend>
+                e(tl('configure_element_database_setup'));
+                e("&nbsp;" .$this->view->helper("helpbutton")->render(
+                        "Database Setup", $data[CSRF_TOKEN]));?>
+                </legend>
                 <div ><label for="database-system"><b><?php
                     e(tl('serversettings_element_database_system'));
                     ?></b></label>
