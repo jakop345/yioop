@@ -85,6 +85,7 @@ class ApiElement extends Element implements CrawlConstants
             $out_array['group_name'] = $data['GROUP']['GROUP_NAME'];
             $out_array['page_id'] = $data['PAGE_ID'];
             $out_array['page_name'] = $data['PAGE_NAME'];
+            $out_array['page_title'] = $data['PAGE_TITLE'];
             $http_code = "200 OK";
         } else {
             if(!$logged_in) {
@@ -92,7 +93,7 @@ class ApiElement extends Element implements CrawlConstants
                 $http_code = "401 Unauthorized";
             }
         }
-        if($can_edit) {
+        if($can_edit && $data['PAGE']) {
             $out_array["can_edit"] = true;
         }
         if(isset($data['errors']) && count($data['errors']) > 0) {

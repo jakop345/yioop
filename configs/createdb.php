@@ -548,8 +548,158 @@ foreach($public_pages as $page_name => $page_content) {
         $page_content, "en-US", "Creating Default Pages",
         "$page_name Wiki Page Created!", "Discuss the page in this thread!");
 }
+$help_pages = array();
+$help_pages["Add_Locale"] = <<<EOD
+page_type=standard
+
+page_border=solid-border
+
+toc=true
+
+title=Add Locale
+
+description=Help article describing how to add a Locale.
+
+END_HEAD_VARS==Adding a Locale==
+
+The Manage Locales activity can be used to configure Yioop for use with different languages and for different regions.
+
+* The first form on this activity allows you to create a new &quot;Locale&quot; -- an object representing a language and a region.
+* The first field on this form should be filled in with a name for the locale in the language of the locale.
+* So for French you would put :Fran&ccedil;ais. The locale tag should be the IETF language tag.
+EOD;
+$help_pages["Database_Setup"] = <<<EOD
+page_type=standard
+
+page_border=solid-border
+
+title=Database Setup
+
+END_HEAD_VARSThe database is used to store information about what users are allowed to use the admin panel and what activities and roles these users have.
+* The Database Set-up field-set is used to specify what database management system should be used, how it should be connected to, and what user name and password should be used for the connection.
+
+* Supported Databases
+** PDO (PHP's generic DBMS interface).
+** Sqlite3 Database.
+** Mysql Database.
+
+* Unlike many database systems, if an sqlite3 database is being used then the connection is always a file on the current filesystem and there is no notion of login and password, so in this case only the name of the database is asked for. For sqlite, the database is stored in WORK_DIRECTORY/data.
+
+* For single user settings with a limited number of news feeds, sqlite is probably the most convenient database system to use with Yioop. If you think you are going to make use of Yioop's social functionality and have many users, feeds, and crawl mixes, using a system like Mysql or Postgres might be more appropriate.
+EOD;
+$help_pages["Locale_Writing_Mode"] = <<<EOD
+page_type=standard
+
+page_border=solid-border
+
+title=Locale Writing Mode
+
+END_HEAD_VARSThe last field on the form is to specify how the language is written. There are four options:
+# lr-tb -- from left-to-write from the top of the page to the bottom as in English.
+#  rl-tb from right-to-left from the top the page to the bottom as in Hebrew and Arabic.
+#  tb-rl from the top of the page to the bottom from right-to-left as in Classical Chinese.
+#  tb-lr from the top of the page to the bottom from left-to-right as in non-cyrillic Mongolian or American Sign Language.
+
+''lr-tb and rl-tb support work better than the vertical language support. As of this writing, Internet Explorer and WebKit based browsers (Chrome/Safari) have some vertical language support and the Yioop stylesheets for vertical languages still need some tweaking. For information on the status in Firefox check out this writing mode bug.''
+EOD;
+$help_pages["Locale_List"] = <<<EOD
+page_type=standard
+
+page_border=solid-border
+
+title=Locale List
+
+END_HEAD_VARSBeneath the Add Locale form is a table listing some of the current locales.
+
+
+* The Show Dropdown let's you control how many of these locales are displayed in one go.
+* The Search link lets you bring up an advance search form to search for particular locales and also allows you to control the direction of the listing.
+
+The Locale List table
+* The first column in the table  has a link with the name of the locale. Clicking on this link brings up a page where one can edit the strings for that locale.
+* The next two columns of the Locale List table give the locale tag and writing direction of the locale, this is followed by the percent of strings translated. Clicking the Edit link in the column let&amp;#039;s you edit the locale tag, and text direction of a locale.
+* Finally, clicking the Delete link let&amp;#039;s one delete a locale and all its strings.
+EOD;
+$help_pages["Browse_Groups"] = <<<EOD
+page_type=standard
+
+page_border=solid-border
+
+toc=true
+
+title=Browse Groups
+
+END_HEAD_VARS<br />
+Manage Groups is available to only those with a standard user role.
+<br />
+'''Groups''' are collections of users that have access to a group feed and a set of wiki pages. Any User with a &quot;Standard&quot; role can create or edit groups. The Create/Join Group form takes the name of a group, by which the user can select an existing group to Join. If you enter a name that currently does not exist, You will have the option to create a New group, which will be done on the Create Group form.
+EOD;
+$help_pages["Machine_Information"] = <<<EOD
+page_type=standard
+
+page_border=solid-border
+
+toc=true
+
+title=Machine Information
+
+END_HEAD_VARS<br />
+'''Machine Information listings:'''
+<br />
+This shows the currently known about machines. This list always begins with the Name Server itself and a toggle to control whether or not the News Updater process is running on the Name Server. This allows you to control whether or not Yioop attempts to update its RSS (or Atom) search sources on an hourly basis.There is also a link to the log file of the News Updater process. Under the Name Server information is a dropdown that can be used to control the number of current machine statuses that are displayed for all other machines that have been added. It also might have next and previous arrow links to go through the currently available machines.
+<br />
+For more information on prerequisites for crawling Visit full documentation [[https://www.seekquarry.com/?c=main&amp;p=documentation#prereqs| here]]
+EOD;
+$help_pages["Manage_Machines"] = <<<EOD
+page_type=standard
+
+page_border=solid-border
+
+toc=true
+
+title=Manage Machines
+
+END_HEAD_VARS<br />
+'''Add Machine:'''
+<br /><br />
+The Add machine form allows you to add a new machine to be controlled by this Yioop instance. The '''Machine Name''' field lets you give this machine an easy to remember name. The Machine URL field should be filled in with the URL to the installed Yioop instance.
+<br />
+The '''Mirror''' check-box says whether you want the given Yioop installation to act as a mirror for another Yioop installation. Checking it will reveal a drop-down menu that allows you to choose which installation among-st the previously entered machines you want to mirror. The '''Has Queue Server''' check-box is used to say whether the given Yioop installation will be running a queue server or not.
+<br />
+Finally, the '''Number of Fetchers''' drop down allows you to say how many fetcher instances you want to be able to manage for that machine.
+EOD;
+$help_pages["Discover_Groups"] = <<<EOD
+page_type=standard
+
+page_border=solid-border
+
+toc=true
+
+title=Discover Groups
+
+END_HEAD_VARS'''Name''' Field is used to specify the name of the Group to search for.
+'''Owner''' Field lets you search a Group using it's Owner name.
+<br />
+'''Register''' dropdown says how other users are allowed to join the group:
+* <u>No One</u> means no other user can join the group (you can still invite other users).
+* <u>By Request</u> means that other users can request the group owner to join the group.
+* <u>Anyone</u> means all users are allowed to join the group.
+<br />
+''It should be noted that the root account can always join any group.
+The root account can also always take over ownership of any group.''
+<br />
+The '''Access''' dropdown controls how users who belong/subscribe to a group other than the owner can access that group.
+* <u>No Read</u> means that a non-owner member of the group cannot read or write the group news feed and cannot read the group wiki.
+* <u>Read</u> means that a non-owner member of the group can read the group news feed and the groups wiki page.
+* <u>Read</u> Comment means that a non-owner member of the group can read the group feed and wikis and can comment on any existing threads, but cannot start new ones.
+* <u>Read Write</u>, means that a non-owner member of the group can start new threads and comment on existing ones in the group feed and can edit and create wiki pages for the group's wiki.
+<br />
+The access to a group can be changed by the owner after a group is created.
+* <u>No Read</u> and <u>Read</u> are often suitable if a group's owner wants to perform some kind of moderation.
+* <u>Read</u> and <u>Read Comment</u> groups are often suitable if someone wants to use a Yioop Group as a blog.
+* <u>Read</u> Write makes sense for a more traditional bulletin board.
+EOD;
 //Insert Help pages
-$help_pages = getWikiHelpPages();
 foreach($help_pages as $page_name => $page_content) {
     $page_content = str_replace("&amp;", "&", $page_content);
     $page_content = @htmlentities($page_content, ENT_QUOTES, "UTF-8");
@@ -557,31 +707,6 @@ foreach($help_pages as $page_name => $page_content) {
         $page_content, "en-US", "Creating Default Pages",
         "$page_name Help Page Created!", "Discuss the page in this thread!");
 }
-function getWikiHelpPages()
-{
-    $help_pages = array();
-    require_once(BASE_DIR . "/models/datasources/sqlite3_manager.php");
-    $default_dbm = new Sqlite3Manager();
-    $default_dbm->connect("", "", "", BASE_DIR . "/data/default_help.db");
-    if(!$default_dbm) {
-        return false;
-    }
-    $group_model = new GroupModel(DB_NAME, true);
-    $group_model->db = $default_dbm;
-    $page_list = $group_model->getPageList(HELP_GROUP_ID, "en-US", '', 0, 200);
-    foreach($page_list[1] as $page) {
-        if(isset($page['TITLE'])) {
-            $page_info = $group_model->getPageInfoByName(
-                HELP_GROUP_ID, $page['TITLE'], "en-US", "api");
-            $page_content = str_replace("&amp;", "&", $page_info['PAGE']);
-            $page_content = html_entity_decode($page_content, ENT_QUOTES,
-                "UTF-8");
-            $help_pages[$page['TITLE']] = $page_content;
-        }
-    }
-    return $help_pages;
-}
-
 /* End Help content insertion. */
 /* we insert 1 by 1 rather than comma separate as sqlite
    does not support comma separated inserts
