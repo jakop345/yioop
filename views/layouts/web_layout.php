@@ -234,6 +234,13 @@ class WebLayout extends Layout
         ?>
         <script type="text/javascript" src="./scripts/basic.js" ></script>
         <?php
+        if($this->view->helper('helpbutton')->isHelpInitialized){
+            if (!isset($data["INCLUDE_SCRIPTS"])) {
+                $data["INCLUDE_SCRIPTS"] = array();
+            }
+
+            $data["INCLUDE_SCRIPTS"][] = "help";
+        }
         if(isset($data['INCLUDE_SCRIPTS'])) {
             foreach($data['INCLUDE_SCRIPTS'] as $script_name) {
                 if($script_name == "math") {

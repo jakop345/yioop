@@ -113,12 +113,13 @@ class ApiController extends Controller implements CrawlConstants {
     function processSession() {
         if (isset($_REQUEST['a']) &&
                 in_array($_REQUEST['a'], $this->activities)) {
-            $activity = $_REQUEST['a'];
+            $activity = $this->clean($_REQUEST['a'],"string");
         } else {
             $activity = "groupFeeds";
         }
         $data = $this->call($activity);
         $data['ACTIVITY_CONTROLLER'] = "group";
+        $data['PAGE_TITLE'] = $this->clean($_REQUEST['page_name'],"string");
         $data['ACTIVITY_METHOD'] = $activity; //for settings controller
         if (!is_array($data)) {
             $data = array();
