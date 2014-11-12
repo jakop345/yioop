@@ -107,7 +107,10 @@ class ServersettingsElement extends Element
             </div>
             <div class="top-margin">
             <fieldset><legend><?php
-                e(tl('configure_element_database_setup'))?></legend>
+                e(tl('configure_element_database_setup'));
+                e("&nbsp;" .$this->view->helper("helpbutton")->render(
+                        "Database Setup", $data[CSRF_TOKEN]));?>
+                </legend>
                 <div ><label for="database-system"><b><?php
                     e(tl('serversettings_element_database_system'));
                     ?></b></label>
@@ -150,6 +153,8 @@ class ServersettingsElement extends Element
                 <legend><label
                 for="account-registration"><?php
                 e(tl('serversettings_element_account_registration'));
+                e("&nbsp;" .$this->view->helper("helpbutton")->render(
+                        "Account Registration", $data[CSRF_TOKEN]));
                 ?>
                 </label></legend>
                     <?php $this->view->helper("options")->render(
@@ -208,9 +213,12 @@ class ServersettingsElement extends Element
             </div>
             <div class="top-margin">
             <fieldset><legend><?php
-                e(tl('serversettings_element_proxy_title'))?></legend>
+                e(tl('serversettings_element_proxy_title'));
+                e("&nbsp;" .$this->view->helper("helpbutton")->render(
+                        "Proxy server", $data[CSRF_TOKEN]));
+                ?></legend>
                 <div ><b><label for="tor-proxies"><?php
-                    e(tl('serversettings_element_tor_proxy'))?></label></b>
+                    e(tl('serversettings_element_tor_proxy'));?></label></b>
                     <input type="text" id="tor-proxies" name="TOR_PROXY"
                         value="<?php e($data['TOR_PROXY']); ?>"
                         class="wide-field" />

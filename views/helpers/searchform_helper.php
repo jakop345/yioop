@@ -77,8 +77,6 @@ class SearchformHelper extends Helper
         e("<div class='float-opposite'><a href='$old_base_url'>".
             $return_form_name."</a></div>");
         e("<h2>$title" . "&nbsp;");
-        e($view->helper("helpbutton")->render(
-            "Discover Groups", $data[CSRF_TOKEN]));
         e("</h2>");
         $item_sep = (MOBILE) ? "<br />" : "</td><td>";
         ?>

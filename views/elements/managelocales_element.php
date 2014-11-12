@@ -135,7 +135,7 @@ class ManagelocalesElement extends Element
             e("<h2>".tl('managelocales_element_add_locale'). "&nbsp;");
         }
         e($this->view->helper("helpbutton")->render(
-            "Add Locale", $data[CSRF_TOKEN],$_REQUEST['c']));
+            "Add Locale", $data[CSRF_TOKEN]));
         e("</h2>");
         ?>
         <form id="addLocaleForm" method="post">
@@ -178,6 +178,8 @@ class ManagelocalesElement extends Element
                         "writing-mode", "writingmode",
                         $data['WRITING_MODES'],
                         $data['CURRENT_LOCALE']['writingmode']); ?>
+            <?php e($this->view->helper("helpbutton")->render(
+                "Locale Writing Mode", $data[CSRF_TOKEN])); ?>
             </td>
             </tr>
             <tr><th><label for="locale-active"><?php
