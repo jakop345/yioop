@@ -259,7 +259,6 @@ abstract class Controller
             $data['DISPLAY_MESSAGE'] = $_SESSION['DISPLAY_MESSAGE'];
             unset($_SESSION['DISPLAY_MESSAGE']);
         }
-        $data = array_merge($data, $this->setupWikiHelpBackLogic());
         $this->view($view)->render($data);
     }
     /**
@@ -288,54 +287,6 @@ abstract class Controller
         header("Location: $location");
         $_SESSION['DISPLAY_MESSAGE'] = $message;
         exit();
-    }
-    /**
-     * This is a helper method that sets proper data vars required to perform
-     * Back page logic when the user is navigating from help article to edit
-     * page,and then back to help article.
-     *
-     * @param type $data to add data vars
-     * @return string $data
-     */
-    function setupWikiHelpBackLogic()
-    {
-        $data = array();
-        $data["OTHER_BACK_URL"] = "";
-        if(isset($_REQUEST['a'])) {
-            $action = $this->clean($_REQUEST['a'], "string");
-            if($action == 'wiki' && isset($_REQUEST['back_params']) &&
-                isset($_REQUEST['arg']) && in_array(
-                    $this->clean($_REQUEST['arg'],"string"), array('edit',
-                    'read'))) {
-                foreach($_REQUEST['back_params'] as
-                        $back_param_key => $back_param_value) {
-                    $back_param_key = $this->clean($back_param_key, "string");
-                    $back_param_value = $this->clean($back_param_value,
-                        "string");
-                    $data['BACK_PARAMS']["back_params[$back_param_key]"]
-                        = $back_param_value;
-                    $data["OTHER_BACK_URL"] .=
-                        "&amp;back_params[$back_param_key]" . "=" .
-                        $back_param_value;
-                }
-                $data['BACK_URL'] = http_build_query($_REQUEST["back_params"]);
-            }
-        }
-        if(isset($_REQUEST['open_help_page'])) {
-            $data['OPEN_HELP_PAGE'] = $this->clean($_REQUEST['open_help_page'],
-                "string");
-            if(!isset($data['SCRIPT'])) {
-                $data['SCRIPT'] = "";
-            }
-            $data['SCRIPT'] .= "\n" .
-                'var matches = '
-                . 'document.querySelectorAll(\'[data-pagename="'
-                . $data['OPEN_HELP_PAGE']
-                . '"]\');'
-                . "matches[0].click();"
-                . "\n";
-        }
-        return $data;
     }
     /**
      * When an activity involves displaying tabular data (such as rows of

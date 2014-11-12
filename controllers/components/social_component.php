@@ -717,12 +717,14 @@ class SocialComponent extends Component implements CrawlConstants
         }
         $possible_arguments = array("addcomment", "deletepost", "addgroup",
             "newthread", "updatepost", "status", "upvote", "downvote");
-        if (isset($_REQUEST['v']) && $_REQUEST['v'] == 'grouped') {
-            $data['MODE'] = 'grouped';
-            if(isset($_REQUEST['just_group_id'])){
-            $data['JUST_GROUP_ID'] = $_REQUEST['just_group_id'];
-            }
-            if (isset($_REQUEST['limit'])) {
+        if (isset($_REQUEST['v'])) {
+            $view = $parent->clean($_REQUEST['v'], "string");
+            if ($view == 'grouped') {
+                $data['MODE'] = 'grouped';
+                if (isset($_REQUEST['just_group_id'])) {
+                    $data['JUST_GROUP_ID'] = $_REQUEST['just_group_id'];
+                }
+                if (isset($_REQUEST['limit'])) {
                 $limit = $parent->clean($_REQUEST['limit'], "int");
             } else {
                 $limit = 0;
@@ -761,12 +763,12 @@ class SocialComponent extends Component implements CrawlConstants
                 }
             }
             $data['NUM_SHOWN'] = $num_shown;
-            $data['LIMIT'] = $limit;
-            $data['RESULTS_PER_PAGE'] = $results_per_page;
-            $data['PAGING_QUERY'] = "./?c=$controller_name&amp;a=groupFeeds";
-            $data['OTHER_PAGING_QUERY'] =
-                "./?c=$other_controller_name&amp;a=groupFeeds";
-            return $data;
+                $data['LIMIT'] = $limit;
+                $data['RESULTS_PER_PAGE'] = $results_per_page;
+                $data['PAGING_QUERY'] = "./?c=$controller_name&amp;a=groupFeeds";
+                $data['OTHER_PAGING_QUERY'] = "./?c=$other_controller_name&amp;a=groupFeeds";
+                return $data;
+            }
         }
         if(isset($_REQUEST['arg']) &&
             in_array($_REQUEST['arg'], $possible_arguments)) {
@@ -1747,6 +1749,27 @@ EOD;
                 $this->initializeWikiEditor($data);
             }
         }
+       /** Check if back params need to be set. Set them if required.
+        * the back params are usually sent when the wiki action is initiated
+        * from within an open help article.
+        */
+        $data["OTHER_BACK_URL"] = "";
+            if(isset($_REQUEST['back_params']) &&
+                isset($_REQUEST['arg']) && in_array(
+                    $parent->clean($_REQUEST['arg'],"string"), array('edit',
+                    'read'))) {
+                $back_params_cleaned = $_REQUEST['back_params'];
+                array_walk($back_params_cleaned, array($parent, 'clean'));
+                foreach($back_params_cleaned as
+                        $back_param_key => $back_param_value) {
+                    $data['BACK_PARAMS']["back_params[$back_param_key]"]
+                        = $back_param_value;
+                    $data["OTHER_BACK_URL"] .=
+                        "&amp;back_params[$back_param_key]" . "=" .
+                        $back_param_value;
+                }
+                $data['BACK_URL'] = http_build_query($back_params_cleaned);
+            }
         return $data;
     }
     /**

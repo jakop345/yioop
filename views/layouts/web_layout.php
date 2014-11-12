@@ -241,6 +241,12 @@ class WebLayout extends Layout
 
             $data["INCLUDE_SCRIPTS"][] = "help";
         }
+        if($this->view->helper('helpbutton')->script){
+            if(!isset($data['SCRIPT'])) {
+                $data['SCRIPT'] = "";
+            }
+            $data['SCRIPT'] .= $this->view->helper('helpbutton')->script;
+        }
         if(isset($data['INCLUDE_SCRIPTS'])) {
             foreach($data['INCLUDE_SCRIPTS'] as $script_name) {
                 if($script_name == "math") {
