@@ -699,6 +699,91 @@ The access to a group can be changed by the owner after a group is created.
 * <u>Read</u> and <u>Read Comment</u> groups are often suitable if someone wants to use a Yioop Group as a blog.
 * <u>Read</u> Write makes sense for a more traditional bulletin board.
 EOD;
+$help_pages["Create_Group"] = <<<EOD
+page_type=standard
+
+page_border=solid-border
+
+title=Create Group
+
+END_HEAD_VARS''You will get to this form when the Group Name is available to create a new Group. ''
+----
+
+'''Name''' Field is used to specify the name of the new Group.
+<br />
+'''Register''' dropdown says how other users are allowed to join the group:
+* <u>No One</u> means no other user can join the group (you can still invite other users).
+* <u>By Request</u> means that other users can request the group owner to join the group.
+* <u>Anyone</u> means all users are allowed to join the group.
+<br />
+The '''Access''' dropdown controls how users who belong/subscribe to a group other than the owner can access that group.
+* <u>No Read</u> means that a non-owner member of the group cannot read or write the group news feed and cannot read the group wiki.
+* <u>Read</u> means that a non-owner member of the group can read the group news feed and the groups wiki page.
+* <u>Read</u> Comment means that a non-owner member of the group can read the group feed and wikis and can comment on any existing threads, but cannot start new ones.
+* <u>Read Write</u>, means that a non-owner member of the group can start new threads and comment on existing ones in the group feed and can edit and create wiki pages for the group's wiki.
+'''Voting'''
+* Specify the kind of voting allowed in the new group. + Voting allows users to vote up, -Voting allows users to vote down. +/- allows Voting up and down.
+'''Post Life time''' - Specifies How long the posts should be kept.
+EOD;
+$help_pages["Captcha_Type"] = <<<EOD
+page_type=standard
+
+page_border=solid-border
+
+title=Captcha Type
+
+END_HEAD_VARSThe Captcha Type field set controls what kind of [[https://en.wikipedia.org/wiki/CAPTCHA|captcha]] will be used during account registration, password recovery, and if a user wants to suggest a url.
+
+* The choices for captcha are:
+** '''Text Captcha''', the user has to select from a series of dropdown answers to questions of the form: ''Which in the following list is the most/largest/etc? or Which is the following list is the least/smallest/etc?; ''
+** '''Graphic Captcha''', the user needs to enter a sequence of characters from a distorted image;
+** '''Hash captcha''', the user's browser (the user doesn't need to do anything) needs to extend a random string with additional characters to get a string whose hash begins with a certain lead set of characters.
+
+- Of these, Hash Captcha is probably the least intrusive but requires Javascript and might run slowly on older browsers. A text captcha might be used to test domain expertise of the people who are registering for an account. Finally, the graphic captcha is probably the one people are most familiar with.
+EOD;
+$help_pages["Authentication_Type"] = <<<EOD
+page_type=standard
+
+page_border=solid-border
+
+title=Authentication Type
+
+END_HEAD_VARSThe Authentication Type field-set is used to control the protocol used to log people into Yioop.
+
+* Below is a list of Authentication types supported.
+** '''Normal Authentication''', passwords are checked against stored as salted hashes of the password; or
+** '''ZKP (zero knowledge protocol) authentication''', the server picks challenges at random and send these to the browser the person is logging in from, the browser computes based on the password an appropriate response according to the Fiat Shamir protocol.cThe password is never sent over the internet and is not stored on the server. These are the main advantages of ZKP, its drawback is that it is slower than Normal Authentication as to prove who you are with a low probability of error requires several browser-server exchanges.
+
+* You should choose which authentication scheme you want before you create many users as if you switch everyone will need to get a new password.
+EOD;
+$help_pages["Account_Registration"] = <<<EOD
+page_type=standard
+
+page_border=solid-border
+
+title=Account Registration
+
+END_HEAD_VARSThe Account Registration field-set is used to control how user's can obtain accounts on a Yioop installation.
+
+* The dropdown at the start of this fieldset allows you to select one of four possibilities:
+** '''Disable Registration''', users cannot register themselves, only the root account can add users.
+*** When Disable Registration is selected, the Suggest A Url form and link on the tool.php page is disabled as well, for all other registration type this link is enabled.
+** '''No Activation''', user accounts are immediately activated once a user signs up.
+** '''Email Activation''', after registering, users must click on a link which comes in a separate email to activate their accounts.
+*** If Email Activation is chosen, then the reset of this field-set can be used to specify the email address that the email comes to the user. The checkbox Use PHP mail() function controls whether to use the mail function in PHP to send the mail, this only works if mail can be sent from the local machine. Alternatively, if this is not checked like in the image above, one can configure an outgoing SMTP server to send the email through.
+** '''Admin Activation''', after registering, an admin account must activate the user before the user is allowed to use their account.
+EOD;
+$help_pages["Proxy_server"] = <<<EOD
+page_type=standard
+
+page_border=solid-border
+
+title=Proxy server
+
+END_HEAD_VARS* The Proxy Server field-set is used to control which proxies to use while crawling. By default Yioop does not use any proxies while crawling. A Tor Proxy can serve as a gateway to the Tor Network. Yioop can use this proxy to download .onion URLs on the [[https://en.wikipedia.org/wiki/Tor_%28anonymity_network%29|Tor network]].
+
+* Obviously, this proxy needs to be running though for Yioop to make use of it. Beneath the Tor Proxy input field is a checkbox labelled '''Crawl via Proxies'''. Checking this box, will reveal a text-area labelled Proxy Servers. You can enter the '''''address:port or address:port:proxytype''''' of proxy servers you would like to crawl through. If proxy servers are used, Yioop will make any requests to download pages to a randomly chosen server on the list which will proxy the request to the site which has the page to download. To some degree this can make the download site think the request is coming from a different ip (and potentially location) than it actually is. In practice, servers can often use HTTP headers to guess that a proxy is being used.
+EOD;
 //Insert Help pages
 foreach($help_pages as $page_name => $page_content) {
     $page_content = str_replace("&amp;", "&", $page_content);

@@ -919,7 +919,51 @@ function upgradeDatabaseVersion25(&$db)
             . "Help Page Created!", "Discuss the page in this thread!");
     }
 }
-
+/**
+ * Upgrades a Version 25 version of the Yioop! database to a Version 26 version
+ * This version upgrade includes updation fo the Help pages in the database to
+ * work with the changes to the way Hyperlinks are specified in wiki markup.
+ * The changes were implemented to point all articles with page names
+ * containing %20 to be able to work with '_' and vice versa.
+ * @param object $db data source to use to upgrade
+ */
+function upgradeDatabaseVersion26(&$db){
+    /** For reading HELP_GROUP_ID**/
+    require_once BASE_DIR . "/configs/config.php";
+    /** For GroupModel::setPageName method */
+    require_once BASE_DIR . "/models/group_model.php";
+    $db->execute("DELETE FROM VERSION WHERE ID < 25");
+    $db->execute("UPDATE VERSION SET ID=26 WHERE ID=25");
+    //Delete all existing pages in Help group
+    $params = array(HELP_GROUP_ID);
+    $sql = "DELETE FROM GROUP_PAGE WHERE GROUP_ID=?";
+    $db->execute($sql, $params);
+    $sql = "DELETE FROM GROUP_PAGE_HISTORY WHERE GROUP_ID=?";
+    $db->execute($sql, $params);
+    //Insert the Help Group pages with corrected titles
+    $creation_time = microTimestamp();
+    $sql = "INSERT INTO GROUPS VALUES(" . HELP_GROUP_ID . ",'Help','"
+        . $creation_time . "','" . ROOT_ID . "',
+        '" . PUBLIC_BROWSE_REQUEST_JOIN . "', '" . GROUP_READ_WIKI . "',
+        " . UP_DOWN_VOTING_GROUP . ", " . FOREVER . ")";
+    $db->execute($sql);
+    $now = time();
+    $db->execute("INSERT INTO USER_GROUP VALUES (" . ROOT_ID . ", " .
+        HELP_GROUP_ID . ", " . ACTIVE_STATUS . ", $now)");
+    $db->execute("INSERT INTO USER_GROUP VALUES (" . PUBLIC_USER_ID . ", " .
+        HELP_GROUP_ID . ", " . ACTIVE_STATUS . ", $now)");
+    //Insert into Groups
+    $help_pages = getWikiHelpPages();
+    foreach($help_pages as $page_name => $page_content) {
+        $page_content = str_replace("&amp;", "&", $page_content);
+        $page_content = @htmlentities($page_content, ENT_QUOTES, "UTF-8");
+        $group_model = new GroupModel(DB_NAME, false);
+        $group_model->db = $db;
+        $group_model->setPageName(ROOT_ID, HELP_GROUP_ID, $page_name,
+            $page_content, "en-US", "Creating Default Pages", "$page_name "
+            . "Help Page Created!", "Discuss the page in this thread!");
+    }
+}
 /**
  * Reads the Help articles from default db and returns the array of pages.
  */
