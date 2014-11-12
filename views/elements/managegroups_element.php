@@ -291,7 +291,9 @@ class ManagegroupsElement extends Element
                 tl('managegroups_element_addgroup_form')."</a></div>");
             e("<h2>".tl('managegroups_element_group_info'). "</h2>");
         } else if($creategroup) {
-            e("<h2>".tl('managegroups_element_create_group'). "</h2>");
+            e("<h2>".tl('managegroups_element_create_group'));
+            e("&nbsp;" . $this->view->helper("helpbutton")->render(
+            "Create Group", $data[CSRF_TOKEN]). "</h2>");
         } else {
             e("<h2>".tl('managegroups_element_add_group'). "</h2>");
         }
@@ -612,6 +614,8 @@ class ManagegroupsElement extends Element
         $view = $this->view;
         if(isset($data['browse'])) {
             $title = tl('managegroups_element_discover_groups');
+            $title .= "&nbsp;" . $view->helper("helpbutton")->render(
+            "Discover Groups", $data[CSRF_TOKEN]);
         } else {
             $title = tl('managegroups_element_search_group');
         }

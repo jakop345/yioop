@@ -67,6 +67,8 @@ class SecurityElement extends Element
                 <legend><label
                 for="authentication-mode"><b><?php
                 e(tl('security_element_authentication_type'));
+                e("&nbsp;" . $this->view->helper("helpbutton")->render(
+                            "Authentication Type", $data[CSRF_TOKEN]))
                 ?>
                 </label></b></legend>
                     <?php $this->view->helper("options")->render(
@@ -86,6 +88,8 @@ class SecurityElement extends Element
                 <legend><label
                 for="captcha-mode"><b><?php
                 e(tl('security_element_captcha_type'));
+                e("&nbsp;" . $this->view->helper("helpbutton")->render(
+                            "Captcha Type", $data[CSRF_TOKEN]))
                 ?></b>
                 </label></legend>
                 <?php
