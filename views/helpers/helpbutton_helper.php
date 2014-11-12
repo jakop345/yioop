@@ -55,6 +55,7 @@ class HelpbuttonHelper extends Helper
         $this->isHelpInitialized = false;
         $this->localizationdata = NULL;
         $this->backParams = NULL;
+        $this->script = NULL;
         parent::__construct();
     }
     /**
@@ -68,27 +69,8 @@ class HelpbuttonHelper extends Helper
      */
     public function render($help_point_id, $csrf_token_value)
     {
-        if ($this->isHelpInitialized == false) {
-            //Set only once.
-            $this->isHelpInitialized = true;
-            $this->localizationdata = "{" .
-                    'wiki_view_edit :"' . tl('wiki_view_edit') . '",' .
-                    'wiki_view_read :"' . tl('wiki_view_read') . '"' .
-                    "}";
-            $this->backParams = "{";
-            $back_params_array = array_diff_key($_REQUEST, array_flip(
-                array("a", "c", "u", "p", CSRF_TOKEN, "open_help_page")
-            ));
-            array_walk($back_params_array, array($this, 'clean'));
-            $back_params_only_keys = array_keys($back_params_array);
-            $last_key = end($back_params_only_keys);
-            foreach ($back_params_array as $key => $value) {
-                $this->backParams .= $key . ' : "' . $value . '"';
-                if ($key != $last_key) {
-                    $this->backParams .= ',';
-                }
-            }
-            $this->backParams .= "}";
+        if($this->isHelpInitialized == false) {
+            $this->setupHelpParams();
         }
         $is_mobile = MOBILE ? "true" : "false";
         $wiki_group_id = HELP_GROUP_ID;
@@ -100,14 +82,14 @@ class HelpbuttonHelper extends Helper
                     data-tl=\'' . $this->localizationdata . '\'
                     data-back-params=\'' . $this->backParams . '\'
                     onclick="javascript:displayHelpForId(this,'
-                . $is_mobile . ',\''
-                . $_REQUEST['c'] . '\',\''
-                . $_REQUEST['a'] . '\',\''
-                . CSRF_TOKEN . '\',\''
-                . $csrf_token_value . "','$wiki_group_id','$api_controller',"
-                . "'$api_wiki_action','$api_wiki_mode" . '\')" '
-                . 'data-pagename="' . $help_point_id . '"> '
-                . tl('wiki_question_mark') . '</button>';
+        . $is_mobile . ',\''
+        . $this->clean($_REQUEST['c']) . '\',\''
+        . $this->clean($_REQUEST['a']) . '\',\''
+        . CSRF_TOKEN . '\',\''
+        . $csrf_token_value . "','$wiki_group_id','$api_controller',"
+        . "'$api_wiki_action','$api_wiki_mode" . '\')" '
+        . 'data-pagename="' . $help_point_id . '"> '
+        . tl('wiki_question_mark') . '</button>';
     }
     /**
      * Used to clean strings that might be tainted as originate from the user
@@ -118,14 +100,54 @@ class HelpbuttonHelper extends Helper
      *     or -1 you would still get a Notice.
      * @return string the clean input matching the type provided
      */
-    private function clean($value, $default = NULL) {
-        if (isset($value)) {
+    private function clean($value, $default = NULL)
+    {
+        $clean_value = NULL;
+        if(isset($value)) {
             $value2 = str_replace("&amp;", "&", $value);
             $clean_value = @htmlentities($value2, ENT_QUOTES, "UTF-8");
         } else {
             $clean_value = $default;
         }
+        return $clean_value;
     }
-
+    /**
+     * This Helper method is used to setup params needed for Context-Sensitive
+     * help to work. This gets executed if there is atleast one help button
+     * rendered on the page. This is executed only once with the help of
+     * "isHelpInitialized" variable.
+     *
+     */
+    private function setupHelpParams()
+    {
+        $this->isHelpInitialized = true;
+        $this->localizationdata = "{" .
+            'wiki_view_edit :"' . tl('wiki_view_edit') . '",' .
+            'wiki_view_read :"' . tl('wiki_view_read') . '"' .
+            "}";
+        $this->backParams = "{";
+        $back_params_array = array_diff_key($_REQUEST, array_flip(
+            array("a", "c", "u", "p", CSRF_TOKEN, "open_help_page")
+        ));
+        array_walk($back_params_array, array($this, 'clean'));
+        $back_params_only_keys = array_keys($back_params_array);
+        $last_key = end($back_params_only_keys);
+        foreach($back_params_array as $key => $value) {
+            $this->backParams .= $key . ' : "' . $value . '"';
+            if($key != $last_key) {
+                $this->backParams .= ',';
+            }
+        }
+        $this->backParams .= "}";
+        if(isset($_REQUEST['open_help_page'])) {
+            $help_page_to_open = $this->clean($_REQUEST['open_help_page']);
+            $this->script = 'var matches = '
+                . 'document.querySelectorAll(\'[data-pagename="'
+                . $help_page_to_open
+                . '"]\');' . "\n\t\t"
+                . "matches[0].click();"
+                . "\n";
+        }
+    }
 }
 ?>
