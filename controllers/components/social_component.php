@@ -166,13 +166,11 @@ class SocialComponent extends Component implements CrawlConstants
                         $group_model->updateStatusUserGroup($user_id,
                             $group_id, ACTIVE_STATUS);
                         $this->getGroupUsersData($data, $group_id);
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('accountaccess_component_user_activated').
-                            "</h1>')";
+                        $parent->redirectWithMessage(
+                            tl('accountaccess_component_user_activated'));
                     } else {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('accountaccess_component_no_user_activated').
-                            "</h1>')";
+                        $parent->redirectWithMessage(
+                            tl('accountaccess_component_no_user_activated'));
                     }
                 break;
                 case "addgroup":
@@ -2075,8 +2073,13 @@ EOD;
                 $parent->clean($_REQUEST['mix']['TIMESTAMP'], "int"),
                 0, TIMESTAMP_LEN);
         }
+        if(!$crawl_model->isCrawlMix($timestamp)) {
+            $_REQUEST['a'] = "mixCrawls";
+            $parent->redirectWithMessage(
+                tl('social_component_mix_invalid_timestamp'));
+        }
         if(!$crawl_model->isMixOwner($timestamp, $user_id)) {
-            $data["ELEMENT"] = "mixcrawls";
+            $_REQUEST['a'] = "mixCrawls";
             $parent->redirectWithMessage(
                 tl('social_component_mix_not_owner'));
         }

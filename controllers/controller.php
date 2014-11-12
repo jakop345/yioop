@@ -267,19 +267,22 @@ abstract class Controller
      *  to display a message when get there.
      *
      *  @param string $message message to write
-     *  @param string $location where to redirect to
+     *  @param string $copy_field $_REQUEST fields to copy for redirect
      */
-    function redirectWithMessage($message, $location=false)
+    function redirectWithMessage($message, $copy_fields=false)
     {
-        if(!$location) {
-            $location = "?c={$_REQUEST['c']}&a={$_REQUEST['a']}&".
-                CSRF_TOKEN."={$_REQUEST[CSRF_TOKEN]}";
-            $fields = array("just_thread", "just_group_id", "just_user_id",
-                "group_id", "limit", "num");
-            foreach($fields as $field) {
-                if(isset($_REQUEST[$field])) {
-                    $location .= "&$field=".$_REQUEST[$field];
-                }
+        if(!$copy_fields) {
+            $copy_fields = array("just_thread", "just_group_id", "just_user_id",
+                "group_id", "user_id", "role_id", "limit", "num");
+        }
+        $c = $this->clean($_REQUEST['c'], "string");
+        $a = $this->clean($_REQUEST['a'], "string");
+        $token = $this->clean($_REQUEST[CSRF_TOKEN], "string");
+        $location = "?c=$c&a=$a&". CSRF_TOKEN . "=$token";
+        foreach($copy_fields as $field) {
+            if(isset($_REQUEST[$field])) {
+                $location .= "&$field=".$this->clean($_REQUEST[$field],
+                    "string");
             }
         }
         header("Location: $location");
