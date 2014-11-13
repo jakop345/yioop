@@ -157,7 +157,7 @@ class SocialComponent extends Component implements CrawlConstants
             switch($_REQUEST['arg'])
             {
                 case "activateuser":
-                    $data['FORM_TYPE'] = "editgroup";
+                    $_REQUEST['arg'] = "editgroup";
                     $user_id = (isset($_REQUEST['user_id'])) ?
                         $parent->clean($_REQUEST['user_id'], 'int'): 0;
                     if($user_id && $group_id && $is_owner &&
@@ -167,10 +167,14 @@ class SocialComponent extends Component implements CrawlConstants
                             $group_id, ACTIVE_STATUS);
                         $this->getGroupUsersData($data, $group_id);
                         $parent->redirectWithMessage(
-                            tl('accountaccess_component_user_activated'));
+                            tl('accountaccess_component_user_activated'),
+                            array("arg", "visible_users", 'start_row',
+                            'end_row', 'num_show', 'user_filter'));
                     } else {
                         $parent->redirectWithMessage(
-                            tl('accountaccess_component_no_user_activated'));
+                            tl('accountaccess_component_no_user_activated'),
+                            array("arg", "visible_users", 'start_row',
+                            'end_row', 'num_show', 'user_filter'));
                     }
                 break;
                 case "addgroup":
@@ -179,13 +183,17 @@ class SocialComponent extends Component implements CrawlConstants
                             $group_model->getRegisterType($add_id);
                         if($add_id > 0 && $register && $register != NO_JOIN) {
                             $this->addGroup($data, $add_id, $register);
+                            if($_REQUEST['browse'] == 'true') {
+                                $_REQUEST['arg'] = 'search';
+                            } else {
+                                $_REQUEST['arg'] = 'none';
+                            }
+                            $parent->redirectWithMessage(
+                                tl('social_component_joined'),
+                                array('browse', 'arg'));
                         } else {
-                            $data['CURRENT_GROUP'] = array("name" => "",
-                                "id" => "", "owner" =>"", "register" => -1,
-                                "member_access" => -1);
-                            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                                tl('social_component_groupname_unavailable').
-                                "</h1>')";
+                            $parent->redirectWithMessage(
+                                tl('social_component_groupname_unavailable'));
                         }
                     } else if ($name != ""){
                         $data['FORM_TYPE'] = "creategroup";
@@ -195,7 +203,7 @@ class SocialComponent extends Component implements CrawlConstants
                     }
                 break;
                 case "banuser":
-                    $data['FORM_TYPE'] = "editgroup";
+                    $_REQUEST['arg'] = "editgroup";
                     $user_id = (isset($_REQUEST['user_id'])) ?
                         $parent->clean($_REQUEST['user_id'], 'int'): 0;
                     if($user_id && $is_owner &&
@@ -204,13 +212,15 @@ class SocialComponent extends Component implements CrawlConstants
                         $group_model->updateStatusUserGroup($user_id,
                             $group_id, BANNED_STATUS);
                         $this->getGroupUsersData($data, $group_id);
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('social_component_user_banned').
-                            "</h1>')";
+                        $parent->redirectWithMessage(
+                            tl('social_component_user_banned'),
+                            array("arg", "visible_users",'start_row',
+                            'end_row', 'num_show', 'user_filter'));
                     } else {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('social_component_no_user_banned').
-                            "</h1>')";
+                        $parent->redirectWithMessage(
+                            tl('social_component_no_user_banned'),
+                            array("arg", "visible_users", 'start_row',
+                            'end_row', 'num_show', 'user_filter'));
                     }
                 break;
                 case "changeowner":
@@ -226,36 +236,31 @@ class SocialComponent extends Component implements CrawlConstants
                                 $new_owner['USER_ID'], $group_id)) {
                                 $group_model->changeOwnerGroup(
                                     $new_owner['USER_ID'], $group_id);
-                                $data['SCRIPT'] .=
-                                    "doMessage('<h1 class=\"red\" >".
-                                    tl('social_component_owner_changed').
-                                    "</h1>')";
-                                $data['FORM_TYPE'] = "changegroup";
-                                $data['CURRENT_GROUP'] = array("name" => "",
-                                    "id" => "", "owner" =>"", "register" => -1,
-                                    "member_access" => -1);
+                                $_REQUEST['arg'] = "none";
+                                unset($_REQUEST['group_id']);
+                                $parent->redirectWithMessage(
+                                    tl('social_component_owner_changed'),
+                                    array("arg", 'start_row', 'end_row',
+                                    'num_show', 'browse'));
                             } else {
-                                $data['SCRIPT'] .=
-                                    "doMessage('<h1 class=\"red\" >".
-                                    tl('social_component_not_in_group').
-                                    "</h1>')";
+                                $parent->redirectWithMessage(
+                                    tl('social_component_not_in_group'),
+                                    array("arg", 'start_row', 'end_row',
+                                    'num_show'));
                             }
                         } else {
-                            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                                tl('social_component_not_a_user').
-                                "</h1>')";
+                            $parent->redirectWithMessage(
+                                tl('social_component_not_a_user'),
+                                array("arg", 'start_row', 'end_row',
+                                'num_show'));
                         }
-                    } else {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('social_component_bad_request').
-                            "</h1>')";
                     }
                 break;
                 case "creategroup":
+                    $_REQUEST['arg'] = "addgroup";
                     if($group_model->getGroupId($name) > 0) {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('social_component_groupname_exists').
-                            "</h1>')";
+                        $parent->redirectWithMessage(
+                            tl('social_component_groupname_exists'));
                     } else {
                         $group_fields = array(
                             "member_access" => array("ACCESS_CODES",
@@ -281,47 +286,48 @@ class SocialComponent extends Component implements CrawlConstants
                             $_REQUEST['post_lifetime']);
                         //one exception to setting $group_id
                         $group_id = $group_model->getGroupId($name);
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('social_component_groupname_added').
-                            "</h1>')";
+                        $parent->redirectWithMessage(
+                            tl('social_component_groupname_added'),
+                            array("arg", 'start_row', 'end_row', 'num_show'));
                     }
-                    $data['FORM_TYPE'] = "addgroup";
-                    $data['CURRENT_GROUP'] = $default_group;
                 break;
                 case "deletegroup":
+                    $_REQUEST['arg'] = "none";
                     $data['CURRENT_GROUP'] = $default_group;
                     if( $group_id <= 0) {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                          tl('social_component_groupname_doesnt_exists').
-                            "</h1>')";
+                        $parent->redirectWithMessage(
+                          tl('social_component_groupname_doesnt_exists'),
+                          array("arg"));
                     } else if(($group &&
                         $group['OWNER_ID'] == $_SESSION['USER_ID']) ||
                         $_SESSION['USER_ID'] == ROOT_ID) {
                         $group_model->deleteGroup($group_id);
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('social_component_group_deleted').
-                            "</h1>')";
+                        $parent->redirectWithMessage(
+                            tl('social_component_group_deleted'),
+                            array("arg"));
                     } else {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('social_component_no_delete_group').
-                            "</h1>')";
+                        $parent->redirectWithMessage(
+                            tl('social_component_no_delete_group'),
+                            array("arg", 'start_row', 'end_row', 'num_show'));
                     }
                 break;
                 case "deleteuser":
-                    $data['FORM_TYPE'] = "editgroup";
+                    $_REQUEST['arg'] = "editgroup";
                     $user_id = (isset($_REQUEST['user_id'])) ?
                         $parent->clean($_REQUEST['user_id'], 'int'): 0;
                     if($is_owner && $group_model->deletableUser(
                         $user_id, $group_id)) {
                         $group_model->deleteUserGroup(
                             $user_id, $group_id);
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('social_component_user_deleted').
-                            "</h1>')";
+                        $parent->redirectWithMessage(
+                            tl('social_component_user_deleted'),
+                            array("arg", "visible_users", 'start_row',
+                            'end_row', 'num_show', 'user_filter'));
                     } else {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('social_component_no_delete_user_group').
-                            "</h1>')";
+                        $parent->redirectWithMessage(
+                            tl('social_component_no_delete_user_group'),
+                            array("arg", "visible_users", 'start_row',
+                            'end_row', 'num_show', 'user_filter'));
                     }
                     $this->getGroupUsersData($data, $group_id);
                 break;
@@ -366,20 +372,22 @@ class SocialComponent extends Component implements CrawlConstants
                                 }
                             }
                         }
+                        $_REQUEST['arg'] = "editgroup";
                         if($users_invited) {
-                            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                                tl('social_component_users_invited').
-                                "</h1>')";
+                            $parent->redirectWithMessage(
+                                tl('social_component_users_invited'),
+                                array("arg", "visible_users", 'start_row',
+                                'end_row', 'num_show', 'user_filter'));
                         } else {
-                            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                                tl('social_component_no_users_invited').
-                                "</h1>')";
+                            $parent->redirectWithMessage(
+                                tl('social_component_no_users_invited'),
+                                array("arg", "visible_users", 'start_row',
+                                'end_row', 'num_show', 'user_filter'));
                         }
-                        $data['FORM_TYPE'] = "editgroup";
-                        $this->getGroupUsersData($data, $group_id);
                     }
                 break;
                 case "joingroup":
+                    $_REQUEST['arg'] = "search";
                     $user_id = (isset($_REQUEST['user_id'])) ?
                         $parent->clean($_REQUEST['user_id'], 'int'): 0;
                     if($user_id && $group_id &&
@@ -387,13 +395,14 @@ class SocialComponent extends Component implements CrawlConstants
                             $group_id, INVITED_STATUS)) {
                         $group_model->updateStatusUserGroup($user_id,
                             $group_id, ACTIVE_STATUS);
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('social_component_joined').
-                            "</h1>')";
+                        $parent->redirectWithMessage(
+                            tl('social_component_joined'),
+                            array('arg'));
                     } else {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('social_component_no_unsubscribe').
-                            "</h1>')";
+                        $parent->redirectWithMessage(
+                            tl('social_component_no_unsubscribe'),
+                            array('arg', 'browse', 'start_row', 'end_row',
+                            'num_show'));
                     }
                 break;
                 case "memberaccess":
@@ -423,7 +432,7 @@ class SocialComponent extends Component implements CrawlConstants
                     $data['CURRENT_GROUP'] = $default_group;
                 break;
                 case "reinstateuser":
-                    $data['FORM_TYPE'] = "editgroup";
+                    $_REQUEST['arg'] = "editgroup";
                     $user_id = (isset($_REQUEST['user_id'])) ?
                         $parent->clean($_REQUEST['user_id'], 'int'): 0;
                     if($user_id && $group_id && $is_owner &&
@@ -432,13 +441,15 @@ class SocialComponent extends Component implements CrawlConstants
                         $group_model->updateStatusUserGroup($user_id,
                             $group_id, ACTIVE_STATUS);
                         $this->getGroupUsersData($data, $group_id);
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('social_component_user_reinstated').
-                            "</h1>')";
+                        $parent->redirectWithMessage(
+                            tl('social_component_user_reinstated'),
+                            array("arg", "visible_users", 'start_row',
+                            'end_row', 'num_show', 'user_filter'));
                     } else {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('social_component_no_user_reinstated').
-                            "</h1>')";
+                        $parent->redirectWithMessage(
+                            tl('social_component_no_user_reinstated'),
+                            array("arg", "visible_users", 'start_row',
+                            'end_row', 'num_show', 'user_filter'));
                     }
                 break;
                 case "search":
@@ -455,6 +466,7 @@ class SocialComponent extends Component implements CrawlConstants
                         array('register', 'access', 'voting', 'lifetime'));
                 break;
                 case "unsubscribe":
+                    $_REQUEST['arg'] = "none";
                     $user_id = (isset($_REQUEST['user_id'])) ?
                         $parent->clean($_REQUEST['user_id'], 'int'): 0;
                     if($user_id && $group_id &&
@@ -462,13 +474,15 @@ class SocialComponent extends Component implements CrawlConstants
                         $group_id)) {
                         $group_model->deleteUserGroup($user_id,
                             $group_id);
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('social_component_unsubscribe').
-                            "</h1>')";
+                        $parent->redirectWithMessage(
+                            tl('social_component_unsubscribe'),
+                            array('arg','start_row', 'end_row',
+                            'num_show'));
                     } else {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('social_component_no_unsubscribe').
-                            "</h1>')";
+                        $parent->redirectWithMessage(
+                            tl('social_component_no_unsubscribe'),
+                            array('arg',  'start_row', 'end_row',
+                            'num_show'));
                     }
                 break;
             }
@@ -717,7 +731,7 @@ class SocialComponent extends Component implements CrawlConstants
         }
         $possible_arguments = array("addcomment", "deletepost", "addgroup",
             "newthread", "updatepost", "status", "upvote", "downvote");
-        if (isset($_REQUEST['v'])) {
+        if(isset($_REQUEST['v'])) {
             $view = $parent->clean($_REQUEST['v'], "string");
             if ($view == 'grouped') {
                 $data['MODE'] = 'grouped';
@@ -1787,6 +1801,7 @@ EOD;
     function dynamicSubstitutions($group_id, $data, $pre_page)
     {
         $csrf_token = "";
+        $no_right_amp_csrf_token = "";
         if(isset($data['ADMIN']) && $data['ADMIN']) {
             $no_right_amp_csrf_token = 
                 "&amp;".CSRF_TOKEN."=".$this->parent->generateCSRFToken(

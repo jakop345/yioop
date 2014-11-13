@@ -270,9 +270,12 @@ abstract class Controller
      */
     function redirectWithMessage($message, $copy_fields=false)
     {
-        if(!$copy_fields) {
-            $copy_fields = array("just_thread", "just_group_id", "just_user_id",
-                "group_id", "user_id", "role_id", "limit", "num");
+        $default_fields = array("just_thread", "just_group_id", "just_user_id",
+            "group_id", "user_id", "role_id", "limit", "num");
+        if($copy_fields) {
+            $copy_fields = array_merge($default_fields, $copy_fields);
+        } else {
+            $copy_fields = $default_fields;
         }
         $c = $this->clean($_REQUEST['c'], "string");
         $a = $this->clean($_REQUEST['a'], "string");
