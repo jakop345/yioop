@@ -288,7 +288,11 @@ abstract class Controller
             }
         }
         header("Location: $location");
-        $_SESSION['DISPLAY_MESSAGE'] = $message;
+        if($message) {
+            $_SESSION['DISPLAY_MESSAGE'] = $message;
+        } else {
+            unset($_SESSION['DISPLAY_MESSAGE']);
+        }
         exit();
     }
     /**

@@ -334,6 +334,16 @@ class WikiElement extends Element implements CrawlConstants
                 $data['page_types'], $data['current_page_type']);
             ?>
             </div>
+            <div id='alias-type'>
+            <div class="top-margin">
+            <label for="page-alias"><b><?php
+            e(tl('wiki_element_page_alias'));
+            ?></b></label><input type="text" id='page-alias'
+                name="page_alias" value="<?php e($data['page_alias']);?>"
+                maxlength="<?php e(SHORT_TITLE_LEN); ?>" class="wide-field"/>
+            </div>
+            </div>
+            <div id='non-alias-type'>
             <div class="top-margin">
             <label for="page-border"><b><?php
             e(tl('wiki_element_page_border'));
@@ -395,6 +405,7 @@ class WikiElement extends Element implements CrawlConstants
             ?></b></label><input type="text" id='page-footer'
                 name="page_footer" value="<?php e($data['page_footer']);?>"
                 maxlength="<?php e(SHORT_TITLE_LEN); ?>" class="wide-field"/>
+            </div>
             </div>
             </div>
             <div id='page-container'><textarea id="wiki-page"
@@ -662,11 +673,20 @@ class WikiElement extends Element implements CrawlConstants
         <?php
         if($data['PAGES'] != array()) {
             foreach($data['PAGES'] as $page) {
+                $ellipsis = (mb_strlen($page["DESCRIPTION"]) >
+                    MIN_SNIPPET_LENGTH) ? "..." : "";
+                if($page['TYPE'] == 'page_alias' && isset($page['ALIAS'])) {
+                    $page["DESCRIPTION"] = tl('wiki_element_redirect_to').
+                        "<a href='{$page['ALIAS']}'>{$page['ALIAS']}</a>";
+                } else {
+                    $page["DESCRIPTION"] = strip_tags($page["DESCRIPTION"]);
+                }
                 ?>
                 <div class='group-result'>
                 <a href="<?php e($base_query.'&amp;page_name='.
-                    $page['TITLE']);?>" ><?php e($page["TITLE"]); ?></a></br />
-                <?php e(strip_tags($page["DESCRIPTION"])."..."); ?>
+                    $page['TITLE']);?>&noredirect=true" ><?php 
+                    e($page["TITLE"]); ?></a></br />
+                <?php e($page["DESCRIPTION"].$ellipsis); ?>
                 </div>
                 <div>&nbsp;</div>
                 <?php

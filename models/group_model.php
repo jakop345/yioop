@@ -1397,9 +1397,37 @@ class GroupModel extends Model
             $result = $db->execute($sql, $params);
             $i = 0;
             if($result) {
+                $seperator_len = strlen("END_HEAD_VARS");
                 while($pages[$i] = $db->fetchArray($result)) {
-                    $pages[$i]['DESCRIPTION'] = substr(
-                        $pages[$i]['DESCRIPTION'], 0, 100);
+                    $head_pos = strpos($pages[$i]['DESCRIPTION'],
+                        "END_HEAD_VARS");
+                    if($head_pos) {
+                        $head = substr($pages[$i]['DESCRIPTION'], 0, $head_pos);
+                        if(preg_match('/page_type\=(.*)/', $head, $matches)) {
+                            $pages[$i]['TYPE'] = $matches[1];
+                            if(preg_match('/page_alias\=(.+)/', $head,
+                                $matches)) {
+                                $pages[$i]['ALIAS'] = $matches[1];
+                            } else if($pages[$i]['TYPE'] == 'page_alias') {
+                                $pages[$i]['TYPE'] = "standard";
+                            }
+                        } else {
+                            $pages[$i]['TYPE'] = "standard";
+                        }
+                        if($pages[$i]['TYPE'] == 'page_alias') {
+                            $pages[$i]['DESCRIPTION'] =
+                                $pages[$i]['ALIAS'];
+                        } else {
+                            $pages[$i]['DESCRIPTION'] = mb_substr(
+                                $pages[$i]['DESCRIPTION'], $head, $head +
+                                $seperator_len + MIN_SNIPPET_LENGTH);
+                        }
+                    } else {
+                        $pages[$i]['DESCRIPTION'] = mb_substr(
+                            $pages[$i]['DESCRIPTION'], 0, MIN_SNIPPET_LENGTH);
+                        $pages[$i]['TYPE'] = "standard";
+                    }
+
                     $i++;
                 }
                 unset($pages[$i]); //last one will be null

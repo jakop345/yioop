@@ -1302,6 +1302,7 @@ EOD;
         }
         $page_defaults = array(
             'page_type' => 'standard',
+            'page_alias' => '',
             'page_border' => 'solid',
             'toc' => true,
             'title' => '',
@@ -1313,6 +1314,7 @@ EOD;
         );
         $data['page_types'] = array(
             "standard" => tl('social_component_standard_page'),
+            "page_alias" => tl('social_component_page_alias'),
             "media_list" => tl('social_component_media_list'),
             "presentation" => tl('social_component_presentation')
         );
@@ -1419,14 +1421,16 @@ EOD;
                             $read_address, $additional_substitutions);
                         $parent->redirectWithMessage(
                             tl("group_controller_page_saved"),
-                            array('page_name'));
+                            array('arg', 'page_name', 'settings',
+                                    'caret', 'scroll_top'));
                     } else if(!$missing_fields &&
                         isset($_FILES['page_resource']['name']) &&
                         $_FILES['page_resource']['name'] !="") {
                         if(!isset($page_info['ID'])) {
                             $parent->redirectWithMessage(
                                 tl('social_component_resource_save_first'),
-                                array('arg', 'page_name'));
+                                array('arg', 'page_name', 'settings',
+                                    'caret', 'scroll_top'));
                         } else {
                             $upload_parts = array('name', 'type', 'tmp_name');
                             $file = array();
@@ -1448,11 +1452,13 @@ EOD;
                                 $group_id, $page_info['ID']);
                             $parent->redirectWithMessage(
                                 tl('social_component_resource_uploaded'),
-                                array('arg', 'page_name'));
+                                array('arg', 'page_name', 'settings',
+                                    'caret', 'scroll_top'));
                         } else {
                             $parent->redirectWithMessage(
                                 tl('social_component_upload_error'),
-                                array('arg', 'page_name'));
+                                array('arg', 'page_name', 'settings',
+                                    'caret', 'scroll_top'));
                         }
                     } else if(!$missing_fields && isset($_REQUEST['delete'])) {
                         $resource_name = $parent->clean($_REQUEST['delete'],
@@ -1462,11 +1468,13 @@ EOD;
                             $group_id, $page_info['ID'])) {
                             $parent->redirectWithMessage(
                                 tl('social_component_resource_deleted'),
-                                array('arg', 'page_name'));
+                                array('arg', 'page_name', 'settings',
+                                    'caret', 'scroll_top'));
                         } else {
                             $parent->redirectWithMessage(
                                 tl('social_component_resource_not_deleted'),
-                                array('arg', 'page_name'));
+                                array('arg', 'page_name', 'settings',
+                                    'caret', 'scroll_top'));
                         }
                     }
                     if(isset($page_info['ID'])) {
@@ -1676,6 +1684,13 @@ EOD;
             $data["PAGE"] = $this->dynamicSubstitutions($group_id, $data,
                 $view->page_objects[$data["PAGE_ID"]]);
             $data["HEAD"] = $view->head_objects[$data["PAGE_ID"]];
+            if(isset($data["HEAD"]['page_type']) &&
+                $data["HEAD"]['page_type'] == 'page_alias' &&
+                $data["HEAD"]['page_alias'] != '' &&
+                $data['MODE'] == "read" && !isset($_REQUEST['noredirect']) ) {
+                $_REQUEST['page_name'] = $data["HEAD"]['page_alias'];
+                $parent->redirectWithMessage("", array('page_name'));
+            }
             if($data['MODE'] == "read" && isset($data["HEAD"]['page_header']) &&
                 $data["HEAD"]['page_type'] != 'presentation') {
                 $page_header = $group_model->getPageInfoByName($group_id,
