@@ -125,6 +125,13 @@ class ManagerolesElement extends Element
     {
         $base_url = "?c=admin&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
             "&amp;a=manageRoles";
+        $paging = "";
+        if(isset($data['START_ROW'])) {
+            $paging = "&amp;start_row=".$data['START_ROW'].
+                "&amp;end_row=".$data['END_ROW'].
+                "&amp;num_show=".$data['NUM_SHOW'];
+            $base_url .= $paging;
+        }
         $editrole = ($data['FORM_TYPE'] == "editrole") ? true: false;
         if($editrole) {
             e("<div class='float-opposite'><a href='$base_url'>".
@@ -171,7 +178,7 @@ class ManagerolesElement extends Element
                             "&amp;arg=deleteactivity&amp;selectactivity=".
                             $activity_array['ACTIVITY_ID']);
                         e("&amp;name=".$data['CURRENT_ROLE']['name'].
-                            "&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].
+                            "&amp;".CSRF_TOKEN."=".$data[CSRF_TOKEN].$paging.
                             "'>".tl('manageroles_element_delete')."</a></td>");
                     }
                     e("</tr>");

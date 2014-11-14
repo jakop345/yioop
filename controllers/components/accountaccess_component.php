@@ -234,7 +234,7 @@ class AccountaccessComponent extends Component
      */
     function manageUsers()
     {
-        $parent = $this->parent;;
+        $parent = $this->parent;
         if(AUTHENTICATION_MODE == ZKP_AUTHENTICATION) {
             $_SESSION['SALT_VALUE'] = rand(0, 1);
             $_SESSION['AUTH_COUNT'] = 1;
@@ -773,25 +773,28 @@ class AccountaccessComponent extends Component
             switch($_REQUEST['arg'])
             {
                 case "addactivity":
-                    $data['FORM_TYPE'] = "editrole";
+                    $_REQUEST['arg'] = "editrole";
                     if(($role_id = $role_model->getRoleId($name)) <= 0) {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        $parent->redirectWithMessage(
                             tl('accountaccess_component_rolename_doesnt_exists'
-                            ). "</h1>')";
+                            ), array("arg", "start_row", "end_row", "num_show",
+                            "name"));
                     } else if(!in_array($select_activity, $activity_ids)) {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        $parent->redirectWithMessage(
                             tl(
                             'accountaccess_component_activityname_doesnt_exists'
-                            ). "</h1>')";
+                            ), array("arg", "start_row", "end_row", "num_show",
+                            "name"));
                     } else {
                         $role_model->addActivityRole(
                             $role_id, $select_activity);
                         unset($data['AVAILABLE_ACTIVITIES'][$select_activity]);
                         $data['ROLE_ACTIVITIES'] =
                             $role_model->getRoleActivities($role_id);
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('accountaccess_component_activity_added').
-                            "</h1>')";
+                        $parent->redirectWithMessage(
+                            tl('accountaccess_component_activity_added'),
+                            array("arg", "start_row", "end_row", "num_show",
+                            "name"));
                     }
                 break;
                 case "addrole":
@@ -814,16 +817,18 @@ class AccountaccessComponent extends Component
                    $data['CURRENT_ROLE']['name'] = "";
                 break;
                 case "deleteactivity":
-                   $data['FORM_TYPE'] = "editrole";
+                   $_REQUEST['arg'] = "editrole";
                    if(($role_id = $role_model->getRoleId($name)) <= 0) {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        $parent->redirectWithMessage(
                             tl('accountaccess_component_rolename_doesnt_exists'
-                            ). "</h1>')";
+                            ), array("arg", "start_row", "end_row", "num_show",
+                            "name"));
                     } else if(!in_array($select_activity, $activity_ids)) {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        $parent->redirectWithMessage(
                             tl(
                             'accountaccess_component_activityname_doesnt_exists'
-                            ). "</h1>')";
+                            ), array("arg", "start_row", "end_row", "num_show",
+                            "name"));
                     } else {
                         $role_model->deleteActivityRole(
                             $role_id, $select_activity);
@@ -832,21 +837,23 @@ class AccountaccessComponent extends Component
                         $data['AVAILABLE_ACTIVITIES'][$select_activity] =
                             $activity_names[$select_activity];
                         $data['SELECT_ACTIVITY'] = -1;
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('accountaccess_component_activity_deleted').
-                            "</h1>')";
+                        $parent->redirectWithMessage(
+                            tl('accountaccess_component_activity_deleted'),
+                            array("arg", "start_row", "end_row", "num_show",
+                            "name"));
                     }
                 break;
                 case "deleterole":
                     if(($role_id = $role_model->getRoleId($name)) <= 0) {
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
+                        $parent->redirectWithMessage(
                             tl('accountaccess_component_rolename_doesnt_exists'
-                            ). "</h1>')";
+                            ),
+                            array("start_row", "end_row", "num_show"));
                     } else {
                         $role_model->deleteRole($role_id);
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('accountaccess_component_rolename_deleted').
-                            "</h1>')";
+                        $parent->redirectWithMessage(
+                            tl('accountaccess_component_rolename_deleted'),
+                            array("start_row", "end_row", "num_show"));
                     }
                     $data['CURRENT_ROLE']['name'] = "";
                 break;
@@ -876,9 +883,9 @@ class AccountaccessComponent extends Component
                     }
                     if($update) {
                         $role_model->updateRole($role);
-                        $data['SCRIPT'] = "doMessage('<h1 class=\"red\" >".
-                            tl('accountaccess_component_role_updated').
-                            "</h1>');";
+                        $parent->redirectWithMessage(
+                            tl('accountaccess_component_role_updated'),
+                            array("arg", "start_row", "end_row", "num_show"));
                     }
                 break;
                 case "search":

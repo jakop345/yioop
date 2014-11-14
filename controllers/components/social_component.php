@@ -1418,13 +1418,15 @@ EOD;
                             tl('group_controller_page_discuss_here'),
                             $read_address, $additional_substitutions);
                         $parent->redirectWithMessage(
-                            tl("group_controller_page_saved"));
+                            tl("group_controller_page_saved"),
+                            array('page_name'));
                     } else if(!$missing_fields &&
                         isset($_FILES['page_resource']['name']) &&
                         $_FILES['page_resource']['name'] !="") {
                         if(!isset($page_info['ID'])) {
                             $parent->redirectWithMessage(
-                                tl('social_component_resource_save_first'));
+                                tl('social_component_resource_save_first'),
+                                array('arg', 'page_name'));
                         } else {
                             $upload_parts = array('name', 'type', 'tmp_name');
                             $file = array();
@@ -1445,10 +1447,12 @@ EOD;
                                 $file['tmp_name'], $file['name'], $file['type'],
                                 $group_id, $page_info['ID']);
                             $parent->redirectWithMessage(
-                                tl('social_component_resource_uploaded'));
+                                tl('social_component_resource_uploaded'),
+                                array('arg', 'page_name'));
                         } else {
                             $parent->redirectWithMessage(
-                                tl('social_component_upload_error'));
+                                tl('social_component_upload_error'),
+                                array('arg', 'page_name'));
                         }
                     } else if(!$missing_fields && isset($_REQUEST['delete'])) {
                         $resource_name = $parent->clean($_REQUEST['delete'],
@@ -1457,10 +1461,12 @@ EOD;
                             $group_model->deleteResource($resource_name,
                             $group_id, $page_info['ID'])) {
                             $parent->redirectWithMessage(
-                                tl('social_component_resource_deleted'));
+                                tl('social_component_resource_deleted'),
+                                array('arg', 'page_name'));
                         } else {
                             $parent->redirectWithMessage(
-                                tl('social_component_resource_not_deleted'));
+                                tl('social_component_resource_not_deleted'),
+                                array('arg', 'page_name'));
                         }
                     }
                     if(isset($page_info['ID'])) {
@@ -1472,7 +1478,7 @@ EOD;
                     }
                 break;
                 case "history":
-                    if(!$data["CAN_EDIT"] || !$page_id) {
+                    if(!$data["CAN_EDIT"] || !isset($page_id) || !$page_id) {
                         continue;
                     }
                     $data["MODE"] = "history";
@@ -1495,8 +1501,8 @@ EOD;
                             $data["PAGE_ID"] = $page_id;
                             $data[CSRF_TOKEN] =
                                 $parent->generateCSRFToken($user_id);
-                            $history_link = "?c=group&amp;a=wiki&amp;".
-                                CSRF_TOKEN.'='.$data[CSRF_TOKEN].
+                            $history_link = "?c={$data['CONTROLLER']}&amp;".
+                                "a=wiki&amp;". CSRF_TOKEN.'='.$data[CSRF_TOKEN].
                                 '&amp;arg=history&amp;page_id='.
                                 $data['PAGE_ID'];
                             $data["PAGE"] =
@@ -1523,8 +1529,8 @@ EOD;
                         $data["PAGE_ID"] = $page_id;
                         $data[CSRF_TOKEN] =
                             $parent->generateCSRFToken($user_id);
-                        $history_link = "?c=group&amp;a=wiki&amp;".
-                            CSRF_TOKEN.'='.$data[CSRF_TOKEN].
+                        $history_link = "?c={$data['CONTROLLER']}".
+                            "&amp;a=wiki&amp;".CSRF_TOKEN.'='.$data[CSRF_TOKEN].
                             '&amp;arg=history&amp;page_id='.
                             $data['PAGE_ID'];
                         $out_diff = "<div>--- {$data["PAGE_NAME"]}\t".
@@ -1565,10 +1571,12 @@ EOD;
                                 date('c', $revert)), "", "", $read_address,
                                 $additional_substitutions);
                             $parent->redirectWithMessage(
-                                tl("group_controller_page_reverted"));
+                                tl("group_controller_page_reverted"),
+                                array('arg', 'page_name', 'page_id'));
                         } else {
                             $parent->redirectWithMessage(
-                                tl("group_controller_revert_error"));
+                                tl("group_controller_revert_error"),
+                                array('arg', 'page_name', 'page_id'));
                         }
                     }
                     if($default_history) {

@@ -704,7 +704,8 @@ class WikiElement extends Element implements CrawlConstants
         if(count($data['HISTORY']) > 1) { ?>
             <div>
             <form id="differenceForm" method="get">
-            <input type="hidden" name="c" value="group" />
+            <input type="hidden" name="c" value="<?php e($data['CONTROLLER']);
+             ?>" />
             <input type="hidden" name="<?php e(CSRF_TOKEN); ?>" value="<?php
                 e($data[CSRF_TOKEN]); ?>" />
             <input type="hidden" name="a" value="wiki" />
