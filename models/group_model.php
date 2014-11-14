@@ -1419,8 +1419,8 @@ class GroupModel extends Model
                                 $pages[$i]['ALIAS'];
                         } else {
                             $pages[$i]['DESCRIPTION'] = mb_substr(
-                                $pages[$i]['DESCRIPTION'], $head, $head +
-                                $seperator_len + MIN_SNIPPET_LENGTH);
+                                $pages[$i]['DESCRIPTION'], $head_pos +
+                                $seperator_len, MIN_SNIPPET_LENGTH);
                         }
                     } else {
                         $pages[$i]['DESCRIPTION'] = mb_substr(

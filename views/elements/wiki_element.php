@@ -677,7 +677,8 @@ class WikiElement extends Element implements CrawlConstants
                     MIN_SNIPPET_LENGTH) ? "..." : "";
                 if($page['TYPE'] == 'page_alias' && isset($page['ALIAS'])) {
                     $page["DESCRIPTION"] = tl('wiki_element_redirect_to').
-                        "<a href='{$page['ALIAS']}'>{$page['ALIAS']}</a>";
+                        " <a href='$base_query&amp;".
+                        "page_name={$page['ALIAS']}'>{$page['ALIAS']}</a>";
                 } else {
                     $page["DESCRIPTION"] = strip_tags($page["DESCRIPTION"]);
                 }
