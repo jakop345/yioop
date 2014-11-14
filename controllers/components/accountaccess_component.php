@@ -143,34 +143,27 @@ class AccountaccessComponent extends Component
             switch($_REQUEST['arg'])
             {
                 case "updateuser":
-                    if(strlen($_REQUEST['new_password']) > LONG_NAME_LEN) {
-                        $data["MESSAGE"] =
-                            tl('accountaccess_component_passwords_too_long');
-                        $data['SCRIPT'] .=
-                            "doMessage('<h1 class=\"red\" >". $data["MESSAGE"].
-                            "</h1>')";
-                        return $data;
+                    if(isset($_REQUEST['new_password']) &&
+                        strlen($_REQUEST['new_password']) > LONG_NAME_LEN) {
+                        $parent->redirectWithMessage(
+                            tl('accountaccess_component_passwords_too_long'),
+                            array("edit", "edit_pass"));
                     }
                     if(isset($data['EDIT_PASSWORD']) &&
                         (!isset($_REQUEST['retype_password']) ||
                         !isset($_REQUEST['new_password']) ||
                         $_REQUEST['retype_password'] !=
                             $_REQUEST['new_password'])){
-                        $data["MESSAGE"] =
-                            tl('accountaccess_component_passwords_dont_match');
-                        $data['SCRIPT'] .=
-                            "doMessage('<h1 class=\"red\" >". $data["MESSAGE"].
-                            "</h1>')";
-                        return $data;
+                        $parent->redirectWithMessage(
+                            tl('accountaccess_component_passwords_dont_match'),
+                            array("edit", "edit_pass"));
                     }
                     $result = $signin_model->checkValidSignin($username,
                         $parent->clean($_REQUEST['password'], "string") );
                     if(!$result) {
-                        $data["MESSAGE"] =
-                            tl('accountaccess_component_invalid_password');
-                        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            $data["MESSAGE"]."</h1>')";
-                        return $data;
+                        $parent->redirectWithMessage(
+                            tl('accountaccess_component_invalid_password'),
+                            array("edit", "edit_pass"));
                     }
                     if(isset($data['EDIT_PASSWORD'])) {
                         if(AUTHENTICATION_MODE == ZKP_AUTHENTICATION) {
@@ -198,39 +191,32 @@ class AccountaccessComponent extends Component
                         $_FILES['user_icon']['name'] !="") {
                         if(!in_array($_FILES['user_icon']['type'],
                             array('image/png', 'image/gif', 'image/jpeg'))) {
-                            $data["MESSAGE"] =
-                                tl('accountaccess_component_unknown_imagetype');
-                            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                                $data["MESSAGE"]."</h1>')";
-                            return $data;
+                            $parent->redirectWithMessage(
+                                tl('accountaccess_component_unknown_imagetype'),
+                                array("edit", "edit_pass"));
                         }
                         if($_FILES['user_icon']['size'] > THUMB_SIZE) {
-                            $data["MESSAGE"] =
-                                tl('accountaccess_component_icon_too_big');
-                            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                                $data["MESSAGE"]."</h1>')";
-                            return $data;
+                            $parent->redirectWithMessage(
+                                tl('accountaccess_component_icon_too_big'),
+                                array("edit", "edit_pass"));
                         }
                         $user['IMAGE_STRING'] = file_get_contents(
                             $_FILES['user_icon']['tmp_name']);
                         $folder = $user_model->getUserIconFolder(
                             $user['USER_ID']);
                         if(!$folder) {
-                            $data["MESSAGE"] =
-                                tl('accountaccess_component_no_user_folder');
-                            $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                                $data["MESSAGE"]."</h1>')";
-                            return $data;
+                            $parent->redirectWithMessage(
+                                tl('accountaccess_component_no_user_folder'),
+                                array("edit", "edit_pass"));
                         }
                     }
                     $user_model->updateUser($user);
                     $data['USER']['USER_ICON'] = $user_model->getUserIconUrl(
                         $user['USER_ID']);
                     unset($user['IMAGE_STRING']);
-                    $data["MESSAGE"] =
-                        tl('accountaccess_component_user_updated');
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        $data["MESSAGE"]."</h1>')";
+                    $parent->redirectWithMessage(
+                        tl('accountaccess_component_user_updated'),
+                        array("edit", "edit_pass"));
                 break;
               }
         }
