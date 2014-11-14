@@ -283,8 +283,17 @@ abstract class Controller
         $location = "?c=$c&a=$a&". CSRF_TOKEN . "=$token";
         foreach($copy_fields as $field) {
             if(isset($_REQUEST[$field])) {
-                $location .= "&$field=".$this->clean($_REQUEST[$field],
+                if (is_array($_REQUEST[$field])){
+                    $array_params_cleaned = $_REQUEST[$field];
+                    foreach ($array_params_cleaned as $key => $value) {
+                        $location .= "&$field"."["
+                                . $this->clean($key,"string") ."]" . "="
+                                . $this->clean($value,"string") ;
+                    }
+                } else{
+                    $location .= "&$field=".$this->clean($_REQUEST[$field],
                     "string");
+                }
             }
         }
         header("Location: $location");

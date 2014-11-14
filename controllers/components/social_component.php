@@ -1421,8 +1421,8 @@ EOD;
                             $read_address, $additional_substitutions);
                         $parent->redirectWithMessage(
                             tl("group_controller_page_saved"),
-                            array('arg', 'page_name', 'settings',
-                                    'caret', 'scroll_top'));
+                            array('page_name', 'settings',
+                                    'caret', 'scroll_top','back_params'));
                     } else if(!$missing_fields &&
                         isset($_FILES['page_resource']['name']) &&
                         $_FILES['page_resource']['name'] !="") {
@@ -1792,9 +1792,10 @@ EOD;
         */
         $data["OTHER_BACK_URL"] = "";
             if(isset($_REQUEST['back_params']) &&
-                isset($_REQUEST['arg']) && in_array(
+                ((isset($_REQUEST['arg']) && in_array(
                     $parent->clean($_REQUEST['arg'],"string"), array('edit',
-                    'read'))) {
+                    'read'))) || (isset($_REQUEST['page_name'])))
+                    ) {
                 $back_params_cleaned = $_REQUEST['back_params'];
                 array_walk($back_params_cleaned, array($parent, 'clean'));
                 foreach($back_params_cleaned as
