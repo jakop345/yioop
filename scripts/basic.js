@@ -157,8 +157,11 @@ function tag(name)
  * @param mixed display_type type to set CSS display property to in the event
  *      value is true (might be block or inline, etc).
  */
-function setDisplay(id, value, display_type="block")
+function setDisplay(id, value, display_type)
 {
+    if(display_type === undefined){
+        display_type = "block";
+    }
     obj = elt(id);
     if(value == true)  {
         value = display_type;
