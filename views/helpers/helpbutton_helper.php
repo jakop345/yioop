@@ -54,7 +54,7 @@ class HelpbuttonHelper extends Helper
     {
         $this->isHelpInitialized = false;
         $this->localizationdata = NULL;
-        $this->backParams = NULL;
+        $this->back_params = NULL;
         $this->script = NULL;
         parent::__construct();
     }
@@ -80,7 +80,7 @@ class HelpbuttonHelper extends Helper
         return '<button type="button"
                     class="help-button default"
                     data-tl=\'' . $this->localizationdata . '\'
-                    data-back-params=\'' . $this->backParams . '\'
+                    data-back-params=\'' . $this->back_params . '\'
                     onclick="javascript:displayHelpForId(this,'
         . $is_mobile . ',\''
         . $this->clean($_REQUEST['c']) . '\',\''
@@ -125,20 +125,25 @@ class HelpbuttonHelper extends Helper
             'wiki_view_edit :"' . tl('wiki_view_edit') . '",' .
             'wiki_view_read :"' . tl('wiki_view_read') . '"' .
             "}";
-        $this->backParams = "{";
-        $back_params_array = array_diff_key($_REQUEST, array_flip(
-            array("a", "c", "u", "p", CSRF_TOKEN, "open_help_page")
+        $this->back_params = "{";
+        /**
+         * Use all the GET params to fille the back_params attr
+         * this ensures that the user can come back to the exact same url
+         * he originated from.
+         */
+        $back_params_array = array_diff_key($_GET, array_flip(
+            array("a", "c", CSRF_TOKEN, "open_help_page")
         ));
         array_walk($back_params_array, array($this, 'clean'));
         $back_params_only_keys = array_keys($back_params_array);
         $last_key = end($back_params_only_keys);
         foreach($back_params_array as $key => $value) {
-            $this->backParams .= $key . ' : "' . $value . '"';
+            $this->back_params .= $key . ' : "' . $value . '"';
             if($key != $last_key) {
-                $this->backParams .= ',';
+                $this->back_params .= ', ';
             }
         }
-        $this->backParams .= "}";
+        $this->back_params .= "}";
         if(isset($_REQUEST['open_help_page'])) {
             $help_page_to_open = $this->clean($_REQUEST['open_help_page']);
             $this->script = 'var matches = '
