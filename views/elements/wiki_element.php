@@ -322,8 +322,9 @@ class WikiElement extends Element implements CrawlConstants
                 <label for="page-data"><b><?php
                 $human_page_name = str_replace("_", " ", $data['PAGE_NAME']);
                 e(tl('wiki_element_page', $human_page_name));
-                ?></b></label> [<a href="javascript:toggleSettings()"><?php
-            e(tl('configure_element_toggle_page_settings')); ?></a>]
+                ?></b></label> <span id="toggle-settings"
+                >[<a href="javascript:toggleSettings()"><?php
+            e(tl('configure_element_toggle_page_settings')); ?></a>]</span>
             </div>
             <div id='page-settings'>
             <div class="top-margin">
@@ -466,6 +467,7 @@ class WikiElement extends Element implements CrawlConstants
             e($data['PAGE_NAME']); ?>" />
         <input type="hidden" name="settings" value="<?php
             e($data['settings']); ?>" />
+        <div id="page-resources">
         <h3><?php e(tl('wiki_view_page_resources'));?></h3>
         <p><?php e(tl('wiki_view_resources_info'));?></p>
         <div><input type="file" class="slight-pad wide-field"
@@ -477,6 +479,7 @@ class WikiElement extends Element implements CrawlConstants
         <?php
             $this->renderResources($data, false);
         ?>
+        </div>
         </div>
         <script type="text/javascript">
         function addToPage(resource_name)

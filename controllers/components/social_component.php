@@ -1421,8 +1421,8 @@ EOD;
                             $read_address, $additional_substitutions);
                         $parent->redirectWithMessage(
                             tl("group_controller_page_saved"),
-                            array('page_name', 'settings',
-                                    'caret', 'scroll_top','back_params'));
+                            array('arg', 'page_name', 'settings',
+                            'caret', 'scroll_top','back_params'));
                     } else if(!$missing_fields &&
                         isset($_FILES['page_resource']['name']) &&
                         $_FILES['page_resource']['name'] !="") {
@@ -1768,18 +1768,36 @@ EOD;
                 ptype = document.getElementById("page-type");
                 is_media_list = ('media_list'=='{$data['current_page_type']}');
                 is_settings = {$data['settings']};
-                setDisplay('page-settings', is_settings);
+                is_page_alias = ('page_alias'=='{$data['current_page_type']}');
+                setDisplay('page-settings', is_settings || is_page_alias);
                 setDisplay("media-list-page", is_media_list);
                 setDisplay("page-container", !is_media_list);
                 setDisplay('save-container', !is_media_list || is_settings);
+                setDisplay("toggle-settings", !is_page_alias, "inline");
+                setDisplay("page-resources", !is_page_alias);
                 ptype.onchange = function() {
                     var cur_type = ptype.options[ptype.selectedIndex].value;
                     if(cur_type == "media_list") {
-                        setDisplay("media-list-page", true);
+                        setDisplay("media-list-page", true, "inline");
                         setDisplay("page-container", false);
+                        setDisplay("toggle-settings", true);
+                        setDisplay("non-alias-type", true);
+                        setDisplay("alias-type", false);
+                        setDisplay("page-resources", true);
+                    } else if(cur_type == "page_alias") {
+                        setDisplay("toggle-settings", false);
+                        setDisplay("media-list-page", false);
+                        setDisplay("page-container", false);
+                        setDisplay("non-alias-type", false);
+                        setDisplay("alias-type", true);
+                        setDisplay("page-resources", false);
                     } else {
                         setDisplay("page-container", true);
                         setDisplay("media-list-page", false);
+                        setDisplay("toggle-settings", true, "inline");
+                        setDisplay("non-alias-type", true);
+                        setDisplay("alias-type", false);
+                        setDisplay("page-resources", true);
                     }
                 }
 EOD;

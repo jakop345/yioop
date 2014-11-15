@@ -152,14 +152,16 @@ function tag(name)
  * Sets whether an elt is styled as display:none or block
  *
  * @param String id  the id of the DOM element one wants
- * @param mixed value  true means display block; false display none;
+ * @param mixed value  true means display display_type false display none;
  *     anything else will display that value
+ * @param mixed display_type type to set CSS display property to in the event
+ *      value is true (might be block or inline, etc).
  */
-function setDisplay(id, value)
+function setDisplay(id, value, display_type="block")
 {
     obj = elt(id);
     if(value == true)  {
-        value = "block";
+        value = display_type;
     }
     if(value == false) {
         value = "none";
