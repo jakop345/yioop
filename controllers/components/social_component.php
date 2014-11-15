@@ -1221,7 +1221,7 @@ class SocialComponent extends Component implements CrawlConstants
         }
         $search_translation = tl('social_component_search');
         $search_form = <<<EOD
-<div class="search-box $2-search-box">
+<div class="search-box $2-search-box inline">
 <form method="get" action='?' >
 <p>
 <input type='hidden' name="its" value='$1' />
