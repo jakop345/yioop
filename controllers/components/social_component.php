@@ -1227,7 +1227,7 @@ class SocialComponent extends Component implements CrawlConstants
 <input type='hidden' name="its" value='$1' />
 <input type='text'  name='q'  value="" placeholder='$3' class='search-input' />
 <button type="submit" class='search-button'><img
-    src='./resources/search-button.png'  alt='$search_translation'/></button>
+src='./resources/search-button.png'  alt='$search_translation'/></button>
 </p>
 </form>
 </div>
