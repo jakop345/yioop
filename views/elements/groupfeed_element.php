@@ -78,7 +78,7 @@ class GroupfeedElement extends Element implements CrawlConstants
             if($is_admin || $logged_in) {
                 if(isset($data['JUST_GROUP_ID'])){
                     $other_paging_query .= "&amp;just_group_id="
-                            . $data['JUST_GROUP_ID'];
+                        . $data['JUST_GROUP_ID'];
                 }
                 ?>
                 <div class="float-same admin-collapse">[<a
@@ -125,11 +125,6 @@ class GroupfeedElement extends Element implements CrawlConstants
             <?php } ?>
             </div>
         <?php
-        }else if(isset($data['MODE']) && $data['MODE'] == 'grouped'
-                && isset ($data['JUST_GROUP_ID'])){
-            ?><div class="float-opposite"><a href="<?php
-                        e($base_query . "&amp;v=grouped")  ?>"><?php
-                        e(tl('groupfeed_element_back'))?></a></div><?php
         }
         if($is_admin) {
             ?>
@@ -172,7 +167,7 @@ class GroupfeedElement extends Element implements CrawlConstants
             }
             if(!isset($data['JUST_THREAD']) && !isset($data['JUST_GROUP_ID'])) {
                 ?><span style="position:relative;top:5px;" >
-                <a href="<?php e($paging_query); ?>" ><img
+                <a href="<?php e($paging_query. '&amp;v=ungrouped'); ?>" ><img
                 src="resources/list.png" /></a>
                 <a href="<?php e($paging_query. '&amp;v=grouped'); ?>" ><img
                 src="resources/grouped.png" /></a>
@@ -181,70 +176,87 @@ class GroupfeedElement extends Element implements CrawlConstants
             ?>
             <?php
         }
-
         ?></h2>
         <div>
         &nbsp;
         </div>
         <?php
-      if(isset($data['MODE']) && $data['MODE'] == 'grouped'){
-        //Grouped View
-        //var_dump($data['GROUPS']);
-        if (isset($data['JUST_GROUP_ID'])) {
-                foreach ($data['GROUPS'] as $group) {
-                    if($group['GROUP_ID'] == $data['JUST_GROUP_ID']){
-                    e("<div class=\"access-result\">" .
-                            "<div><b>" .
-                            "<a href=\"$paging_query&amp;just_group_id=" .
-                            $group['GROUP_ID'] . "&amp;v=grouped" . "\" " .
-                            "rel=\"nofollow\">" .
-                            $group['GROUP_NAME'] . "</a> " .
-                            "[<a href=\"$paging_query&amp;group_id=" .
-                            $group['GROUP_ID'] . "&amp;a=wiki\">" .
-                            tl('manageaccount_element_group_wiki') . "</a>] " .
-                            "(" . tl('manageaccount_element_group_stats',
-                                    $group['NUM_POSTS'],
-                                    $group['NUM_THREADS']) . ")</b>" .
-                            "</div>" .
-                            "<div class=\"slight-pad\">" .
-                            "<b>" . tl('manageaccount_element_last_post')
-                            . "</b> " .
-                            "<a href=\"$paging_query&amp;just_thread=" .
-                            $group['THREAD_ID'] . "\">" .
-                            $group['ITEM_TITLE'] . "</a>" .
-                            "</div>" .
-                            "</div>");
-                    $data['TOTAL_ROWS'] = 1;
-                    }
-                }
-            } else {
-                foreach ($data['GROUPS'] as $group) {
-                    e("<div class=\"access-result\">" .
-                            "<div><b>" .
-                            "<a href=\"$paging_query&amp;just_group_id=" .
-                            $group['GROUP_ID'] . "&amp;v=grouped" . "\" " .
-                            "rel=\"nofollow\">" .
-                            $group['GROUP_NAME'] . "</a> " .
-                            "[<a href=\"$paging_query&amp;group_id=" .
-                            $group['GROUP_ID'] . "&amp;a=wiki\">" .
-                            tl('manageaccount_element_group_wiki') . "</a>] " .
-                            "(" . tl('manageaccount_element_group_stats',
-                                    $group['NUM_POSTS'],
-                                    $group['NUM_THREADS']) . ")</b>" .
-                            "</div>" .
-                            "<div class=\"slight-pad\">" .
-                            "<b>" . tl('manageaccount_element_last_post')
-                            . "</b> " .
-                            "<a href=\"$paging_query&amp;just_thread=" .
-                            $group['THREAD_ID'] . "\">" .
-                            $group['ITEM_TITLE'] . "</a>" .
-                            "</div>" .
-                            "</div>");
-                    $data['TOTAL_ROWS'] = $data['NUM_GROUPS'];
-                }
-            }
-        $paging_query .= "&amp;v=grouped";
-       }else{
+        if(isset($data['MODE']) && $data['MODE'] == 'grouped') {
+            $this->renderGroupedView($paging_query, $data);
+            $page = false;
+        } else {
+            $page = $this->renderUngroupedView($logged_in, $base_query,
+                $paging_query, $data);
+        }
+        $data['FRAGMENT'] = "";
+        if(isset($data['JUST_THREAD']) && $logged_in && $page) {
+            $data['FRAGMENT'] = '#result-'.$page['ID'];
+            ?>
+            <div class='button-group-result'>
+            <button class="button-box" onclick='comment_form(<?php
+                    e("\"add-comment\", ".
+                        "{$data['PAGES'][0]['PARENT_ID']},".
+                        "{$data['PAGES'][0]['GROUP_ID']}"); ?>)'><?php
+                    e(tl('groupfeed_element_comment'));?></button>
+            <div id='add-comment'></div>
+            </div>
+            <?php
+        }
+        $this->view->helper("pagination")->render($paging_query,
+            $data['LIMIT'], $data['RESULTS_PER_PAGE'], $data['TOTAL_ROWS']);
+        ?>
+        </div>
+        <?php
+        if(!$is_status) {
+            $this->renderScripts($data);
+        }
+    }
+    /**
+     * Used to draw group feeds items when we are grouping feeds items by group
+     *
+     * @param string $paging_query stem for all links
+     *      drawn in view
+     * @param array &$data fields used to draw the queue
+     */
+    function renderGroupedView($paging_query, &$data)
+    {
+        foreach ($data['GROUPS'] as $group) {
+            e("<div class=\"access-result\">" .
+                "<div><b>" .
+                "<a href=\"$paging_query&amp;just_group_id=" .
+                $group['GROUP_ID'] . "&amp;v=grouped" . "\" " .
+                "rel=\"nofollow\">" .
+                $group['GROUP_NAME'] . "</a> " .
+                "[<a href=\"$paging_query&amp;group_id=" .
+                $group['GROUP_ID'] . "&amp;a=wiki\">" .
+                tl('manageaccount_element_group_wiki') . "</a>] " .
+                "(" . tl('manageaccount_element_group_stats',
+                        $group['NUM_POSTS'],
+                        $group['NUM_THREADS']) . ")</b>" .
+                "</div>" .
+                "<div class=\"slight-pad\">" .
+                "<b>" . tl('manageaccount_element_last_post')
+                . "</b> " .
+                "<a href=\"$paging_query&amp;just_thread=" .
+                $group['THREAD_ID'] . "\">" .
+                $group['ITEM_TITLE'] . "</a>" .
+                "</div>" .
+                "</div>");
+            $data['TOTAL_ROWS'] = $data['NUM_GROUPS'];
+        }
+    }
+    /**
+     * Used to draw feed items as a combined thread of all groups
+     *
+     * @param bool $logged_in where or not the session is of a logged in user
+     * @param string $base_query url that serves as the stem for all links
+     *      drawn in view
+     * @param string $paging_query base_query concatenated with limit and num
+     * @param array &$data fields used to draw the queue
+     * @return array $page last feed item processed
+     */
+    function renderUngroupedView($logged_in, $base_query, $paging_query, &$data)
+    {
         $open_in_tabs = $data['OPEN_IN_TABS'];
         $time = time();
         $can_comment = array(GROUP_READ_COMMENT, GROUP_READ_WRITE,
@@ -437,12 +449,10 @@ class GroupfeedElement extends Element implements CrawlConstants
                     if(!isset($data['JUST_GROUP_ID']) &&
                         in_array($page["MEMBER_ACCESS"], array(GROUP_READ_WRITE,
                         GROUP_READ_WIKI)) ) {
-                    ?>
-                        <a href='javascript:start_thread_form(<?php
-                        e("{$page['ID']},".
-                            "{$page['GROUP_ID']}"); ?>)'><?php
-                            e(tl('groupfeed_element_start_thread'));?></a>.
-                    <?php
+                        ?><a href='javascript:start_thread_form(<?php
+                        e("{$page['ID']},". "{$page['GROUP_ID']}"); ?>)'><?php
+                        e(tl('groupfeed_element_start_thread'));?></a>.
+                        <?php
                     }
                 }
                 ?>
@@ -455,31 +465,8 @@ class GroupfeedElement extends Element implements CrawlConstants
             &nbsp;
             </div>
             <?php
-            } //end foreach
-       }//No grouped View
-            $data['FRAGMENT'] = "";
-            if(isset($data['JUST_THREAD']) && $logged_in) {
-                $data['FRAGMENT'] = '#result-'.$page['ID'];
-                ?>
-                <div class='button-group-result'>
-                <button class="button-box" onclick='comment_form(<?php
-                        e("\"add-comment\", ".
-                            "{$data['PAGES'][0]['PARENT_ID']},".
-                            "{$data['PAGES'][0]['GROUP_ID']}"); ?>)'><?php
-                        e(tl('groupfeed_element_comment'));?></button>
-                <div id='add-comment'></div>
-                </div>
-                <?php
-            }
-            $this->view->helper("pagination")->render($paging_query,
-                $data['LIMIT'], $data['RESULTS_PER_PAGE'], $data['TOTAL_ROWS']);
-            ?>
-        </div>
-        <?php
-        if(!$is_status) {
-            $this->renderScripts($data);
-        }
-
+        } //end foreach
+        return $page;
     }
     /**
      * Used to render the Javascript that appears at the non-status updating

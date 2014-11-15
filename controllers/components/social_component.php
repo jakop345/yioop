@@ -731,59 +731,6 @@ class SocialComponent extends Component implements CrawlConstants
         }
         $possible_arguments = array("addcomment", "deletepost", "addgroup",
             "newthread", "updatepost", "status", "upvote", "downvote");
-        if(isset($_REQUEST['v'])) {
-            $view = $parent->clean($_REQUEST['v'], "string");
-            if ($view == 'grouped') {
-                $data['MODE'] = 'grouped';
-                if (isset($_REQUEST['just_group_id'])) {
-                    $data['JUST_GROUP_ID'] = $_REQUEST['just_group_id'];
-                }
-                if (isset($_REQUEST['limit'])) {
-                $limit = $parent->clean($_REQUEST['limit'], "int");
-            } else {
-                $limit = 0;
-            }
-            $data['GROUPS'] = $group_model->getRows($limit, $results_per_page,
-                    $data['NUM_GROUPS'], array(), array($user_id, false));
-            $num_shown = count($data['GROUPS']);
-            for ($i = 0; $i < $num_shown; $i++) {
-                $search_array = array(array("group_id", "=",
-                        $data['GROUPS'][$i]['GROUP_ID'], ""),
-                    array("pub_date", "", "", "DESC"));
-                $item = $group_model->getGroupItems(
-                        0,
-                        1,
-                        $search_array,
-                        $user_id);
-                $data['GROUPS'][$i]['NUM_POSTS'] =
-                        $group_model->getGroupItemCount(
-                                $search_array, $user_id);
-                $data['GROUPS'][$i]['NUM_THREADS'] =
-                        $group_model->getGroupItemCount(
-                                $search_array,
-                                $user_id,
-                                $data['GROUPS'][$i]['GROUP_ID']
-                                );
-                $data['GROUPS'][$i]['NUM_PAGES'] =
-                        $group_model->getGroupPageCount(
-                        $data['GROUPS'][$i]['GROUP_ID']);
-                if (isset($item[0]['TITLE'])) {
-                    $data['GROUPS'][$i]["ITEM_TITLE"] = $item[0]['TITLE'];
-                    $data['GROUPS'][$i]["THREAD_ID"] = $item[0]['PARENT_ID'];
-                } else {
-                    $data['GROUPS'][$i]["ITEM_TITLE"] =
-                            tl('accountaccess_component_no_posts_yet');
-                    $data['GROUPS'][$i]["THREAD_ID"] = -1;
-                }
-            }
-            $data['NUM_SHOWN'] = $num_shown;
-                $data['LIMIT'] = $limit;
-                $data['RESULTS_PER_PAGE'] = $results_per_page;
-                $data['PAGING_QUERY'] = "./?c=$controller_name&amp;a=groupFeeds";
-                $data['OTHER_PAGING_QUERY'] = "./?c=$other_controller_name&amp;a=groupFeeds";
-                return $data;
-            }
-        }
         if(isset($_REQUEST['arg']) &&
             in_array($_REQUEST['arg'], $possible_arguments)) {
             switch($_REQUEST['arg'])
@@ -881,7 +828,14 @@ class SocialComponent extends Component implements CrawlConstants
                     }
                     $post_id = $parent->clean($_REQUEST['post_id'], "int");
                     $success=$group_model->deleteGroupItem($post_id, $user_id);
+                    $search_array = array(
+                        array("parent_id", "=", $just_thread, ""));
+                    $item_count = $group_model->getGroupItemCount($search_array,
+                        $user_id, -1);
                     if($success) {
+                        if($item_count == 0) {
+                            unset($_REQUEST['just_thread']);
+                        }
                         $parent->redirectWithMessage(
                             tl('social_component_item_deleted'));
                     } else {
@@ -1016,6 +970,18 @@ class SocialComponent extends Component implements CrawlConstants
                         tl('social_component_vote_recorded'));
                 break;
             }
+        }
+        $view_mode = (isset($_REQUEST['v'])) ? 
+            $parent->clean($_REQUEST['v'], "string") :
+            ((isset($_SESSION['view_mode'])) ? $_SESSION['view_mode'] :
+            "ungrouped");
+        $_SESSION['view_mode'] = $view_mode;
+        $view_mode = (!$just_group_id && !$just_user_id
+            && !$just_thread) ? $view_mode : "ungrouped";
+        if($view_mode == "grouped") {
+            return $this->calculateGroupedFeeds($user_id, $limit,
+                $results_per_page, $controller_name, $other_controller_name,
+                $data);
         }
         $groups_count = 0;
         $page = array();
@@ -1168,6 +1134,60 @@ class SocialComponent extends Component implements CrawlConstants
         $data['OTHER_PAGING_QUERY'] =
             "./?c=$other_controller_name&amp;a=groupFeeds";
         $this->initializeWikiEditor($data, -1);
+        return $data;
+    }
+    /**
+     * Used to set up GroupfeedView to draw a users group feeds grouped
+     * by group names as opposed to as a linear list of thread and post
+     * titles
+     *
+     * @param int $user_id id of current user
+     * @param int $limit lower bound on the groups to display feed data for
+     * @param int $results_per_page number of groups to display feed data
+     *      for
+     * @param string $controller_name name of controller on which this
+     *      this component lives (either admin or group). Used by
+     *      view to draw expand or collapse link
+     * @param string $other_controller_name opposite of controller_name. I.e.,
+     *      if $controller_name was admin then group and vice-versa. (could
+     *      caluclated but sending as a parameter as calc already done)
+     * @param array $data field data for view to draw itself
+     */
+    function calculateGroupedFeeds($user_id, $limit, $results_per_page,
+        $controller_name, $other_controller_name, $data)
+    {
+        $parent = $this->parent;
+        $group_model = $parent->model("group");
+        $data['MODE'] = 'grouped';
+        $data['GROUPS'] = $group_model->getRows($limit, $results_per_page,
+                $data['NUM_GROUPS'], array(), array($user_id, false));
+        $num_shown = count($data['GROUPS']);
+        for ($i = 0; $i < $num_shown; $i++) {
+            $search_array = array(array("group_id", "=",
+                $data['GROUPS'][$i]['GROUP_ID'], ""),
+                array("pub_date", "", "", "DESC"));
+            $item = $group_model->getGroupItems(0, 1, $search_array, $user_id);
+            $data['GROUPS'][$i]['NUM_POSTS'] = $group_model->getGroupItemCount(
+                $search_array, $user_id);
+            $data['GROUPS'][$i]['NUM_THREADS']=$group_model->getGroupItemCount(
+                $search_array, $user_id, $data['GROUPS'][$i]['GROUP_ID']);
+            $data['GROUPS'][$i]['NUM_PAGES'] = $group_model->getGroupPageCount(
+                $data['GROUPS'][$i]['GROUP_ID']);
+            if (isset($item[0]['TITLE'])) {
+                $data['GROUPS'][$i]["ITEM_TITLE"] = $item[0]['TITLE'];
+                $data['GROUPS'][$i]["THREAD_ID"] = $item[0]['PARENT_ID'];
+            } else {
+                $data['GROUPS'][$i]["ITEM_TITLE"] =
+                    tl('accountaccess_component_no_posts_yet');
+                $data['GROUPS'][$i]["THREAD_ID"] = -1;
+            }
+        }
+        $data['NUM_SHOWN'] = $num_shown;
+        $data['LIMIT'] = $limit;
+        $data['RESULTS_PER_PAGE'] = $results_per_page;
+        $data['PAGING_QUERY'] = "./?c=$controller_name&amp;a=groupFeeds";
+        $data['OTHER_PAGING_QUERY'] =
+            "./?c=$other_controller_name&amp;a=groupFeeds";
         return $data;
     }
     /**
