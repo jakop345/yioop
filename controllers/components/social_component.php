@@ -1221,16 +1221,12 @@ class SocialComponent extends Component implements CrawlConstants
         }
         $search_translation = tl('social_component_search');
         $search_form = <<<EOD
-<div class="search-box $2-search-box inline">
-<form method="get" action='?' >
-<p>
+<form method="get" class="search-box $2-search-box" >
 <input type='hidden' name="its" value='$1' />
 <input type='text'  name='q'  value="" placeholder='$3' class='search-input' />
 <button type="submit" class='search-button'><img
 src='./resources/search-button.png'  alt='$search_translation'/></button>
-</p>
 </form>
-</div>
 EOD;
         $additional_substitutions[] = array('/{{\s*search\s*:\s*(.+?)\s*\|'.
             '\s*size\s*:\s*(.+?)\s*\|\s*placeholder\s*:\s*(.+?)}}/',

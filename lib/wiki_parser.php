@@ -263,8 +263,8 @@ class WikiParser implements CrawlConstants
         $this->braces_replaces = array();
         $this->base_address = $base_address;
         if($add_substitutions != array()) {
-            $substitutions = array_merge($add_substitutions, $substitutions,
-                $braces_substitutions);
+            $substitutions = array_merge($substitutions,
+                $braces_substitutions, $add_substitutions);
         }
         foreach($substitutions as $substitution) {
             list($this->matches[], $this->replaces[]) = $substitution;

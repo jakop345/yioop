@@ -94,6 +94,12 @@ p
     margin: 0;
 }
 
+.inline div,
+.inline form,
+.inline p
+{
+    display:inline-block;
+}
 .inline ul,
 .inline li
 {
