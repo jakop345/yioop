@@ -55,7 +55,7 @@ class GroupfeedElement extends Element implements CrawlConstants
         $logged_in = isset($data["ADMIN"]) && $data["ADMIN"];
         $append_url = ($logged_in) ?"&amp;".CSRF_TOKEN."=".
             $data[CSRF_TOKEN] : "";
-        $arrows = ($is_admin) ? "&lt;&lt;" : "&gt;&gt;";
+        $arrows = ($is_admin) ? "expand.png" : "collapse.png";
         $is_status = isset($data['STATUS']);
         $base_query = $data['PAGING_QUERY'] . $append_url;
         if(isset($data["WIKI_QUERY"])) {
@@ -81,13 +81,14 @@ class GroupfeedElement extends Element implements CrawlConstants
                         . $data['JUST_GROUP_ID'];
                 }
                 ?>
-                <div class="float-same admin-collapse">[<a
+                <div class="float-same admin-collapse sidebar"><a
                 href="<?php e($other_paging_query);
                 if(isset($data['MODE']) && $data['MODE'] == 'grouped'){
                     e("&amp;v=grouped");
                 }
                 ?>" ><?php
-                e($arrows); ?></a>]<?php
+                e("<img src='resources/" . $arrows . "'/>"); ?></a></div>
+                <div class="float-same admin-collapse"><?php
                 if(isset($data['SUBSCRIBE_LINK'])) {
                     if($data['SUBSCRIBE_LINK'] == PUBLIC_JOIN) {
                         e('[<a href="'.$paging_query.'&amp;arg=addgroup">'.
@@ -379,11 +380,22 @@ class GroupfeedElement extends Element implements CrawlConstants
                     }
                 }
                 ?>.
-            <a class="gray-link" rel='nofollow' href="<?php e($base_query.
+                <?php e("<span class='gray'> - $pub_date</span>");
+                ?>
+            <b><a class="gray-link" rel='nofollow' href="<?php e($base_query.
                 "&amp;just_group_id=".$page['GROUP_ID']);?>" ><?php
-                e($page[self::SOURCE_NAME]."</a>"
-                ."<span class='gray'> - $pub_date</span>");
-             ?></h2>
+                e($page[self::SOURCE_NAME]."</a></b>"); 
+                if(!isset($data['JUST_GROUP_ID']) &&
+                        in_array($page["MEMBER_ACCESS"], array(GROUP_READ_WRITE,
+                        GROUP_READ_WIKI)) ) {
+                    ?>
+                    (<a  class='gray-link' href='javascript:start_thread_form
+                    (<?php
+                        e("{$page['ID']},".
+                            "{$page['GROUP_ID']}"); ?>)'><?php
+                            e(tl('groupfeed_element_start_thread'));?></a>)
+                    <?php } ?>
+                </a></h2>
             <?php
             if(!isset($data['JUST_GROUP_ID'])) {
                 $description = isset($page[self::DESCRIPTION]) ?
@@ -446,14 +458,6 @@ class GroupfeedElement extends Element implements CrawlConstants
                     e("{$page['ID']}, {$page['PARENT_ID']}, ".
                         "{$page['GROUP_ID']}"); ?>)'><?php
                     e(tl('groupfeed_element_comment'));?></a>.<?php
-                    if(!isset($data['JUST_GROUP_ID']) &&
-                        in_array($page["MEMBER_ACCESS"], array(GROUP_READ_WRITE,
-                        GROUP_READ_WIKI)) ) {
-                        ?><a href='javascript:start_thread_form(<?php
-                        e("{$page['ID']},". "{$page['GROUP_ID']}"); ?>)'><?php
-                        e(tl('groupfeed_element_start_thread'));?></a>.
-                        <?php
-                    }
                 }
                 ?>
             </div>

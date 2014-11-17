@@ -2899,3 +2899,7 @@ button.default{
 #help-close {
     color: #F5F5F5;
 }
+
+.sidebar {
+    top : 180px;
+}
