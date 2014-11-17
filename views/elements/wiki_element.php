@@ -470,7 +470,7 @@ class WikiElement extends Element implements CrawlConstants
         <div id="page-resources">
         <h3><?php e(tl('wiki_view_page_resources'));?></h3>
         <p><?php e(tl('wiki_view_resources_info'));?></p>
-        <div><input type="file" class="slight-pad wide-field"
+        <input type="file" class="slight-pad wide-field"
             id='page-resource' name='page_resource' />
             <button class="button-box" type="submit"><?php
             e(tl('wiki_view_upload')); ?></button></div>
