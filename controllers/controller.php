@@ -279,8 +279,10 @@ abstract class Controller
         }
         $c = $this->clean($_REQUEST['c'], "string");
         $a = $this->clean($_REQUEST['a'], "string");
+        $a = ($a) ? "&a=$a" : "";
         $token = $this->clean($_REQUEST[CSRF_TOKEN], "string");
-        $location = "?c=$c&a=$a&". CSRF_TOKEN . "=$token";
+        $token = ($token) ? "&".CSRF_TOKEN . "=$token" : "";
+        $location = "?c=$c$a$token";
         foreach($copy_fields as $field) {
             if(isset($_REQUEST[$field])) {
                 if (is_array($_REQUEST[$field])){
