@@ -132,6 +132,12 @@ class StaticController extends Controller
             $data['value'] = $this->clean($_SESSION['value'], "string");
         }
         $head_info = $static_view->head_objects[$data['page']];
+        if(isset($head_info['page_type']) &&
+            $head_info['page_type'] == 'page_alias' &&
+            $head_info['page_alias'] != '' ) {
+            $_REQUEST['page_name'] = $head_info['page_alias'];
+            $this->redirectWithMessage("", array('page_name'));
+        }
         if((isset($head_info['title']))) {
             if($head_info['title']) {
                 $data["subtitle"] = " - ".$head_info['title'];
