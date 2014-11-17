@@ -135,8 +135,14 @@ class StaticController extends Controller
         if(isset($head_info['page_type']) &&
             $head_info['page_type'] == 'page_alias' &&
             $head_info['page_alias'] != '' ) {
-            $_REQUEST['page_name'] = $head_info['page_alias'];
-            $this->redirectWithMessage("", array('page_name'));
+            $_REQUEST['p'] = $head_info['page_alias'];
+            if(isset($_REQUEST[CSRF_TOKEN]) && !$_REQUEST[CSRF_TOKEN]) {
+                unset($_REQUEST[CSRF_TOKEN]);
+            }
+            if(isset($_REQUEST['a']) && !$_REQUEST['a']) {
+                unset($_REQUEST['a']);
+            }
+            $this->redirectWithMessage("", array('p'));
         }
         if((isset($head_info['title']))) {
             if($head_info['title']) {
