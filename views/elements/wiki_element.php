@@ -57,7 +57,7 @@ class WikiElement extends Element implements CrawlConstants
         $logged_in = isset($data["ADMIN"]) && $data["ADMIN"];
         $can_edit = $logged_in && isset($data["CAN_EDIT"]) && $data["CAN_EDIT"];
         $is_admin = ($data["CONTROLLER"] == "admin");
-        $arrows = ($is_admin) ? "&lt;&lt;" : "&gt;&gt;";
+        $arrows = ($is_admin) ? "expand.png" : "collapse.png";
         $other_controller = ($is_admin) ? "group" : "admin";
         $base_query = "?c={$data['CONTROLLER']}";
         $csrf_token = "";
@@ -78,7 +78,7 @@ class WikiElement extends Element implements CrawlConstants
         }
         if(($is_admin || $logged_in) && (!isset($data['page_type']) ||
             $data['page_type'] != 'presentation')) { ?>
-            <div class="float-same admin-collapse">[<a id='arrows-link'
+            <div class="float-same admin-collapse sidebar"><a id='arrows-link'
             href="<?php e($other_base_query) ?>" onclick="
             arrows=elt('arrows-link');
             arrows_url = arrows.href;
@@ -89,7 +89,7 @@ class WikiElement extends Element implements CrawlConstants
             arrows_url += '&amp;caret=' + caret + '&amp;scroll_top=' +
                 edit_scroll;
             arrows.href = arrows_url;" ><?php
-            e($arrows); ?></a>]</div>
+            e("<img src='resources/" . $arrows . "'/>"); ?></a></div>
         <?php
         }
         ?>

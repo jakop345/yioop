@@ -150,7 +150,9 @@ class ManageusersElement extends Element
                             tl('manageusers_element_delete').'</span>');
                     } else {
                     ?>
-                        <a href="<?php e($delete_url . 'user_name='.
+                        <a onclick='javascript:return confirm("<?php
+                        e(tl('confirm_delete_operation')); ?>");'
+                        href="<?php e($delete_url . 'user_name='.
                         $user['USER_NAME']); ?>"><?php
                         e(tl('manageusers_element_delete'));
                     }?></a></td>

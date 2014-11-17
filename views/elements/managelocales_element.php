@@ -108,8 +108,10 @@ class ManagelocalesElement extends Element
                 .tl('managelocales_element_edit')."</a></td>");
             e("<td><a href='$base_url"
                 ."&amp;arg=deletelocale&amp;selectlocale=".
-                $locale['LOCALE_TAG']."' >"
-                .tl('managelocales_element_delete')."</a></td></tr>");
+                $locale['LOCALE_TAG']."' ");?>
+                onclick='javascript:return confirm("<?php
+            e(tl('confirm_delete_operation')); ?>");'><?php
+            e(tl('managelocales_element_delete')."</a></td></tr>");
         }
         ?>
         </table>
