@@ -206,7 +206,10 @@ function getStandardButtonsObject()
             + '; ' + tl['wiki_js_definitionlist_item']
             + ' : ' + tl['wiki_js_definitionlist_definition']
             + '' + '\n'],
-        'wikibtn-hr': ['---- \n'],
+        'wikibtn-leftaligned': ['{{left|','}}'],
+        'wikibtn-centeraligned': ['{{center|','}}'],
+        'wikibtn-rightaligned': ['{{right|','}}'],
+        'wikibtn-hr': ['---- \n']
     };
 }
 /*

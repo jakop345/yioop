@@ -206,6 +206,11 @@ span.indent5
     text-align: left;
 }
 
+.align-center
+{
+    text-align: center;
+}
+
 .blockquote
 {
     margin-left: 0.3in;

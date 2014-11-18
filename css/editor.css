@@ -179,6 +179,21 @@
     background: url(../resources/wiki_button_images/wikibtn-definitionlist.png)
     no-repeat;
 }
+.wikibtn-centeraligned
+{
+    background: url(../resources/wiki_button_images/wikibtn-centeraligned.png)
+    no-repeat;
+}
+.wikibtn-rightaligned
+{
+    background: url(../resources/wiki_button_images/wikibtn-rightaligned.png)
+    no-repeat;
+}
+.wikibtn-leftaligned
+{
+    background: url(../resources/wiki_button_images/wikibtn-leftaligned.png)
+    no-repeat;
+}
 .wikibtn-bold:hover,
 .wikibtn-bullets:hover,
 .wikibtn-heading:hover,
@@ -192,7 +207,10 @@
 .wikibtn-table:hover,
 .wikibtn-underline:hover,
 .wikibtn-slide:hover,
-.wikibtn-definitionlist:hover
+.wikibtn-definitionlist:hover,
+.wikibtn-rightaligned:hover,
+.wikibtn-leftaligned:hover,
+.wikibtn-centeraligned:hover
 {
     background-position: 0 -36px;
 }
