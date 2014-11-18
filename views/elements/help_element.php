@@ -57,7 +57,7 @@ class HelpElement extends Element
             ?>
             <div id="mobile-help">
                 <div id="help-frame" class="frame help-pane">
-                    <div class="float-opposite">
+                    <div  id="help-close" class="float-opposite">
                         [<a class="close" onclick="toggleHelp('help-frame',
                             true,'<?php e($_REQUEST['c']);?>');return
                             false; ">X

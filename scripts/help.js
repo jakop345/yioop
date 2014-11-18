@@ -51,14 +51,14 @@ function toggleHelp(id, isMobile, target_controller)
     }
     obj = elt(id);
     if (isMobile === false) {
-        toggleDisplay(id);
+        toggleDisplay(id,"inline-block");
         var new_width;
         var decrease_width_by = Math.floor(getCssProperty(obj, 'width') / 3);
         //Calculate pixel to inch. clientWidth only returns in pixels.
         if (obj.style.display === "none") {
             new_width = Math.floor(getCssProperty(help_node, 'width')) +
             decrease_width_by;
-        } else if (obj.style.display === "block") {
+        } else {
             new_width = Math.floor(getCssProperty(help_node, 'width')) -
             decrease_width_by;
         }
@@ -66,14 +66,15 @@ function toggleHelp(id, isMobile, target_controller)
             help_node.style.maxWidth = new_width + "px";
         }
     } else {
-        toggleDisplay(id);
-        var height_after_toggle = (obj.clientHeight);
+        toggleDisplay(id,"inline-block");
+        var height_after_toggle = (elt("mobile-help").clientHeight);
         //Calculate pixel to inch. clientWidth only returns in pixels.
         if (obj.style.display === "none") {
             //on closing, restore top
             help_node.style.top = current_activity_top + "px";
             current_activity_closed = true;
-        } else if (obj.style.display === "block") {
+        } else {
+            //setDisplay("help-frame",true,"inline-block");
             help_node.style.top = current_activity_top +
             height_after_toggle + "px";
             /* The div.clientHeight doesnt include the height
@@ -211,6 +212,14 @@ function parseWikiContent(wiki_text, group_id, page_id, controller_name,
             : page_name)
         + '</a>';
     });
+    //Parse right/left/center justified text. Does a literal word match, instead
+    //of (.+?).
+    html = html.replace(/{{(left|right|center)\|(.+?)}}/g, function (match,
+        contents, desc)
+    {
+        return '<div class="align-' + contents + '"><div>' + desc
+        + '</div></div>';
+    });
     return html;
 }
 /*
@@ -278,7 +287,7 @@ function displayHelpForId(help_point, is_mobile, target_controller,
     current_action, csrf_token_key, csrf_token_value, help_group_id,
     api_controller, api_action, mode)
 {
-    if((elt("help-frame").style.display) === "block") {
+    if((elt("help-frame").style.display) === "inline-block") {
         toggleHelp('help-frame', is_mobile, target_controller);
     }
     var tl = eval('(' + help_point.getAttribute("data-tl") + ')');

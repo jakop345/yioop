@@ -1938,6 +1938,9 @@ EOD;
                 'wiki_js_link_text :"'. tl('wiki_js_link_text').'",'.
                 'wiki_js_link_url :"'. tl('wiki_js_link_url').'",'.
                 'wiki_js_placeholder :"'. tl('wiki_js_placeholder').'",'.
+                'wiki_js_centeraligned :"'. tl('wiki_js_centeraligned').'",'.
+                'wiki_js_rightaligned :"'. tl('wiki_js_rightaligned').'",'.
+                'wiki_js_leftaligned :"'. tl('wiki_js_leftaligned').'",'.
                 'wiki_js_definitionlist_item :"'.
                 tl('wiki_js_definitionlist_item').'",'.
                 'wiki_js_definitionlist_definition :"'.
