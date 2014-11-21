@@ -389,11 +389,13 @@ class GroupfeedElement extends Element implements CrawlConstants
                         in_array($page["MEMBER_ACCESS"], array(GROUP_READ_WRITE,
                         GROUP_READ_WIKI)) ) {
                     ?>
-                    (<a  class='gray-link' href='javascript:start_thread_form
+                    <a  class='gray-link' href='javascript:start_thread_form
                     (<?php
                         e("{$page['ID']},".
-                            "{$page['GROUP_ID']}"); ?>)'><?php
-                            e(tl('groupfeed_element_start_thread'));?></a>)
+                            "{$page['GROUP_ID']}"); ?>)' title='<?php
+                        e(tl('groupfeed_element_start_thread'));?>'><img
+                      class="new-thread-icon" src='resources/new_thread.png'
+                            /></a>
                     <?php } ?>
                 </a></h2>
             <?php
