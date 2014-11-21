@@ -133,7 +133,9 @@ class MixcrawlsElement extends Element
             }
             ?>
             </td>
-            <td><a href="<?php e($base_url); ?>deletemix&timestamp=<?php
+            <td><a onclick='javascript:return confirm("<?php
+                e(tl('confirm_delete_operation')); ?>");' href="<?php
+                e($base_url); ?>deletemix&timestamp=<?php
                 e($mix['TIMESTAMP']); ?>"><?php
                 e(tl('mixcrawls_view_delete'));?></a></td>
             </tr>
