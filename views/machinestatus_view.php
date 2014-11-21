@@ -98,7 +98,9 @@ class MachinestatusView extends View
             ?>
             <div class="box">
             <div class="float-opposite" >[<a href='<?php
-                e($base_url . "deletemachine&amp;name={$m['NAME']}"); ?>'><?php
+                e($base_url . "deletemachine&amp;name={$m['NAME']}");
+                ?>' onclick='javascript:return confirm("<?php
+                e(tl('confirm_delete_operation')); ?>");' ><?php
                 e(tl('machinestatus_view_delete'));?></a>]</div>
             <h3 class="nomargin"><?php e($m['NAME']);?></h3>
             <p><?php e($m['URL']);

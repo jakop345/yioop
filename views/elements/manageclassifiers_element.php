@@ -119,7 +119,9 @@ class ManageclassifiersElement extends Element
                             tl('manageclassifiers_finalizing')."</span>");
                     }
                     ?></td>
-                    <td><a href="<?php e($base_url)
+                    <td><a onclick='javascript:return confirm("<?php
+                        e(tl('confirm_delete_operation'));
+                        ?>");' href="<?php e($base_url)
                         ?>deleteclassifier&amp;name=<?php
                         e($label) ?>"><?php
                             e(tl('manageclassifiers_delete')) ?></a></td>

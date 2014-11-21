@@ -204,7 +204,9 @@ class SearchsourcesElement extends Element
                 $source['TIMESTAMP'].$paging1.$paging2); ?>"><?php
                 e(tl('searchsources_element_editmedia'));
             ?></a></td>
-            <td><a href="<?php e($base_url."&amp;arg=deletesource&amp;ts=".
+            <td><a onclick='javascript:return confirm("<?php
+                e(tl('confirm_delete_operation')); ?>");' href="<?php
+                e($base_url."&amp;arg=deletesource&amp;ts=".
                 $source['TIMESTAMP'].$paging1.$paging2); ?>"><?php
                 e(tl('searchsources_element_deletemedia'));
             ?></a></td></tr>

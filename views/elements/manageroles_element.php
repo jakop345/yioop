@@ -100,7 +100,9 @@ class ManagerolesElement extends Element
                             tl('manageroles_element_delete').'</span>');
                     } else {
                     ?>
-                        <a href="<?php e($delete_url . 'name='.
+                        <a onclick='javascript:return confirm("<?php
+                        e(tl('confirm_delete_operation')); ?>");' href="<?php
+                        e($delete_url . 'name='.
                         $role['NAME']); ?>"><?php
                         e(tl('manageroles_element_delete'));
                     }?></a></td>
