@@ -407,29 +407,28 @@ class QueueServer implements CrawlConstants, Join
     function loop()
     {
         $info[self::STATUS] = self::WAITING_START_MESSAGE_STATE;
-
         crawlLog("In queue loop!! {$this->server_name}", "queue_server");
-
         if($this->isAIndexer()) {
             $this->deleteOrphanedBundles();
         }
         while (CrawlDaemon::processHandler()) {
             crawlLog("{$this->server_name} peak memory usage so far: ".
                 memory_get_peak_usage()."!!");
-
             $info = $this->handleAdminMessages($info);
-
             if( $info[self::STATUS] == self::WAITING_START_MESSAGE_STATE) {
                 crawlLog("{$this->server_name} is waiting for start message\n");
                 sleep(QUEUE_SLEEP_TIME);
                 continue;
             }
-
             if($info[self::STATUS] == self::STOP_STATE) {
                 continue;
             }
             crawlLog("{$this->server_name} active crawl is ".
                 "{$this->crawl_time}.");
+            if($this->isAScheduler()) {
+                crawlLog("Current queue size is:".
+                    $this->web_queue->to_crawl_queue->count);
+            }
             $start_loop_time = time();
 
             //check and update if necessary the crawl params of current crawl
@@ -497,7 +496,6 @@ class QueueServer implements CrawlConstants, Join
                     SEEN_URLS_BEFORE_UPDATE_SCHEDULER * $max_links){
                     $info = $this->processQueueUrls();
                 }
-
                 if($count > 0) {
                     $top = $this->web_queue->peekQueue();
                     if($top[1] < MIN_QUEUE_WEIGHT) {
@@ -507,7 +505,6 @@ class QueueServer implements CrawlConstants, Join
                            from fetcher data that have not completed
                          */
                      }
-
                     /*
                         only produce fetch batch if the last one has already
                         been taken by some fetcher
