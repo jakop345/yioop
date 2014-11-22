@@ -117,7 +117,7 @@ class CentroidSummarizer
         if($t == 0) {
             return array("", "");
         }
-        /* Initialize Nk array(Number of Documents the term occurs) */
+        /* Initialize Nk array(Number of sentences the term occurs) */
         $nk = array();
         $nk = array_fill(0, $t, 0);
         $nt = array();

@@ -372,6 +372,11 @@ class PageOptionsElement extends Element
         <?php if($data['test_options_active'] != "") { ?>
             <h2><?php e(tl('pageoptions_element_test_results'))?></h2>
             <?php
+            if(strlen($_REQUEST['TESTPAGE']) > $data["PAGE_RANGE_REQUEST"]) {
+                e("<h3 class='red'>".tl('pageoptions_element_page_truncated',
+                strlen($_REQUEST['TESTPAGE']), $data["PAGE_RANGE_REQUEST"]).
+                "</h3>");
+            }
             if(isset($data["AFTER_PAGE_PROCESS"])) {
                 e("<h3>".tl('pageoptions_element_after_process')."</h3>");
                 e("<pre>\n{$data['AFTER_PAGE_PROCESS']}\n</pre>");

@@ -1223,7 +1223,10 @@ class CrawlComponent extends Component implements CrawlConstants
                 $seed_info["general"]["max_description_len"],
                 $seed_info["general"]["summarizer_option"]);
             restore_error_handler();
-            $doc_info = $page_processor->handle($_REQUEST['TESTPAGE'],
+            $data["PAGE_RANGE_REQUEST"] = $seed_info["general"][
+                "page_range_request"];
+            $doc_info = $page_processor->handle(
+                substr($_REQUEST['TESTPAGE'], 0, $data["PAGE_RANGE_REQUEST"]),
                 $site[self::URL]);
             set_error_handler("yioop_error_handler");
             if(!$doc_info) {
