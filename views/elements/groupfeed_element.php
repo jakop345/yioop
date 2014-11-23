@@ -392,9 +392,10 @@ class GroupfeedElement extends Element implements CrawlConstants
                     <a  class='gray-link' href='javascript:start_thread_form
                     (<?php
                         e("{$page['ID']},"."{$page['GROUP_ID']},\"".
-                        "{$page[self::SOURCE_NAME]}"); ?>")' title='<?php
-                        e(tl('groupfeed_element_start_thread_in') .
-                                " " . $page[self::SOURCE_NAME]);?>'><img
+                        tl('groupfeed_element_start_thread_in_group',
+                            $page[self::SOURCE_NAME])); ?>")' title='<?php
+                        e(tl('groupfeed_element_start_thread_in_group',
+                            $page[self::SOURCE_NAME]));?>'><img
                       class="new-thread-icon" src='resources/new_thread.png'
                             /></a>
                     <?php } ?>
@@ -574,9 +575,7 @@ class GroupfeedElement extends Element implements CrawlConstants
                         group_id + '" />' +
                     '<input type="hidden" name="<?php e(CSRF_TOKEN); ?>" '+
                     'value="<?php e($data[CSRF_TOKEN]); ?>" />' +
-                    '<h2><b><?php
-                        e(tl("groupfeed_element_start_thread_in"));
-                    ?> ' + group_name + '</b></h2>'+
+                    '<h2><b>' + group_name + '</b></h2>'+
                     '<p><b><label for="title-'+ id +'" ><?php
                         e(tl("groupfeed_element_subject"));
                     ?></label></b></p>' +
