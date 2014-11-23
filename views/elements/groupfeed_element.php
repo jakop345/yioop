@@ -391,9 +391,10 @@ class GroupfeedElement extends Element implements CrawlConstants
                     ?>
                     <a  class='gray-link' href='javascript:start_thread_form
                     (<?php
-                        e("{$page['ID']},".
-                            "{$page['GROUP_ID']}"); ?>)' title='<?php
-                        e(tl('groupfeed_element_start_thread'));?>'><img
+                        e("{$page['ID']},"."{$page['GROUP_ID']},\"".
+                        "{$page[self::SOURCE_NAME]}"); ?>")' title='<?php
+                        e(tl('groupfeed_element_start_thread_in') .
+                                " " . $page[self::SOURCE_NAME]);?>'><img
                       class="new-thread-icon" src='resources/new_thread.png'
                             /></a>
                     <?php } ?>
@@ -554,7 +555,7 @@ class GroupfeedElement extends Element implements CrawlConstants
             }
         }
 
-        function start_thread_form(id, group_id)
+        function start_thread_form(id, group_id, group_name)
         {
             clearInterval(updateId);
             tmp = '<div class="thread<?php e($clear); ?>"></div>';
@@ -562,7 +563,8 @@ class GroupfeedElement extends Element implements CrawlConstants
             if(start_elt != tmp) {
                 elt(id).innerHTML =
                     tmp +
-                    '<form action="./<?php e($data['FRAGMENT']);
+                    '<br />'
+                    +'<form action="./<?php e($data['FRAGMENT']);
                     ?>" >' + <?php e($hidden_form); ?>
                     '<input type="hidden" name="c" value="<?php
                         e($data['CONTROLLER']) ?>" />' +
@@ -573,8 +575,8 @@ class GroupfeedElement extends Element implements CrawlConstants
                     '<input type="hidden" name="<?php e(CSRF_TOKEN); ?>" '+
                     'value="<?php e($data[CSRF_TOKEN]); ?>" />' +
                     '<h2><b><?php
-                        e(tl("groupfeed_element_start_thread"));
-                    ?></b></h2>'+
+                        e(tl("groupfeed_element_start_thread_in"));
+                    ?> ' + group_name + '</b></h2>'+
                     '<p><b><label for="title-'+ id +'" ><?php
                         e(tl("groupfeed_element_subject"));
                     ?></label></b></p>' +
