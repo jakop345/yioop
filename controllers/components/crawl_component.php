@@ -85,10 +85,11 @@ class CrawlComponent extends Component implements CrawlConstants
             {
                 case "start":
                     $this->startCrawl($data, $machine_urls);
+                    $parent->redirectWithMessage(
+                        tl('crawl_component_starting_new_crawl'),
+                        $request_fields);
                 break;
                 case "stop":
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('crawl_component_stop_crawl')."</h1>')";
                     $crawl_param_file = CRAWL_DIR."/schedules/crawl_params.txt";
                     if(file_exists($crawl_param_file)) {
                         unlink($crawl_param_file);
@@ -101,10 +102,10 @@ class CrawlComponent extends Component implements CrawlConstants
                     file_put_contents($filename, serialize($info));
 
                     $crawl_model->sendStopCrawlMessage($machine_urls);
+                    $parent->redirectWithMessage(
+                        tl('crawl_component_stop_crawl'), $request_fields);
                 break;
                 case "resume":
-                    $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                        tl('crawl_component_resume_crawl')."</h1>')";
                     $crawl_params = array();
                     $crawl_params[self::STATUS] = "RESUME_CRAWL";
                     $crawl_params[self::CRAWL_TIME] =
@@ -130,6 +131,8 @@ class CrawlComponent extends Component implements CrawlConstants
                     chmod($filename, 0777);
                     $crawl_model->sendStartCrawlMessage($crawl_params,
                         NULL, $machine_urls);
+                    $parent->redirectWithMessage(
+                        tl('crawl_component_resume_crawl'), $request_fields);
                 break;
                 case "delete":
                     if(isset($_REQUEST['timestamp'])) {
@@ -137,15 +140,13 @@ class CrawlComponent extends Component implements CrawlConstants
                             $_REQUEST['timestamp'], "int"), 0, TIMESTAMP_LEN);
                          $crawl_model->deleteCrawl($timestamp,
                             $machine_urls);
-
-                         $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-                            tl('crawl_component_delete_crawl_success').
-                            "</h1>'); crawlStatusUpdate(); ";
+                        $parent->redirectWithMessage(
+                            tl('crawl_component_delete_crawl_success'),
+                            $request_fields);
                      } else {
-                        $data['SCRIPT'] .= "crawlStatusUpdate(); ".
-                            "doMessage('<h1 class=\"red\" >".
-                            tl('crawl_component_delete_crawl_fail').
-                            "</h1>')";
+                        $parent->redirectWithMessage(
+                            tl('crawl_component_delete_crawl_fail'),
+                            $request_fields);
                      }
                 break;
                 case "index":
@@ -177,9 +178,6 @@ class CrawlComponent extends Component implements CrawlConstants
     {
         $parent = $this->parent;
         $crawl_model = $parent->model("crawl");
-        $data['SCRIPT'] .= "doMessage('<h1 class=\"red\" >".
-            tl('crawl_component_starting_new_crawl')."</h1>')";
-
         $crawl_params = array();
         $crawl_params[self::STATUS] = "NEW_CRAWL";
         $crawl_params[self::CRAWL_TIME] = time();

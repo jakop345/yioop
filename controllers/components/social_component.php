@@ -1630,7 +1630,7 @@ EOD;
                     $data['MEDIA_NAME'] = $media_name;
                     $page_string = "((resource:$media_name|$file_name))";
                     $data["PAGE"] = $group_model->insertResourcesParsePage(
-                        $group_id, $page_id, $page_string);
+                        $group_id, $page_id, $locale_tag, $page_string);
                     $data["PAGE_ID"] = $page_id;
                 break;
                 case "pages":

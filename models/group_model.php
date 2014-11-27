@@ -910,7 +910,7 @@ class GroupModel extends Model
         if($page_id = $this->getPageID($group_id, $page_name, $locale_tag)) {
             //can only add and use resources for a page that exists
             $parsed_page = $this->insertResourcesParsePage($group_id, $page_id,
-                $parsed_page);
+                $locale_tag, $parsed_page);
             $sql = "UPDATE GROUP_PAGE SET PAGE=? WHERE ID = ?";
             $result = $db->execute($sql, array($parsed_page, $page_id));
         } else {
@@ -1140,9 +1140,11 @@ class GroupModel extends Model
      *
      * @param int $group_id group identifier of group wiki page belongs to
      * @param int $page_id identifier for page want to parse resources for
+     * @param string $locale_tag the locale of the parsed page.
      * @return string resulting html page
      */
-    function insertResourcesParsePage($group_id, $page_id, $parsed_page)
+    function insertResourcesParsePage($group_id, $page_id, $locale_tag,
+        $parsed_page)
     {
         $folders = $this->getGroupPageResourcesFolders($group_id,
             $page_id);
@@ -1155,14 +1157,27 @@ class GroupModel extends Model
         $num_matches = count($matches[0]);
         for($i = 0; $i < $num_matches; $i++) {
             $match_string = $matches[0][$i];
-            $resource_name = $matches[1][$i];
+            $resource_namespace_name = $matches[1][$i];
+            $namespace_parts = explode(":", $resource_namespace_name);
             $resource_description = $matches[2][$i];
+            if(count($namespace_parts) > 1) {
+                $current_namespace = array_shift($namespace_parts);
+                $current_page_id = $this->getPageId($group_id,
+                    $current_namespace, $locale_tag);
+                if($current_page_id === false || $current_page_id === NULL) {
+                    continue;
+                }
+                $resource_name = implode(":", $namespace_parts);
+            } else {
+                $resource_name = $resource_namespace_name;
+                $current_page_id = $page_id;
+            }
             $file_name = "$folder/$resource_name";
             $mime_type = mimeType($file_name);
             $mime_type_parts =explode(";", $mime_type);
             $mime_type = $mime_type_parts[0];
             $resource_url = $this->getGroupPageResourceUrl($group_id,
-                $page_id, $resource_name);
+                $current_page_id, $resource_name);
             if(in_array($mime_type, array('image/png', 'image/gif',
                 'image/jpeg', 'image/bmp', 'image/svg+xml'))) {
                 $replace_string = "<img src='$resource_url' ".
@@ -1187,7 +1202,8 @@ class GroupModel extends Model
                 foreach($add_sources as $extension) {
                     if(file_exists("$folder/$pre_name.$extension")) {
                         $resource_url = $this->getGroupPageResourceUrl(
-                            $group_id, $page_id, "$pre_name.$extension");
+                            $group_id, $current_page_id,
+                            "$pre_name.$extension");
                         $replace_string .= "<source src='$resource_url' ".
                             "type='video/$extension'/>\n";
                     }
