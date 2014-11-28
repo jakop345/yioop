@@ -635,7 +635,7 @@ class CrawlComponent extends Component implements CrawlConstants
                        iterate over existing indexes in search of new training
                        examples.
                      */
-                    if (isset($classifiers[$name])) {
+                    if(isset($classifiers[$name])) {
                         unset($classifiers[$name]);
                         Classifier::deleteClassifier($name);
                         $mix_name = Classifier::getCrawlMixName($name);
@@ -656,7 +656,7 @@ class CrawlComponent extends Component implements CrawlConstants
                     }
                 break;
                 case 'editclassifier':
-                    if (isset($classifiers[$name])) {
+                    if(isset($classifiers[$name])) {
                         $data['class_label'] = $name;
                         $this->editClassifier($data, $classifiers,
                             $machine_urls);

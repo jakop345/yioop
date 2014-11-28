@@ -561,14 +561,16 @@ class GroupModel extends Model
     }
     /**
      *  @param int $thread_id
+     *  @param int $owner_id
+     *  @param int $exclude_id
      */
-    function getThreadFollowers($thread_id, $exclude_id = -1)
+    function getThreadFollowers($thread_id, $owner_id, $exclude_id = -1)
     {
         $db = $this->db;
-        $params = array($thread_id);
+        $params = array($thread_id, $owner_id);
         $sql = "SELECT DISTINCT U.USER_NAME AS USER_NAME, U.EMAIL AS EMAIL ".
             "FROM GROUP_ITEM GI, USERS U ".
-            "WHERE GI.PARENT_ID=? AND GI.USER_ID=U.USER_ID ";
+            "WHERE GI.PARENT_ID=? AND (GI.USER_ID=U.USER_ID OR U_USER_ID=?)";
         if($exclude_id != -1) {
             $sql .= " AND U.USER_ID != ?";
             $params[] = $exclude_id;

@@ -183,7 +183,8 @@ class SocialComponent extends Component implements CrawlConstants
                             $group_model->getRegisterType($add_id);
                         if($add_id > 0 && $register && $register != NO_JOIN) {
                             $this->addGroup($data, $add_id, $register);
-                            if($_REQUEST['browse'] == 'true') {
+                            if(isset($_REQUEST['browse']) &&
+                                $_REQUEST['browse'] == 'true') {
                                 $_REQUEST['arg'] = 'search';
                             } else {
                                 $_REQUEST['arg'] = 'none';
@@ -782,7 +783,7 @@ class SocialComponent extends Component implements CrawlConstants
                     $id = $group_model->addGroupItem($parent_item["ID"],
                         $group_id, $user_id, $title, $description);
                     $followers = $group_model->getThreadFollowers(
-                        $parent_item["ID"], $user_id);
+                        $parent_item["ID"], $group['OWNER_ID'], $user_id);
                     $server = new MailServer(MAIL_SENDER, MAIL_SERVER,
                         MAIL_SERVERPORT, MAIL_USERNAME, MAIL_PASSWORD,
                         MAIL_SECURITY);
@@ -893,8 +894,31 @@ class SocialComponent extends Component implements CrawlConstants
                         $parent->redirectWithMessage(
                             tl('social_component_no_post_access'));
                     }
-                    $group_model->addGroupItem(0,
+                    $thread_id = $group_model->addGroupItem(0,
                         $group_id, $user_id, $title, $description);
+                    if($user_id != $group['OWNER_ID']) {
+                        $server = new MailServer(MAIL_SENDER, MAIL_SERVER,
+                            MAIL_SERVERPORT, MAIL_USERNAME, MAIL_PASSWORD,
+                            MAIL_SECURITY);
+                        $subject = tl('social_component_new_thread_mail',
+                            $group['GROUP_NAME']);
+                        $post_url = BASE_URL . "?c=group&a=groupFeeds&".
+                            "just_thread=" . $thread_id . "\n";
+                        $owner_name = $user_model->getUsername(
+                            $group['OWNER_ID']);
+                        $owner = $user_model->getUser($owner_name);
+                        $body = tl('social_component_new_thread_body',
+                            $group['GROUP_NAME'])."\n".
+                            "\"".$title."\"\n".
+                            $post_url .
+                            tl('social_component_notify_closing')."\n".
+                            tl('social_component_notify_signature');
+                        $message = tl('social_component_notify_salutation',
+                            $owner_name)."\n\n";
+                        $message .= $body;
+                        $server->send($subject, MAIL_SENDER,
+                            $owner['EMAIL'], $message);
+                    }
                     $parent->redirectWithMessage(
                         tl('social_component_thread_created'));
                 break;
