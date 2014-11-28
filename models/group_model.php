@@ -570,7 +570,7 @@ class GroupModel extends Model
         $params = array($thread_id, $owner_id);
         $sql = "SELECT DISTINCT U.USER_NAME AS USER_NAME, U.EMAIL AS EMAIL ".
             "FROM GROUP_ITEM GI, USERS U ".
-            "WHERE GI.PARENT_ID=? AND (GI.USER_ID=U.USER_ID OR U_USER_ID=?)";
+            "WHERE GI.PARENT_ID=? AND (GI.USER_ID=U.USER_ID OR U.USER_ID=?)";
         if($exclude_id != -1) {
             $sql .= " AND U.USER_ID != ?";
             $params[] = $exclude_id;
