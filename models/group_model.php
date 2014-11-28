@@ -560,9 +560,14 @@ class GroupModel extends Model
         return $row;
     }
     /**
-     *  @param int $thread_id
-     *  @param int $owner_id
-     *  @param int $exclude_id
+     *  Returns an array of user information about users who have contributed
+     *  to a thread or own the group a thread belongs to
+     *
+     *  @param int $thread_id the id of the thread that want users for
+     *  @param int $owner_id owner of group thread belongs to
+     *  @param int $exclude_id an id of a user to exclude from the array
+     *      returned
+     *  @return array user information of users following the thread
      */
     function getThreadFollowers($thread_id, $owner_id, $exclude_id = -1)
     {
@@ -578,11 +583,12 @@ class GroupModel extends Model
         $result = $db->execute($sql, $params);
         if(!$result) { return false; }
         $i = 0;
-        while($row[$i] = $db->fetchArray($result)) {
+        $rows = array();
+        while($rows[$i] = $db->fetchArray($result)) {
             $i++;
         }
-        unset($row[$i]); //last one will be null
-        return $row;
+        unset($rows[$i]); //last one will be null
+        return $rows;
     }
 
     /**
@@ -1170,13 +1176,21 @@ class GroupModel extends Model
                     continue;
                 }
                 $resource_name = implode(":", $namespace_parts);
+                $current_folders = $this->getGroupPageResourcesFolders(
+                    $group_id, $current_page_id);
+                if($current_folders) { 
+                    list($current_folder, $current_thumb_folder) =
+                        $current_folders;
+                }
             } else {
                 $resource_name = $resource_namespace_name;
                 $current_page_id = $page_id;
+                $current_folder = $folder;
+                $current_thumb_folder = $thumb_folder;
             }
-            $file_name = "$folder/$resource_name";
+            $file_name = "$current_folder/$resource_name";
             $mime_type = mimeType($file_name);
-            $mime_type_parts =explode(";", $mime_type);
+            $mime_type_parts = explode(";", $mime_type);
             $mime_type = $mime_type_parts[0];
             $resource_url = $this->getGroupPageResourceUrl($group_id,
                 $current_page_id, $resource_name);
@@ -1202,7 +1216,7 @@ class GroupModel extends Model
                 $pre_name = substr($resource_name, 0,
                     -strlen($current_extension) -1);
                 foreach($add_sources as $extension) {
-                    if(file_exists("$folder/$pre_name.$extension")) {
+                    if(file_exists("$current_folder/$pre_name.$extension")) {
                         $resource_url = $this->getGroupPageResourceUrl(
                             $group_id, $current_page_id,
                             "$pre_name.$extension");
