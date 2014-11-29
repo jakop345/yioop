@@ -562,6 +562,10 @@ class GroupfeedElement extends Element implements CrawlConstants
             tmp = '<div class="thread<?php e($clear); ?>"></div>';
             start_elt = elt(id).innerHTML.substr(0, tmp.length)
             if(start_elt != tmp) {
+                var group_header = "";
+                if(typeof(group_name) !== 'undefined') {
+                    group_header = '<h2><b>' + group_name + '</b></h2>';
+                }
                 elt(id).innerHTML =
                     tmp +
                     '<br />'
@@ -575,7 +579,7 @@ class GroupfeedElement extends Element implements CrawlConstants
                         group_id + '" />' +
                     '<input type="hidden" name="<?php e(CSRF_TOKEN); ?>" '+
                     'value="<?php e($data[CSRF_TOKEN]); ?>" />' +
-                    '<h2><b>' + group_name + '</b></h2>'+
+                    group_header+
                     '<p><b><label for="title-'+ id +'" ><?php
                         e(tl("groupfeed_element_subject"));
                     ?></label></b></p>' +
