@@ -694,9 +694,13 @@ class GroupModel extends Model
             $add_where = " AND ";
         }
         $user_id = $db->escapeString($user_id);
-        $non_public_where = " (UG.USER_ID='$user_id' OR ".
-            " G.REGISTER_TYPE IN ('".PUBLIC_JOIN."','".
+        if($for_group > 0) {
+            $non_public_where = " (UG.USER_ID='$user_id' OR ".
+                " G.REGISTER_TYPE IN ('".PUBLIC_JOIN."','".
                 PUBLIC_BROWSE_REQUEST_JOIN."') ) AND ";
+        } else {
+            $non_public_where = " UG.USER_ID='$user_id' AND ";
+        }
         $non_public_status = ($user_id != PUBLIC_GROUP_ID) ?
             " UG.STATUS='".ACTIVE_STATUS."' AND " : "";
         $where .= $add_where. $non_public_where .
@@ -788,9 +792,13 @@ class GroupModel extends Model
             $add_where = " AND ";
         }
         $user_id = $db->escapeString($user_id);
-        $non_public_where = " (UG.USER_ID='$user_id' OR ".
-            " G.REGISTER_TYPE IN ('".PUBLIC_JOIN."','".
+        if($for_group > 0) {
+            $non_public_where = " (UG.USER_ID='$user_id' OR ".
+                " G.REGISTER_TYPE IN ('".PUBLIC_JOIN."','".
                 PUBLIC_BROWSE_REQUEST_JOIN."') ) AND ";
+        } else {
+            $non_public_where = " UG.USER_ID='$user_id' AND ";
+        }
         $non_public_status = ($user_id != PUBLIC_GROUP_ID) ?
             " UG.STATUS='".ACTIVE_STATUS."' AND " : "";
         $where .= $add_where. $non_public_where .
