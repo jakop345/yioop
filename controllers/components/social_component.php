@@ -546,9 +546,13 @@ class SocialComponent extends Component implements CrawlConstants
             $group_info['GROUP_NAME']);
         $current_username = $user_model->getUserName(
             $_SESSION['USER_ID']);
+        $edit_user_url = NAME_SERVER . "?c=admin&a=manageGroups".
+            "&arg=editgroup&group_id=$add_id&visible_users=true".
+            "&user_filter=$current_username";
         $body = tl('social_component_activate_body',
             $current_username,
-            $group_info['GROUP_NAME'])."\n\n".
+            $group_info['GROUP_NAME'])."\n".
+            $edit_user_url . "\n\n".
             tl('social_component_notify_closing')."\n".
             tl('social_component_notify_signature');
         $message = tl(
