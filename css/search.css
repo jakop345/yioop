@@ -48,52 +48,42 @@ p
     padding: 0;
     width: 8.25in;
 }
-
 .mobile p
 {
     width: 300px;
 }
-
 .mobile pre
 {
    white-space:pre-wrap;
 }
-
 .echo-link
 {
     color: green;
 }
-
 .hidden
 {
     visibility: hidden;
 }
-
 .left
 {
     float: left;
 }
-
 .right
 {
     float: right;
 }
-
 .clear
 {
     clear:both;
 }
-
 .none
 {
     display:none;
 }
-
 .no-margin
 {
     margin: 0;
 }
-
 .inline div,
 .inline form,
 .inline p
@@ -120,103 +110,83 @@ p
 {
     text-indent: 0.25in;
 }
-
 span.indent1
 {
     margin-left: 0.25in;
 }
-
 span.indent2
 {
     margin-left: 0.5in;
 }
-
 span.indent3
 {
     margin-left: 0.75in;
 }
-
 span.indent4
 {
     margin-left: 1in;
 }
-
 span.indent5
 {
     margin-left: 1.25in;
 }
-
 .mobile .indent
 {
     text-indent: 10px;
 }
-
 .mobile span.indent1
 {
     margin-left: 10px;
 }
-
 .mobile span.indent2
 {
     margin-left: 20px;
 }
-
 .mobile span.indent3
 {
     margin-left: 30px;
 }
-
 .mobile span.indent4
 {
     margin-left: 40px;
 }
-
 .mobile span.indent5
 {
     margin-left: 50px;
 }
-
 .html-ltr .float-opposite
 {
     float: right;
 }
-
 .html-rtl .float-opposite
 {
     float: left;
 }
-
 .html-ltr .float-same
 {
     float: left;
 }
-
 .html-rtl .float-same
 {
     float: right;
 }
-
 .align-right
 {
     text-align: right;
 }
-
 .align-left
 {
     text-align: left;
 }
-
 .align-center
 {
     text-align: center;
 }
-
 .blockquote
 {
     margin-left: 0.3in;
     margin-right: 0.3in;
 }
-
 .mobile .blockquote
 {
     margin-left: 25px;
@@ -226,12 +196,10 @@ span.indent5
 {
     font-size:12pt;
 }
-
 .medium-font
 {
     font-size:16pt;
 }
-
 .big-font
 {
     font-size:20pt;
@@ -240,12 +208,10 @@ span.indent5
 {
     font-size:10pt;
 }
-
 .mobile .medium-font
 {
     font-size:12pt;
 }
-
 .mobile .big-font
 {
     font-size:14pt;
@@ -258,91 +224,74 @@ span.indent5
 {
     color: green;
 }
-
 .highlight,
 .back-red
 {
     background-color: red;
 }
-
 .back-green
 {
     background-color: green;
 }
-
 .back-gray
 {
     background-color: lightgray;
 }
-
 .gray
 {
     color: gray;
 }
-
 .light-gray
 {
     color: #BBB;
 }
-
 .back-dark-gray
 {
     background-color: #CCC;
 }
-
 .gray-link
 {
     color: gray;
     text-decoration: none;
 }
-
 .gray-link:hover
 {
     text-decoration: underline;
 }
-
 a.echo-link
 {
     text-decoration: none;
 }
-
 a.echo-link:hover
 {
     text-decoration: underline;
 }
-
 .back-yellow
 {
     background-color: yellow;
 }
-
 .clear
 {
     clear: both;
 }
-
 .width-half
 {
     width:50%;
 }
-
 .width-three-quarter
 {
     width:75%;
 }
-
 .width-half img,
 .width-three-quarter img
 {
     width:100%;
 }
-
 .frame
 {
     border: 1px solid #ccc;
     position: relative;
 }
-
 .solid-border {
     border: 1px solid #ccc;
     border-radius: 8px;
@@ -351,54 +300,44 @@ a.echo-link:hover
     border: 1px dashed #ccc;
     border-radius: 8px;
 }
-
 .name-table
 {
     padding: 5px;
 }
-
 .very-narrow-field
 {
     width: 1in;
     font-size:10pt;
     height:25px;
 }
-
 .mobile .very-narrow-field
 {
     width: 80px;
 }
-
 .narrow-field
 {
     width: 2in;
 }
-
 .mobile .narrow-field
 {
     width: 100px;
 }
-
 .wide-field
 {
     width: 3in;
 }
-
 .mobile .wide-field
 {
     width: 150px;
 }
-
 .extra-wide-field
 {
     width: 5in;
 }
-
 .mobile .extra-wide-field
 {
     width: 200px;
 }
-
 .tall-text-area
 {
     height: 4in;
@@ -409,92 +348,69 @@ a.echo-link:hover
     height: 2.5in;
     width: 100%;
 }
-
 .mobile .tall-text-area
 {
     width: 90%;
 }
-
 .medium-text-area
 {
     height: 2.5in;
     width: 100%;
 }
-
 .mobile .medium-text-area
 {
     width: 90%;
 }
-
 .short-text-area
 {
     width: 100%;
     height: 1in;
 }
-
 .mobile .short-text-area
 {
     width: 90%;
 }
-
 .center
 {
     text-align: center;
 }
-
 .bold
 {
     font-weight: bold;
 }
-
-.mobile .center
-{
-    left: -40px;
-    position: relative;
-    right: -40px;
-    top: 10px;
-}
-
 .sides-margin
 {
     margin-left:0.6in;
     margin-right:0.6in;
 }
-
 .reduce-top
 {
     position: relative;
     top: -.1in;
 }
-
 .top-margin
 {
     margin-top: .2in;
 }
-
 .no-margin
 {
     margin: 0;
 }
-
 .box
 {
     border: 1px ridge #ccc;
     padding: 3px;
 }
-
 .black-box
 {
     border:2px ridge black;
     padding:5px;
 }
-
 .light-gray-box
 {
     border:2px ridge #BBB;
     padding:5px;
 }
-
 .slight-pad
 {
     padding: 0.1in;
@@ -512,82 +428,67 @@ a.echo-link:hover
 {
     vertical-align: top;
 }
-
 fieldset
 {
     border-color:black;
 }
-
 /* set up prefixes for left-to-right, right-to-left and vertical text support*/
 .html-tb
 {
     -ms-block-progression: tb;
 }
-
 .html-rl
 {
     -ms-block-progression: rl;
     -moz-transform: rotate(90deg) translate(2in);
     -webkit-transform: rotate(90deg) translate(2in);
 }
-
 .html-lr
 {
     -ms-block-progression: lr;
     -moz-transform: rotate(90deg);
     -webkit-transform: rotate(90deg);
 }
-
 .html-rtl
 {
     direction: rtl;
     text-align:right;
 }
-
 .html-ltr
 {
     direction: ltr;
     text-align: left;
 }
-
 body.html-ltr
 {
     margin-left: 0.5in;
 }
-
 body.html-rtl
 {
     margin-right: 0.5in;
 }
-
 body.html-rl-tb
 {
     writing-mode: rl-tb;
 }
-
 body.html-lr-tb
 {
     writing-mode: lr-tb;
 }
-
 body.html-tb-rl
 {
     writing-mode: tb-rl;
-
 }
-
 body.html-tb-lr
 {
     writing-mode: tb-lr;
 }
-
 /* set up global font preferences */
 body
 {
     font-family: Arial, Helvetica, sans-serif;
     min-height: 16in;
 }
-
 /* .mobile is used for phone devices -- an attempt has been made to
    make the default non-mobile version of the page work with tablets
 */
@@ -601,7 +502,6 @@ body.mobile
     top: 0;
     width: 320px;
 }
-
 /* bar on which web, images, video subsearches and sign-in stuff live
    for many of the below things we need to handle them different on the landing
    page from pages where search results appear
@@ -615,7 +515,6 @@ body.mobile
     right: 0;
     top: -12px;
 }
-
 .landing-top-bar
 {
     height: 45px;
@@ -625,7 +524,6 @@ body.mobile
     top: -12px;
     width: 100%;
 }
-
 .mobile .top-bar,
 .mobile .landing-top-bar
 {
@@ -638,7 +536,6 @@ body.mobile
     min-width: 320px;
     z-index: 1;
 }
-
 
 /* this is for informational messages when settings are changed or admin stuff
    done
@@ -653,14 +550,12 @@ body.mobile
     width: 8.5in;
     z-index: 3;
 }
-
 .mobile #message
 {
     left: 20px;
     right: 20px;
     width: 320px;
 }
-
 /*
    for the sign-in, settings, admin, logout links on the top-bar
  */
@@ -672,24 +567,20 @@ body.mobile
     padding:0;
     text-align: right;
 }
-
 .html-rtl .user-nav
 {
-
     margin:0 0 0 0.55in;
     min-width: 9.5in;
     max-width: 10.5in;
     padding:0;
     text-align: left;
 }
-
 .html-ltr .user-nav ul li
 {
     display: inline;
     list-style-type: none;
     padding-left: 20px;
 }
-
 
 .html-rtl .user-nav ul li
 {
@@ -698,10 +589,8 @@ body.mobile
     padding-right: 20px;
 }
 
-
 .mobile .user-nav
 {
-
     font-size:11pt;
     left:0px;
     min-width: 0;
@@ -710,15 +599,11 @@ body.mobile
     right:0px;
     top: -10px;
     width:320px;
-
 }
-
 .mobile .user-nav ul li
 {
-
     padding:1px;
 }
-
 /*
    For the web, images, video links on the top-bar
  */
@@ -726,23 +611,19 @@ body.mobile
 {
     float:left;
 }
-
 ul.out-list li.outer
 {
     display: inline;
     list-style-type: none;
 }
-
 .html-ltr .subsearch ul.out-list li.outer
 {
     padding-left: 20px;
 }
-
 #more-menu
 {
     display:none;
 }
-
 #more-on b
 {
     background-color: white;
@@ -755,17 +636,14 @@ ul.out-list li.outer
     z-index: 4;
 }
 
-
 #more-on
 {
     display: none;
 }
-
 #more-on
 {
     background-color: gray;
 }
-
 li.outer div
 {
     background-color: gray;
@@ -774,24 +652,20 @@ li.outer div
     width:1.25in;
     z-index:3;
 }
-
 .html-ltr li.outer div
 {
     left: 1.85in;
     position: relative;
 }
-
 .html-rtl li.outer div
 {
     right: 1.85in;
     position: relative;
 }
-
 .mobile .subsearch ul.out-list li.outer
 {
     padding-left: 3px;
 }
-
 .mobile li.outer div
 {
     left: 2px;
@@ -799,18 +673,15 @@ li.outer div
     right: 2px;
     width: 80px;
 }
-
 ul.in-list
 {
     background-color: white;
 }
-
 .mobile ul.in-list
 {
     padding-left:2px;
     margin-left:0;
 }
-
 ul.in-list li
 {
     list-style-type: none;
@@ -822,19 +693,16 @@ ul.in-list li
     padding-bottom: 2px;
     padding-top: 2px;
 }
-
 .html-rtl .subsearch ul
 {
     float: right;
 }
-
 .html-rtl .subsearch ul li
 {
     display: inline;
     list-style-type: none;
     padding-left: 20px;
 }
-
 .mobile .subsearch
 {
     left: -40px;
@@ -845,19 +713,16 @@ ul.in-list li
     width: 220px;
     z-index:1;
 }
-
 .mobile .subsearch ul li
 {
     font-size: 11pt;
     padding-left: 3px;
     padding-right: 3px;
 }
-
 .landing-spacer
 {
     height: 6in;
 }
-
 .tall-landing-spacer
 {
     height: 10in;
@@ -872,33 +737,27 @@ ul.in-list li
     position: absolute;
     top: 1.5in;
 }
-
 .html-rtl .landing
 {
     clear: both;
     position: absolute;
     right: 1in;
     top: 1.5in;
-
 }
-
 .small-top
 {
     position: relative;
     top:-.8in;
 }
-
 .medium-top
 {
     position: relative;
     top:-.4in;
 }
-
 .square-list
 {
     list-style-type: square;
 }
-
 .mobile .landing
 {
     clear: both;
@@ -908,13 +767,11 @@ ul.in-list li
     right: 10px;
     top: 10px;
 }
-
 .mobile .small-top
 {
     position: relative;
     top:0in;
 }
-
 /*
    Style tweaks for blog, privacy, bot, settings, and admin pages
  */
@@ -925,13 +782,11 @@ ul.in-list li
     right: -10px;
     top: 10px;
 }
-
 .mobile .non-search .logo
 {
     position: relative;
     top: 20px;
 }
-
 /*
    Styles to control logo (image + adjacent text) on various pages
  */
@@ -953,7 +808,6 @@ ul.in-list li
     position: relative;
     top: 30px;
 }
-
 .group-heading small
 {
     position: relative;
@@ -974,7 +828,6 @@ ul.in-list li
     position: relative;
     top: 0px;
 }
-
 .landing .logo
 {
     min-width: 6in;
@@ -982,18 +835,15 @@ ul.in-list li
     text-align: center;
     top: 0;
 }
-
 .mobile .landing .logo
 {
     min-width: 0px;
 }
-
 .logo img
 {
     border: 0;
     width:2in;
 }
-
 .mobile .logo img
 {
     left: 0px;
@@ -1001,13 +851,11 @@ ul.in-list li
     top: 15px;
     width: 50px;
 }
-
 .landing .logo img
 {
     border: 0;
     width:3in;
 }
-
 .mobile .landing .logo img
 {
     position: relative;
@@ -1015,7 +863,6 @@ ul.in-list li
     top: 14px;
     width: 200px;
 }
-
 
 .mobile .admin-heading img
 {
@@ -1025,13 +872,11 @@ ul.in-list li
     top: 30px;
     width: 50px;
 }
-
 .logo span
 {
     position: relative;
     top: -.3in;
 }
-
 
 .mobile .admin-heading span
 {
@@ -1040,7 +885,6 @@ ul.in-list li
     right: 70px;
     top: 20px;
 }
-
 .mobile .non-search .logo span
 {
     left: 20px;
@@ -1048,7 +892,6 @@ ul.in-list li
     right: 20px;
     width: 200px;
 }
-
 .mobile .non-search .logo img
 {
     left: 20px;
@@ -1057,11 +900,9 @@ ul.in-list li
     top: -20px;
     width: 50px;
 }
-
 /*
    Styles for footers on various pages
  */
-
 .landing-footer,
 .setting-footer,
 .signin-exit
@@ -1071,14 +912,12 @@ ul.in-list li
     min-width:8.5in;
     text-align: center;
 }
-
 .mobile .landing-footer,
 .mobile .setting-footer,
 .mobile .signin-exit
 {
     min-width:0;
 }
-
 .mobile .landing-footer
 {
     left: 0;
@@ -1089,7 +928,6 @@ ul.in-list li
     top: 0;
     width: 320px;
 }
-
 .mobile .landing .landing-footer,
 .mobile .setting-footer,
 .mobile .signin-exit
@@ -1103,54 +941,46 @@ ul.in-list li
     top: -20px;
     width: 320px;
 }
-
 .html-ltr .signin-exit li
 {
     text-align:left;
     list-style-type: square;
     margin-left:2.5in;
 }
-
 .html-rtl ul .signin-exit
 {
     text-align:right;
     list-style-type: square;
     margin-right:2.5in;
 }
-
 .mobile .signin-exit li
 {
     margin-left:25%;
     margin-right:25%;
 }
-
 /*
    If query information is available then web_layout will
    render statistics about all the SQL and search engine
    queries that were executed for a page. These styles
    control how this diagnostic info renders
  */
-
 .query-statistics
 {
     border-top: 2px solid gray;
     color: gray;
     margin-top: 0.4in;
 }
-
 .mobile .query-statistics
 {
     position: relative;
     top: 200px;
 }
-
 .query
 {
     border: 1px solid gray;
     margin: 0.1in;
     padding: 0.05in;
 }
-
 /*
    Styles for the login, settings, and register pages
  */
@@ -1158,12 +988,10 @@ ul.in-list li
 {
     text-align: right;
 }
-
 .html-rtl .cancel
 {
     text-align: left;
 }
-
 .html-ltr .login,
 .html-ltr .settings
 {
@@ -1171,14 +999,12 @@ ul.in-list li
     left: 1.25in;
     position: relative;
 }
-
 .html-ltr .register
 {
     font-size: 16pt;
     left: .75in;
     position: relative;
 }
-
 .html-rtl .login,
 .html-rtl .settings
 {
@@ -1186,22 +1012,18 @@ ul.in-list li
     position: relative;
     right: 1.25in;
 }
-
 .html-rtl .register
 {
     font-size: 16pt;
     right: .75in;
     position: relative;
 }
-
 .login input,
 .register input
 {
     font-size: 16pt;
     margin: 5px;
-
 }
-
 .mobile .login,
 .mobile .register,
 .mobile .settings,
@@ -1212,7 +1034,6 @@ ul.in-list li
     position: relative;
     right: 10px;
 }
-
 .login button,
 .register button,
 .settings button,
@@ -1220,7 +1041,6 @@ ul.in-list li
 {
     font-size:16pt;
 }
-
 .register select
 {
     font-size:14pt;
@@ -1236,7 +1056,6 @@ ul.in-list li
 {
     font-size:12pt;
 }
-
 .user-icon
 {
     width: 1.4in;
@@ -1298,7 +1117,6 @@ ul.in-list li
     top: -10px;
     width: 200px;
 }
-
 .mobile .stats img
 {
     left: 0px;
@@ -1306,11 +1124,9 @@ ul.in-list li
     top: 0px;
     width: 50px;
 }
-
 /*
   Styles for search and search result pages
  */
-
 .html-ltr .serp
 {
     left: 2.2in;
@@ -1318,7 +1134,6 @@ ul.in-list li
     top: -0.9in;
     width: 8in;
 }
-
 .html-ltr .serp-results
 {
     left: 0.5in;
@@ -1333,7 +1148,6 @@ ul.in-list li
     top: -1.7in;
     width: 8in;
 }
-
 .html-rtl .thesaurus-serp-results
 {
     right: 2.2in;
@@ -1341,7 +1155,6 @@ ul.in-list li
     top: -1.7in;
     width: 8in;
 }
-
 .html-rtl .serp
 {
     position: relative;
@@ -1350,7 +1163,6 @@ ul.in-list li
     width: 8in;
 }
 
-
 .html-rtl .serp-results
 {
     position: relative;
@@ -1358,7 +1170,6 @@ ul.in-list li
     top: -0.8in;
     width: 8in;
 }
-
 .html-ltr .serp-stats
 {
     color: #666;
@@ -1369,7 +1180,6 @@ ul.in-list li
     position: relative;
     top: -1in;
 }
-
 .html-rtl .serp-stats
 {
     color: #666;
@@ -1404,54 +1214,46 @@ ul.in-list li
 {
     clear: both;
 }
-
 .word-cloud-spacer
 {
     margin-left:1em;
     font-weight: bold;
     color : gray;
 }
-
 .word-cloud-1
 {
     font-size: 16pt;
     color: #080;
     text-decoration: none;
 }
-
 .word-cloud-2
 {
     font-size: 15pt;
     color: #090;
     text-decoration: none;
 }
-
 .word-cloud-3
 {
     font-size: 14pt;
     color: #0A0;
     text-decoration: none;
 }
-
 .word-cloud-4
 {
     font-size: 13pt;
     color: #0B0;
     text-decoration: none;
 }
-
 .word-cloud-5
 {
     font-size: 12pt;
     color: #0C0;
     text-decoration: none;
 }
-
 .word-cloud:hover
 {
     text-decoration: underline;
 }
-
 
 .access-result
 {
@@ -1460,20 +1262,15 @@ ul.in-list li
     padding: 5px;
     margin:10px;
 }
-
-
-
 .group-result
 {
     box-shadow: 0px 0px 3px 3px #ccc;
     padding: .1in .1in .25in .1in;
 }
-
 .button-group-result
 {
     padding: .1in .1in .25in .1in;
 }
-
 .button-group-result h2,
 .result h2,
 .group-result h2
@@ -1481,20 +1278,22 @@ ul.in-list li
     font-size: 14pt;
     font-weight: normal;
 }
-
 div.button-group-result,
 div.group-result
 {
     font-size: 12pt;
     width:97%;
 }
-
+.mobile div.group-result
+{
+    margin: auto;
+    width:90%;
+}
 .serp-links-score
 {
     clear: both;
     color: #666;
 }
-
 .mobile .serp
 {
     left: 50px;
@@ -1503,7 +1302,6 @@ div.group-result
     top: -70px;
     width: 300px;
 }
-
 .mobile .serp-results
 {
     left: 3px;
@@ -1513,7 +1311,6 @@ div.group-result
     width: 300px;
     font-size:10pt;
 }
-
 .html-ltr .spell
 {
     color: #666;
@@ -1523,7 +1320,6 @@ div.group-result
     top: -0.6in;
     z-index: 1;
 }
-
 .html-rtl .spell
 {
     color: #666;
@@ -1717,7 +1513,6 @@ div.group-result
     position:relative;
     right:-4px;
 }
-
 .mobile .search-button
 {
     left:-4px;
@@ -1725,7 +1520,6 @@ div.group-result
     right:-4px;
     width:50px;
 }
-
 /*
    Styles for the word suggest drop down on search pages
  */
@@ -1749,21 +1543,17 @@ div.group-result
     position: relative;
     top: 0.20in;
     width: 5.6in;
-
 }
-
 .landing .dropdown
 {
     position: relative;
     top:0;
     width: 8in;
 }
-
 .mobile .dropdown
 {
     display: none;
 }
-
 .suggest-list
 {
     border: 0;
@@ -1804,12 +1594,10 @@ div.group-result
     text-decoration: none;
     z-index: 5;
 }
-
 .mobile .suggest-list
 {
     display: none;
 }
-
 /*
    Styles for the bottom of search results links to additional
    pages of search results
@@ -1819,7 +1607,6 @@ div.group-result
     margin-bottom: 8px;
     margin-top: 8px;
 }
-
 .html-ltr .pagination ul,
 .html-ltr .pagination ul li
 {
@@ -1828,7 +1615,6 @@ div.group-result
     padding-left: 0;
     padding-right: 8px;
 }
-
 .html-rtl .pagination ul,
 .html-rtl .pagination ul li
 {
@@ -1837,7 +1623,6 @@ div.group-result
     padding-left: 8px;
     padding-right: 0;
 }
-
 .html-ltr .pagination ul li a.item
 {
     border-color: blue;
@@ -1853,7 +1638,6 @@ div.group-result
     text-decoration: none;
     width: 25px;
 }
-
 .html-rtl .pagination ul li a.item
 {
     border-color: blue;
@@ -1869,14 +1653,12 @@ div.group-result
     text-decoration: none;
     width: 25px;
 }
-
 .micro-pagination ul li a.item:hover,
 .pagination ul li a.item:hover
 {
     background-color: #88F;
     color: white;
 }
-
 .html-ltr .pagination ul li span.item
 {
     border-color: black;
@@ -1892,7 +1674,6 @@ div.group-result
     top: -1px;
     width: 25px;
 }
-
 .html-rtl .pagination ul li span.item
 {
     border-color: black;
@@ -1907,7 +1688,6 @@ div.group-result
     top: -1px;
     width: 25px;
 }
-
 .html-ltr .pagination ul li span.end
 {
     display:block;
@@ -1959,15 +1739,12 @@ div.group-result
     height: 90px;
     padding-top: 0.05in;
     width: 128px;
-
 }
-
 .video-link .thumb
 {
     height: 80px;
     width: 120px;
 }
-
 .html-ltr .video-play
 {
     height: 30px;
@@ -1976,7 +1753,6 @@ div.group-result
     top: -60px;
     width: 40px;
 }
-
 .html-rtl .video-link
 {
     float: right;
@@ -1985,7 +1761,6 @@ div.group-result
     padding-top: 0.05in;
     width: 128px;
 }
-
 .html-rtl .video-play
 {
     height: 30px;
@@ -1994,7 +1769,6 @@ div.group-result
     top: -60px;
     width: 40px;
 }
-
 /*
    Styles for image subsearch page
  */
@@ -2004,14 +1778,12 @@ div.group-result
     margin-right: 10%;
     margin-top: 10px;
 }
-
 .image-list img
 {
     width:1in;
     height:1in;
     padding: 5px;
 }
-
 .mobile .image-list
 {
     margin-left: 2px;
@@ -2020,14 +1792,12 @@ div.group-result
     position: relative;
     top: 5px;
 }
-
 .mobile .image-list img
 {
     height: 50px;
     width: 50px;
     padding:2px;
 }
-
 /*
    Styles for tables on login, settings, and admin pages
  */
@@ -2035,22 +1805,18 @@ div.group-result
 {
     width: 190px;
 }
-
 .mobile .table-input input
 {
     width: 150px;
 }
-
 .html-ltr .table-label
 {
     text-align: right;
 }
-
 .html-ltr .table-input
 {
     text-align: left;
 }
-
 .html-rtl .table-label
 {
     text-align: left;
@@ -2059,7 +1825,6 @@ div.group-result
 {
     text-align: right;
 }
-
 /*
     Styles for different admin page elements
  */
@@ -2074,7 +1839,6 @@ div.group-result
     position: relative;
     width: 8in;
 }
-
 .mobile .content
 {
     clear: both;
@@ -2085,13 +1849,11 @@ div.group-result
     top: 0;
     width: 320px;
 }
-
 .content p,
 .content div
 {
     padding-bottom: 8px;
 }
-
 .html-ltr .button-box
 {
     color: black;
@@ -2105,7 +1867,6 @@ div.group-result
     top: 0.015in;
 }
 
-
 .html-rtl .button-box
 {
     color: black;
@@ -2118,7 +1879,6 @@ div.group-result
     text-decoration: none;
     top: 0.015in;
 }
-
 .mobile .button-box
 {
     font-size: 12pt;
@@ -2127,26 +1887,22 @@ div.group-result
     margin-right: 0;
     margin-bottom: 1px;
 }
-
 .tiny-button-box
 {
     font-size: 12pt;
     margin:1px;
     padding:1px;
 }
-
 .html-ltr .component-container
 {
     float: left;
     width: 2.6in;
 }
-
 .html-rtl .component-container
 {
     float: right;
     width: 2.6in;
 }
-
 .html-ltr .activity-menu,
 .html-rtl .activity-menu
 {
@@ -2157,7 +1913,6 @@ div.group-result
     width: 2.5in;
     margin-bottom:.1in;
 }
-
 .mobile .activity-menu
 {
     border: 0;
@@ -2166,7 +1921,6 @@ div.group-result
     top: 100px;
     width:320px;
 }
-
 .activity-menu h2
 {
     border-top-right-radius: 8px;
@@ -2176,18 +1930,15 @@ div.group-result
     margin: 0;
     padding: .01in .05in .01in .05in;
 }
-
 .mobile .activity-menu h2
 {
     display: none;
 }
-
 .mobile .activity-menu select
 {
     font-size:16pt;
     width:320px;
 }
-
 .activity-menu li
 {
     list-style-position: inside;
@@ -2195,24 +1946,20 @@ div.group-result
     margin: 0;
     padding: 0.05in;
 }
-
 .activity-menu li.bottom-border
 {
     border-bottom: 1px solid #ccc;
 }
-
 .activity-menu li a
 {
     color: #222;
     text-decoration: none;
 }
-
 .activity-menu li a:hover
 {
     color: #222;
     text-decoration: underline;
 }
-
 .activity-menu ul
 {
     border-radius: 8px;
@@ -2238,7 +1985,6 @@ div.group-result
     position: relative;
     top: 30px;
 }
-
 .html-ltr .current-activity
 {
     margin-left: 2.75in;
@@ -2273,7 +2019,6 @@ div.group-result
     position: relative;
     top: 30px;
 }
-
 .mobile .current-activity,
 .mobile .small-margin-current-activity
 {
@@ -2300,7 +2045,6 @@ div.group-result
     margin-top: 0.05in;
     padding-top: 0.05in;
 }
-
 .current-activity input,
 .small-margin-current-activity input
 {
@@ -2308,7 +2052,6 @@ div.group-result
     position: relative;
     top: 2px;
 }
-
 .current-activity object,
 .small-margin-current-activity object
 {
@@ -2316,25 +2059,21 @@ div.group-result
     min-width: 6in;
     width: 8in;
 }
-
 .current-activity select,
 .small-margin-current-activity select
 {
     font-size: 16pt;
 }
-
 .mobile .current-activity select,
 .small-margin-current-activity select
 {
     font-size: 12pt;
 }
-
 .current-activity pre,
 .small-margin-current-activity pre
 {
     font-size: 10pt;
 }
-
 .table-margin
 {
     font-size:14pt;
@@ -2352,7 +2091,6 @@ div.group-result
     padding:1px;
     top: 0.1in;
 }
-
 .html-rtl .table-margin
 {
     position:relative;
@@ -2360,7 +2098,6 @@ div.group-result
     padding:1px;
     top: 0.1in;
 }
-
 .role-table,
 .locale-table
 {
@@ -2374,7 +2111,6 @@ div.group-result
     margin-left: 0.1in;
     padding: 1px;
 }
-
 .html-rtl .role-table,
 .html-rtl .role-table td,
 .html-rtl .role-table th
@@ -2390,7 +2126,6 @@ div.group-result
     padding:0;
     margin:0;
 }
-
 .html-ltr .locale-table,
 .html-ltr .locale-table td,
 .html-ltr .locale-table th
@@ -2398,7 +2133,6 @@ div.group-result
     border: 1px ridge black;
     margin-left: 0.2in;
 }
-
 .html-rtl .locale-table,
 .html-rtl .locale-table td,
 .html-rtl .locale-table th
@@ -2406,7 +2140,6 @@ div.group-result
     border: 1px ridge black;
     margin-right: 0.2in;
 }
-
 .tab-menu-list
 {
     border-bottom: 2px solid black;
@@ -2414,13 +2147,11 @@ div.group-result
     padding: 0px;
     z-index: 1;
 }
-
 .tab-menu-list li
 {
     display: inline;
     list-style-type: none;
 }
-
 .tab-menu-list a
 {
     background-color:#EEE;
@@ -2431,13 +2162,11 @@ div.group-result
     padding: 5px 5px 0px 5px;
     text-decoration: none;
 }
-
 .tab-menu-list a.active
 {
     background-color: white;
     border-bottom: 3px solid white;
 }
-
 .tab-menu-content
 {
     border: 1px solid black;
@@ -2445,7 +2174,6 @@ div.group-result
     padding: 10px;
     z-index: 2;
 }
-
 .crawls-table,
 .crawls-table td,
 .crawls-table th,
@@ -2466,12 +2194,10 @@ div.group-result
     border: 1px ridge black;
     padding: 2px;
 }
-
 .mixes-table td
 {
     font-size:12pt;
 }
-
 .html-ltr .file-types-table,
 .html-ltr .file-types-all td,
 .html-ltr .classifiers-table,
@@ -2482,7 +2208,6 @@ div.group-result
    margin-left: 0.3in;
    vertical-align: top;
 }
-
 .html-rtl .file-types-table,
 .html-rtl .file-types-all td,
 .html-rtl .search-page-table,
@@ -2491,7 +2216,6 @@ div.group-result
    margin-right: 0.3in;
    vertical-align: top;
 }
-
 .mobile .file-types-table,
 .mobile .file-types-all td,
 .mobile .search-page-table,
@@ -2501,17 +2225,14 @@ div.group-result
    margin-right: 2px;
    vertical-align: top;
 }
-
 .html-ltr .weights-table th
 {
     text-align: right;
 }
-
 .html-rtl .weights-table th
 {
     text-align: left;
 }
-
 .machine-table,
 .machine-table td,
 .machine-table th
@@ -2520,13 +2241,11 @@ div.group-result
     margin: 2px;
     padding: 3px;
 }
-
 .toggle-table,
 .toggle-table td
 {
     border: 1px ridge black;
 }
-
 .file-types-table td,
 .translate-table,
 .translate-table td,
@@ -2534,20 +2253,17 @@ div.group-result
 {
     border: 1px ridge black;
 }
-
 .classifiers-table td.check
 {
     padding: 0;
     text-align: center;
 }
-
 .indexing-plugin-table
 {
     margin-left: 0.3in;
     margin-right: 0.3in;
     padding: 3px;
 }
-
 .indexing-plugin-table,
 .indexing-plugin-table td,
 .indexing-plugin-table th
@@ -2555,24 +2271,20 @@ div.group-result
     border: 1px ridge black;
     text-align: center;
 }
-
 .indexing-plugin-table th
 {
     padding: 0.04in;
 }
-
 .html-ltr .indexing-plugin-table td.check
 {
     padding: 0.1in;
     text-align: left;
 }
-
 .html-rtl .indexing-plugin-table td.check
 {
     padding: 0.1in;
     text-align: left;
 }
-
 .indexing-plugin-lightbox, .share-lightbox
 {
     background-color:gray;
@@ -2586,7 +2298,6 @@ div.group-result
     width:100%;
     z-index:100;
 }
-
 .mobile .indexing-plugin-lightbox
 {
     left: 0px;
@@ -2607,7 +2318,6 @@ div.group-result
     position: absolute;
     width: 60%;
     z-index:101;
-
 }
 .indexing-plugin-lightbox .light-content
 {
@@ -2708,7 +2418,6 @@ table.wikitable > caption
 {
     color: gray;
 }
-
 #label-docs-form th,
 #label-docs-queue .actions
 {
@@ -2716,38 +2425,31 @@ table.wikitable > caption
     padding: 0.1in 0.2in 0.1in 0in;
     width: 1.0in;
 }
-
 #label-docs-queue .actions
 {
     padding: 0.1in;
 }
-
 #label-docs-queue
 {
     font-size: 11pt;
 }
-
 #label-docs-queue td
 {
     vertical-align: top;
     padding-top: 10px;
 }
-
 #label-docs-queue .labelled td
 {
     background-color: #f0f0f0;
 }
-
 #label-docs-queue .notinclass td
 {
     background-color: #FFE0E0;
 }
-
 #label-docs-queue .inclass td
 {
     background-color: #F0FFF0;
 }
-
 #label-docs-queue tr.inclass a.inclass,
 #label-docs-queue tr.notinclass a.notinclass,
 #label-docs-queue tr.skip a.skip
@@ -2757,28 +2459,23 @@ table.wikitable > caption
     font-weight: bold;
     text-decoration: none;
 }
-
 #label-docs-queue p
 {
     width: auto;
     margin: 3px 0px;
 }
-
 #label-docs-queue .info
 {
     padding-left: 7px;
 }
-
 #label-docs-queue .description
 {
     color: #666;
 }
-
 #label-docs-queue .description b
 {
     color: black;
 }
-
 #transfer
 {
     background-color: black;
@@ -2794,7 +2491,6 @@ table.wikitable > caption
     width: 100%;
     z-index: 200;
 }
-
 .html-ltr #help
 {
     border-radius: 8px;
@@ -2804,7 +2500,6 @@ table.wikitable > caption
     left: 11.5in;
     top: 135px;
 }
-
 .html-rtl #help
 {
     border-radius: 8px;
@@ -2814,7 +2509,6 @@ table.wikitable > caption
     right: 11.5in;
     top: 135px;
 }
-
 .html-ltr #small-margin-help
 {
     border-radius: 8px;
@@ -2824,7 +2518,6 @@ table.wikitable > caption
     left: 11.5in;
     top: 135px;
 }
-
 .html-rtl #small-margin-help
 {
     border-radius: 8px;
@@ -2834,7 +2527,6 @@ table.wikitable > caption
     right: 9.5in;
     top: 135px;
 }
-
 .html-ltr #mobile-help
 {
     float: left;
@@ -2842,7 +2534,6 @@ table.wikitable > caption
     position: absolute;
     top: 142px;
 }
-
 .html-rtl #mobile-help
 {
     float: left;
@@ -2850,37 +2541,39 @@ table.wikitable > caption
     position: absolute;
     top: 142px;
 }
-
-.help-pane{
+.help-pane
+{
     display : none;
     width: 320px;
     border:2px solid #0094ff;
 }
-
-.small-margin-help-pane {
+.small-margin-help-pane
+{
     display: none;
     width: 380px;
     border: 2px solid #0094ff;
     left: -1in;
     top: 1in;
 }
-
-.help-title {
+.help-title
+{
     background:#0094ff;
     color:white;
     font-size: 16pt;
     margin: 0;
     padding: .05in;
 }
-.help-pane p {
+.help-pane p
+{
     color:#333;
     padding:10px;
 }
-.wiki-resource-image{
+.wiki-resource-image
+{
     max-width:100%;
 }
-
-.help-button{
+.help-button
+{
     bottom: 50px;
     cursor: pointer;
     border: 1px solid #2d2bdb;
@@ -2888,27 +2581,26 @@ table.wikitable > caption
     line-height: 0.5px;
     padding: 10px 3px;
 }
-
-button.default{
+button.default
+{
     background: #d3d3d3;
     color: black;
 }
-
-.close{
+.close
+{
     cursor: pointer;
     font-weight: bold;
     line-height: 0.5px;
     padding: 5px 0px 4px 4px;
 }
-
 #help-close {
     color: #F5F5F5;
 }
-
-.sidebar {
+.sidebar
+{
     top : 180px;
 }
-
-.new-thread-icon{
+.new-thread-icon
+{
     margin-bottom : -5px;
 }

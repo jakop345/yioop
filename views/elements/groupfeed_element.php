@@ -75,7 +75,7 @@ class GroupfeedElement extends Element implements CrawlConstants
             $other_paging_query .= "&num=".$data['RESULTS_PER_PAGE'];
         }
         if(!$is_status) {
-            if($is_admin || $logged_in) {
+            if(!MOBILE &&($is_admin || $logged_in)) {
                 if(isset($data['JUST_GROUP_ID'])){
                     $other_paging_query .= "&amp;just_group_id="
                         . $data['JUST_GROUP_ID'];
@@ -131,7 +131,7 @@ class GroupfeedElement extends Element implements CrawlConstants
             ?>
             <h2><?php
             if(!isset($data['SUBTITLE']) || $data['SUBTITLE'] == "") {
-                e(tl('groupfeed_element_recent_activity'));
+                e(tl('groupfeed_element_group_activity'));
             } else {
                 if(isset($data['JUST_THREAD'])) {
                     if(isset($data['WIKI_PAGE_NAME'])) {
