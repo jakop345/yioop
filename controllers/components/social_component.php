@@ -1073,7 +1073,8 @@ class SocialComponent extends Component implements CrawlConstants
             array("group_id", "=", $just_group_id, ""),
             array("user_id", "=", $just_user_id, ""),
             $pub_clause);
-        $for_group = ($just_group_id) ? $just_group_id : -1;
+        $for_group = ($just_group_id) ? $just_group_id : ($just_thread) ?
+            -2 : -1;
         $item_count = $group_model->getGroupItemCount($search_array, $user_id,
             $for_group);
         $group_items = $group_model->getGroupItems(0,
