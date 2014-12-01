@@ -694,7 +694,7 @@ class GroupModel extends Model
             $add_where = " AND ";
         }
         $user_id = $db->escapeString($user_id);
-        if(($for_group > 0 || $for_group == -2) { //-2 is just_thread case)
+        if($for_group > 0 || $for_group == -2) { //-2 is just_thread case)
             $non_public_where = " (UG.USER_ID='$user_id' OR ".
                 " G.REGISTER_TYPE IN ('".PUBLIC_JOIN."','".
                 PUBLIC_BROWSE_REQUEST_JOIN."') ) AND ";
