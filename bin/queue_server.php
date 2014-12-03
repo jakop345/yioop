@@ -43,7 +43,7 @@ if(!defined("UNIT_TEST_MODE")) {
      */
     define("NO_CACHE", true);
 }
-ini_set("memory_limit","2000M"); //so have enough memory to crawl big pages
+ini_set("memory_limit","2200M"); //so have enough memory to crawl big pages
 /** Load in global configuration settings */
 require_once BASE_DIR.'/configs/config.php';
 if(!PROFILE) {

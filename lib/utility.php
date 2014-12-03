@@ -515,7 +515,9 @@ function packListModified9($continue_bits, $cnt, $pack_list)
  */
 function nextPostString(&$input_string, &$offset)
 {
-    if(!isset($input_string[$offset+3])) return array();
+    if(!isset($input_string[$offset + 3])) {
+        return array();
+    }
     $flag_mask = 192;
     $continue_threshold = 128;
     $len = strlen($input_string);
