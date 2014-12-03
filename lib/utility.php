@@ -516,6 +516,7 @@ function packListModified9($continue_bits, $cnt, $pack_list)
 function nextPostString(&$input_string, &$offset)
 {
     if(!isset($input_string[$offset + 3])) {
+        $offset +=4; //make sure offset always increases to be safe
         return array();
     }
     $flag_mask = 192;
@@ -527,19 +528,18 @@ function nextPostString(&$input_string, &$offset)
     if($flag_bits && $flag_bits != $flag_mask) {
         crawlLog("!! Decode Error Flags: $flag_bits $flag_mask");
         crawlLog("!! Dropping posting at $offset cycle to next posting.");
-        $error = true;
+        crawlLog("!! Dropped posting length $len.");
+        $offset += 4;
+        return array();
     }
     $end += 4;
-    while ($end < $len &&
+    while($end < $len &&
             $flag_bits >= $continue_threshold) {
         $flag_bits = (ord($input_string[$end]) & $flag_mask);
         $end += 4;
     }
     $post_string = substr($input_string, $offset, $end - $offset);
     $offset = $end;
-    if($error) {
-        return array(0, false);
-    }
     return $post_string;
 }
 /**
