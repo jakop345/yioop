@@ -85,7 +85,7 @@ class BTree
         $this->min_degree = $min_degree;
         if(!is_dir($this->dir)) {
             mkdir($this->dir);
-            chmod($this->dir, 0777);
+            @chmod($this->dir, 0777);
         }
         $root_file = $this->dir."/root.txt";
         if(file_exists($root_file)) {
@@ -123,7 +123,7 @@ class BTree
         $node_file = $this->dir."/{$node->id}.txt";
         $contents = serialize($node);
         file_put_contents($node_file, $contents);
-        chmod($node_file, 0777);
+        @chmod($node_file, 0777);
     }
     /**
      * Writes the root node of this btree to disk

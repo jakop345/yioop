@@ -360,7 +360,8 @@ function addDocIndexPostings(&$postings, $add_offset)
     $postings_len = strlen($postings);
     while($offset < $postings_len) {
         $post_string = nextPostString($postings, $offset);
-        if(!$post_string || !($tmp = unpack("N*", $post_string))) {continue; }
+        if($post_string == "" ||
+            !($tmp = unpack("N*", $post_string))) {continue; }
         $posting_list = call_user_func_array( "array_merge",
             array_map("unpackListModified9", $tmp));
         if(!is_array($posting_list)) { continue; }
@@ -517,7 +518,7 @@ function nextPostString(&$input_string, &$offset)
 {
     if(!isset($input_string[$offset + 3])) {
         $offset +=4; //make sure offset always increases to be safe
-        return array();
+        return "";
     }
     $flag_mask = 192;
     $continue_threshold = 128;
@@ -530,7 +531,7 @@ function nextPostString(&$input_string, &$offset)
         crawlLog("!! Dropping posting at $offset cycle to next posting.");
         crawlLog("!! Dropped posting length $len.");
         $offset += 4;
-        return array();
+        return "";
     }
     $end += 4;
     while($end < $len &&

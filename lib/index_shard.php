@@ -1180,8 +1180,12 @@ class IndexShard extends PersistentStructure implements
             $item_cnt++;
             $doc_info_string = $this->getDocInfoSubstring($i,
                 $doc_key_len);
-            list($offset, $doc_len_info) = array_values(unpack("N*",
-                $doc_info_string));
+            $tmp = array_values(unpack("N*", $doc_info_string));
+            if($tmp < 2) {
+                crawlLog("Error reading doc info string at $i");
+                continue;
+            }
+            list($offset, $doc_len_info) = $tmp;
             list($doc_len, $num_keys) =
                 $this->unpackDoclenNum($doc_len_info);
             $doc_id_len = ($num_keys > 3) ? self::DOC_ID_LEN: $num_keys *
