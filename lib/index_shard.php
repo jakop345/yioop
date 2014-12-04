@@ -1183,7 +1183,7 @@ class IndexShard extends PersistentStructure implements
             $tmp = array_values(unpack("N*", $doc_info_string));
             if(count($tmp) < 2) {
                 crawlLog("Error reading doc info string at $i");
-                continue;
+                break;
             }
             list($offset, $doc_len_info) = $tmp;
             list($doc_len, $num_keys) =

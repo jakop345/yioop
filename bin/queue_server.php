@@ -1485,7 +1485,11 @@ class QueueServer implements CrawlConstants, Join
         if($num > $max_batch_sites_and_links *
             SEEN_URLS_BEFORE_UPDATE_SCHEDULER || $bad) {
             crawlLog("Index data file len_urls was $len_urls num was $num, ".
-                "may be corrupt.");
+                "may be corrupt so skipping this file.");
+            crawlLog("Indexer Done Index Processing File: $file. Total time: ".
+            changeInMicrotime($start_total_time));
+            unlink($file);
+            return;
         }
         crawlLog("A. Indexer Load SEEN_URLS. Memory usage:".
             memory_get_usage() ." time: ".(changeInMicrotime($start_time)));
