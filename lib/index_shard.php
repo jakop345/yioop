@@ -1181,7 +1181,7 @@ class IndexShard extends PersistentStructure implements
             $doc_info_string = $this->getDocInfoSubstring($i,
                 $doc_key_len);
             $tmp = array_values(unpack("N*", $doc_info_string));
-            if($tmp < 2) {
+            if(count($tmp) < 2) {
                 crawlLog("Error reading doc info string at $i");
                 continue;
             }
