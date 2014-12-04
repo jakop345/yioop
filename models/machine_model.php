@@ -191,9 +191,10 @@ class MachineModel extends Model
         $time = time();
         $session = md5($time . AUTH_KEY);
         for($i = 0; $i < $num_machines; $i++) {
+            $url = $machines[$i]["URL"];
             $machines[$i][CrawlConstants::URL] =
                 $machines[$i]["URL"] ."?c=machine&a=statuses&time=$time".
-                "&session=$session";
+                "&session=$session&url=$url";
         }
         $statuses = FetchUrl::getPages($machines);
         for($i = 0; $i < $num_machines; $i++) {

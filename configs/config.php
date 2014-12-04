@@ -728,4 +728,9 @@ define('NUM_FIELD_LEN', 4);
 define('WRITING_MODE_LEN', 5);
 /* Length of zero knowledge password string */
 define('ZKP_PASSWORD_LEN', 200);
+/**
+ *  set to true if Multiple news updaters are running
+ *  otherwise set to false if name server is running the news updater
+ */
+define('MULTIPLE_NEWS_UPDATER', true);
 ?>

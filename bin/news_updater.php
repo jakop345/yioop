@@ -189,6 +189,7 @@ class NewsUpdater implements CrawlConstants
             $something_updated = true;
         }
         /*
+
             if anything changed rebuild shard
          */
         if($something_updated) {

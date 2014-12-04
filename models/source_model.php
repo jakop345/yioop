@@ -33,6 +33,8 @@
 if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 /** Loads the base class */
 require_once BASE_DIR."/models/model.php";
+/** Loads the ParallelModel class */
+require_once BASE_DIR."/models/parallel_model.php";
 /** IndexShards used to store feed indexes*/
 require_once BASE_DIR."/lib/index_shard.php";
 /** For text manipulation of feeds*/
@@ -45,7 +47,7 @@ require_once BASE_DIR."/lib/phrase_parser.php";
  * @package seek_quarry
  * @subpackage model
  */
-class SourceModel extends Model
+class SourceModel extends ParallelModel
 {
     /** Mamimum number of feeds to download in one try */
     const MAX_FEEDS_ONE_GO = 100;
@@ -122,6 +124,22 @@ class SourceModel extends Model
         $row = $db->fetchArray($result);
         return $row;
     }
+    /**
+     * Receives a request to get machine data for an array of urls
+    */
+    function getMachineUrls()
+    {
+        $db = $this->db;
+        $machines = array();
+        $sql = "SELECT * FROM MACHINE";   
+        $i = 0;
+        $result = $db->execute($sql);
+        while($machines[$i] = $db->fetchArray($result)) {
+            $i++;
+        }
+        unset($machines[$i]);
+        return $machines;
+	}
     /**
      * Used to add a new video, rss, html news, or other sources to Yioop
      *
@@ -336,34 +354,44 @@ class SourceModel extends Model
      */
     function updateFeedItems($age = ONE_WEEK)
     {
-        $db = $this->db;
-        $time = time();
-        $feeds_one_go = self::MAX_FEEDS_ONE_GO;
-        $feeds = array();
-        $sql = "SELECT COUNT(*) AS CNT FROM MEDIA_SOURCE WHERE
-            TYPE='rss' OR TYPE='html'";
-        $result = $db->execute($sql);
-        $row = $db->fetchArray($result);
-        $num_feeds = (isset($row['CNT'])) ? $row['CNT'] : 0;
-        $num_bins = floor($num_feeds/$feeds_one_go) + 1;
-        $hour = date('H', $time);
-        $current_bin = $hour % $num_bins;
-        $limit = $current_bin * $feeds_one_go;
-        $limit = $db->limitOffset($limit, $feeds_one_go);
-        $sql = "SELECT * FROM MEDIA_SOURCE WHERE (TYPE='rss'
-             OR TYPE='html') $limit";
-        $result = $db->execute($sql);
-        $i = 0;
-        while($feeds[$i] = $this->db->fetchArray($result)) {
-            if($feeds[$i]['TYPE'] == 'html') {
-                list($feeds[$i]['CHANNEL_PATH'], $feeds[$i]['ITEM_PATH'],
+        if(MULTIPLE_NEWS_UPDATER) {
+            $current_machine = file_get_contents(WORK_DIRECTORY .
+                "/schedules/current_machine_info.txt");
+            $feeds = $this->execMachines("getNewsSources",array(NAME_SERVER),
+                $current_machine);
+            $result = @unserialize(webdecode($feeds[0][self::PAGE]));
+         } else {
+            $db = $this->db;
+            $time = time();
+            $feeds_one_go = self::MAX_FEEDS_ONE_GO;
+            $feeds = array();
+            $sql = "SELECT COUNT(*) AS CNT FROM MEDIA_SOURCE WHERE
+                TYPE='rss' OR TYPE='html'";
+            $result = $db->execute($sql);
+            $row = $db->fetchArray($result);
+            $num_feeds = (isset($row['CNT'])) ? $row['CNT'] : 0;
+            $num_bins = floor($num_feeds/$feeds_one_go) + 1;
+            $hour = date('H', $time);
+            $current_bin = $hour % $num_bins;
+
+
+            $limit = $db->limitOffset($limit, $feeds_one_go);
+            $sql = "SELECT * FROM MEDIA_SOURCE WHERE (TYPE='rss'
+                 OR TYPE='html') $limit";
+            $result = $db->execute($sql);
+            $i = 0;
+            while($feeds[$i] = $this->db->fetchArray($result)) {
+                if($feeds[$i]['TYPE'] == 'html') {
+                    list($feeds[$i]['CHANNEL_PATH'], $feeds[$i]['ITEM_PATH'],
                     $feeds[$i]['TITLE_PATH'], $feeds[$i]['DESCRIPTION_PATH'],
                     $feeds[$i]['LINK_PATH']) =
-                    explode("###", html_entity_decode($feeds[$i]['AUX_INFO']));
+                        explode("###", html_entity_decode($feeds[$i]['AUX_INFO']
+                            ));
+                }
+                $i++;
             }
-            $i++;
-        }
-        unset($feeds[$i]); //last one will be null
+            unset($feeds[$i]); //last one will be null 
+          }
         $feeds = FetchUrl::getPages($feeds, false, 0, NULL, "SOURCE_URL",
             CrawlConstants::PAGE, true, NULL, true);
         $feed_items = array();
