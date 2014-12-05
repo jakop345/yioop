@@ -43,7 +43,7 @@ if(!defined("UNIT_TEST_MODE")) {
      */
     define("NO_CACHE", true);
 }
-ini_set("memory_limit","2200M"); //so have enough memory to crawl big pages
+ini_set("memory_limit","2000M"); //so have enough memory to crawl big pages
 /** Load in global configuration settings */
 require_once BASE_DIR.'/configs/config.php';
 if(!PROFILE) {
@@ -1585,7 +1585,10 @@ class QueueServer implements CrawlConstants, Join
             $sites[self::RECENT_URLS] = & $recent_urls;
             $this->writeCrawlStatus($sites);
         }
-        unlink($file);
+        if(file_exists($file)) {
+            //Haven't tracked down yet, but can try to delete twice giving warn
+            unlink($file);
+        }
     }
     /**
      * Checks how old the oldest robot data is and dumps if older then a

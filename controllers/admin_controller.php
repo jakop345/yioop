@@ -320,7 +320,6 @@ class AdminController extends Controller implements CrawlConstants
             $data['CURRENT_ACTIVITY'] =
                 $activity_model->getActivityNameFromMethodName($name_activity);
         }
-
         $data['COMPONENT_ACTIVITIES'] = array();
         $component_translations = array(
             "accountaccess" => tl('admin_controller_account_access'),
