@@ -124,22 +124,23 @@ class SourceModel extends ParallelModel
         $row = $db->fetchArray($result);
         return $row;
     }
-    /**
-     * Receives a request to get machine data for an array of urls
+   /**
+    * Receives a request to get machine data for an array of hashes of urls
+    * @return a list of urls of machines used by this instance of yioop for
+    *   crawling
     */
-    function getMachineUrls()
+    function getMachineHashUrls()
     {
         $db = $this->db;
         $machines = array();
-        $sql = "SELECT * FROM MACHINE";   
-        $i = 0;
+        $sql = "SELECT DISTINCT URL FROM MACHINE";
         $result = $db->execute($sql);
-        while($machines[$i] = $db->fetchArray($result)) {
-            $i++;
+        $machine_hashes = array();
+        while($row = $db->fetchArray($result)) {
+            $machine_hashes[] = crawlHash($row['URL']);
         }
-        unset($machines[$i]);
-        return $machines;
-	}
+        return $machine_hashes;
+    }
     /**
      * Used to add a new video, rss, html news, or other sources to Yioop
      *
@@ -350,34 +351,46 @@ class SourceModel extends ParallelModel
      * the inverted index shard.
      *
      * @param int $age how many seconds old records should be ignored
-     * @return bool whether feed item update was successful
      */
     function updateFeedItems($age = ONE_WEEK)
     {
+        $feeds = $this->getNewsSources(false);
+        $num_feeds = count($feeds);
+        $feeds_one_go = self::MAX_FEEDS_ONE_GO;
+        $limit = 0;
+        while($limit < $num_feeds) {
+            $feeds_batch = array_slice($feeds, $limit, $feeds_one_go);
+            $this->updateFeedItemsOneGo($feeds, $age);
+            $limit += $feeds_one_go;
+        }
+    }
+    /**
+     * Gets a list of rss news feed info either from the local database or
+     * from the name server (in multiple news feeder setting)
+     *
+     * @param bool whether to use a previously cached news list
+     * @return array $feeds info about all the news sources this machine
+     *      is responsible for
+     */
+    function getNewsSources($use_cache = true)
+    {
+        static $feeds = array();
+        if($use_cache && $feeds != array()) {
+            return $feeds;
+        }
         if(MULTIPLE_NEWS_UPDATER) {
             $current_machine = file_get_contents(WORK_DIRECTORY .
                 "/schedules/current_machine_info.txt");
-            $feeds = $this->execMachines("getNewsSources",array(NAME_SERVER),
-                $current_machine);
-            $result = @unserialize(webdecode($feeds[0][self::PAGE]));
+            $pre_feeds = $this->execMachines("getNewsSources",
+                array(NAME_SERVER), $current_machine);
+            $feeds = array();
+            if(isset($pre_feeds[0][self::PAGE])) {
+                $feeds = unserialize(webdecode($pre_feeds[0][self::PAGE]));
+            }
          } else {
             $db = $this->db;
-            $time = time();
-            $feeds_one_go = self::MAX_FEEDS_ONE_GO;
-            $feeds = array();
-            $sql = "SELECT COUNT(*) AS CNT FROM MEDIA_SOURCE WHERE
-                TYPE='rss' OR TYPE='html'";
-            $result = $db->execute($sql);
-            $row = $db->fetchArray($result);
-            $num_feeds = (isset($row['CNT'])) ? $row['CNT'] : 0;
-            $num_bins = floor($num_feeds/$feeds_one_go) + 1;
-            $hour = date('H', $time);
-            $current_bin = $hour % $num_bins;
-
-
-            $limit = $db->limitOffset($limit, $feeds_one_go);
             $sql = "SELECT * FROM MEDIA_SOURCE WHERE (TYPE='rss'
-                 OR TYPE='html') $limit";
+                 OR TYPE='html')";
             $result = $db->execute($sql);
             $i = 0;
             while($feeds[$i] = $this->db->fetchArray($result)) {
@@ -390,11 +403,23 @@ class SourceModel extends ParallelModel
                 }
                 $i++;
             }
-            unset($feeds[$i]); //last one will be null 
-          }
+            unset($feeds[$i]); //last one will be null
+        }
+        return $feeds;
+    }
+    /**
+     * Downloads one batch of $feeds_one_go feed items for @see updateFeedItems
+     * For each feed source downloads the feeds, checks which items are
+     * not in the database, adds them. This method does not update
+     * the inverted index shard.
+     *
+     * @param array $feeds list of feeds to download
+     * @param int $age how many seconds old records should be ignored
+     */
+    function updateFeedItemsOneGo($feeds, $age = ONE_WEEK)
+    {
         $feeds = FetchUrl::getPages($feeds, false, 0, NULL, "SOURCE_URL",
             CrawlConstants::PAGE, true, NULL, true);
-        $feed_items = array();
         $sql = "UPDATE MEDIA_SOURCE SET LANGUAGE=? WHERE TIMESTAMP=?";
         foreach($feeds as $feed) {
             $is_html = ($feed['TYPE'] == 'html') ? true : false;
@@ -498,7 +523,6 @@ class SourceModel extends ParallelModel
             crawlLog("...added $num_added news items of $num_seen ".
                 "on rss page.\n Done Processing {$feed['NAME']}.");
         }
-        return true;
     }
     /**
      * Returns an array of DOMDocuments for the nodes that match an xpath
@@ -547,12 +571,11 @@ class SourceModel extends ParallelModel
         if(!$prune_shard) {
             return false;
         }
-        $pre_feeds = $this->getMediaSources("rss");
-        $pre_feeds = array_merge($pre_feeds, $this->getMediaSources("html"));
+        $pre_feeds = $this->getNewsSources();
         if(!$pre_feeds) { return false; }
         $feeds = array();
         foreach($pre_feeds as $pre_feed) {
-            if(!isset($pre_feed['NAME'])) continue;
+            if(!isset($pre_feed['NAME'])) { continue; }
             $feeds[$pre_feed['NAME']] = $pre_feed;
         }
         $db = $this->db;

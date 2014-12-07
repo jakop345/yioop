@@ -56,11 +56,11 @@ class CrawlController extends Controller implements CrawlConstants
      * These are the activities supported by this controller
      * @var array
      */
-    var $activities = array("sendStartCrawlMessage", "sendStopCrawlMessage",
+    var $activities = array("countWords","clearQuerySavePoint",
         "crawlStalled", "crawlStatus", "deleteCrawl", "injectUrlsCurrentCrawl",
-        "getCrawlList", "combinedCrawlInfo", "getInfoTimestamp",
-        "getCrawlSeedInfo", "getNewsSources", "setCrawlSeedInfo", "getCrawlItems
-        ", "countWords","clearQuerySavePoint");
+        "combinedCrawlInfo", "getInfoTimestamp", "getCrawlItems",
+        "getCrawlList", "getCrawlSeedInfo", "getNewsSources",
+        "sendStartCrawlMessage", "sendStopCrawlMessage", "setCrawlSeedInfo",);
     /**
      * Checks that the request seems to be coming from a legitimate fetcher then
      * determines which activity the fetcher is requesting and calls that
@@ -325,63 +325,42 @@ class CrawlController extends Controller implements CrawlConstants
     /**
      * Handles the request to get the  array of news feed sources which hash to
      * a particular value i.e. match with the index of requesting machine's
-     * hashed url/name from array of available machines hash 
+     * hashed url/name from array of available machines hash
      */
-     function getNewsSources()
+    function getNewsSources()
     {
         if(!isset($_REQUEST["arg"])) {
             return;
         }
+        $source_model = $this->model("source");
         $current_machine = $this->clean(webdecode($_REQUEST["arg"]), "string");
-        $pre_feeds = $this->model("source")->getMediaSources("rss");
+        $machine_hashes = $source_model->getMachineHashUrls();
+        $machine_index_match = array_search($current_machine, $machine_hashes);
+        if($machine_index_match === false) {
+            echo webencode(serialize(array()));
+            return;
+        }
+        $num_machines = count($machine_hashes);
+        $pre_feeds = $source_model->getMediaSources("rss");
         $pre_feeds = array_merge($pre_feeds,
-        $this->model("source")->getMediaSources("html"));
+            $source_model->getMediaSources("html"));
         if(!$pre_feeds) { return false; }
         $feeds = array();
         foreach($pre_feeds as $pre_feed) {
             if(!isset($pre_feed['NAME'])) {continue; }
-            $feeds[$pre_feed['NAME']] = $pre_feed;
+            $hash_int = unpack("N", crawlHash($pre_feed['NAME']));
+            if(!isset($hash_int[1])) {continue; }
+            $hash_index = ($hash_int[1]) % $num_machines;
+            if($machine_index_match != $hash_index) {continue; }
             if($pre_feed['TYPE'] == 'html') {
                 list($pre_feed['CHANNEL_PATH'], $pre_feed['ITEM_PATH'],
                     $pre_feed['TITLE_PATH'], $pre_feed['DESCRIPTION_PATH'],
-                    $pre_feed['LINK_PATH']) = 
+                    $pre_feed['LINK_PATH']) =
                     explode("###", html_entity_decode($pre_feed['AUX_INFO']));
             }
+            $feeds[] = $pre_feed;
         }
-        $machine_urls = $this->model("source")->getMachineUrls();
-        $machine_array_length = count($machine_urls);
-        $feed_hash_values = array();
-        $i = 0;
-        foreach($feeds as $feed) {
-            if($feed) {
-                $hash = unpack( "N" ,(md5(substr($feed['NAME'], -2))));
-                $feed_hash_values[$i] = (($hash[1])%$machine_array_length);
-                $i++;
-            }
-        }
-        $i = 0;
-        $machine_index_match = 0;
-        foreach($machine_urls as $url) {
-            $url_hash = unpack( "N" ,(md5(substr($url['URL'], -2))));
-            $current_url_hash = ($url_hash[1]);
-            if(strcmp($current_url_hash, $current_machine ) == 0){
-                $machine_index_match = $i;
-                break;
-            }
-            $i++;
-        }
-        $hash_value = $feed_hash_values[$machine_index_match];
-        $news_sources = array();
-        $i = 0;
-        foreach($feeds as $feed) {
-            $feed_hash = unpack( "N" ,(md5(substr($feed['NAME'], -2))));
-            $current_feed_hash = (($feed_hash[1])%$machine_array_length);
-            if(strcmp($hash_value,$current_feed_hash) == 0){
-                 $news_sources[$i] = $feed['NAME'];
-                 $i++;
-            }
-        }
-        echo webencode(serialize($news_sources));
+        echo webencode(serialize($feeds));
     }
 }
 ?>

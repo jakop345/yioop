@@ -165,31 +165,17 @@ class NewsUpdater implements CrawlConstants
      */
     function newsUpdate()
     {
-        if(!defined(SUBSEARCH_LINK)|| !SUBSEARCH_LINK) {
-            crawlLog("No news update as SUBSEARCH_LINK define false.");
-            return;
-        }
         $time = time();
-        $rss_feeds = $this->sourceModel->getMediaSources("rss");
-        if(!$rss_feeds || count($rss_feeds) == 0) {
-            crawlLog("No news update as no news feeds.");
-            return;
-        }
         $something_updated = false;
-
         $delta = $time - $this->update_time;
-        // every hour get items from twenty feeds whose newest items are oldest
+        // every hour get items from feeds
         if($delta > ONE_HOUR) {
             $this->update_time = $time;
             crawlLog("Performing news feeds update");
-            if(!$this->sourceModel->updateFeedItems(
-                ONE_WEEK, false)) {
-                crawlLog("News feeds item update failed.");
-            }
+            $this->sourceModel->updateFeedItems( ONE_WEEK);
             $something_updated = true;
         }
         /*
-
             if anything changed rebuild shard
          */
         if($something_updated) {

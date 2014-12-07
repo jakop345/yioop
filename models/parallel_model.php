@@ -477,7 +477,6 @@ class ParallelModel extends Model implements CrawlConstants
         $session = md5($time . AUTH_KEY);
         $query = "c=crawl&a=$command&time=$time&session=$session" .
             "&num=$num_machines";
-        crawlLog("the query is".$query);
         if($arg != NULL) {
             $arg = webencode($arg);
             $query .= "&arg=$arg";
@@ -497,6 +496,5 @@ class ParallelModel extends Model implements CrawlConstants
         }
         return $outputs;
     }
-
 }
 ?>

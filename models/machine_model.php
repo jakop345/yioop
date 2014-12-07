@@ -191,10 +191,10 @@ class MachineModel extends Model
         $time = time();
         $session = md5($time . AUTH_KEY);
         for($i = 0; $i < $num_machines; $i++) {
-            $url = $machines[$i]["URL"];
+            $hash_url = crawlHash($machines[$i]["URL"]);
             $machines[$i][CrawlConstants::URL] =
                 $machines[$i]["URL"] ."?c=machine&a=statuses&time=$time".
-                "&session=$session&url=$url";
+                "&session=$session&arg=$hash_url";
         }
         $statuses = FetchUrl::getPages($machines);
         for($i = 0; $i < $num_machines; $i++) {
@@ -213,7 +213,7 @@ class MachineModel extends Model
         }
         $sql = "SELECT * FROM ACTIVE_FETCHER";
         $result = $this->db->execute($sql);
-        if(!$result) return $machines;
+        if(!$result) { return $machines; }
         $active_fetchers = array();
         while($row = $this->db->fetchArray($result)) {
             for($i = 0; $i < $num_machines; $i++) {

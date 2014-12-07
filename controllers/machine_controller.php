@@ -82,14 +82,12 @@ class MachineController extends Controller implements CrawlConstants
      */
     function statuses()
     {
-        if(!isset($_REQUEST["arg"])) {
-                return;
+        if(isset($_REQUEST["arg"])) {
+            $hash_url = $this->clean($_REQUEST["arg"], "string");
+            file_put_contents(WORK_DIRECTORY.
+                "/schedules/current_machine_info.txt",
+                $hash_url);
         }
-        $current_machine = $this->clean($_REQUEST["arg"], "string");
-        $machine_hash.= unpack( "N" ,(md5(substr($current_machine, -2))));
-        $hashValue =$machine_hash[1];
-        file_put_contents(WORK_DIRECTORY."/schedules/current_machine_info.txt",
-            $hashValue);
         echo json_encode(CrawlDaemon::statuses());
     }
     /**

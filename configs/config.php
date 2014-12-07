@@ -445,6 +445,13 @@ define('ERROR_CRAWL_DELAY', 20);
 /** how often should we make in OPIC the sum of weights totals MAX_URLS */
 define('NORMALIZE_FREQUENCY', 10000);
 /**
+ *  set to true if Multiple news updaters are running
+ *  otherwise set to false if name server is running the news updater
+ */
+if(!defined("MULTIPLE_NEWS_UPDATER")) {
+    define('MULTIPLE_NEWS_UPDATER', false);
+}
+/**
  * @global array file extensions which can be handled by the search engine,
  * other extensions will be ignored. This array is populated in the individual
  * lib/processors page processors
@@ -728,9 +735,4 @@ define('NUM_FIELD_LEN', 4);
 define('WRITING_MODE_LEN', 5);
 /* Length of zero knowledge password string */
 define('ZKP_PASSWORD_LEN', 200);
-/**
- *  set to true if Multiple news updaters are running
- *  otherwise set to false if name server is running the news updater
- */
-define('MULTIPLE_NEWS_UPDATER', true);
 ?>
