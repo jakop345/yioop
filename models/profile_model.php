@@ -52,8 +52,8 @@ class ProfileModel extends Model
      * @var array
      */
     var $profile_fields = array('API_ACCESS', 'AUTH_KEY',
-        'AUTHENTICATION_MODE', 'BACKGROUND_COLOR', 'BACKGROUND_IMAGE',
-        'CACHE_LINK', 'CAPTCHA_MODE', 'CSRF_TOKEN',
+        'AUTHENTICATION_MODE', 'AUXILIARY_CSS', 'BACKGROUND_COLOR',
+        'BACKGROUND_IMAGE', 'CACHE_LINK', 'CAPTCHA_MODE', 'CSRF_TOKEN',
         'DEBUG_LEVEL', 'DESCRIPTION_WEIGHT', 'DB_HOST', 'DBMS', 'DB_NAME',
         'DB_PASSWORD', 'DB_USER', 'DEFAULT_LOCALE', 'FAVICON',
         'FIAT_SHAMIR_MODULUS', 'FOREGROUND_COLOR',
@@ -69,6 +69,11 @@ class ProfileModel extends Model
         'USE_FILECACHE', 'USE_MAIL_PHP', 'USE_MEMCACHE', 'USE_PROXY',
         'USER_AGENT_SHORT', 'WEB_URI', 'WEB_ACCESS', 'WORD_SUGGEST'
         );
+    /**
+     * Profile fields which are stored in wiki or in a flat file
+     * @var array
+     */
+    var $file_fields = array("AUXILIARY_CSS", "ROBOT_DESCRIPTION");
     /**
      * Associative array (table_name => SQL statement to create that table)
      * List is alphabetical and contains all Yioop tables. List is only
@@ -365,6 +370,7 @@ EOT;
             'CSRF_TOKEN' => "YIOOP_TOKEN"
         );
         $not_null_keys = array_keys($not_null_fields);
+        $file_fields = $this->file_fields;
         //now integrate the different profiles
         foreach($this->profile_fields as $field) {
             if(isset($new_profile_data[$field])) {
@@ -409,7 +415,7 @@ EOT;
                     $profile[$field] = UrlParser::getPath(NAME_SERVER);
                 }
             }
-            if($field == "ROBOT_DESCRIPTION") {continue;}
+            if(in_array($field, $file_fields)) {continue;}
             if($field != "DEBUG_LEVEL") {
                 $profile[$field] = "\"{$profile[$field]}\"";
             }
@@ -419,11 +425,15 @@ EOT;
         if(file_put_contents($directory.PROFILE_FILE_NAME, $out) !== false) {
             restore_error_handler();
             @chmod($directory.PROFILE_FILE_NAME, 0777);
-            if(isset($new_profile_data['ROBOT_DESCRIPTION'])) {
-                $robot_path = LOCALE_DIR."/".DEFAULT_LOCALE."/pages/bot.thtml";
-                file_put_contents($robot_path,
-                    $new_profile_data['ROBOT_DESCRIPTION']);
-                @chmod($robot_path, 0777);
+            if(isset($new_profile_data['AUXILIARY_CSS'])) {
+                if(!file_exists(APP_DIR . "/css")) {
+                    @mkdir(APP_DIR . "/css");
+                    @chmod(APP_DIR . "/css", 0777);
+                }
+                $css_file = APP_DIR . "/css/auxiliary.css";
+                file_put_contents($css_file,
+                    $new_profile_data['AUXILIARY_CSS']);
+                @chmod($css_file, 0777);
             }
             set_error_handler("yioop_error_handler");
             return true;
@@ -634,9 +644,18 @@ EOT;
     {
         $profile = array();
         $profile_string = @file_get_contents($work_directory.PROFILE_FILE_NAME);
-
+        $file_fields = $this->file_fields;;
         foreach($this->profile_fields as $field) {
-            $profile[$field] = $this->matchDefine($field, $profile_string);
+            if(!in_array($field, $file_fields)) {
+                $profile[$field] = $this->matchDefine($field, $profile_string);
+            } else if($field == "AUXILIARY_CSS"){
+                $css_file = APP_DIR . "/css/auxiliary.css";
+                if(file_exists($css_file)) {
+                    $profile[$field] = file_get_contents($css_file);
+                } else {
+                    $profile[$field] = "";
+                }
+            }
         }
         return $profile;
     }

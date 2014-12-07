@@ -263,6 +263,12 @@ class ConfigureElement extends Element
                 <input type="text" id="token-name"
                     name="CSRF_TOKEN" class="extra-wide-field" value='<?php
                     e($data["CSRF_TOKEN"]); ?>' /></div>
+                <div class="top-margin"><label for="auxiliary-css"><?php
+                    e(tl('configure_element_auxiliary_css'));
+                    ?></label>
+                <textarea class="short-text-area" name="AUXILIARY_CSS" ><?php
+                    e($data['AUXILIARY_CSS']);
+                ?></textarea></div>
                 <div class="center">
                 [<a href="<?php e($configure_url.
                     '&amp;arg=reset'); ?>"><?php

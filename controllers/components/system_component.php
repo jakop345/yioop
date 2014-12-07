@@ -1043,7 +1043,8 @@ EOD;
                     'FAVICON' => $base_url . "favicon.ico",
                     'TIMEZONE' => 'America/Los_Angeles',
                     'SESSION_NAME' => "yioopbiscuit",
-                    'CSRF_TOKEN' => "YIOOP_TOKEN"
+                    'CSRF_TOKEN' => "YIOOP_TOKEN",
+                    'AUXILIARY_CSS' => ""
                 );
                 $old_profile =
                     $profile_model->getProfile($data['WORK_DIRECTORY']);
