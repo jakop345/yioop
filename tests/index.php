@@ -88,12 +88,16 @@ require_once BASE_DIR."/lib/unit_test.php";
  */
 require_once BASE_DIR."/lib/javascript_unit_test.php";
 /**
+ * Load the YioopPhantomRunner that is used to execute PhantomJs Shell.
+ */
+require_once 'YioopPhantomRunner.php';
+/**
  * Do not send output to log files
  * @ignore
  */
 define("LOG_TO_FILES", false);
 $allowed_activities =
-    array("listTests", "runAllTests", "runTestBasedOnRequest");
+    array("listTests", "runAllTests", "runTestBasedOnRequest","runPhantomTests");
 if(isset($_REQUEST['activity']) &&
     in_array($_REQUEST['activity'], $allowed_activities)) {
     $activity = $_REQUEST['activity'];
@@ -104,6 +108,61 @@ if(isset($_REQUEST['activity']) &&
 <h1>SeekQuarry Tests</h1>
 <?php
 $activity();
+/**
+ * This function runs the phantomJS tests by calling th phantomJs shell to
+ * execute the PhantomJs tests written in JavaScript.
+ */
+function runPhantomTests()
+{
+    ob_clean();
+    $path_url = str_replace(basename(__DIR__) . "/", "", getFullURL(true));
+    $mode = "";
+    $resp_code = "";
+    $debug = false;
+    $test_filename = "test.js";
+    if(isset($_GET['mode'])) {
+        if(isset($_GET['debug']) && $_GET['debug'] == "true") {
+            $debug = true;
+        }
+        $mode = htmlentities($_GET['mode'], ENT_QUOTES, "UTF-8");
+        $resp = array();
+        if(!in_array($mode, array("web", "mobile"))) {
+            $resp_code = "HTTP/1.1 400 Bad Request";
+        } else {
+            $yioop_phantom_runner = new YioopPhantomRunner();
+            $test_results = ($yioop_phantom_runner->execute(
+                "phantomjs_runner.js", $path_url, $mode, $debug));
+            if(!$test_results) {
+                $resp_code = "HTTP/1.1 500";
+            } else {
+                $resp['results'] = $test_results;
+                $resp_code = "HTTP/1.1 200 OK";
+                echo(json_encode($resp));
+            }
+        }
+    } else {
+        $resp_code = "HTTP/1.1 500";
+    }
+    header($resp_code);
+    header("Content-Type : application/json");
+    exit();
+}
+
+/**
+ * This is a utility function to get the Full URL of the current page.
+ */
+function getFullURL($stripQueryParams = false)
+{
+    $pageURL = (@$_SERVER["HTTPS"] == "on") ? "https://" : "http://";
+    if(!in_array($_SERVER["SERVER_PORT"], array("80", "443"))) {
+        $pageURL .= $_SERVER["SERVER_NAME"] . ":" .
+            $_SERVER["SERVER_PORT"] . $_SERVER["REQUEST_URI"];
+    } else {
+        $pageURL .= $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"];
+    }
+    //return full URL with query params stripped, if requested.
+    return $stripQueryParams ? strtok($pageURL, '?') : $pageURL;
+}
 /**
  * This function is responsible for listing out HTML links to the available
  * unit tests a user can run
