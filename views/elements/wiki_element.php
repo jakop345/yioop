@@ -268,6 +268,7 @@ class WikiElement extends Element implements CrawlConstants
         $base_url = "?c=".$data['CONTROLLER']."&amp;a=wiki&amp;".
             CSRF_TOKEN.'='.$data[CSRF_TOKEN]."&amp;group_id=".
             $data['GROUP']['GROUP_ID'];
+        $simple_base_url = str_replace("&amp;", "&", $base_url);
         $append = "";
         if(isset($data['OTHER_BACK_URL'])) {
             $append = $data['OTHER_BACK_URL'];
@@ -440,7 +441,6 @@ class WikiElement extends Element implements CrawlConstants
         <h2><?php e(tl('wiki_element_media_list'))?></h2>
         <p><?php e(tl('wiki_element_ml_description'))?></p>
         </div>
-        <div>
         <form id="resourceUploadForm" method="post"
             enctype="multipart/form-data">
         <input type="hidden" name="c" value="<?php e($data['CONTROLLER']);
@@ -479,8 +479,6 @@ class WikiElement extends Element implements CrawlConstants
         <?php
             $this->renderResources($data, false);
         ?>
-        </div>
-        </div>
         <script type="text/javascript">
         function addToPage(resource_name)
         {
@@ -501,6 +499,25 @@ class WikiElement extends Element implements CrawlConstants
                 return false;
             }
             return true;
+        }
+        function renameResource(old_name, id)
+        {
+            var name_elt = elt("resource-"+id);
+            var new_name = "";
+            if(name_elt) {
+                new_name = name_elt.value;
+            }
+            if(!name_elt || !new_name) {
+                doMessage('<h1 class=\"red\" ><?php
+                    e(tl("wiki_element_rename_failed"));
+                    ?></h1>');
+                return;
+            }
+            var location = "<?php e("$simple_base_url&arg=edit&page_name=".
+                $data['PAGE_NAME']);
+                ?>" + "&new_resource_name=" + new_name +
+                "&old_resource_name=" + old_name;
+            window.location = location;
         }
         function uploadForm(event)
         {
@@ -585,6 +602,7 @@ class WikiElement extends Element implements CrawlConstants
             if(count($data['RESOURCES_INFO']['resources']) > 0) {
                 e('<table >');
                 $seen_resources = array();
+                $i = 0;
                 foreach($data['RESOURCES_INFO']['resources'] as $resource) {
                     $name = $resource['name'];
                     $name_parts = pathinfo($name);
@@ -597,21 +615,30 @@ class WikiElement extends Element implements CrawlConstants
                         $file_name = $name;
                     }
                     e("<tr class='resource-list' >");
+                    e("<td><a href='$url_prefix&amp;n=$name'>");
                     if($resource['has_thumb']) {
-                        e("<td><img src='$thumb_prefix&amp;n=$name' alt='' />".
-                            "</td>");
+                       e("<img src='$thumb_prefix&amp;n=$name' alt='' />");
                     } else {
-                        e("<td><img src='".$default_thumb."'  alt='' /></td>");
+                        e("<img src='".$default_thumb."'  alt='' />");
                     }
-                    e("<td><a href='$url_prefix&amp;n=$name'>".
-                        "$file_name</a></td>");
-                    if(!$read_mode && (!isset($data['page_type']) ||
-                        $data['page_type'] != 'media_list')) {
-                        e("<td><button onclick='javascript:addToPage(\"".
-                            $name."\")'>".tl('wiki_element_add_to_page').
-                            "</button></td>");
-                    }
-                    if(!$read_mode) {
+                    e("</a></td><td>");
+                    if($read_mode) {
+                        e("<a href='$url_prefix&amp;n=$name'>$name</a>");
+                    } else {
+                        e("<input type='text' id='resource-$i' ".
+                            "value='$file_name' /></td>");
+                        ?><td><button onclick='javascript:renameResource("<?php
+                            e($name);?>", <?php e($i); ?>)' ><?php e(
+                            tl('wiki_element_rename')); ?></button><?php
+                        if((!isset($data['page_type']) ||
+                            $data['page_type'] != 'media_list')) {
+                            ?>
+                            <button onclick='javascript:addToPage("<?php
+                            e($name);?>")'><?php e(
+                            tl('wiki_element_add_to_page')); ?></button>
+                            <?php
+                        }
+                        e("</td>");
                         $append = "";
                         if(isset($data['OTHER_BACK_URL'])) {
                             $append .= $data['OTHER_BACK_URL'];
@@ -621,6 +648,7 @@ class WikiElement extends Element implements CrawlConstants
                             "&amp;delete=$name$append'>X</a>]</td>");
                     }
                     e("</tr>");
+                    $i++;
                 }
                 e('</table>');
             }

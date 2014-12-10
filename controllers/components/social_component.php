@@ -1083,6 +1083,7 @@ class SocialComponent extends Component implements CrawlConstants
         $time = time();
         $j = 0;
         $parser = new WikiParser("", array(), true);
+        $locale_tag = getLocaleTag();
         foreach($group_items as $item) {
             $page = $item;
             $page['USER_ICON'] = $user_model->getUserIconUrl($page['USER_ID']);
@@ -1107,6 +1108,10 @@ class SocialComponent extends Component implements CrawlConstants
             }
             //end code for sharing crawl mixes
             $page[self::DESCRIPTION] = $parser->parse($description);
+            echo $locale_tag;
+            $page[self::DESCRIPTION] =
+                $group_model->insertResourcesParsePage($item['GROUP_ID'], -1,
+                $locale_tag, $page[self::DESCRIPTION]);
             unset($page['DESCRIPTION']);
             $page['OLD_DESCRIPTION'] = $description;
             $page[self::SOURCE_NAME] = $page['GROUP_NAME'];
@@ -1252,9 +1257,10 @@ class SocialComponent extends Component implements CrawlConstants
         $search_form = <<<EOD
 <form method="get" class="search-box $2-search-box" >
 <input type='hidden' name="its" value='$1' />
-<input type='text'  name='q'  value="" placeholder='$3' class='search-input' />
+<input type='text'  name='q'  value="" placeholder='$3'
+    title='$3' class='search-input' />
 <button type="submit" class='search-button'><img
-src='./resources/search-button.png'  alt='$search_translation'/></button>
+    src='./resources/search-button.png'  alt='$search_translation'/></button>
 </form>
 EOD;
         $additional_substitutions[] = array('/{{\s*search\s*:\s*(.+?)\s*\|'.
@@ -1273,7 +1279,7 @@ EOD;
             "diff" => 'int',
             "diff1" => 'int',
             "diff2" => 'int',
-            "revert" => 'int'
+            "revert" => 'int',
         );
         $strings_array = array(
             "page_name" => TITLE_LEN,
@@ -1475,7 +1481,7 @@ EOD;
                             $parent->redirectWithMessage(
                                 tl('social_component_resource_save_first'),
                                 array('arg', 'page_name', 'settings',
-                                    'caret', 'scroll_top'));
+                                'caret', 'scroll_top'));
                         } else {
                             $upload_parts = array('name', 'type', 'tmp_name');
                             $file = array();
@@ -1498,12 +1504,12 @@ EOD;
                             $parent->redirectWithMessage(
                                 tl('social_component_resource_uploaded'),
                                 array('arg', 'page_name', 'settings',
-                                    'caret', 'scroll_top'));
+                                'caret', 'scroll_top'));
                         } else {
                             $parent->redirectWithMessage(
                                 tl('social_component_upload_error'),
                                 array('arg', 'page_name', 'settings',
-                                    'caret', 'scroll_top'));
+                                'caret', 'scroll_top'));
                         }
                     } else if(!$missing_fields && isset($_REQUEST['delete'])) {
                         $resource_name = $parent->clean($_REQUEST['delete'],
@@ -1514,12 +1520,33 @@ EOD;
                             $parent->redirectWithMessage(
                                 tl('social_component_resource_deleted'),
                                 array('arg', 'page_name', 'settings',
-                                    'caret', 'scroll_top'));
+                                'caret', 'scroll_top'));
                         } else {
                             $parent->redirectWithMessage(
                                 tl('social_component_resource_not_deleted'),
                                 array('arg', 'page_name', 'settings',
-                                    'caret', 'scroll_top'));
+                                'caret', 'scroll_top'));
+                        }
+                    } else if(!$missing_fields &&
+                        isset($_REQUEST['new_resource_name']) &&
+                        isset($_REQUEST['old_resource_name'])) {
+                        $old_resource_name = $parent->clean(
+                            $_REQUEST['old_resource_name'], "string");
+                        $new_resource_name = $parent->clean(
+                            $_REQUEST['new_resource_name'], "string");
+                        if(isset($page_info['ID']) &&
+                            $group_model->renameResource($old_resource_name,
+                                $new_resource_name, $group_id, 
+                                $page_info['ID'])) {
+                            $parent->redirectWithMessage(
+                                tl('social_component_resource_renamed'),
+                                array('arg', 'page_name', 'settings',
+                                'caret', 'scroll_top'));
+                        } else {
+                            $parent->redirectWithMessage(
+                                tl('social_component_resource_not_renamed'),
+                                array('arg', 'page_name', 'settings',
+                                'caret', 'scroll_top'));
                         }
                     }
                     if(isset($page_info['ID'])) {

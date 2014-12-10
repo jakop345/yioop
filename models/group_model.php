@@ -1162,10 +1162,11 @@ class GroupModel extends Model
     function insertResourcesParsePage($group_id, $page_id, $locale_tag,
         $parsed_page)
     {
-        $folders = $this->getGroupPageResourcesFolders($group_id,
+        $default_folders = $this->getGroupPageResourcesFolders($group_id,
             $page_id);
-        if(!$folders) { return $parsed_page; }
-        list($folder, $thumb_folder) = $folders;
+        if($default_folders) {
+            list($folder, $thumb_folder) = $default_folders;
+        }
         if(!preg_match_all('/\(\(resource:(.+?)\|(.+?)\)\)/ui',
             $parsed_page, $matches)){
             return $parsed_page;
@@ -1190,6 +1191,8 @@ class GroupModel extends Model
                     list($current_folder, $current_thumb_folder) =
                         $current_folders;
                 }
+            } else if(!$default_folders) {
+                continue;
             } else {
                 $resource_name = $resource_namespace_name;
                 $current_page_id = $page_id;
@@ -1259,6 +1262,7 @@ class GroupModel extends Model
      * Deletes a resource (image, video, etc) associated with a wiki page
      * belonging to a group.
      *
+     * @param string $resource_name name of resource to delete
      * @param int $group_id group identifier of group wiki page belongs to
      * @param int $page_id identifier for page want to delete resource from
      * @return bool whether the deletion was successful
@@ -1276,6 +1280,35 @@ class GroupModel extends Model
         }
         if(file_exists($thumb_name)) {
             unlink($thumb_name);
+        }
+        return true;
+    }
+    /**
+     * Renames a resource (image, video, etc) associated with a wiki page
+     * belonging to a group.
+     *
+     * @param string $old_resource_name name of resource before renaming
+     * @param string $new_resource_name name of resource after renaming
+     * @param int $group_id group identifier of group wiki page belongs to
+     * @param int $page_id identifier for page want to delete resource from
+     * @return bool whether the deletion was successful
+     */
+    function renameResource($old_resource_name, $new_resource_name, $group_id,
+        $page_id)
+    {
+        $folders = $this->getGroupPageResourcesFolders($group_id,
+            $page_id);
+        if(!$folders) {return false; }
+        list($folder, $thumb_folder) = $folders;
+        $old_file_name = "$folder/$old_resource_name";
+        $old_thumb_name = "$thumb_folder/$old_resource_name.jpg";
+        if(file_exists($old_file_name)) {
+            rename($old_file_name, "$folder/$new_resource_name");
+        } else {
+            return false;
+        }
+        if(file_exists($old_thumb_name)) {
+            rename($old_thumb_name, "$thumb_folder/$new_resource_name.jpg");
         }
         return true;
     }
@@ -1382,7 +1415,10 @@ class GroupModel extends Model
             "&amp;g=$group_id&amp;p=$page_id&amp;n=$resource_name";
     }
     /**
-     *
+     *  Returns the number of non-empty wiki pages a group has (across all
+     *  locales)
+     *  @param int $group_id id of group to return the number of wiki pages for
+     *  @return int number of wiki pages for that group
      */
     function getGroupPageCount($group_id)
     {
