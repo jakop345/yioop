@@ -1084,6 +1084,8 @@ class SocialComponent extends Component implements CrawlConstants
         $j = 0;
         $parser = new WikiParser("", array(), true);
         $locale_tag = getLocaleTag();
+        $page = false;
+        $pages = array();
         foreach($group_items as $item) {
             $page = $item;
             $page['USER_ICON'] = $user_model->getUserIconUrl($page['USER_ID']);
@@ -1127,16 +1129,20 @@ class SocialComponent extends Component implements CrawlConstants
             $pages[$item["PUBDATE"] . sprintf("%04d", $j)] = $page;
             $j++;
         }
-        $sort($pages);
+        if($pages) {
+            $sort($pages);
+        }
         $data['SUBTITLE'] = "";
         if($just_thread != "" && isset($page[self::TITLE])) {
             $title = $page[self::TITLE];
             $data['SUBTITLE'] = trim($title, "\- \t\n\r\0\x0B");
             $data['ADD_PAGING_QUERY'] = "&amp;just_thread=$just_thread";
             $data['JUST_THREAD'] = $just_thread;
+        } else if($just_thread != "" && !isset($page[self::TITLE])) {
+            $data['NO_POSTS_IN_THREAD'] = true;
         }
         if($just_group_id) {
-            if(!isset($page[self::SOURCE_NAME])) {
+            if(!isset($page[self::SOURCE_NAME]) ) {
                 $group = $group_model->getGroupById($just_group_id, $user_id);
                 $page[self::SOURCE_NAME] = $group['GROUP_NAME'];
                 $data['NO_POSTS_YET'] = true;
@@ -1159,7 +1165,9 @@ class SocialComponent extends Component implements CrawlConstants
             $data['ADD_PAGING_QUERY'] = "&amp;just_user_id=$just_user_id";
             $data['JUST_USER_ID'] = $just_user_id;
         }
-        $pages = array_slice($pages, $limit, $results_per_page);
+        if($pages) {
+            $pages = array_slice($pages, $limit, $results_per_page);
+        }
         $data['TOTAL_ROWS'] = $item_count + $groups_count;
         $data['LIMIT'] = $limit;
         $data['RESULTS_PER_PAGE'] = $results_per_page;

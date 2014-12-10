@@ -263,6 +263,7 @@ class GroupfeedElement extends Element implements CrawlConstants
         $can_comment = array(GROUP_READ_COMMENT, GROUP_READ_WRITE,
             GROUP_READ_WIKI);
         $start_thread = array(GROUP_READ_WRITE, GROUP_READ_WIKI);
+        $page = array();
         if(isset($data['PAGES'][0]["MEMBER_ACCESS"]) &&
             in_array($data['PAGES'][0]["MEMBER_ACCESS"], $can_comment)) {
             if(isset($data['JUST_THREAD'])) {
@@ -303,7 +304,13 @@ class GroupfeedElement extends Element implements CrawlConstants
                 <?php
             }
             ?>
-            <p class="red"><?php e(tl('groupfeed_element_no_posts_yet'))?></p>
+            <p class="red"><?php e(tl('groupfeed_element_no_posts_yet')); ?></p>
+            <?php
+        }
+        if(isset($data['NO_POSTS_IN_THREAD'])) {
+            ?>
+            <p class="red"><?php
+                e(tl('groupfeed_element_thread_no_exist')); ?></p>
             <?php
         }
         foreach($data['PAGES'] as $page) {
