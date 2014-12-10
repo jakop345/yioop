@@ -1110,7 +1110,6 @@ class SocialComponent extends Component implements CrawlConstants
             }
             //end code for sharing crawl mixes
             $page[self::DESCRIPTION] = $parser->parse($description);
-            echo $locale_tag;
             $page[self::DESCRIPTION] =
                 $group_model->insertResourcesParsePage($item['GROUP_ID'], -1,
                 $locale_tag, $page[self::DESCRIPTION]);
