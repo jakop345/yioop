@@ -324,12 +324,15 @@ class GroupfeedElement extends Element implements CrawlConstants
             <?php
             $subsearch = (isset($data["SUBSEARCH"])) ? $data["SUBSEARCH"] :
                 "";
-            if(in_array($page["MEMBER_ACCESS"], $start_thread) &&
+            $edit_list = ($page['ID'] == $page['PARENT_ID']) ?
+                $start_thread : $can_comment;
+            if(in_array($page["MEMBER_ACCESS"], $edit_list) &&
                 !isset($data['JUST_GROUP_ID']) &&
                 isset($_SESSION['USER_ID']) &&
                 (($page['USER_ID'] != "" &&
                 $page['USER_ID'] == $_SESSION['USER_ID']) ||
-                $_SESSION['USER_ID'] == ROOT_ID) &&
+                $_SESSION['USER_ID'] == ROOT_ID ||
+                $_SESSION['USER_ID'] == $page['OWNER_ID']) &&
                 isset($page['TYPE']) && $page['TYPE'] != WIKI_GROUP_ITEM) {
                 ?>
                 <div class="float-opposite" ><?php

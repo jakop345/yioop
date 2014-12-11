@@ -956,8 +956,11 @@ class SocialComponent extends Component implements CrawlConstants
                     $group =  $group_model->getGroupById($group_id, $user_id,
                         true);
                     $update_thread = array(GROUP_READ_WRITE, GROUP_READ_WIKI);
+                    if($post_id != $item['PARENT_ID'] && $post_id > 0) {
+                        $update_thread[] = GROUP_READ_COMMENT;
+                    }
                     if(!$group || ($group["OWNER_ID"] != $user_id &&
-                        in_array($group["MEMBER_ACCESS"], $update_thread) &&
+                        !in_array($group["MEMBER_ACCESS"], $update_thread) &&
                         $user_id != ROOT_ID)) {
                         $parent->redirectWithMessage(
                             tl('social_component_no_update_access'));
