@@ -291,6 +291,8 @@ function displayHelpForId(help_point, is_mobile, target_controller,
         toggleHelp('help-frame', is_mobile, target_controller);
     }
     var tl = eval('(' + help_point.getAttribute("data-tl") + ')');
+    tl["wiki_view_not_available"] = "Unable to load Help"+
+                    "Please Make sure you are subscribed to 'Help' group.";
     var back_params = eval('(' + help_point.getAttribute("data-back-params")
     + ')');
     getPageWithCallback("?c=" + api_controller + "&group_id=" +
@@ -310,7 +312,10 @@ function displayHelpForId(help_point, is_mobile, target_controller,
                 csrf_token_key,
                 csrf_token_value
             );
-            elt('page_name').innerHTML = data.page_title + ' [<a href="' +
+            elt('page_name').innerHTML = data.page_view_title ||
+                    data.page_title;
+            if(data.can_edit){
+                elt('page_name').innerHTML += ' [<a href="' +
             getEditLink(
                 target_controller,
                 current_action,
@@ -320,11 +325,14 @@ function displayHelpForId(help_point, is_mobile, target_controller,
                 data.page_title,
                 back_params) + '">' +
             tl["wiki_view_edit"] + '</a>]';
+            }
             toggleHelp('help-frame', is_mobile, target_controller);
         },
         function (status)
         {
-            toggleHelp('help-frame', is_mobile, target_controller);
+            doMessage("<h2 class='red'>"+tl["wiki_view_not_available"] +
+                    "</h2>");
+            //toggleHelp('help-frame', is_mobile, target_controller);
         });
 }
 /*

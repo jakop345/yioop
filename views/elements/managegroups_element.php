@@ -625,11 +625,17 @@ class ManagegroupsElement extends Element
         $fields = array(
             tl('managegroups_element_groupname') => "name",
             tl('managegroups_element_groupowner') => "owner",
-            tl('managegroups_element_registertype') =>
+            tl('managegroups_element_registertype'). "&nbsp;" 
+            . $view->helper("helpbutton")->render(
+            "Discover Groups Register", $data[CSRF_TOKEN]). "&nbsp;" =>
                 array("register", $data['EQUAL_COMPARISON_TYPES']),
-            tl('managegroups_element_memberaccess') =>
+            tl('managegroups_element_memberaccess'). "&nbsp;" 
+            . $view->helper("helpbutton")->render(
+            "Discover Groups Access", $data[CSRF_TOKEN]). "&nbsp;" =>
                 array("access", $data['EQUAL_COMPARISON_TYPES']),
-            tl('managegroups_element_post_lifetime') =>
+            tl('managegroups_element_post_lifetime'). "&nbsp;" 
+            . $view->helper("helpbutton")->render(
+            "Discover Groups Post Lifetime", $data[CSRF_TOKEN]). "&nbsp;" =>
                 array("lifetime", $data['EQUAL_COMPARISON_TYPES'])
         );
         $dropdowns = array(

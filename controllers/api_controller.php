@@ -85,7 +85,7 @@ class ApiController extends Controller implements CrawlConstants {
         }
         $data['SCRIPT'] = "";
         $token_okay = $this->checkCSRFToken(CSRF_TOKEN, $user_id);
-
+        
         $data = array_merge($data, $this->processSession());
 
         if (isset($data["VIEW"])) {

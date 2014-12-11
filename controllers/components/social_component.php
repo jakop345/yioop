@@ -1321,6 +1321,15 @@ EOD;
             $group_id = PUBLIC_GROUP_ID;
         }
         $group = $group_model->getGroupById($group_id, $user_id);
+        $groups = $group_model->
+                getUserGroups($user_id,"",0);
+        foreach($groups as $grp){
+            if($grp["GROUP_ID"] == $group_id)
+            {
+                $data['user_group_status'] = $grp["STATUS"];
+                break;
+            }
+        }
         $data["CAN_EDIT"] = false;
         if((isset($_REQUEST['c'])) && $_REQUEST['c'] == "api"){
             $data['MODE'] = 'api';

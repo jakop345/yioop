@@ -71,13 +71,19 @@ class ApiElement extends Element implements CrawlConstants
      *
      * @param array $data fields PAGE used for page contents
      * @param bool $can_edit whether the current user has permissions to
-     *     edit or create this page
+     * edit or create this page
      * @param bool $logged_in whethe current user is logged in or not
      */
     function renderJsonDocument($data, $can_edit, $logged_in)
     {
         $out_array = array();
         $http_code = "500 Internal Server Error";
+        if(isset($data['user_group_status']) && 
+                $data['user_group_status'] == 1){
+            $subscribed_to_group = true;
+        }else{
+            $subscribed_to_group = false;
+        }
         if($data["PAGE"]) {
             $out_array["wiki_content"] = html_entity_decode($data['PAGE'],
                 ENT_QUOTES, 'UTF-8');
@@ -86,6 +92,7 @@ class ApiElement extends Element implements CrawlConstants
             $out_array['page_id'] = $data['PAGE_ID'];
             $out_array['page_name'] = $data['PAGE_NAME'];
             $out_array['page_title'] = $data['PAGE_TITLE'];
+            $out_array['page_view_title'] = $data['HEAD']['title'];
             $http_code = "200 OK";
         } else {
             if(!$logged_in) {
@@ -93,7 +100,7 @@ class ApiElement extends Element implements CrawlConstants
                 $http_code = "401 Unauthorized";
             }
         }
-        if($can_edit && $data['PAGE']) {
+        if($subscribed_to_group && $can_edit && $data['PAGE']) {
             $out_array["can_edit"] = true;
         }
         if(isset($data['errors']) && count($data['errors']) > 0) {
