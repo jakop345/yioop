@@ -55,7 +55,7 @@ class SigninElement extends Element
         if($logged_in) {
             ?><li><b><a href="./?c=admin&amp;<?php
             e(CSRF_TOKEN."=".$data[CSRF_TOKEN])?>"><?php
-                e($_SESSION['USER_NAME']); ?></a></b></li>
+                e($data['USERNAME']); ?></a></b></li>
             <?php
         }
         if(WEB_ACCESS) {
