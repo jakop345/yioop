@@ -1128,7 +1128,7 @@ class SocialComponent extends Component implements CrawlConstants
             if($item['OWNER_ID'] == $user_id || $user_id == ROOT_ID) {
                 $page['MEMBER_ACCESS'] = GROUP_READ_WIKI;
             }
-            if(!$recent_found && $time - $item["PUBDATE"] <
+            if(!$recent_found && !$math && $time - $item["PUBDATE"] <
                 5 * ONE_MINUTE) {
                 $recent_found = true;
                 $data['SCRIPT'] .= 'doUpdate();';
