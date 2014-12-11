@@ -1086,6 +1086,7 @@ class SocialComponent extends Component implements CrawlConstants
         $locale_tag = getLocaleTag();
         $page = false;
         $pages = array();
+        $math = false;
         foreach($group_items as $item) {
             $page = $item;
             $page['USER_ICON'] = $user_model->getUserIconUrl($page['USER_ID']);
@@ -1113,6 +1114,13 @@ class SocialComponent extends Component implements CrawlConstants
             $page[self::DESCRIPTION] =
                 $group_model->insertResourcesParsePage($item['GROUP_ID'], -1,
                 $locale_tag, $page[self::DESCRIPTION]);
+            if(!$math && strpos($page[self::DESCRIPTION], "`") !== false) {
+                $math = true;
+                if(!isset($data["INCLUDE_SCRIPTS"])) {
+                    $data["INCLUDE_SCRIPTS"] = array();
+                }
+                $data["INCLUDE_SCRIPTS"][] = "math";
+            }
             unset($page['DESCRIPTION']);
             $page['OLD_DESCRIPTION'] = $description;
             $page[self::SOURCE_NAME] = $page['GROUP_NAME'];
@@ -1797,7 +1805,7 @@ EOD;
                     $group_id, $data, $data["PAGE_FOOTER"]);
             }
             if($data['MODE'] == "read" && strpos($data["PAGE"], "`") !== false){
-                if(isset($data["INCLUDE_SCRIPTS"])) {
+                if(!isset($data["INCLUDE_SCRIPTS"])) {
                     $data["INCLUDE_SCRIPTS"] = array();
                 }
                 $data["INCLUDE_SCRIPTS"][] = "math";
