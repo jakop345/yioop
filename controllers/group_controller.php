@@ -72,6 +72,8 @@ class GroupController extends Controller implements CrawlConstants
         } else {
             $user_id = $_SERVER['REMOTE_ADDR'];
         }
+        $signin_model = $this->model("signin");
+        $data['USERNAME'] = $signin_model->getUserName($user_id);
         $data['SCRIPT'] = "";
         $token_okay = $this->checkCSRFToken(CSRF_TOKEN, $user_id);
         $data[CSRF_TOKEN] = $this->generateCSRFToken($user_id);

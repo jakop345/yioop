@@ -211,6 +211,11 @@ class AdminController extends Controller implements CrawlConstants
                "u.focus();";
         }
         $_SESSION['REMOTE_ADDR'] = $_SERVER['REMOTE_ADDR'];
+        if(!isset($data["USERNAME"]) && isset($_SESSION['USER_ID'])) {
+            $signin_model = $this->model("signin");
+            $data['USERNAME'] = $signin_model->getUserName(
+                $_SESSION['USER_ID']);
+        }
         $this->displayView($view, $data);
     }
     /**
