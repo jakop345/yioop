@@ -52,18 +52,25 @@ class SigninElement extends Element
         <div class="user-nav" >
         <ul>
         <?php
+        if($logged_in) {
+            ?><li><b><a href="./?c=admin&amp;<?php
+            e(CSRF_TOKEN."=".$data[CSRF_TOKEN])?>"><?php
+                e($_SESSION['USER_NAME']); ?></a></b></li>
+            <?php
+        }
         if(WEB_ACCESS) {
-            ?>    <li><a href="./?c=settings&amp;<?php
-                if($logged_in) {
-                    e(CSRF_TOKEN."=".$data[CSRF_TOKEN]."&amp;");
-                } ?>l=<?php
-                e(getLocaleTag());
-                e((isset($data['its'])) ? '&amp;its='.$data['its'] : '');
-                e((isset($data['ACTIVITY_METHOD'])) ?
-                    '&amp;return='.$data['ACTIVITY_METHOD']:'');
-                e((isset($data['ACTIVITY_CONTROLLER'])) ?
-                    '&amp;oldc='.$data['ACTIVITY_CONTROLLER']:'');
-                ?>"><?php
+            ?>
+            <li><a href="./?c=settings&amp;<?php
+            if($logged_in) {
+                e(CSRF_TOKEN."=".$data[CSRF_TOKEN]."&amp;");
+            } ?>l=<?php
+            e(getLocaleTag());
+            e((isset($data['its'])) ? '&amp;its='.$data['its'] : '');
+            e((isset($data['ACTIVITY_METHOD'])) ?
+                '&amp;return='.$data['ACTIVITY_METHOD']:'');
+            e((isset($data['ACTIVITY_CONTROLLER'])) ?
+                '&amp;oldc='.$data['ACTIVITY_CONTROLLER']:'');
+            ?>"><?php
             e(tl('signin_element_settings')); ?></a></li><?php
         }
         if(SIGNIN_LINK && !$logged_in) {
@@ -71,9 +78,6 @@ class SigninElement extends Element
                 e(tl('signin_element_signin')); ?></a></li><?php
         }
         if($logged_in) {
-            ?><li><a href="./?c=admin&amp;<?php
-            e(CSRF_TOKEN."=".$data[CSRF_TOKEN])?>"><?php
-                    e(tl('signin_element_admin')); ?></a></li><?php
             ?><li><a href="./?a=signout"><?php
                 e(tl('signin_element_signout')); ?></a></li><?php
         }
