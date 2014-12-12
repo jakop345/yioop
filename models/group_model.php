@@ -418,8 +418,9 @@ class GroupModel extends Model
                 $sql = "SELECT STATUS FROM USER_GROUP WHERE
                     USER_ID=? AND GROUP_ID=? ".$db->limitOffset(1);
                 $params = array($user_id, $group_id);
-                if($result = $db->execute($sql, $params) &&
-                    $row = $db->fetchArray($result) ) {
+                $result = $db->execute($sql, $params);
+                if($result) {
+                    $row = $db->fetchArray($result);
                     $group['STATUS'] = $row['STATUS'];
                 } else {
                     $group['STATUS'] = -1;

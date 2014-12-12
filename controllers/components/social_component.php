@@ -1040,6 +1040,7 @@ class SocialComponent extends Component implements CrawlConstants
                 $page['GROUP_ID'] = $group['GROUP_ID'];
                 $page[self::SOURCE_NAME] = $group['GROUP_NAME'];
                 $page['MEMBER_ACCESS'] = $group['MEMBER_ACCESS'];
+                $page['STATUS'] = $group['STATUS'];
                 if($group['OWNER_ID'] == $user_id || $user_id == ROOT_ID) {
                     $page['MEMBER_ACCESS'] = GROUP_READ_WIKI;
                 }
@@ -1150,9 +1151,13 @@ class SocialComponent extends Component implements CrawlConstants
         } else if($just_thread != "" && !isset($page[self::TITLE])) {
             $data['NO_POSTS_IN_THREAD'] = true;
         }
+        if(!$just_group_id && !$just_thread) {
+           $data['GROUP_STATUS'] = ACTIVE_STATUS;
+        }
         if($just_group_id) {
+            $group = $group_model->getGroupById($just_group_id, $user_id);
+            $data['GROUP_STATUS'] = $group['STATUS'];
             if(!isset($page[self::SOURCE_NAME]) ) {
-                $group = $group_model->getGroupById($just_group_id, $user_id);
                 $page[self::SOURCE_NAME] = $group['GROUP_NAME'];
                 $data['NO_POSTS_YET'] = true;
                 if($user_id == $group['OWNER_ID'] || $user_id == ROOT_ID) {

@@ -190,8 +190,9 @@ class GroupfeedElement extends Element implements CrawlConstants
                 $paging_query, $data);
         }
         $data['FRAGMENT'] = "";
-        if(isset($data['JUST_THREAD']) && $logged_in && $page&& $is_status
-            && $data['STATUS'] == ACTIVE_STATUS) {
+        if(isset($data['JUST_THREAD']) && $logged_in && $page &&
+            isset($data['GROUP_STATUS']) &&
+            $data['GROUP_STATUS'] == ACTIVE_STATUS) {
             $data['FRAGMENT'] = '#result-'.$page['ID'];
             ?>
             <div class='button-group-result'>
@@ -264,7 +265,8 @@ class GroupfeedElement extends Element implements CrawlConstants
         $can_comment = array(GROUP_READ_COMMENT, GROUP_READ_WRITE,
             GROUP_READ_WIKI);
         $start_thread = array(GROUP_READ_WRITE, GROUP_READ_WIKI);
-        if(!isset($data['STATUS']) || $data['STATUS'] != ACTIVE_STATUS) {
+        if(!isset($data['GROUP_STATUS']) ||
+            $data['GROUP_STATUS'] != ACTIVE_STATUS) {
             $can_comment = array();
             $start_thread = array();
         }
