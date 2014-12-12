@@ -1148,6 +1148,8 @@ class SocialComponent extends Component implements CrawlConstants
             $data['SUBTITLE'] = trim($title, "\- \t\n\r\0\x0B");
             $data['ADD_PAGING_QUERY'] = "&amp;just_thread=$just_thread";
             $data['JUST_THREAD'] = $just_thread;
+            $group = $group_model->getGroupById($page['GROUP_ID'], $user_id);
+            $data['GROUP_STATUS'] = $group['STATUS'];
         } else if($just_thread != "" && !isset($page[self::TITLE])) {
             $data['NO_POSTS_IN_THREAD'] = true;
         }
