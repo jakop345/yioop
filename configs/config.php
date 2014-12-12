@@ -606,6 +606,8 @@ define('MAX_MIX_FRAGMENTS', 10);
  * they are displayed (not in DB)
  */
 define ('NAME_TRUNCATE_LEN', 7);
+/** USER STATUS value used for someone who is not in a group by can browse*/
+define('NOT_MEMBER_STATUS', -1);
 /** USER STATUS value used for a user who can log in and perform activities */
 define('ACTIVE_STATUS', 1);
 /**

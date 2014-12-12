@@ -405,7 +405,7 @@ class GroupModel extends Model
             " AND  UG.GROUP_ID=G.GROUP_ID AND OWNER_ID = O.USER_ID";
         $sql = "SELECT G.GROUP_ID AS GROUP_ID,
             G.GROUP_NAME AS GROUP_NAME, G.OWNER_ID AS OWNER_ID,
-            O.USER_NAME AS OWNER, REGISTER_TYPE, UG.STATUS,
+            O.USER_NAME AS OWNER, REGISTER_TYPE, UG.STATUS AS STATUS,
             G.MEMBER_ACCESS AS MEMBER_ACCESS, G.VOTE_ACCESS AS VOTE_ACCESS,
             G.POST_LIFETIME AS POST_LIFETIME, UG.JOIN_DATE AS JOIN_DATE
             FROM GROUPS G, USERS O, USER_GROUP UG $where " .
@@ -414,6 +414,17 @@ class GroupModel extends Model
         $group = false;
         if($result) {
             $group = $db->fetchArray($result);
+            if(!$require_root_or_member) {
+                $sql = "SELECT STATUS FROM USER_GROUP WHERE
+                    USER_ID=? AND GROUP_ID=? ".$db->limitOffset(1);
+                $params = array($user_id, $group_id);
+                if($result = $db->execute($sql, $params) &&
+                    $row = $db->fetchArray($result) ) {
+                    $group['STATUS'] = $row['STATUS'];
+                } else {
+                    $group['STATUS'] = -1;
+                }
+            }
         }
         if(!$group) {
             return false;

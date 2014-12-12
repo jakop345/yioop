@@ -190,7 +190,8 @@ class GroupfeedElement extends Element implements CrawlConstants
                 $paging_query, $data);
         }
         $data['FRAGMENT'] = "";
-        if(isset($data['JUST_THREAD']) && $logged_in && $page) {
+        if(isset($data['JUST_THREAD']) && $logged_in && $page&& $is_status
+            && $data['STATUS'] == ACTIVE_STATUS) {
             $data['FRAGMENT'] = '#result-'.$page['ID'];
             ?>
             <div class='button-group-result'>
@@ -263,6 +264,10 @@ class GroupfeedElement extends Element implements CrawlConstants
         $can_comment = array(GROUP_READ_COMMENT, GROUP_READ_WRITE,
             GROUP_READ_WIKI);
         $start_thread = array(GROUP_READ_WRITE, GROUP_READ_WIKI);
+        if(!isset($data['STATUS']) || $data['STATUS'] != ACTIVE_STATUS) {
+            $can_comment = array();
+            $start_thread = array();
+        }
         $page = array();
         if(isset($data['PAGES'][0]["MEMBER_ACCESS"]) &&
             in_array($data['PAGES'][0]["MEMBER_ACCESS"], $can_comment)) {
@@ -396,8 +401,7 @@ class GroupfeedElement extends Element implements CrawlConstants
                 "&amp;just_group_id=".$page['GROUP_ID']);?>" ><?php
                 e($page[self::SOURCE_NAME]."</a></b>");
                 if(!isset($data['JUST_GROUP_ID']) &&
-                        in_array($page["MEMBER_ACCESS"], array(GROUP_READ_WRITE,
-                        GROUP_READ_WIKI)) ) {
+                        in_array($page["MEMBER_ACCESS"], $start_thread) ) {
                     ?>
                     <a  class='gray-link' href='javascript:start_thread_form
                     (<?php
@@ -467,7 +471,7 @@ class GroupfeedElement extends Element implements CrawlConstants
             <div class="float-opposite">
                 <?php if(!isset($data['JUST_GROUP_ID']) &&
                     in_array($page["MEMBER_ACCESS"], $can_comment) &&
-                    !isset($data['JUST_THREAD'])){ ?>
+                    !isset($data['JUST_THREAD'])){?>
                     <a href='javascript:comment_form(<?php
                     e("{$page['ID']}, {$page['PARENT_ID']}, ".
                         "{$page['GROUP_ID']}"); ?>)'><?php

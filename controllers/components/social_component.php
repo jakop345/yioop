@@ -753,8 +753,7 @@ class SocialComponent extends Component implements CrawlConstants
                     }
                     $parent_id = $parent->clean($_REQUEST['parent_id'], "int");
                     $group_id = $parent->clean($_REQUEST['group_id'], "int");
-                    $group =
-                        $group_model->getGroupById($group_id,
+                    $group = $group_model->getGroupById($group_id,
                         $user_id, true);
                     $read_comment = array(GROUP_READ_COMMENT, GROUP_READ_WRITE,
                         GROUP_READ_WIKI);
@@ -953,7 +952,7 @@ class SocialComponent extends Component implements CrawlConstants
                             tl('social_component_no_update_access'));
                     }
                     $group_id = $item['GROUP_ID'];
-                    $group =  $group_model->getGroupById($group_id, $user_id,
+                    $group = $group_model->getGroupById($group_id, $user_id,
                         true);
                     $update_thread = array(GROUP_READ_WRITE, GROUP_READ_WIKI);
                     if($post_id != $item['PARENT_ID'] && $post_id > 0) {
