@@ -241,6 +241,78 @@ class ServersettingsElement extends Element
                     ?></textarea>
                 </div>
             </fieldset>
+            <fieldset><legend>
+            <?php e(tl('serversettings_element_adserver_configuration'))
+            ?></legend>
+            <div><b><label>
+            <?php e(tl('serversettings_element_align'))
+            ?></label></b><br>
+            <input type='radio' name='AD_LOCATION'
+                value="<?php e(tl('ad_element_top'));?>"
+                onchange="showHideScriptdiv(this);"
+                <?php
+                e(($data['AD_LOCATION'])==tl('ad_element_top')?'checked':'')
+                ?>/>
+                <?php
+                e(tl('ad_element_top'))
+                ?>
+            <input type='radio' name='AD_LOCATION'
+                value="<?php e(tl('ad_element_side'));?>"
+                onclick="showHideScriptdiv(this);"
+                <?php
+                e(($data['AD_LOCATION'])==tl('ad_element_side')?'checked':'')
+                ?>/>
+                <?php
+                e(tl('ad_element_side'))
+                ?>
+            <input type='radio' name='AD_LOCATION'
+                value="<?php e(tl('ad_element_both'));?>"
+                onclick="showHideScriptdiv(this);"
+                <?php
+                e(($data['AD_LOCATION'])==tl('ad_element_both')?'checked':'')
+                ?>/>
+                <?php
+                e(tl('ad_element_both'))
+                ?>
+            <input type='radio' name='AD_LOCATION'
+                value="<?php e(tl('ad_element_none'));?>"
+                onclick="showHideScriptdiv(this);"
+                <?php
+                e(($data['AD_LOCATION'])==tl('ad_element_none')?'checked':'')
+                ?>/>
+                <?php
+                e(tl('ad_element_none'))
+                ?>
+            </div>
+            <div id="global-adscript-config">
+            <label for="global-adscript"><b>
+            <?php 
+            e(tl('serversettings_element_global_adscript'));
+            ?></b></label>
+            <textarea class="short-text-area" id="global-adscript"
+                name="GLOBAL_ADSCRIPT"><?php
+                e(html_entity_decode($data['GLOBAL_ADSCRIPT'],ENT_QUOTES))
+                ?>
+            </textarea></div>
+            <div id="top-adscript-config"><label for="top-adscript"><b>
+            <?php
+            e(tl('serversettings_element_top_adscript'));
+            ?></b></label>
+            <textarea class="short-text-area" id="top-adscript"
+                name="TOP_ADSCRIPT"><?php
+                e(html_entity_decode($data['TOP_ADSCRIPT'],ENT_QUOTES))
+                ?>
+            </textarea></div>
+            <div id="side-adscript-config"><label for="side-adscript"><b>
+            <?php
+            e(tl('serversettings_element_side_adscript'));
+            ?></b></label>
+            <textarea class="short-text-area" id="side-adscript"
+                name="SIDE_ADSCRIPT"><?php
+                e(html_entity_decode($data['SIDE_ADSCRIPT'],ENT_QUOTES))
+                ?>
+            </textarea></div>
+            </fieldset>
             </div>
             <div class="top-margin center">
             <button class="button-box" type="submit"><?php

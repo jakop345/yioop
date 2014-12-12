@@ -536,6 +536,14 @@ class SystemComponent extends Component
      */
     function serverSettings()
     {
+        $script_array = array('SIDE_ADSCRIPT',
+        'TOP_ADSCRIPT','GLOBAL_ADSCRIPT');
+        foreach($script_array as $value) {
+            if(isset($_REQUEST[$value])) {
+                $_REQUEST[$value] = str_replace("(","&#40;",$_REQUEST[$value]);
+                $_REQUEST[$value] = str_replace(")","&#41;",$_REQUEST[$value]);
+            }
+        }
         $parent = $this->parent;
         $profile_model = $parent->model("profile");
         $data = array();
@@ -546,12 +554,16 @@ class SystemComponent extends Component
         }
         $data['SCRIPT'] = "";
         $data["ELEMENT"] = "serversettings";
+        $data["INCLUDE_SCRIPTS"][] = "server_settings";
+        $data["AD_LOCATION"] = array("top" => e(tl('ad_element_top')),
+        "side" => e(tl('ad_element_side')),"both" => e(tl('ad_element_both')),
+        "none" => e(tl('ad_element_none')));
         switch($arg)
         {
             case "update":
                 $parent->updateProfileFields($data, $profile,
                     array('USE_FILECACHE', 'USE_MEMCACHE', 'USE_MAIL_PHP',
-                        'USE_PROXY'));
+                        'USE_PROXY','AD_LOCATION'));
                 $old_profile =
                     $profile_model->getProfile(WORK_DIRECTORY);
                 $db_problem = false;
@@ -574,6 +586,21 @@ class SystemComponent extends Component
                         $profile) !== true) {
                         $db_problem = true;
                     }
+                }
+                if(isset($profile['AD_LOCATION']) &&
+                    $profile['AD_LOCATION'] !=
+                    $old_profile['AD_LOCATION']) {
+                        $data['AD_LOCATION'] = $old_profile['AD_LOCATION'];
+                }
+                if(isset($profile['TOP_ADSCRIPT']) &&
+                    $profile['TOP_ADSCRIPT'] !=
+                    $old_profile['TOP_ADSCRIPT']) {
+                        $data['TOP_ADSCRIPT'] = $old_profile['TOP_ADSCRIPT'];
+                }
+                if(isset($profile['SIDE_ADSCRIPT']) &&
+                    $profile['SIDE_ADSCRIPT'] !=
+                    $old_profile['SIDE_ADSCRIPT']) {
+                        $data['SIDE_ADSCRIPT'] = $old_profile['SIDE_ADSCRIPT'];
                 }
                 if($db_problem) {
                     $data['MESSAGE'] =

@@ -83,6 +83,10 @@ class SearchController extends Controller implements CrawlConstants
     {
         $data = array();
         $start_time = microtime();
+        $data['TOP_ADSCRIPT'] = TOP_ADSCRIPT;
+        $data['SIDE_ADSCRIPT'] = SIDE_ADSCRIPT;
+        $data['GLOBAL_ADSCRIPT'] = GLOBAL_ADSCRIPT;
+        $data['AD_LOCATION'] = AD_LOCATION;
         list($subsearches, $no_query) = $this->initializeSubsearches();
         $format_info = $this->initializeResponseFormat();
         if(!$format_info) { return;}

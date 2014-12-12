@@ -177,6 +177,7 @@ class SearchView extends View implements CrawlConstants
      */
     function renderSearchResults($data)
     {
+        $is_landing = (!isset($data['PAGES']) && !isset($data['MORE']));
         $logged_in = isset($data["ADMIN"]) && $data["ADMIN"];
         $token_string = ($logged_in) ? CSRF_TOKEN."=".$data[CSRF_TOKEN]."&":"";
         $token_string_amp = ($logged_in) ?
@@ -197,6 +198,32 @@ class SearchView extends View implements CrawlConstants
                 $data['TOTAL_ROWS']));
             }
         ?></h2>
+        <?php
+        if((!$is_landing) && ($data['AD_LOCATION'] == tl('ad_element_top') ||
+            $data['AD_LOCATION'] == tl('ad_element_both'))) { ?>
+            <div class="top-adscript">
+            <?php
+            $str = html_entity_decode($data['TOP_ADSCRIPT'],ENT_QUOTES);
+            $str = preg_replace("[&#40;]","(",$str);
+            $str = preg_replace("[&#41;]",")",$str);
+            eval(e($str));
+            ?>
+            </div>
+        <?php
+        } ?>
+        <?php
+        if(!$is_landing && ($data['AD_LOCATION'] == tl('ad_element_side') ||
+            $data['AD_LOCATION'] == tl('ad_element_both'))) { ?>
+            <div class="side-adscript">
+            <?php 
+            $str = html_entity_decode($data['SIDE_ADSCRIPT'], ENT_QUOTES);
+            $str = preg_replace("[&#40;]","(",$str);
+            $str = preg_replace("[&#41;]",")",$str);
+            eval(e($str));
+            ?>
+            </div>
+        <?php
+        } ?>
         <?php
         $similar_words = $data['THESAURUS_VARIANTS'];
         $use_thesaurus = WORD_SUGGEST && count($similar_words) > 0 && !MOBILE;

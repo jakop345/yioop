@@ -2604,3 +2604,16 @@ button.default
 {
     margin-bottom : -5px;
 }
+.top-adscript
+{
+    left: 0.5in;
+    position: relative;
+    top: -0.9in;
+
+}
+.side-adscript
+{
+    float: right;
+    margin-top: -50px;
+    margin-right: 180px;
+}
