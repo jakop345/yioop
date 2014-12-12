@@ -216,6 +216,7 @@ if(file_exists(WORK_DIRECTORY.PROFILE_FILE_NAME)) {
     define('FOREGROUND_COLOR', "#FFF");
     define('SIDEBAR_COLOR', "#8A4");
     define('TOPBAR_COLOR', "#EEF");
+    define('AD_LOCATION','none');
     $INDEXING_PLUGINS = array();
 }
 if(!defined("BASE_URL")) {
@@ -235,6 +236,9 @@ if(!defined('LOGO')) {
      */
     define('SESSION_NAME', "yioopbiscuit");
     define('CSRF_TOKEN', "YIOOP_TOKEN");
+}
+if(!defined("AD_LOCATION")) {
+    define('AD_LOCATION', "none");
 }
 date_default_timezone_set(TIMEZONE);
 if((DEBUG_LEVEL & ERROR_INFO) == ERROR_INFO) {

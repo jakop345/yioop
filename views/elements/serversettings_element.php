@@ -64,20 +64,22 @@ class ServersettingsElement extends Element
             <fieldset><legend><?php
                 e(tl('serversettings_element_name_server'))?></legend>
                 <div ><b><label for="queue-fetcher-salt"><?php
-                    e(tl('serversettings_element_name_server_key'))?></label></b>
+                    e(tl('serversettings_element_name_server_key'));
+                    ?></label></b>
                     <input type="text" id="queue-fetcher-salt" name="AUTH_KEY"
                         value="<?php e($data['AUTH_KEY']); ?>"
                         class="wide-field" />
                 </div>
                 <div class="top-margin"><b><label for="name-server-url"><?php
-                    e(tl('serversettings_element_name_server_url'))?></label></b>
+                    e(tl('serversettings_element_name_server_url'));
+                    ?></label></b>
                     <input type="text" id="name-server-url" name="NAME_SERVER"
                         value="<?php e($data['NAME_SERVER']); ?>"
                         class="extra-wide-field" />
                 </div>
                 <?php if(class_exists("Memcache")) { ?>
                 <div class="top-margin"><label for="use-memcache"><b><?php
-                    e(tl('serversettings_element_use_memcache'))?></b></label>
+                    e(tl('serversettings_element_use_memcache'));?></b></label>
                         <input type="checkbox" id="use-memcache"
                             name="USE_MEMCACHE" value="true" <?php
                             e($data['USE_MEMCACHE'] ? "checked='checked'" :
@@ -127,21 +129,24 @@ class ServersettingsElement extends Element
                 </div>
                 <div id="login-dbms">
                     <div class="top-margin"><b><label for="database-host"><?php
-                        e(tl('serversettings_element_databasehost')); ?></label></b>
+                        e(tl('serversettings_element_databasehost'));
+                        ?></label></b>
                         <input type="text" id="database-user" name="DB_HOST"
                             value="<?php e($data['DB_HOST']); ?>"
                             class="wide-field" />
                     </div>
                     <div class="top-margin"><b><label for="database-user"><?php
-                        e(tl('serversettings_element_databaseuser'))?></label></b>
+                        e(tl('serversettings_element_databaseuser'));
+                        ?></label></b>
                         <input type="text" id="database-user" name="DB_USER"
                             value="<?php e($data['DB_USER']); ?>"
                             class="wide-field" />
                     </div>
                     <div class="top-margin"><b><label
                         for="database-password"><?php
-                        e(tl('serversettings_element_databasepassword'));?></label>
-                        </b> <input type="password" id="database-password"
+                        e(tl('serversettings_element_databasepassword'));
+                        ?></label></b>
+                        <input type="password" id="database-password"
                             name="DB_PASSWORD" value="<?php
                             e($data['DB_PASSWORD']); ?>" class="wide-field" />
                     </div>
@@ -244,74 +249,52 @@ class ServersettingsElement extends Element
             <fieldset><legend>
             <?php e(tl('serversettings_element_adserver_configuration'))
             ?></legend>
-            <div><b><label>
-            <?php e(tl('serversettings_element_align'))
-            ?></label></b><br>
-            <input type='radio' name='AD_LOCATION'
-                value="<?php e(tl('ad_element_top'));?>"
-                onchange="showHideScriptdiv(this);"
-                <?php
-                e(($data['AD_LOCATION'])==tl('ad_element_top')?'checked':'')
-                ?>/>
-                <?php
-                e(tl('ad_element_top'))
-                ?>
-            <input type='radio' name='AD_LOCATION'
-                value="<?php e(tl('ad_element_side'));?>"
-                onclick="showHideScriptdiv(this);"
-                <?php
-                e(($data['AD_LOCATION'])==tl('ad_element_side')?'checked':'')
-                ?>/>
-                <?php
-                e(tl('ad_element_side'))
-                ?>
-            <input type='radio' name='AD_LOCATION'
-                value="<?php e(tl('ad_element_both'));?>"
-                onclick="showHideScriptdiv(this);"
-                <?php
-                e(($data['AD_LOCATION'])==tl('ad_element_both')?'checked':'')
-                ?>/>
-                <?php
-                e(tl('ad_element_both'))
-                ?>
-            <input type='radio' name='AD_LOCATION'
-                value="<?php e(tl('ad_element_none'));?>"
-                onclick="showHideScriptdiv(this);"
-                <?php
-                e(($data['AD_LOCATION'])==tl('ad_element_none')?'checked':'')
-                ?>/>
-                <?php
-                e(tl('ad_element_none'))
-                ?>
+            <div><b>
+            <?php e(tl('serversettings_element_ad_location'))
+            ?></b><br />
+            <input type='radio' name='AD_LOCATION' value="top"
+                onchange="showHideScriptdiv(this);" <?php
+                e(($data['AD_LOCATION'] == 'top') ?
+                    'checked' : ''); ?> /><label for="ad-location-top"><?php
+                e(tl('serversettings_element_top')); ?></label>
+            <input type='radio' name='AD_LOCATION' value="side"
+                onclick="showHideScriptdiv(this);" <?php
+                e(($data['AD_LOCATION'] == 'side') ?
+                    'checked' : ''); ?> /><label for="ad-location-top"><?php
+                e(tl('serversettings_element_side')) ?></label>
+            <input type='radio' name='AD_LOCATION' value="both"
+                onclick="showHideScriptdiv(this);" <?php
+                e(($data['AD_LOCATION'] == 'both') ? 'checked'
+                    :''); ?> /><label for="ad-location-both"><?php
+                e(tl('serversettings_element_both')); ?></label>
+            <input type='radio' name='AD_LOCATION' value="none"
+                onclick="showHideScriptdiv(this);" <?php
+                e(($data['AD_LOCATION'] == 'none') ?
+                    'checked' : ''); ?> /><label for="ad-location-none"><?php
+                e(tl('serversettings_element_none')); ?></label>
             </div>
             <div id="global-adscript-config">
-            <label for="global-adscript"><b>
-            <?php 
-            e(tl('serversettings_element_global_adscript'));
+            <label for="global-adscript"><b><?php
+                e(tl('serversettings_element_global_adscript'));
             ?></b></label>
             <textarea class="short-text-area" id="global-adscript"
                 name="GLOBAL_ADSCRIPT"><?php
-                e(html_entity_decode($data['GLOBAL_ADSCRIPT'],ENT_QUOTES))
-                ?>
-            </textarea></div>
-            <div id="top-adscript-config"><label for="top-adscript"><b>
-            <?php
-            e(tl('serversettings_element_top_adscript'));
+                e(html_entity_decode($data['GLOBAL_ADSCRIPT'], ENT_QUOTES))
+                ?></textarea></div>
+            <div id="top-adscript-config"><label for="top-adscript"><b><?php
+                e(tl('serversettings_element_top_adscript'));
             ?></b></label>
             <textarea class="short-text-area" id="top-adscript"
                 name="TOP_ADSCRIPT"><?php
-                e(html_entity_decode($data['TOP_ADSCRIPT'],ENT_QUOTES))
-                ?>
-            </textarea></div>
-            <div id="side-adscript-config"><label for="side-adscript"><b>
-            <?php
-            e(tl('serversettings_element_side_adscript'));
+                e(html_entity_decode($data['TOP_ADSCRIPT'], ENT_QUOTES))
+                ?></textarea></div>
+            <div id="side-adscript-config"><label for="side-adscript"><b><?php
+                e(tl('serversettings_element_side_adscript'));
             ?></b></label>
             <textarea class="short-text-area" id="side-adscript"
                 name="SIDE_ADSCRIPT"><?php
-                e(html_entity_decode($data['SIDE_ADSCRIPT'],ENT_QUOTES))
-                ?>
-            </textarea></div>
+                e(html_entity_decode($data['SIDE_ADSCRIPT'], ENT_QUOTES))
+            ?></textarea></div>
             </fieldset>
             </div>
             <div class="top-margin center">
@@ -321,6 +304,43 @@ class ServersettingsElement extends Element
             </div>
         </form>
         </div>
+        <script type="text/javascript">
+        window.onload = function()
+        {
+            showHideScriptdiv();
+        }
+        /**
+         * Method to show/block div including text area depending upon location
+         * selected for the advertisement to display on search results page.
+         */
+        function showHideScriptdiv()
+        {
+            /*
+             * Get the radio button list represnting location for the 
+             * advertisement.
+             */
+            var ad_server_config = document.getElementsByName('AD_LOCATION');
+            /*
+             * Show/ block div with text area depending upon the radio
+             * button value.
+             */
+            var ad_align = [
+                ['block','block','none'], //top[top,global,side]
+                ['none','block','block'], //side
+                ['block','block','block'], //both
+                ['none','none','none'], //none
+            ];
+            for(var i = 0; i < ad_server_config.length; i++){
+                if(ad_server_config[i].checked) {
+                    elt('top-adscript-config').style.display = ad_align[i][0];
+                    elt('global-adscript-config').style.display =
+                        ad_align[i][1];
+                    elt('side-adscript-config').style.display = ad_align[i][2];
+                    break;
+                }
+            }
+        }
+        </script>
     <?php
     }
 }

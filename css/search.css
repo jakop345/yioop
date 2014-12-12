@@ -2606,14 +2606,45 @@ button.default
 }
 .top-adscript
 {
+    clear: both;
     left: 0.5in;
+    padding: 0.05in;
     position: relative;
+    right: 0.5in;
     top: -0.9in;
-
+    max-width:8in;
 }
-.side-adscript
+.mobile .top-adscript
+{
+    left: 3px;
+    padding: 1px;
+    position: relative;
+    right: 3px;
+    top: -40px;
+    width:300px;
+}
+.mobile .top-adscript iframe
+{
+    -ms-zoom: 0.63;
+    -moz-transform: scale(0.63);
+    -moz-transform-origin: 0 0;
+    -o-transform: scale(0.63);
+    -o-transform-origin: 0 0;
+    -webkit-transform: scale(0.63);
+    -webkit-transform-origin: 0 0;
+    transform: scale(0.63);
+    transform-origin: 0 0;
+    width:100%;
+}
+
+.html-ltr .side-adscript
 {
     float: right;
-    margin-top: -50px;
-    margin-right: 180px;
+    height:0
+}
+
+.html-rtl .side-adscript
+{
+    float: left;
+    height:0
 }

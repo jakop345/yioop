@@ -67,7 +67,7 @@ class ProfileModel extends Model
         'SUBSEARCH_LINK', 'TIMEZONE', 'TITLE_WEIGHT', 'TOPBAR_COLOR',
         'TOP_ADSCRIPT','TOR_PROXY',
         'USE_FILECACHE', 'USE_MAIL_PHP', 'USE_MEMCACHE', 'USE_PROXY',
-        'USER_AGENT_SHORT', 'WEB_URI', 'WEB_ACCESS', 'WORD_SUGGEST',
+        'USER_AGENT_SHORT', 'WEB_URI', 'WEB_ACCESS', 'WORD_SUGGEST'
         );
     /**
      * Profile fields which are stored in wiki or in a flat file
@@ -367,7 +367,8 @@ EOT;
             'FAVICON' => $base_url . "favicon.ico",
             'TIMEZONE' => 'America/Los_Angeles',
             'SESSION_NAME' => "yioopbiscuit",
-            'CSRF_TOKEN' => "YIOOP_TOKEN"
+            'CSRF_TOKEN' => "YIOOP_TOKEN",
+            'AD_LOCATION' => 'none'
         );
         $not_null_keys = array_keys($not_null_fields);
         $file_fields = $this->file_fields;

@@ -83,10 +83,15 @@ class SearchController extends Controller implements CrawlConstants
     {
         $data = array();
         $start_time = microtime();
-        $data['TOP_ADSCRIPT'] = TOP_ADSCRIPT;
-        $data['SIDE_ADSCRIPT'] = SIDE_ADSCRIPT;
-        $data['GLOBAL_ADSCRIPT'] = GLOBAL_ADSCRIPT;
-        $data['AD_LOCATION'] = AD_LOCATION;
+        if(AD_LOCATION != "none") {
+            $ad_fields = array('TOP_ADSCRIPT', 'SIDE_ADSCRIPT',
+                'GLOBAL_ADSCRIPT');
+            foreach($ad_fields as $ad_field) {
+                $ad = html_entity_decode(constant($ad_field), ENT_QUOTES);
+                $ad = preg_replace("[&#40;]","(",$ad);
+                $data[$ad_field] = preg_replace("[&#41;]",")",$ad);
+            }
+        }
         list($subsearches, $no_query) = $this->initializeSubsearches();
         $format_info = $this->initializeResponseFormat();
         if(!$format_info) { return;}
@@ -173,6 +178,11 @@ class SearchController extends Controller implements CrawlConstants
         if($web_flag) {
             $this->addSearchViewData($index_info, $no_query, $raw, $view,
                 $subsearches, $data);
+        }
+        if(!isset($data["USERNAME"]) && isset($_SESSION['USER_ID'])) {
+            $signin_model = $this->model("signin");
+            $data['USERNAME'] = $signin_model->getUserName(
+                $_SESSION['USER_ID']);
         }
         $this->displayView($view, $data);
     }

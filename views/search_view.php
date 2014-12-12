@@ -179,9 +179,10 @@ class SearchView extends View implements CrawlConstants
     {
         $is_landing = (!isset($data['PAGES']) && !isset($data['MORE']));
         $logged_in = isset($data["ADMIN"]) && $data["ADMIN"];
-        $token_string = ($logged_in) ? CSRF_TOKEN."=".$data[CSRF_TOKEN]."&":"";
+        $token_string = ($logged_in) ? CSRF_TOKEN . "=". $data[CSRF_TOKEN] .
+            "&" : "";
         $token_string_amp = ($logged_in) ?
-            CSRF_TOKEN."=".$data[CSRF_TOKEN]."&amp;":"";
+            CSRF_TOKEN . "=" . $data[CSRF_TOKEN]."&amp;" : "";
         ?>
         <div <?php if(WORD_SUGGEST) { e('id="spell-check"'); } ?>
             class="spell"><span class="hidden"
@@ -199,29 +200,14 @@ class SearchView extends View implements CrawlConstants
             }
         ?></h2>
         <?php
-        if((!$is_landing) && ($data['AD_LOCATION'] == tl('ad_element_top') ||
-            $data['AD_LOCATION'] == tl('ad_element_both'))) { ?>
-            <div class="top-adscript">
-            <?php
-            $str = html_entity_decode($data['TOP_ADSCRIPT'],ENT_QUOTES);
-            $str = preg_replace("[&#40;]","(",$str);
-            $str = preg_replace("[&#41;]",")",$str);
-            eval(e($str));
-            ?>
-            </div>
+        if((!$is_landing) && in_array(AD_LOCATION, array('top', 'both') ) ) { ?>
+            <div class="top-adscript"><?php e($data['TOP_ADSCRIPT']); ?></div>
         <?php
         } ?>
         <?php
-        if(!$is_landing && ($data['AD_LOCATION'] == tl('ad_element_side') ||
-            $data['AD_LOCATION'] == tl('ad_element_both'))) { ?>
-            <div class="side-adscript">
-            <?php 
-            $str = html_entity_decode($data['SIDE_ADSCRIPT'], ENT_QUOTES);
-            $str = preg_replace("[&#40;]","(",$str);
-            $str = preg_replace("[&#41;]",")",$str);
-            eval(e($str));
-            ?>
-            </div>
+        if(!$is_landing && !MOBILE &&
+            in_array(AD_LOCATION, array('side', 'both') ) ) { ?>
+            <div class="side-adscript"><?php e($data['SIDE_ADSCRIPT']); ?></div>
         <?php
         } ?>
         <?php
