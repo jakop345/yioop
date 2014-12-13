@@ -220,7 +220,7 @@ class ServersettingsElement extends Element
             <fieldset><legend><?php
                 e(tl('serversettings_element_proxy_title'));
                 e("&nbsp;" .$this->view->helper("helpbutton")->render(
-                        "Proxy server", $data[CSRF_TOKEN]));
+                        "Proxy Server", $data[CSRF_TOKEN]));
                 ?></legend>
                 <div ><b><label for="tor-proxies"><?php
                     e(tl('serversettings_element_tor_proxy'));?></label></b>
@@ -246,29 +246,33 @@ class ServersettingsElement extends Element
                     ?></textarea>
                 </div>
             </fieldset>
+            </div>
+            <div class="top-margin">
             <fieldset><legend>
-            <?php e(tl('serversettings_element_adserver_configuration'))
-            ?></legend>
+            <?php
+            e(tl('serversettings_element_adserver_configuration'));
+            e("&nbsp;" . $this->view->helper("helpbutton")->render(
+                "Ad Server", $data[CSRF_TOKEN])); ?></legend>
             <div><b>
             <?php e(tl('serversettings_element_ad_location'))
             ?></b><br />
             <input type='radio' name='AD_LOCATION' value="top"
-                onchange="showHideScriptdiv(this);" <?php
+                onchange="showHideScriptdiv();" <?php
                 e(($data['AD_LOCATION'] == 'top') ?
                     'checked' : ''); ?> /><label for="ad-location-top"><?php
                 e(tl('serversettings_element_top')); ?></label>
             <input type='radio' name='AD_LOCATION' value="side"
-                onclick="showHideScriptdiv(this);" <?php
+                onclick="showHideScriptdiv();" <?php
                 e(($data['AD_LOCATION'] == 'side') ?
                     'checked' : ''); ?> /><label for="ad-location-top"><?php
                 e(tl('serversettings_element_side')) ?></label>
             <input type='radio' name='AD_LOCATION' value="both"
-                onclick="showHideScriptdiv(this);" <?php
+                onclick="showHideScriptdiv();" <?php
                 e(($data['AD_LOCATION'] == 'both') ? 'checked'
                     :''); ?> /><label for="ad-location-both"><?php
                 e(tl('serversettings_element_both')); ?></label>
             <input type='radio' name='AD_LOCATION' value="none"
-                onclick="showHideScriptdiv(this);" <?php
+                onclick="showHideScriptdiv();" <?php
                 e(($data['AD_LOCATION'] == 'none') ?
                     'checked' : ''); ?> /><label for="ad-location-none"><?php
                 e(tl('serversettings_element_none')); ?></label>

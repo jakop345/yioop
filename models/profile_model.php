@@ -649,6 +649,9 @@ EOT;
         foreach($this->profile_fields as $field) {
             if(!in_array($field, $file_fields)) {
                 $profile[$field] = $this->matchDefine($field, $profile_string);
+                if($field == "AD_LOCATION" && $profile[$field] == "") {
+                    $profile[$field] = "none";
+                }
             } else if($field == "AUXILIARY_CSS"){
                 $css_file = APP_DIR . "/css/auxiliary.css";
                 if(file_exists($css_file)) {

@@ -562,11 +562,15 @@ description=Help article describing how to add a Locale.
 
 END_HEAD_VARS==Adding a Locale==
 
-The Manage Locales activity can be used to configure Yioop for use with different languages and for different regions.
+The Manage Locales activity can be used to configure Yioop for use with 
+different languages and for different regions.
 
-* The first form on this activity allows you to create a new &quot;Locale&quot; -- an object representing a language and a region.
-* The first field on this form should be filled in with a name for the locale in the language of the locale.
-* So for French you would put :Fran&ccedil;ais. The locale tag should be the IETF language tag.
+* The first form on this activity allows you to create a new &quot;Locale&quot;
+-- an object representing a language and a region.
+* The first field on this form should be filled in with a name for the locale in
+the language of the locale.
+* So for French you would put :Fran&ccedil;ais. The locale tag should be the
+IETF language tag.
 EOD;
 $help_pages["Database_Setup"] = <<<EOD
 page_type=standard
@@ -575,17 +579,27 @@ page_border=solid-border
 
 title=Database Setup
 
-END_HEAD_VARSThe database is used to store information about what users are allowed to use the admin panel and what activities and roles these users have.
-* The Database Set-up field-set is used to specify what database management system should be used, how it should be connected to, and what user name and password should be used for the connection.
+END_HEAD_VARSThe database is used to store information about what users are
+allowed to use the admin panel and what activities and roles these users have.
+* The Database Set-up field-set is used to specify what database management
+system should be used, how it should be connected to, and what user name and
+password should be used for the connection.
 
 * Supported Databases
 ** PDO (PHP's generic DBMS interface).
 ** Sqlite3 Database.
 ** Mysql Database.
 
-* Unlike many database systems, if an sqlite3 database is being used then the connection is always a file on the current filesystem and there is no notion of login and password, so in this case only the name of the database is asked for. For sqlite, the database is stored in WORK_DIRECTORY/data.
+* Unlike many database systems, if an sqlite3 database is being used then the
+connection is always a file on the current filesystem and there is no notion of
+login and password, so in this case only the name of the database is asked for.
+For sqlite, the database is stored in WORK_DIRECTORY/data.
 
-* For single user settings with a limited number of news feeds, sqlite is probably the most convenient database system to use with Yioop. If you think you are going to make use of Yioop's social functionality and have many users, feeds, and crawl mixes, using a system like Mysql or Postgres might be more appropriate.
+* For single user settings with a limited number of news feeds, sqlite is
+probably the most convenient database system to use with Yioop. If you think you
+are going to make use of Yioop's social functionality and have many users,
+feeds, and crawl mixes, using a system like Mysql or Postgres might be more
+appropriate.
 EOD;
 $help_pages["Locale_Writing_Mode"] = <<<EOD
 page_type=standard
@@ -594,13 +608,22 @@ page_border=solid-border
 
 title=Locale Writing Mode
 
-END_HEAD_VARSThe last field on the form is to specify how the language is written. There are four options:
-# lr-tb -- from left-to-write from the top of the page to the bottom as in English.
-#  rl-tb from right-to-left from the top the page to the bottom as in Hebrew and Arabic.
-#  tb-rl from the top of the page to the bottom from right-to-left as in Classical Chinese.
-#  tb-lr from the top of the page to the bottom from left-to-right as in non-cyrillic Mongolian or American Sign Language.
+END_HEAD_VARSThe last field on the form is to specify how the language is
+written. There are four options:
+# lr-tb -- from left-to-write from the top of the page to the bottom as in
+English.
+#  rl-tb from right-to-left from the top the page to the bottom as in Hebrew
+and Arabic.
+#  tb-rl from the top of the page to the bottom from right-to-left as in
+Classical Chinese.
+#  tb-lr from the top of the page to the bottom from left-to-right as in
+non-cyrillic Mongolian or American Sign Language.
 
-''lr-tb and rl-tb support work better than the vertical language support. As of this writing, Internet Explorer and WebKit based browsers (Chrome/Safari) have some vertical language support and the Yioop stylesheets for vertical languages still need some tweaking. For information on the status in Firefox check out this writing mode bug.''
+''lr-tb and rl-tb support work better than the vertical language support. As of
+this writing, Internet Explorer and WebKit based browsers (Chrome/Safari) have
+some vertical language support and the Yioop stylesheets for vertical languages
+still need some tweaking. For information on the status in Firefox check out
+this writing mode bug.''
 EOD;
 $help_pages["Locale_List"] = <<<EOD
 page_type=standard
@@ -609,16 +632,25 @@ page_border=solid-border
 
 title=Locale List
 
-END_HEAD_VARSBeneath the Add Locale form is a table listing some of the current locales.
+END_HEAD_VARSBeneath the Add Locale form is a table listing some of the current
+locales.
 
 
-* The Show Dropdown let's you control how many of these locales are displayed in one go.
-* The Search link lets you bring up an advance search form to search for particular locales and also allows you to control the direction of the listing.
+* The Show Dropdown let's you control how many of these locales are displayed in
+one go.
+* The Search link lets you bring up an advance search form to search for
+particular locales and also allows you to control the direction of the listing.
 
 The Locale List table
-* The first column in the table  has a link with the name of the locale. Clicking on this link brings up a page where one can edit the strings for that locale.
-* The next two columns of the Locale List table give the locale tag and writing direction of the locale, this is followed by the percent of strings translated. Clicking the Edit link in the column let&amp;#039;s you edit the locale tag, and text direction of a locale.
-* Finally, clicking the Delete link let&amp;#039;s one delete a locale and all its strings.
+* The first column in the table  has a link with the name of the locale.
+Clicking on this link brings up a page where one can edit the strings for that
+locale.
+* The next two columns of the Locale List table give the locale tag and writing
+direction of the locale, this is followed by the percent of strings translated.
+Clicking the Edit link in the column let&amp;#039;s you edit the locale tag, and
+text direction of a locale.
+* Finally, clicking the Delete link let&amp;#039;s one delete a locale and all
+its strings.
 EOD;
 $help_pages["Browse_Groups"] = <<<EOD
 page_type=standard
@@ -632,7 +664,12 @@ title=Browse Groups
 END_HEAD_VARS<br />
 Manage Groups is available to only those with a standard user role.
 <br />
-'''Groups''' are collections of users that have access to a group feed and a set of wiki pages. Any User with a &quot;Standard&quot; role can create or edit groups. The Create/Join Group form takes the name of a group, by which the user can select an existing group to Join. If you enter a name that currently does not exist, You will have the option to create a New group, which will be done on the Create Group form.
+'''Groups''' are collections of users that have access to a group feed and a
+set of wiki pages. Any User with a &quot;Standard&quot; role can create or edit
+groups. The Create/Join Group form takes the name of a group, by which the user
+can select an existing group to Join. If you enter a name that currently does
+not exist, You will have the option to create a New group, which will be done
+on the Create Group form.
 EOD;
 $help_pages["Machine_Information"] = <<<EOD
 page_type=standard
@@ -646,9 +683,18 @@ title=Machine Information
 END_HEAD_VARS<br />
 '''Machine Information listings:'''
 <br />
-This shows the currently known about machines. This list always begins with the Name Server itself and a toggle to control whether or not the News Updater process is running on the Name Server. This allows you to control whether or not Yioop attempts to update its RSS (or Atom) search sources on an hourly basis.There is also a link to the log file of the News Updater process. Under the Name Server information is a dropdown that can be used to control the number of current machine statuses that are displayed for all other machines that have been added. It also might have next and previous arrow links to go through the currently available machines.
+This shows the currently known about machines. This list always begins with the
+Name Server itself and a toggle to control whether or not the News Updater
+process is running on the Name Server. This allows you to control whether or not
+Yioop attempts to update its RSS (or Atom) search sources on an hourly basis.
+There is also a link to the log file of the News Updater process. Under the
+Name Server information is a dropdown that can be used to control the number of
+current machine statuses that are displayed for all other machines that have
+been added. It also might have next and previous arrow links to go through the
+currently available machines.
 <br />
-For more information on prerequisites for crawling Visit full documentation [[https://www.seekquarry.com/?c=main&amp;p=documentation#prereqs| here]]
+For more information on prerequisites for crawling Visit full documentation
+[[https://www.seekquarry.com/?c=main&amp;p=documentation#prereqs| here]]
 EOD;
 $help_pages["Manage_Machines"] = <<<EOD
 page_type=standard
@@ -662,11 +708,20 @@ title=Manage Machines
 END_HEAD_VARS<br />
 '''Add Machine:'''
 <br /><br />
-The Add machine form allows you to add a new machine to be controlled by this Yioop instance. The '''Machine Name''' field lets you give this machine an easy to remember name. The Machine URL field should be filled in with the URL to the installed Yioop instance.
+The Add machine form allows you to add a new machine to be controlled by this
+Yioop instance. The '''Machine Name''' field lets you give this machine an easy
+to remember name. The Machine URL field should be filled in with the URL to the
+installed Yioop instance.
 <br />
-The '''Mirror''' check-box says whether you want the given Yioop installation to act as a mirror for another Yioop installation. Checking it will reveal a drop-down menu that allows you to choose which installation among-st the previously entered machines you want to mirror. The '''Has Queue Server''' check-box is used to say whether the given Yioop installation will be running a queue server or not.
+The '''Mirror''' check-box says whether you want the given Yioop installation
+to act as a mirror for another Yioop installation. Checking it will reveal a
+drop-down menu that allows you to choose which installation among-st the
+previously entered machines you want to mirror. The '''Has Queue Server'''
+check-box is used to say whether the given Yioop installation will be running a
+queue server or not.
 <br />
-Finally, the '''Number of Fetchers''' drop down allows you to say how many fetcher instances you want to be able to manage for that machine.
+Finally, the '''Number of Fetchers''' drop down allows you to say how many
+fetcher instances you want to be able to manage for that machine.
 EOD;
 $help_pages["Discover_Groups"] = <<<EOD
 page_type=standard
@@ -677,26 +732,38 @@ toc=true
 
 title=Discover Groups
 
-END_HEAD_VARS'''Name''' Field is used to specify the name of the Group to search for.
+END_HEAD_VARS'''Name''' Field is used to specify the name of the Group to
+search for.
 '''Owner''' Field lets you search a Group using it's Owner name.
 <br />
 '''Register''' dropdown says how other users are allowed to join the group:
-* <u>No One</u> means no other user can join the group (you can still invite other users).
-* <u>By Request</u> means that other users can request the group owner to join the group.
+* <u>No One</u> means no other user can join the group (you can still invite
+other users).
+* <u>By Request</u> means that other users can request the group owner to join
+the group.
 * <u>Anyone</u> means all users are allowed to join the group.
 <br />
 ''It should be noted that the root account can always join any group.
 The root account can also always take over ownership of any group.''
 <br />
-The '''Access''' dropdown controls how users who belong/subscribe to a group other than the owner can access that group.
-* <u>No Read</u> means that a non-owner member of the group cannot read or write the group news feed and cannot read the group wiki.
-* <u>Read</u> means that a non-owner member of the group can read the group news feed and the groups wiki page.
-* <u>Read</u> Comment means that a non-owner member of the group can read the group feed and wikis and can comment on any existing threads, but cannot start new ones.
-* <u>Read Write</u>, means that a non-owner member of the group can start new threads and comment on existing ones in the group feed and can edit and create wiki pages for the group's wiki.
+The '''Access''' dropdown controls how users who belong/subscribe to a group
+other than the owner can access that group.
+* <u>No Read</u> means that a non-owner member of the group cannot read or
+write the group news feed and cannot read the group wiki.
+* <u>Read</u> means that a non-owner member of the group can read the group
+news feed and the groups wiki page.
+* <u>Read</u> Comment means that a non-owner member of the group can read the
+group feed and wikis and can comment on any existing threads, but cannot start
+new ones.
+* <u>Read Write</u>, means that a non-owner member of the group can start new
+threads and comment on existing ones in the group feed and can edit and create
+wiki pages for the group's wiki.
 <br />
 The access to a group can be changed by the owner after a group is created.
-* <u>No Read</u> and <u>Read</u> are often suitable if a group's owner wants to perform some kind of moderation.
-* <u>Read</u> and <u>Read Comment</u> groups are often suitable if someone wants to use a Yioop Group as a blog.
+* <u>No Read</u> and <u>Read</u> are often suitable if a group's owner wants to
+perform some kind of moderation.
+* <u>Read</u> and <u>Read Comment</u> groups are often suitable if someone wants
+to use a Yioop Group as a blog.
 * <u>Read</u> Write makes sense for a more traditional bulletin board.
 EOD;
 $help_pages["Create_Group"] = <<<EOD
@@ -706,23 +773,34 @@ page_border=solid-border
 
 title=Create Group
 
-END_HEAD_VARS''You will get to this form when the Group Name is available to create a new Group. ''
+END_HEAD_VARS''You will get to this form when the Group Name is available to
+create a new Group. ''
 ----
 
 '''Name''' Field is used to specify the name of the new Group.
 <br />
 '''Register''' dropdown says how other users are allowed to join the group:
-* <u>No One</u> means no other user can join the group (you can still invite other users).
-* <u>By Request</u> means that other users can request the group owner to join the group.
+* <u>No One</u> means no other user can join the group (you can still invite
+other users).
+* <u>By Request</u> means that other users can request the group owner to join
+the group.
 * <u>Anyone</u> means all users are allowed to join the group.
 <br />
-The '''Access''' dropdown controls how users who belong/subscribe to a group other than the owner can access that group.
-* <u>No Read</u> means that a non-owner member of the group cannot read or write the group news feed and cannot read the group wiki.
-* <u>Read</u> means that a non-owner member of the group can read the group news feed and the groups wiki page.
-* <u>Read</u> Comment means that a non-owner member of the group can read the group feed and wikis and can comment on any existing threads, but cannot start new ones.
-* <u>Read Write</u>, means that a non-owner member of the group can start new threads and comment on existing ones in the group feed and can edit and create wiki pages for the group's wiki.
+The '''Access''' dropdown controls how users who belong/subscribe to a group
+other than the owner can access that group.
+* <u>No Read</u> means that a non-owner member of the group cannot read or
+write the group news feed and cannot read the group wiki.
+* <u>Read</u> means that a non-owner member of the group can read the group
+news feed and the groups wiki page.
+* <u>Read</u> Comment means that a non-owner member of the group can read the
+group feed and wikis and can comment on any existing threads, but cannot start
+new ones.
+* <u>Read Write</u>, means that a non-owner member of the group can start new
+threads and comment on existing ones in the group feed and can edit and create
+wiki pages for the group's wiki.
 '''Voting'''
-* Specify the kind of voting allowed in the new group. + Voting allows users to vote up, -Voting allows users to vote down. +/- allows Voting up and down.
+* Specify the kind of voting allowed in the new group. + Voting allows users to
+vote up, -- Voting allows users to vote down. +/- allows Voting up and down.
 '''Post Life time''' - Specifies How long the posts should be kept.
 EOD;
 $help_pages["Captcha_Type"] = <<<EOD
@@ -732,14 +810,24 @@ page_border=solid-border
 
 title=Captcha Type
 
-END_HEAD_VARSThe Captcha Type field set controls what kind of [[https://en.wikipedia.org/wiki/CAPTCHA|captcha]] will be used during account registration, password recovery, and if a user wants to suggest a url.
+END_HEAD_VARSThe Captcha Type field set controls what kind of
+[[https://en.wikipedia.org/wiki/CAPTCHA|captcha]] will be used during account
+registration, password recovery, and if a user wants to suggest a url.
 
 * The choices for captcha are:
-** '''Text Captcha''', the user has to select from a series of dropdown answers to questions of the form: ''Which in the following list is the most/largest/etc? or Which is the following list is the least/smallest/etc?; ''
-** '''Graphic Captcha''', the user needs to enter a sequence of characters from a distorted image;
-** '''Hash captcha''', the user's browser (the user doesn't need to do anything) needs to extend a random string with additional characters to get a string whose hash begins with a certain lead set of characters.
+** '''Text Captcha''', the user has to select from a series of dropdown answers
+to questions of the form: ''Which in the following list is the most/largest/etc?
+or Which is the following list is the least/smallest/etc?; ''
+** '''Graphic Captcha''', the user needs to enter a sequence of characters from
+a distorted image;
+** '''Hash captcha''', the user's browser (the user doesn't need to do anything)
+needs to extend a random string with additional characters to get a string
+whose hash begins with a certain lead set of characters.
 
-- Of these, Hash Captcha is probably the least intrusive but requires Javascript and might run slowly on older browsers. A text captcha might be used to test domain expertise of the people who are registering for an account. Finally, the graphic captcha is probably the one people are most familiar with.
+- Of these, Hash Captcha is probably the least intrusive but requires
+Javascript and might run slowly on older browsers. A text captcha might be used
+to test domain expertise of the people who are registering for an account.
+Finally, the graphic captcha is probably the one people are most familiar with.
 EOD;
 $help_pages["Authentication_Type"] = <<<EOD
 page_type=standard
@@ -748,13 +836,23 @@ page_border=solid-border
 
 title=Authentication Type
 
-END_HEAD_VARSThe Authentication Type field-set is used to control the protocol used to log people into Yioop.
+END_HEAD_VARSThe Authentication Type field-set is used to control the protocol
+used to log people into Yioop.
 
 * Below is a list of Authentication types supported.
-** '''Normal Authentication''', passwords are checked against stored as salted hashes of the password; or
-** '''ZKP (zero knowledge protocol) authentication''', the server picks challenges at random and send these to the browser the person is logging in from, the browser computes based on the password an appropriate response according to the Fiat Shamir protocol.cThe password is never sent over the internet and is not stored on the server. These are the main advantages of ZKP, its drawback is that it is slower than Normal Authentication as to prove who you are with a low probability of error requires several browser-server exchanges.
+** '''Normal Authentication''', passwords are checked against stored as
+salted hashes of the password; or
+** '''ZKP (zero knowledge protocol) authentication''', the server picks
+challenges at random and send these to the browser the person is logging in
+from, the browser computes based on the password an appropriate response
+according to the Fiat Shamir protocol.cThe password is never sent over the
+internet and is not stored on the server. These are the main advantages of
+ZKP, its drawback is that it is slower than Normal Authentication as to prove
+who you are with a low probability of error requires several browser-server
+exchanges.
 
-* You should choose which authentication scheme you want before you create many users as if you switch everyone will need to get a new password.
+* You should choose which authentication scheme you want before you create many
+users as if you switch everyone will need to get a new password.
 EOD;
 $help_pages["Account_Registration"] = <<<EOD
 page_type=standard
@@ -763,26 +861,47 @@ page_border=solid-border
 
 title=Account Registration
 
-END_HEAD_VARSThe Account Registration field-set is used to control how user's can obtain accounts on a Yioop installation.
+END_HEAD_VARSThe Account Registration field-set is used to control how user's
+can obtain accounts on a Yioop installation.
 
-* The dropdown at the start of this fieldset allows you to select one of four possibilities:
-** '''Disable Registration''', users cannot register themselves, only the root account can add users.
-*** When Disable Registration is selected, the Suggest A Url form and link on the tool.php page is disabled as well, for all other registration type this link is enabled.
-** '''No Activation''', user accounts are immediately activated once a user signs up.
-** '''Email Activation''', after registering, users must click on a link which comes in a separate email to activate their accounts.
-*** If Email Activation is chosen, then the reset of this field-set can be used to specify the email address that the email comes to the user. The checkbox Use PHP mail() function controls whether to use the mail function in PHP to send the mail, this only works if mail can be sent from the local machine. Alternatively, if this is not checked like in the image above, one can configure an outgoing SMTP server to send the email through.
-** '''Admin Activation''', after registering, an admin account must activate the user before the user is allowed to use their account.
+* The dropdown at the start of this fieldset allows you to select one of four
+possibilities:
+** '''Disable Registration''', users cannot register themselves, only the root
+account can add users.
+*** When Disable Registration is selected, the Suggest A Url form and link on
+the tool.php page is disabled as well, for all other registration type this
+link is enabled.
+** '''No Activation''', user accounts are immediately activated once a user
+signs up.
+** '''Email Activation''', after registering, users must click on a link which
+comes in a separate email to activate their accounts.
+*** If Email Activation is chosen, then the reset of this field-set can be used
+to specify the email address that the email comes to the user. The checkbox Use
+PHP mail() function controls whether to use the mail function in PHP to send
+the mail, this only works if mail can be sent from the local machine.
+Alternatively, if this is not checked like in the image above, one can
+configure an outgoing SMTP server to send the email through.
+** '''Admin Activation''', after registering, an admin account must activate
+the user before the user is allowed to use their account.
 EOD;
-$help_pages["Proxy_server"] = <<<EOD
+$help_pages["Ad_Server"] = <<<EOD
+page_type=standard
+
+page_border=solid-border
+
+title=Ad Server
+
+END_HEAD_VARS* The Ad Server field-set is used to control whether, where,
+and what external advertisements should be displayed by this Yioop instance.
+EOD;
+$help_pages["Proxy_Server"] = <<<EOD
 page_type=standard
 
 page_border=solid-border
 
 title=Proxy server
 
-END_HEAD_VARS* The Proxy Server field-set is used to control which proxies to use while crawling. By default Yioop does not use any proxies while crawling. A Tor Proxy can serve as a gateway to the Tor Network. Yioop can use this proxy to download .onion URLs on the [[https://en.wikipedia.org/wiki/Tor_%28anonymity_network%29|Tor network]].
-
-* Obviously, this proxy needs to be running though for Yioop to make use of it. Beneath the Tor Proxy input field is a checkbox labelled '''Crawl via Proxies'''. Checking this box, will reveal a text-area labelled Proxy Servers. You can enter the '''''address:port or address:port:proxytype''''' of proxy servers you would like to crawl through. If proxy servers are used, Yioop will make any requests to download pages to a randomly chosen server on the list which will proxy the request to the site which has the page to download. To some degree this can make the download site think the request is coming from a different ip (and potentially location) than it actually is. In practice, servers can often use HTTP headers to guess that a proxy is being used.
+END_HEAD_VARS* Yioop can make use of a proxy server to do web crawling.
 EOD;
 //Insert Help pages
 foreach($help_pages as $page_name => $page_content) {
