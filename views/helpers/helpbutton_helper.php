@@ -116,13 +116,15 @@ class HelpbuttonHelper extends Helper
      * help to work. This gets executed if there is atleast one help button
      * rendered on the page. This is executed only once with the help of
      * "isHelpInitialized" variable.
-     *
+
      */
     private function setupHelpParams()
     {
         $this->isHelpInitialized = true;
         $this->localizationdata = "{" .
             'wiki_view_edit :"' . tl('wiki_view_edit') . '",' .
+            'wiki_view_not_available :"' . tl('wiki_view_not_available') .
+            '",' .
             'wiki_view_read :"' . tl('wiki_view_read') . '"' .
             "}";
         $this->back_params = "{";

@@ -549,6 +549,7 @@ foreach($public_pages as $page_name => $page_content) {
         "$page_name Wiki Page Created!", "Discuss the page in this thread!");
 }
 $help_pages = array();
+$docUrl = "https://www.seekquarry.com/?c=static&p=Documentation";
 $help_pages["Add_Locale"] = <<<EOD
 page_type=standard
 
@@ -636,8 +637,8 @@ END_HEAD_VARSBeneath the Add Locale form is a table listing some of the current
 locales.
 
 
-* The Show Dropdown let's you control how many of these locales are displayed in
-one go.
+* The Show Dropdown let's you control how many of these locales are displayed
+in one go.
 * The Search link lets you bring up an advance search form to search for
 particular locales and also allows you to control the direction of the listing.
 
@@ -647,11 +648,12 @@ Clicking on this link brings up a page where one can edit the strings for that
 locale.
 * The next two columns of the Locale List table give the locale tag and writing
 direction of the locale, this is followed by the percent of strings translated.
-Clicking the Edit link in the column let&amp;#039;s you edit the locale tag, and
-text direction of a locale.
+Clicking the Edit link in the column let&amp;#039;s you edit the locale tag,
+and text direction of a locale.
 * Finally, clicking the Delete link let&amp;#039;s one delete a locale and all
 its strings.
 EOD;
+$docLink = "#Managing%20Users,%20Roles,%20and%20Groups";
 $help_pages["Browse_Groups"] = <<<EOD
 page_type=standard
 
@@ -661,16 +663,19 @@ toc=true
 
 title=Browse Groups
 
-END_HEAD_VARS<br />
-Manage Groups is available to only those with a standard user role.
-<br />
-'''Groups''' are collections of users that have access to a group feed and a
-set of wiki pages. Any User with a &quot;Standard&quot; role can create or edit
-groups. The Create/Join Group form takes the name of a group, by which the user
-can select an existing group to Join. If you enter a name that currently does
-not exist, You will have the option to create a New group, which will be done
-on the Create Group form.
+END_HEAD_VARS==Creating or Joining a group==
+You can create or Join a Group all in one place using this Text field.
+Simply enter the Group Name You want to create or Join. If the Group Name
+already exists, you will simply join the group. If the group name doesn't
+exist, you will be presented with more options to customize and create your
+new Group.
+==Browse Existing Groups==
+You can use the [Browse] hyper link to browse the existing Groups.
+You will then be presented with a web form to narrow your search followed by
+a list of all visible groups to you beneath.
+{{right|[[$docUrl$docLink| Learn More..]]}}
 EOD;
+$docLink = "#GUI%20for%20Managing%20Machines%20and%20Servers";
 $help_pages["Machine_Information"] = <<<EOD
 page_type=standard
 
@@ -680,22 +685,22 @@ toc=true
 
 title=Machine Information
 
-END_HEAD_VARS<br />
-'''Machine Information listings:'''
+END_HEAD_VARS'''Machine Information listings:'''
 <br />
-This shows the currently known about machines. This list always begins with the
-Name Server itself and a toggle to control whether or not the News Updater
-process is running on the Name Server. This allows you to control whether or not
-Yioop attempts to update its RSS (or Atom) search sources on an hourly basis.
-There is also a link to the log file of the News Updater process. Under the
-Name Server information is a dropdown that can be used to control the number of
-current machine statuses that are displayed for all other machines that have
-been added. It also might have next and previous arrow links to go through the
-currently available machines.
+This shows the currently known about machines. This list always begins with
+ the '''Name Server''' itself and a toggle to control whether or not the
+  News Updater process is running on the Name Server. This allows you to
+   control whether or not Yioop attempts to update its RSS (or Atom) search
+    sources on an hourly basis.
+<br />There is also a link to the log file of the News Updater process.
+ Under the Name Server information is a dropdown that can be used to control
+  the number of current machine statuses that are displayed for all other
+   machines that have been added. It also might have next and previous arrow
+    links to go through the currently available machines.
 <br />
-For more information on prerequisites for crawling Visit full documentation
-[[https://www.seekquarry.com/?c=main&amp;p=documentation#prereqs| here]]
+{{right|[[$docUrl$docLink| Learn More.]]}}
 EOD;
+$docLink = "#GUI%20for%20Managing%20Machines%20and%20Servers";
 $help_pages["Manage_Machines"] = <<<EOD
 page_type=standard
 
@@ -705,8 +710,7 @@ toc=true
 
 title=Manage Machines
 
-END_HEAD_VARS<br />
-'''Add Machine:'''
+END_HEAD_VARS'''Add Machine:'''
 <br /><br />
 The Add machine form allows you to add a new machine to be controlled by this
 Yioop instance. The '''Machine Name''' field lets you give this machine an easy
@@ -722,6 +726,7 @@ queue server or not.
 <br />
 Finally, the '''Number of Fetchers''' drop down allows you to say how many
 fetcher instances you want to be able to manage for that machine.
+{{right|[[$docUrl$docLink|Learn More..]]}}
 EOD;
 $help_pages["Discover_Groups"] = <<<EOD
 page_type=standard

@@ -256,14 +256,15 @@ function getPageWithCallback(url, response_type, success_call_back,
 {
     var request = makeRequest();
     request.open('GET', url, true);
-    request.onload = function ()
+    request.onload = function()
     {
         var status = request.status;
         if(status == 200) {
             success_call_back && success_call_back(
                 JSON.parse(request.responseText));
         } else {
-            error_handler && error_handler(status);
+            error_handler && error_handler(status,
+                JSON.parse(request.responseText));
         }
     };
     request.send();
@@ -300,7 +301,7 @@ function displayHelpForId(help_point, is_mobile, target_controller,
         csrf_token_key + '=' + csrf_token_value + "&" +
         "page_name=" + help_point.getAttribute("data-pagename"),
         'json',
-        function (data)
+        function(data)
         {
             elt("help-frame-body").innerHTML = parseWikiContent(
                 data.wiki_content,
@@ -310,21 +311,42 @@ function displayHelpForId(help_point, is_mobile, target_controller,
                 csrf_token_key,
                 csrf_token_value
             );
-            elt('page_name').innerHTML = data.page_title + ' [<a href="' +
-            getEditLink(
-                target_controller,
-                current_action,
-                csrf_token_key,
-                csrf_token_value,
-                help_group_id,
-                data.page_title,
-                back_params) + '">' +
-            tl["wiki_view_edit"] + '</a>]';
+            elt('page_name').innerHTML = data.page_view_title ||
+            data.page_title;
+            if(data.can_edit) {
+                elt('page_name').innerHTML += ' [<a href="' +
+                getEditLink(
+                    target_controller,
+                    current_action,
+                    csrf_token_key,
+                    csrf_token_value,
+                    help_group_id,
+                    data.page_title,
+                    back_params) + '">' +
+                tl["wiki_view_edit"] + '</a>]';
+            }
             toggleHelp('help-frame', is_mobile, target_controller);
         },
-        function (status)
+        function(status, response)
         {
-            toggleHelp('help-frame', is_mobile, target_controller);
+            if(status === 404 && response && response.can_edit) {
+                elt('page_name').innerHTML = help_point
+                    .getAttribute("data-pagename");
+                elt('page_name').innerHTML += ' [<a href="' +
+                getEditLink(
+                    target_controller,
+                    current_action,
+                    csrf_token_key,
+                    csrf_token_value,
+                    help_group_id,
+                    help_point.getAttribute("data-pagename"),
+                    back_params) + '">' +
+                tl["wiki_view_edit"] + '</a>]';
+                toggleHelp('help-frame', is_mobile, target_controller);
+            } else {
+                doMessage("<h2 class='red'>" + tl["wiki_view_not_available"] +
+                "</h2>");
+            }
         });
 }
 /*

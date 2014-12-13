@@ -59,6 +59,8 @@ define('QUERY_INFO', 2);
 define('ERROR_INFO', 4);
 /** Maintenance mode restricts access to local machine*/
 define("MAINTENANCE_MODE", false);
+/** Path to PhantomJS binary, assuming it exists in ENV path **/
+define("PHANTOMJS_BIN_PATH","phantomjs");
 if(file_exists(BASE_DIR."/configs/local_config.php")) {
     /** Include any locally specified defines (could use as an alternative
         way to set work directory) */
