@@ -136,6 +136,7 @@ class ProfileModel extends Model
                 USER_ID INTEGER, TITLE VARCHAR(".TITLE_LEN
                 ."), DESCRIPTION VARCHAR(".
                 MAX_GROUP_POST_LEN."), PUBDATE NUMERIC(".TIMESTAMP_LEN."),
+                EDIT_DATE NUMERIC(".TIMESTAMP_LEN."),
                 UPS INTEGER DEFAULT 0, DOWNS INTEGER DEFAULT 0,
                 TYPE INTEGER DEFAULT ". STANDARD_GROUP_ITEM.")",
             "GI_GROUP_ID_INDEX" => "CREATE INDEX GI_GROUP_ID_INDEX ON

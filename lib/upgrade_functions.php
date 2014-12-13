@@ -965,6 +965,17 @@ function upgradeDatabaseVersion26(&$db){
     }
 }
 /**
+ * Upgrades a Version 26 version of the Yioop! database to a Version 27 version
+ * @param object $db datasource to use to upgrade
+ */
+function upgradeDatabaseVersion27(&$db)
+{
+    $db->execute("DELETE FROM VERSION WHERE ID < 26");
+    $db->execute("UPDATE VERSION SET ID=27 WHERE ID=26");
+    $db->execute("ALTER TABLE GROUP_ITEM ADD COLUMN EDIT_DATE
+        NUMERIC(".TIMESTAMP_LEN.")");
+}
+/**
  * Reads the Help articles from default db and returns the array of pages.
  */
 function getWikiHelpPages()

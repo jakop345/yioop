@@ -324,6 +324,12 @@ class GroupfeedElement extends Element implements CrawlConstants
             $pub_date = $page['PUBDATE'];
             $pub_date = $this->view->helper("feeds")->getPubdateString(
                 $time, $pub_date);
+            $edit_date = false;
+            if(isset($page['EDIT_DATE']) && $page['EDIT_DATE'] &&
+                $page['EDIT_DATE'] != $page['PUBDATE']) {
+                $edit_date = $this->view->helper("feeds")->getPubdateString(
+                    $time, $page['EDIT_DATE']);
+            }
             $encode_source = urlencode(
                 urlencode($page[self::SOURCE_NAME]));
             ?>
@@ -421,7 +427,11 @@ class GroupfeedElement extends Element implements CrawlConstants
                 $description = isset($page[self::DESCRIPTION]) ?
                     $page[self::DESCRIPTION] : "";?>
                 <div id='description<?php e($page['ID']);?>'><?php
-                    e($description); ?></div>
+                    e($description);
+                    if($edit_date) {
+                        e("<br /><b>".
+                        tl('groupfeed_element_last_edited', $edit_date)."</b>");
+                    } ?></div>
                 <?php
                 if(!isset($page['NO_EDIT']) && isset($page['OLD_DESCRIPTION'])){
                     ?>
@@ -458,7 +468,8 @@ class GroupfeedElement extends Element implements CrawlConstants
                     </b></div>
                     <?php
                 }
-            } else if(isset($page['LAST_POSTER']) ){ ?>
+            } else if(isset($page['LAST_POSTER']) ){
+                ?>
                 <div id='description<?php e($page['ID']);?>'><?php
                 $recent_date = $this->view->helper("feeds"
                     )->getPubdateString($time, $page['RECENT_DATE']);

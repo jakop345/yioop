@@ -623,9 +623,10 @@ class GroupModel extends Model
         $join_date = time();
         $now = time();
         $sql = "INSERT INTO GROUP_ITEM (PARENT_ID, GROUP_ID, USER_ID, TITLE,
-            DESCRIPTION, PUBDATE, TYPE) VALUES (?, ?, ?, ?, ?, ?, ? )";
+            DESCRIPTION, PUBDATE, EDIT_DATE, TYPE) VALUES
+            (?, ?, ?, ?, ?, ?, ?, ?)";
         $db->execute($sql, array($parent_id, $group_id, $user_id, $title,
-            $description, $now, $type));
+            $description, $now, $now, $type));
         $id = $db->insertID("GROUP_ITEM");
         if($parent_id == 0) {
             $sql = "UPDATE GROUP_ITEM SET PARENT_ID=? WHERE ID=?";
@@ -646,8 +647,10 @@ class GroupModel extends Model
     function updateGroupItem($id, $title, $description)
     {
         $db = $this->db;
-        $sql = "UPDATE GROUP_ITEM SET TITLE=?, DESCRIPTION=? WHERE ID=?";
-        $db->execute($sql, array($title, $description, $id));
+        $edit_date = time();
+        $sql = "UPDATE GROUP_ITEM SET TITLE=?, DESCRIPTION=?,
+            EDIT_DATE=? WHERE ID=?";
+        $db->execute($sql, array($title, $description, $edit_date, $id));
     }
     /**
      * Removes a group feed item from the GROUP_ITEM table.
@@ -752,7 +755,8 @@ class GroupModel extends Model
             $select = "SELECT DISTINCT GI.ID AS ID,
                 GI.PARENT_ID AS PARENT_ID, GI.GROUP_ID AS GROUP_ID,
                 GI.TITLE AS TITLE, GI.DESCRIPTION AS DESCRIPTION,
-                GI.PUBDATE AS PUBDATE, G.OWNER_ID AS OWNER_ID,
+                GI.PUBDATE AS PUBDATE, GI.EDIT_DATE AS EDIT_DATE,
+                G.OWNER_ID AS OWNER_ID,
                 G.MEMBER_ACCESS AS MEMBER_ACCESS,
                 G.GROUP_NAME AS GROUP_NAME, P.USER_NAME AS USER_NAME,
                 P.USER_ID AS USER_ID, GI.TYPE AS TYPE, GI.UPS AS UPS,
