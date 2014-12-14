@@ -226,7 +226,7 @@ class MachineModel extends Model
                 }
             }
         }
-        stringOrderCallback("", "", "NAME");
+        stringROrderCallback("", "", "NAME");
         if($machines != array()) {
             usort($machines, "stringROrderCallback");
         }
