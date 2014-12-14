@@ -1965,7 +1965,7 @@ class QueueServer implements CrawlConstants, Join
         if(isset($sites[self::RECENT_URLS])) {
             crawlLog("Of these, the most recent urls are:");
             foreach($sites[self::RECENT_URLS] as $url) {
-                crawlLog("URL: $url");
+                crawlLog("URL: ".iconv("UTF-8", "ISO-8859-1//IGNORE", $url));
             }
         }
     }

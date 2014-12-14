@@ -221,10 +221,14 @@ class MachineModel extends Model
                     if(!isset($machines[$i]["STATUSES"]["fetcher"][
                         $row['FETCHER_ID']])) {
                         $machines[$i]["STATUSES"]["fetcher"][
-                        $row['FETCHER_ID']] = 0;
+                            $row['FETCHER_ID']] = 0;
                     }
                 }
             }
+        }
+        stringOrderCallback("", "", "NAME");
+        if($machines != array()) {
+            usort($machines, "stringOrderCallback");
         }
         $name_server_statuses = CrawlDaemon::statuses();
         $machines['NAME_SERVER']['news_updater'] = 0;

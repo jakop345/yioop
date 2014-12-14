@@ -34,8 +34,8 @@
  * visits will be treated as mobile web pages.
  */
 page.settings.userAgent = 'Mozilla/5.0 (Linux; U; Android 2.2.1; en-ca;'
-+ ' LG-P505R Build/FRG83) AppleWebKit/533.1 (KHTML, like Gecko)' +
-' Version/4.0 Mobile Safari/533.1';
+    + ' LG-P505R Build/FRG83) AppleWebKit/533.1 (KHTML, like Gecko)'
+    + ' Version/4.0 Mobile Safari/533.1';
 /**
  * Below is a list of step functions executed withe a delay of 2s by
  * the interval function in "phantomjs_runner.js". Each function returns a
@@ -60,7 +60,7 @@ var steps = [
      * If exists, Click on the sign in link. Page.evaluate does this action
      * once the link existence is confirmed.
      */
-        function testSignInLink()
+    function testSignInLink()
     {
         var result = page.assertExists('body > div.landing-top-bar'
             + ' > div.user-nav > ul > li:nth-child(2) > a',
@@ -84,7 +84,7 @@ var steps = [
      * does land on login form, enter username/password and submit the form.
      * Username and password can be changed in "phantomjs_runner.js".
      */
-        function testLoginFormExists()
+    function testLoginFormExists()
     {
         var result = page.assertExists('body > div.landing.non-search'
         + ' > form', "Login Form exists", page);
@@ -112,7 +112,7 @@ var steps = [
      * the ManageGroups dropdown option on the mobile web page, test is it
      * exists.
      */
-        function testDropDownExists()
+    function testDropDownExists()
     {
         var result = page.assertExists('#activity',
             "Menu Dropdown exists", page);
@@ -125,7 +125,7 @@ var steps = [
     /**
      * If manageGroups exists, select it.
      */
-        function testManageGroups()
+    function testManageGroups()
     {
         var selector = '#activity';
         var result = {};
@@ -153,7 +153,7 @@ var steps = [
      * On manage Groups page help button is expected, click on it if
      * it exists.
      */
-        function testHelpButtonExists()
+    function testHelpButtonExists()
     {
         var result = page.assertExists('button[data-pagename="Browse Groups"]',
             "Help Button exists On Manage groups Page", page);
@@ -170,7 +170,7 @@ var steps = [
      * the help button will pull out the help article with an Edit hyper link.
      * check if Edit link exists, If it does- click on it.
      */
-        function testEditLinkForHelpArticlsExists()
+    function testEditLinkForHelpArticlsExists()
     {
         var result = page.assertExists('#page_name > a',
             "Edit Link for Help article exists", page);

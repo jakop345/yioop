@@ -24,30 +24,39 @@
  * @copyright 2009 - 2014
  * @filesource
  */
+ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 /**
- * Used to run PhantomJs scripts from the command line.
+ * Used to execute browser-based Javascript and browser page rendering from PHP.
  *
  * @author Eswara Rajesh Pinapala
  * @package seek_quarry
- * @subpackage test
+ * @subpackage lib
  */
-class YioopPhantomRunner
+class BrowserRunner
 {
-    private $phantomjs_bin_path = 'phantomjs';
-    public function __construct($bin_path = null)
+    /**
+     * Tests if there is a headless browser (typically Phantom JS) available
+     * before constructing this kind of object. If not, it throws an exceptio
+     */
+    function __construct()
     {
-        if($bin_path !== null) {
-            $this->phantomjs_bin_path = $bin_path;
-        }
         $version = $this->execute("-v");
         if(!$version){
-            throw new Exception("PhantomJS binary not found.");
+            throw new Exception("BrowserRunner currently requires PhantomJS ".
+                "package to run");
         }
     }
-    public function execute($script, $decode_json = false)
+    /**
+     *  Runs a Javascript in the current headless browser instance and
+     *  return the results as either a JSON or PHP object.
+     *  @param string $script Javascript to run in browser
+     *  @param string $decode_json whether to leave result as is or to convert
+     *      from JSON to a PHP object
+     */
+    function execute($script, $decode_json = false)
     {
         $shell_result = shell_exec(
-            escapeshellcmd("{$this->phantomjs_bin_path} " . implode(' ',
+            escapeshellcmd(PHANTOM_JS." " . implode(' ',
                     func_get_args())));
         if($shell_result === null) {
             return false;
@@ -67,6 +76,5 @@ class YioopPhantomRunner
         } else {
             return $shell_result;
         }
-
     }
 }

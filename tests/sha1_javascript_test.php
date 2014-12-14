@@ -70,7 +70,7 @@ class Sha1JavascriptTest extends JavascriptUnitTest
             src="../scripts/hash_captcha.js" ></script>
         <script type="text/javascript">
         var input_array = <?php echo $js_array; ?>;
-        var total_test_cases = <?php echo self::NUM_TEST_CASES?>;
+        var total_test_cases = <?php echo self::NUM_TEST_CASES; ?>;
         var cell;
         var row;
         var table;

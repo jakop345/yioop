@@ -137,7 +137,7 @@ var steps = [
      * the help button will pull out the help article with an Edit hyper link.
      * check if Edit link exists, If it does- click on it.
      */
-    function testEditLinkForHelpArticlsExists()
+    function testEditLinkForHelpArticlesExists()
     {
         var result = page.assertExists('#page_name > a',
             "Edit Link for Help article exists", page);

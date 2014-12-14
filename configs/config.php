@@ -295,6 +295,13 @@ if(!defined('SEARCHBAR_PATH')) {
     define('SEARCHBAR_PATH', NAME_SERVER."yioopbar.xml");
 }
 /**
+ * Phantom JS is used by some optional Javascript tests of the Yioop interface.
+ * The constant PHANTOM_JS should point to the path to phantomjs
+ */
+if(!defined("PHANTOM_JS")) {
+    define("PHANTOM_JS", "phantomjs");
+}
+/**
  * @global array addresses of memcached servers to use assuming memcached is
  * available
  */

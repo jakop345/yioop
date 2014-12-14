@@ -47,7 +47,40 @@ if(!PROFILE || !DISPLAY_TESTS) {echo "BAD REQUEST"; exit();}
  * @ignore
  */
 define("NO_CACHE", true);
-/**  Draw head of the html page */
+/**
+ * Load the base unit test class
+ */
+require_once BASE_DIR."/lib/unit_test.php";
+/**
+ * Load the base unit test class for Javascript tests
+ */
+require_once BASE_DIR."/lib/javascript_unit_test.php";
+/**
+ * Load the PhantomRunner that is used to execute PhantomJs Shell.
+ */
+require_once BASE_DIR."/lib/browser_runner.php";
+/**
+ * Do not send output to log files
+ * @ignore
+ */
+define("LOG_TO_FILES", false);
+$allowed_activities =
+    array("listTests", "runAllTests", "runTestBasedOnRequest");
+try {
+    $tmp = new BrowserRunner();
+    $allowed_activities[] = "runBrowserTests";
+    define("BROWSER_TESTS", true);
+} catch(Exception $e) {
+    define("BROWSER_TESTS", false);
+}
+if(isset($_REQUEST['activity']) &&
+    in_array($_REQUEST['activity'], $allowed_activities)) {
+    $activity = $_REQUEST['activity'];
+} else {
+    $activity = "listTests";
+}
+if(!isset($_REQUEST['activity']) || $_REQUEST['activity'] != "runBrowserTests"){
+    /**  Draw head of the html page */
 ?>
 <!DOCTYPE html>
 <html lang="en-US" dir="ltr">
@@ -78,43 +111,16 @@ define("NO_CACHE", true);
         </style>
     </head>
     <body>
-<?php
-/**
- * Load the base unit test class
- */
-require_once BASE_DIR."/lib/unit_test.php";
-/**
- * Load the base unit test class for Javascript tests
- */
-require_once BASE_DIR."/lib/javascript_unit_test.php";
-/**
- * Load the YioopPhantomRunner that is used to execute PhantomJs Shell.
- */
-require_once 'YioopPhantomRunner.php';
-/**
- * Do not send output to log files
- * @ignore
- */
-define("LOG_TO_FILES", false);
-$allowed_activities =
-    array("listTests", "runAllTests", "runTestBasedOnRequest","runPhantomTests");
-if(isset($_REQUEST['activity']) &&
-    in_array($_REQUEST['activity'], $allowed_activities)) {
-    $activity = $_REQUEST['activity'];
-} else {
-    $activity = "listTests";
+    <h1>SeekQuarry Tests</h1><?php
 }
-?>
-<h1>SeekQuarry Tests</h1>
-<?php
 $activity();
 /**
- * This function runs the phantomJS tests by calling th phantomJs shell to
+ * This function runs the PhantomJS tests by calling the Browser shell to
  * execute the PhantomJs tests written in JavaScript.
  */
-function runPhantomTests()
+function runBrowserTests()
 {
-    ob_clean();
+    if(ob_get_clean()) { ob_clean(); }
     $path_url = str_replace(basename(__DIR__) . "/", "", getFullURL(true));
     $mode = "";
     $resp_code = "";
@@ -132,46 +138,44 @@ function runPhantomTests()
             $resp_code = "HTTP/1.1 400 Bad Request";
         } else {
             try {
-                $yioop_phantom_runner = new YioopPhantomRunner();
-                $test_results = ($yioop_phantom_runner->execute(
-                    "phantomjs_runner.js", $path_url, $mode, $debug, $u, $p));
+                $browser_runner = new BrowserRunner();
+                $test_results = $browser_runner->execute(
+                    "phantomjs_runner.js", $path_url, $mode, $debug, $u, $p);
                 if(!$test_results) {
                     $resp_code = "HTTP/1.1 500";
                 } else {
                     $resp['results'] = $test_results;
                     $resp_code = "HTTP/1.1 200 OK";
-                    echo(json_encode($resp));
                 }
-            }catch(Exception $e){
+            } catch (Exception $e){
                 $resp_code = "HTTP/1.1 500";
                 $resp['error'] = $e->getMessage();
-                echo(json_encode($resp));
             }
         }
     } else {
         $resp_code = "HTTP/1.1 500";
         $resp['error'] = "Bad Request";
-        echo(json_encode($resp));
     }
     header($resp_code);
     header("Content-Type : application/json");
+    echo(json_encode($resp));
     exit();
 }
 
 /**
  * This is a utility function to get the Full URL of the current page.
  */
-function getFullURL($stripQueryParams = false)
+function getFullURL($strip_query_params = false)
 {
-    $pageURL = (@$_SERVER["HTTPS"] == "on") ? "https://" : "http://";
+    $page_url = (@$_SERVER["HTTPS"] == "on") ? "https://" : "http://";
     if(!in_array($_SERVER["SERVER_PORT"], array("80", "443"))) {
-        $pageURL .= $_SERVER["SERVER_NAME"] . ":" .
+        $page_url .= $_SERVER["SERVER_NAME"] . ":" .
             $_SERVER["SERVER_PORT"] . $_SERVER["REQUEST_URI"];
     } else {
-        $pageURL .= $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"];
+        $page_url .= $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"];
     }
     //return full URL with query params stripped, if requested.
-    return $stripQueryParams ? strtok($pageURL, '?') : $pageURL;
+    return $strip_query_params ? strtok($page_url, '?') : $page_url;
 }
 /**
  * This function is responsible for listing out HTML links to the available
@@ -234,7 +238,10 @@ function runTest($name)
     echo "<h2>$class_name</h2>";
     require_once $name;
     $test = new $class_name();
-    if($test instanceof JavascriptUnitTest) {
+    if($class_name == "PhantomjsUiTest" && !BROWSER_TESTS) {
+        echo "This test requires PhantomJS to be installed";
+        return;
+    } else if($test instanceof JavascriptUnitTest) {
         $test->run();
     } else {
         $results = $test->run();
@@ -278,7 +285,7 @@ function runTest($name)
  * Doesn't really check for this explicitly, just checks if the file
  * end with _test.php
  *
- * @return array   an array of unit test files
+ * @return array an array of unit test files
  */
 function getTestNames()
 {

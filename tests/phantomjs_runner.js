@@ -87,7 +87,7 @@ function l(msg)
     !DEBUG || console.log("[Debug] : " + msg);
 }
 /**
- * Returns the name of the function when a  function is passed.
+ * Returns the name of the function when a function is passed.
  * @param Function fun whose name to be extracted.
  * @returns String ret function name.
  */

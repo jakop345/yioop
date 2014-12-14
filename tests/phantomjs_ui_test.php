@@ -24,6 +24,7 @@
  * @copyright 2009 - 2014
  * @filesource
  */
+ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
 /**
  * Used to test the UI using PhantomJs.
  *
@@ -117,7 +118,7 @@ class PhantomjsUiTest extends JavascriptUnitTest
              * failure.
              *
              */
-            function postToPageWithCallback(url, postData, response_type,
+            function postToPageWithCallback(url, post_data, response_type,
                 success_call_back,
                 error_handler)
             {
@@ -136,7 +137,7 @@ class PhantomjsUiTest extends JavascriptUnitTest
                             JSON.parse(request.responseText));
                     }
                 };
-                request.send(postData);
+                request.send(post_data);
             }
             /**
              * This function runs the tests for the mode requested.
@@ -149,7 +150,7 @@ class PhantomjsUiTest extends JavascriptUnitTest
                     mode + '-UI ' + 'test Results<marquee ' +
                     'behavior="alternate">.............' +
                     '</marquee></div>';
-                postToPageWithCallback("?activity=runPhantomTests&mode=" +
+                postToPageWithCallback("?activity=runBrowserTests&mode=" +
                     mode, "&u=" + u + "&p=" + p, "json",
                     function(data)
                     {
