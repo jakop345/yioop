@@ -228,7 +228,7 @@ class MachineModel extends Model
         }
         stringOrderCallback("", "", "NAME");
         if($machines != array()) {
-            usort($machines, "stringOrderCallback");
+            usort($machines, "stringROrderCallback");
         }
         $name_server_statuses = CrawlDaemon::statuses();
         $machines['NAME_SERVER']['news_updater'] = 0;

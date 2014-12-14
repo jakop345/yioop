@@ -1638,21 +1638,21 @@ function orderCallback($word_doc_a, $word_doc_b, $order_field = NULL)
  * be a string
  *
  * Should be initialized before using in usort with a call
- * like: stringOrderCallback($tmp, $tmp, "field_want");
+ * like: stringROrderCallback($tmp, $tmp, "field_want");
  *
  * @param string $word_doc_a doc id of first document to compare
  * @param string $word_doc_b doc id of second document to compare
  * @param string $order_field which field of these associative arrays to sort by
  * @return int -1 if first doc bigger 1 otherwise
  */
- function stringOrderCallback($word_doc_a, $word_doc_b, $order_field = NULL)
+ function stringROrderCallback($word_doc_a, $word_doc_b, $order_field = NULL)
 {
     static $field = "a";
     if($order_field !== NULL) {
         $field = $order_field;
         return -1;
     }
-    return ((string)$word_doc_a[$field] >
+    return ((string)$word_doc_a[$field] <
         (string)$word_doc_b[$field]) ? -1 : 1;
 }
 /**
