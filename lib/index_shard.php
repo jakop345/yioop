@@ -1131,7 +1131,9 @@ class IndexShard extends PersistentStructure implements
             $copy_data_len = $offset - $write_offset;
             $pad_len = $tmp_len - $copy_data_len;
             $pad = str_pad("", $pad_len, "@");
-            crawlLog("..Merge Index Posting Final Copy -- 1");
+            crawlLog("..Merge Index Posting Final Copy -- 1: Grow postings: ".
+                strlen($this->word_postings) . " by " . $pad_len . " ".
+                "Current Memory: ". memory_get_usage());
             $this->word_postings .= $pad;
             crawlLog("..Merge Index Posting Final Copy -- 2");
             for($j = $len + $pad_len - 1,

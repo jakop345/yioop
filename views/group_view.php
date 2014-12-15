@@ -150,7 +150,7 @@ class GroupView extends View implements CrawlConstants
         }
         //schedule logout warnings
         var sec = 1000;
-        var minute = 60*sec;
+        var minute = 60 * sec;
         setTimeout("logoutWarn()", 59 * minute);
         setTimeout("autoLogout()", 60 * minute);
 
