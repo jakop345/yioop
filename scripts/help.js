@@ -231,14 +231,17 @@ function parseWikiContent(wiki_text, group_id, page_id, controller_name,
  */
 function parseLists(str)
 {
-    return str.replace(/(?:(?:(?:^|\n)[\*#].*)+)/g, function (match)
-    {
-        var listType = match.match(/(^|\n)#/) ? 'ol' : 'ul';
-        match = match.replace(/(^|\n)[\*#][ ]{0,1}/g, "$1");
+    return str.replace(/(?:(?:(?:^|\n)[\*#](?:.+\n)+.*))/g, function(match){
+        match = match.replace(/\n(?![#\*])/g," ");
+        var listType = match.match(/(^|\s)#/) ? 'ol' : 'ul';
+        match = match.replace(/(^|\s)[\*#][ ]{0,1}/g, "$1");
         match = parseLists(match);
-        return '<' + listType + '><li>' + match.replace(/^\n/, '')
-            .split(/\n/).join('</li><li>') + '</li></' + listType +
-        '>';
+        return '<'
+            + listType + '><li>'
+            + match.replace(/^\s/, '')
+                .split(/\n/).join('</li><li>')
+            + '</li></' + listType
+            + '>';
     });
 }
 /*
