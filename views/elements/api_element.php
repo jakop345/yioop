@@ -100,7 +100,7 @@ class ApiElement extends Element implements CrawlConstants
         if(isset($data['errors']) && count($data['errors']) > 0) {
             $out_array['errors'] = json_encode(
                 array_map(
-                    function ($string){
+                    function ($string) {
                         return html_entity_decode($string, ENT_QUOTES,
                             'UTF-8');
                     }, $data['errors']));

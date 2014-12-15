@@ -106,10 +106,16 @@ class GroupfeedElement extends Element implements CrawlConstants
             ?>
             <div id="feedstatus" <?php if($is_admin) {
                 e(' class="current-activity" ');
-                } else {
+            } else {
                 e(' class="small-margin-current-activity" ');
-                }?> >
-        <?php
+            }?> >
+            <?php
+            if(!MOBILE && !$is_admin && in_array($data["AD_LOCATION"],
+                array('side', 'both') ) ) { ?>
+                <div class="side-adscript"><?php
+                e($data['SIDE_ADSCRIPT']); ?></div>
+                <?php
+            }
         }
         if(isset($data['SUBTITLE']) &&
             $data['SUBTITLE'] != "" && $logged_in) { ?>
@@ -175,9 +181,10 @@ class GroupfeedElement extends Element implements CrawlConstants
                 </span><?php
             }
             ?>
+            </h2>
             <?php
         }
-        ?></h2>
+        ?>
         <div>
         &nbsp;
         </div>

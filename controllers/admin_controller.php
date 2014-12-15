@@ -216,6 +216,7 @@ class AdminController extends Controller implements CrawlConstants
             $data['USERNAME'] = $signin_model->getUserName(
                 $_SESSION['USER_ID']);
         }
+        $this->initializeAdFields($data, false);
         $this->displayView($view, $data);
     }
     /**

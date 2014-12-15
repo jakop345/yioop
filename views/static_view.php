@@ -85,8 +85,19 @@ class StaticView extends View
             $head_objects['page_border'] != 'none') {
             $page_border = $head_objects['page_border'];
         }
+        if(in_array($data["AD_LOCATION"], array('top', 'both') ) ) { ?>
+            <div class="top-adscript top-ad-static"><?php
+            e($data['TOP_ADSCRIPT']);
+            ?></div>
+            <?php
+        }
         ?>
         <div class="small-margin-current-activity <?php  e($page_border); ?>">
+        <?php if(!MOBILE && in_array($data["AD_LOCATION"],
+            array('side', 'both') ) ) { ?>
+            <div class="side-adscript"><?php e($data['SIDE_ADSCRIPT']); ?></div>
+        <?php
+        } ?>
             <?php if(isset($data["value"])) {
                     $page = sprintf($this->page_objects[$data['page']],
                         $data["value"]);

@@ -118,6 +118,12 @@ class GroupView extends View implements CrawlConstants
         ?></small>
         </h1>
         <?php
+        if(in_array($data["AD_LOCATION"], array('top', 'both') ) ) { ?>
+            <div class="top-adscript group-ad-static"><?php
+            e($data['TOP_ADSCRIPT']);
+            ?></div>
+            <?php
+        }
         if(isset($data['ELEMENT'])) {
             $element = $data['ELEMENT'];
             $this->element($element)->render($data);

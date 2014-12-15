@@ -57,8 +57,8 @@ require_once BASE_DIR . "/lib/wiki_parser.php";
  * @package seek_quarry
  * @subpackage controller
  */
-class ApiController extends Controller implements CrawlConstants {
-
+class ApiController extends Controller implements CrawlConstants
+{
     /**
      * Says which activities (roughly methods invoke for the api) this
      * controller will respond to (note: more activities will be loaded from
@@ -66,13 +66,13 @@ class ApiController extends Controller implements CrawlConstants {
      * @var array
      */
     var $activities = array("wiki");
-
     /**
      * Used to process requests related to user group activities outside of
      * the admin panel setting. This either could be because the admin panel
      * is "collapsed" or because the request concerns a wiki page.
      */
-    function processRequest() {
+    function processRequest()
+    {
         $data = array();
         if (!PROFILE) {
             return $this->configureRequest();
@@ -96,7 +96,6 @@ class ApiController extends Controller implements CrawlConstants {
         $_SESSION['REMOTE_ADDR'] = $_SERVER['REMOTE_ADDR'];
         $this->displayView($view, $data);
     }
-
     /**
      * Used to perform the actual activity call to be done by the
      * api_controller.
@@ -110,7 +109,8 @@ class ApiController extends Controller implements CrawlConstants {
      * elements to view, this method sets up the $data variable so that
      * the back/cancel button on that page works correctly.
      */
-    function processSession() {
+    function processSession()
+    {
         if (isset($_REQUEST['a']) &&
                 in_array($_REQUEST['a'], $this->activities)) {
             $activity = $this->clean($_REQUEST['a'],"string");
@@ -127,5 +127,4 @@ class ApiController extends Controller implements CrawlConstants {
         return $data;
     }
 }
-
 ?>

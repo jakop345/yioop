@@ -844,7 +844,8 @@ ul.in-list li
     border: 0;
     width:2in;
 }
-.mobile .logo img
+.mobile .logo img,
+.mobile .group-heading img
 {
     left: 0px;
     position: relative;
@@ -871,6 +872,11 @@ ul.in-list li
     right: 80px;
     top: 30px;
     width: 50px;
+}
+.mobile .current-activity-header img
+{
+    position: relative;
+    top: -12px;
 }
 .logo span
 {
@@ -1282,7 +1288,7 @@ div.button-group-result,
 div.group-result
 {
     font-size: 12pt;
-    width:97%;
+    width:7in;
 }
 .mobile div.group-result
 {
@@ -1995,8 +2001,14 @@ div.group-result
 }
 .current-activity-header
 {
-    min-width: 9in;
     max-width: 9in;
+    min-width: 9in;
+}
+.mobile .current-activity-header
+{
+    max-width: 320px;
+    min-width: 320px;
+    width:320px;
 }
 .current-activity-footer
 {
@@ -2004,6 +2016,12 @@ div.group-result
     max-width: 9in;
     position: relative;
     top:0.3in;
+}
+.mobile .current-activity-footer
+{
+    max-width: 320px;
+    min-width: 320px;
+    width:320px;
 }
 .small-margin-current-activity
 {
@@ -2604,6 +2622,7 @@ button.default
 {
     margin-bottom : -5px;
 }
+
 .top-adscript
 {
     clear: both;
@@ -2614,6 +2633,12 @@ button.default
     top: -0.9in;
     max-width:8in;
 }
+.top-ad-static,
+.group-ad-static
+{
+    position: relative;
+    top:15px;
+}
 .mobile .top-adscript
 {
     left: 3px;
@@ -2623,28 +2648,39 @@ button.default
     top: -40px;
     width:300px;
 }
+.mobile .top-ad-static
+{
+    position: relative;
+    top: 0px;
+}
+.mobile .group-ad-static
+{
+    position: relative;
+    top: 100px;
+}
 .mobile .top-adscript iframe
 {
     -ms-zoom: 0.63;
-    -moz-transform: scale(0.63);
-    -moz-transform-origin: 0 0;
     -o-transform: scale(0.63);
     -o-transform-origin: 0 0;
     -webkit-transform: scale(0.63);
     -webkit-transform-origin: 0 0;
     transform: scale(0.63);
     transform-origin: 0 0;
-    width:100%;
 }
 
 .html-ltr .side-adscript
 {
     float: right;
-    height:0
+    height:0;
+    position:relative;
+    top:28px;
 }
 
 .html-rtl .side-adscript
 {
     float: left;
     height:0
+    position:relative;
+    top:28px;
 }

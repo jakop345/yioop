@@ -111,6 +111,7 @@ class GroupController extends Controller implements CrawlConstants
             $this->setupViewFormatOutput($_REQUEST['f'], $view, $data);
         }
         $_SESSION['REMOTE_ADDR'] = $_SERVER['REMOTE_ADDR'];
+        $this->initializeAdFields($data);
         $this->displayView($view, $data);
     }
     /**

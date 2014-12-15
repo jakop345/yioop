@@ -91,6 +91,7 @@ class StaticController extends Controller
         } else {
             $user_id = $_SERVER['REMOTE_ADDR'];
         }
+        $this->initializeAdFields($data);
         $this->displayView($view, $data);
     }
     /**

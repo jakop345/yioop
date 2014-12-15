@@ -792,5 +792,25 @@ abstract class Controller
             $view->page_objects[$page_name] = $page_parts[0];
         }
     }
+    /**
+     * If advertisements present in the output of this controller
+     * this function can be used to initialize the field variables used
+     * to write the appropriate Javascripts
+     *
+     * @param array &$data data to be used in drawing the view
+     */
+     function initializeAdFields(&$data, $ads_off = false)
+     {
+        if(AD_LOCATION != "none") {
+            $data["AD_LOCATION"] = ($ads_off) ? "none" : AD_LOCATION;
+            $ad_fields = array('TOP_ADSCRIPT', 'SIDE_ADSCRIPT',
+                'GLOBAL_ADSCRIPT');
+            foreach($ad_fields as $ad_field) {
+                $ad = html_entity_decode(constant($ad_field), ENT_QUOTES);
+                $ad = preg_replace("[&#40;]","(",$ad);
+                $data[$ad_field] = preg_replace("[&#41;]",")",$ad);
+            }
+        }
+     }
 }
 ?>

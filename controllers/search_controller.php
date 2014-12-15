@@ -83,15 +83,7 @@ class SearchController extends Controller implements CrawlConstants
     {
         $data = array();
         $start_time = microtime();
-        if(AD_LOCATION != "none") {
-            $ad_fields = array('TOP_ADSCRIPT', 'SIDE_ADSCRIPT',
-                'GLOBAL_ADSCRIPT');
-            foreach($ad_fields as $ad_field) {
-                $ad = html_entity_decode(constant($ad_field), ENT_QUOTES);
-                $ad = preg_replace("[&#40;]","(",$ad);
-                $data[$ad_field] = preg_replace("[&#41;]",")",$ad);
-            }
-        }
+        $this->initializeAdFields($data);
         list($subsearches, $no_query) = $this->initializeSubsearches();
         $format_info = $this->initializeResponseFormat();
         if(!$format_info) { return;}
