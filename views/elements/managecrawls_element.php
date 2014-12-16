@@ -39,7 +39,7 @@ if(!defined('BASE_DIR')) {echo "BAD REQUEST"; exit();}
  * @package seek_quarry
  * @subpackage element
  */
-class ManagecrawlsElement
+class ManagecrawlsElement extends Element
 {
     /**
      * Draw form to start a new crawl, has div place holder and ajax code to
@@ -71,6 +71,8 @@ class ManagecrawlsElement
                 ?>&amp;arg=options&amp;<?php
                 e(CSRF_TOKEN."=".$data[CSRF_TOKEN]) ?>"><?php
                 e(tl('managecrawls_element_options')); ?></a>
+            <?php e("&nbsp;" .$this->view->helper("helpbutton")->render(
+                        "Start Crawl", $data[CSRF_TOKEN])); ?>
         </p>
         </form>
         <div id="crawlstatus" >

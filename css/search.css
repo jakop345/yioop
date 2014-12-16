@@ -2680,7 +2680,7 @@ button.default
 .html-rtl .side-adscript
 {
     float: left;
-    height:0
+    height:0;
     position:relative;
-    top:28px;
+    top:0px;
 }

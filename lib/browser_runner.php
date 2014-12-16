@@ -56,8 +56,7 @@ class BrowserRunner
     function execute($script, $decode_json = false)
     {
         $shell_result = shell_exec(
-            escapeshellcmd(PHANTOM_JS." " . implode(' ',
-                    func_get_args())));
+            escapeshellcmd(PHANTOM_JS." " . implode(' ', func_get_args())));
         if($shell_result === null) {
             return false;
         }

@@ -168,7 +168,7 @@ class PhantomjsUiTest extends JavascriptUnitTest
                 );
             }
             /**
-             *This function takes in the results object, parses it to render
+             *  This function takes in the results object, parses it to render
              *  the results ui.
              *  @param results Obj results object.
              *  @param mode String tests mode Web/Mobile.
