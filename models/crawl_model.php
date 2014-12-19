@@ -1010,7 +1010,7 @@ EOT;
             } else {
                 $index_info = array();
                 $index_info['DESCRIPTION'] = "ERROR!!";
-                $index_info['INFO'] = $info;
+                $crawl['INFO'] = $info;
             }
             $crawl['DESCRIPTION'] = "";
             if(!$return_recrawls &&
