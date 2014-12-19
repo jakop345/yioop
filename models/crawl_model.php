@@ -1005,7 +1005,11 @@ EOT;
             $crawl['CRAWL_TIME'] =
                 substr($pre_timestamp, strlen(self::index_data_base_name));
             $info = IndexArchiveBundle::getArchiveInfo($dir);
-            $index_info = @unserialize($info['DESCRIPTION']);
+            if(isset($info['DESCRIPTION'])) {
+                $index_info = @unserialize($info['DESCRIPTION']);
+            } else {
+                $index_info = array();
+            }
             $crawl['DESCRIPTION'] = "";
             if(!$return_recrawls &&
                 isset($index_info[self::CRAWL_TYPE]) &&
