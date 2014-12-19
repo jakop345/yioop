@@ -86,7 +86,9 @@ class ApiElement extends Element implements CrawlConstants
             $out_array['page_id'] = $data['PAGE_ID'];
             $out_array['page_name'] = $data['PAGE_NAME'];
             $out_array['page_title'] = $data['PAGE_TITLE'];
-            $out_array['page_view_title'] = $data['HEAD']['title'];
+            if(isset($data['HEAD']['title'])) {
+                $out_array['page_view_title'] = $data['HEAD']['title'];
+            }
             $http_code = "200 OK";
         } else {
             if(!$logged_in) {
