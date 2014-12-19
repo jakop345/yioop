@@ -125,6 +125,10 @@ class HelpbuttonHelper extends Helper
             'wiki_view_edit :"' . tl('wiki_view_edit') . '",' .
             'wiki_view_not_available :"' . tl('wiki_view_not_available') .
             '",' .
+            'wiki_view_create_edit :"' . tl('wiki_view_create_edit') .
+            '",' .
+            'wiki_view_page_no_exist :"' . tl('wiki_view_page_no_exist','%s') .
+            '",' .
             'wiki_view_read :"' . tl('wiki_view_read') . '"' .
             "}";
         $this->back_params = "{";

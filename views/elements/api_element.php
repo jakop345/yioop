@@ -92,15 +92,17 @@ class ApiElement extends Element implements CrawlConstants
             if(!$logged_in) {
                 $out_array["logged_in"] = false;
                 $http_code = "401 Unauthorized";
+            }else{
+                $http_code = "404 Not Found";
             }
         }
-        if($can_edit && $data['PAGE']) {
+        if($can_edit) {
             $out_array["can_edit"] = true;
         }
         if(isset($data['errors']) && count($data['errors']) > 0) {
             $out_array['errors'] = json_encode(
                 array_map(
-                    function ($string) {
+                    function ($string){
                         return html_entity_decode($string, ENT_QUOTES,
                             'UTF-8');
                     }, $data['errors']));

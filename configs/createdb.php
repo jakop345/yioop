@@ -549,6 +549,7 @@ foreach($public_pages as $page_name => $page_content) {
         "$page_name Wiki Page Created!", "Discuss the page in this thread!");
 }
 $help_pages = array();
+$docUrl = "https://www.seekquarry.com/?c=static&p=Documentation";
 $help_pages["Add_Locale"] = <<<EOD
 page_type=standard
 
@@ -652,61 +653,51 @@ text direction of a locale.
 * Finally, clicking the Delete link let&amp;#039;s one delete a locale and all
 its strings.
 EOD;
+$docLink = "#Managing%20Users,%20Roles,%20and%20Groups";
 $help_pages["Browse_Groups"] = <<<EOD
 page_type=standard
-
 page_border=solid-border
-
 toc=true
-
 title=Browse Groups
-
 END_HEAD_VARS==Creating or Joining a group==
-You can create or Join a Group all in one place using this Text field. Simply
-enter the Group Name You want to create or Join. If the Group Name already 
-exists, you will simply join the group. If the group name doesn't exist, you
-will be presented with more options to customize and create your new Group.
+You can create or Join a Group all in one place using this Text field.
+Simply enter the Group Name You want to create or Join. If the Group Name
+already exists, you will simply join the group. If the group name doesn't
+exist, you will be presented with more options to customize and create your
+new Group.
 ==Browse Existing Groups==
-You can use the [Browse] hyper link to browse the existing Groups. You will
-then be presented with a web form to narrow your search followed by a list of
-all visible groups to you beneath.
-{{right|
-[[https://www.seekquarry.com/?c=static&p=Documentation#Managing%20Users,%20Roles,%20and%20Groups|Learn More...]]}}
+You can use the [Browse] hyper link to browse the existing Groups.
+You will then be presented with a web form to narrow your search followed by
+a list of all visible groups to you beneath.
+{{right|[[$docUrl$docLink| Learn More..]]}}
 EOD;
+$docLink = "#GUI%20for%20Managing%20Machines%20and%20Servers";
 $help_pages["Machine_Information"] = <<<EOD
 page_type=standard
-
 page_border=solid-border
-
 toc=true
-
 title=Machine Information
-
-END_HEAD_VARS<br />
-'''Machine Information listings:'''
+END_HEAD_VARS'''Machine Information listings:'''
 <br />
-This shows the currently known about machines. This list always begins 
-with the '''Name Server''' itself and a toggle to control whether or not
-the News Updater process is running on the Name Server. This allows you to
-control whether or not Yioop attempts to update its RSS (or Atom) search
-sources on an hourly basis.
-<br />There is also a link to the log file of the News Updater process. Under
-the Name Server information is a dropdown that can be used to control the
-number of current machine statuses that are displayed for all other machines
-that have been added. It also might have next and previous arrow links to go
-through the currently available machines.
- <br />
-{{right|[[https://www.seekquarry.com/?c=static&p=Documentation#GUI%20for%20Managing%20Machines%20and%20Servers|Learn More...]]}}
+This shows the currently known about machines. This list always begins with
+ the '''Name Server''' itself and a toggle to control whether or not the
+  News Updater process is running on the Name Server. This allows you to
+   control whether or not Yioop attempts to update its RSS (or Atom) search
+    sources on an hourly basis.
+<br />There is also a link to the log file of the News Updater process.
+ Under the Name Server information is a dropdown that can be used to control
+  the number of current machine statuses that are displayed for all other
+   machines that have been added. It also might have next and previous arrow
+    links to go through the currently available machines.
+<br />
+{{right|[[$docUrl$docLink| Learn More.]]}}
 EOD;
+$docLink = "#GUI%20for%20Managing%20Machines%20and%20Servers";
 $help_pages["Manage_Machines"] = <<<EOD
 page_type=standard
-
 page_border=solid-border
-
 toc=true
-
 title=Manage Machines
-
 END_HEAD_VARS'''Add Machine:'''
 <br /><br />
 The Add machine form allows you to add a new machine to be controlled by this
@@ -716,16 +707,14 @@ installed Yioop instance.
 <br />
 The '''Mirror''' check-box says whether you want the given Yioop installation
 to act as a mirror for another Yioop installation. Checking it will reveal a
-drop-down menu that allows you to choose which installation amongst the
+drop-down menu that allows you to choose which installation among-st the
 previously entered machines you want to mirror. The '''Has Queue Server'''
-check-box is used to say whether the given Yioop installation will be running
-a queue server or not.
+check-box is used to say whether the given Yioop installation will be running a
+queue server or not.
 <br />
 Finally, the '''Number of Fetchers''' drop down allows you to say how many
 fetcher instances you want to be able to manage for that machine.
-
-{{right|[[https://www.seekquarry.com/?c=static&p=Documentation#GUI%20for%20Managing%20Machines%20and%20Servers|Learn More...]]}}
-
+{{right|[[$docUrl$docLink|Learn More..]]}}
 EOD;
 $help_pages["Discover_Groups"] = <<<EOD
 page_type=standard
