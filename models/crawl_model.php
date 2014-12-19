@@ -1009,7 +1009,8 @@ EOT;
                 $index_info = @unserialize($info['DESCRIPTION']);
             } else {
                 $index_info = array();
-                $index_info['DESCRIPTION'] = "ERROR!! ".print_r($info, true);
+                $index_info['DESCRIPTION'] = "ERROR!! $dir<br />" . 
+                    print_r($info, true);
             }
             $crawl['DESCRIPTION'] = "";
             if(!$return_recrawls &&
