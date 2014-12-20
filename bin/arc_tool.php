@@ -374,7 +374,8 @@ class ArcTool implements CrawlConstants
             echo "\nShard:$i\n=======\n";
             echo "Number of Docs in Shard: ".$shard->num_docs."\n";
             echo "Number of Link Items in Shard: ".$shard->num_link_docs."\n";
-            $visited_urls_count += $shard->num_docs;
+            $visited_urls_count += min($shard->num_docs,
+                NUM_DOCS_PER_GENERATION);
             $count += $shard->num_link_docs;
         }
         echo "\n=======\n";
