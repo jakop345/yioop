@@ -83,16 +83,10 @@ mb_regex_encoding("UTF-8");
 /**
  * Command line program that allows one to examine the content of
  * the WebArchiveBundles and IndexArchiveBundles of Yioop crawls.
- * For now it supports returning header information about bundles,
- * as well as pretty printing the page/summary contents of the bundle.
+ * To see all of the available command run it from the command line
+ * with a syntax like:
  *
- * The former can be gotten from a bundle by running arc_tool with a
- * command like:
- * php arc_tool.php info bundle_name
- *
- * The latter can be gotten from a bundle by running arc_tool with a
- * command like:
- * php arc_tool.php list bundle_name start_doc_num num_results
+ * php arc_tool.php
  *
  * @author Chris Pollett (non-yioop archive code derived from earlier
  *     stuff by Shawn Tice)
@@ -161,6 +155,9 @@ class ArcTool implements CrawlConstants
             break;
             case "rebuild":
                 $this->rebuildIndexArchive($path);
+            break;
+            case "count":
+                $this->outputCountIndexArchive($path);
             break;
             case "reindex":
                 $this->reindexIndexArchive($path);
@@ -305,14 +302,13 @@ class ArcTool implements CrawlConstants
      */
     function outputShardInfo($archive_path, $generation)
     {
-        ini_set("memory_limit","2000M"); /*reading in a whole shard might take
+        ini_set("memory_limit","8000M"); /*reading in a whole shard might take
                 a bit more memory
             */
         $bundle_name = $this->getArchiveName($archive_path);
         echo "\nBundle Name: $bundle_name\n";
         $archive_type = $this->getArchiveKind($archive_path);
         echo "Bundle Type: $archive_type\n";
-
         if(strcmp($archive_type,"IndexArchiveBundle") != 0) {
             $this->badFormatMessageAndExit($archive_path, "index");
         }
@@ -347,7 +343,43 @@ class ArcTool implements CrawlConstants
             echo "$i\t\t\t$num_terms\t\t\t$num_docs\n";
             $i += $num_terms;
         }
-
+    }
+    /**
+     * Counts and outputs the number of docs and links in each shard
+     * in the archive supplied in $archive_path as well as an overall count
+     *
+     * @param string $archive_path patch of archive to count
+     */
+    function outputCountIndexArchive($archive_path)
+    {
+        $bundle_name = $this->getArchiveName($archive_path);
+        echo "\nBundle Name: $bundle_name\n";
+        $archive_type = $this->getArchiveKind($archive_path);
+        echo "Bundle Type: $archive_type\n";
+        if(strcmp($archive_type,"IndexArchiveBundle") != 0) {
+            $this->badFormatMessageAndExit($archive_path, "index");
+        }
+        $index_timestamp = substr($archive_path,
+            strpos($archive_path, self::index_data_base_name) +
+            strlen(self::index_data_base_name));
+        $index = IndexManager::getIndex($index_timestamp);
+        $num_generations = $index->generation_info["ACTIVE"] + 1;
+        $count = 0;
+        $visited_urls_count = 0;
+        echo "Shard Counts\n===========\n";
+        for($i = 0; $i < $num_generations; $i++ ) {
+            $index->setCurrentShard($i, true);
+            $shard = $index->getCurrentShard(true);
+            $shard->getShardHeader();
+            echo "\nShard:$i\n=======\n";
+            echo "Number of Docs in Shard: ".$shard->num_docs."\n";
+            echo "Number of Link Items in Shard: ".$shard->num_link_docs."\n";
+            $visited_urls_count += $shard->num_docs;
+            $count += $shard->num_link_docs;
+        }
+        echo "\n=======\n";
+        echo "Total Number of Docs Seen:".$visited_urls_count."\n";
+        echo "Total Number of Link Items:".$count."\n";
     }
 
     /**
@@ -983,6 +1015,10 @@ IndexArchiveBundles. It will look for these using the path provided or
 will check in the Yioop! crawl directory as a fall back.
 
 The available commands for arc_tool are:
+
+php arc_tool.php count bundle_name
+    /* returns the counts of docs and links for each shard in bundle
+       as well as an overall total */
 
 php arc_tool.php dict bundle_name word
     // returns index dictionary records for word stored in index archive bundle.
