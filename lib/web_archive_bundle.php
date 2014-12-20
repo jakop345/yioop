@@ -165,7 +165,8 @@ class WebArchiveBundle
                 $info['WRITE_PARTITION'] = $this->write_partition;
             }
             file_put_contents(
-                $this->dir_name."/description.txt", serialize($info));
+                $this->dir_name."/description.txt", serialize($info),
+                LOCK_EX);
         }
     }
     /**
@@ -284,7 +285,7 @@ class WebArchiveBundle
         }
         if(!$this->read_only_archive) {
             file_put_contents($this->dir_name.
-                "/description.txt", serialize($info));
+                "/description.txt", serialize($info), LOCK_EX);
         }
     }
     /**
@@ -303,7 +304,7 @@ class WebArchiveBundle
         $info[$field] += $num;
         if(!$this->read_only_archive) {
             file_put_contents($this->dir_name."/description.txt",
-                serialize($info));
+                serialize($info), LOCK_EX);
         }
     }
     /**
@@ -340,7 +341,8 @@ class WebArchiveBundle
     {
         if(file_exists($dir_name."/description.txt") && ((isset($this) &&
             !$this->read_only_archive) || !isset($this))) {
-            file_put_contents($dir_name."/description.txt", serialize($info));
+            file_put_contents($dir_name."/description.txt", serialize($info),
+                LOCK_EX);
         }
     }
     /**

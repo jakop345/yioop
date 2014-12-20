@@ -327,7 +327,7 @@ class ArcTool implements CrawlConstants
         echo "\nShard Information for Generation $generation\n";
         echo "====================================\n";
 
-        $shard = $index->getCurrentShard();
+        $shard = $index->getCurrentShard(true);
         echo "Number of Distinct Terms Indexed: ".count($shard->words)."\n";
         echo "Number of Docs in Shard: ".$shard->num_docs."\n";
         echo "Number of Link Items in Shard: ".$shard->num_link_docs."\n";
@@ -523,7 +523,6 @@ class ArcTool implements CrawlConstants
 
         }
     }
-
     /**
      * Outputs to stdout header information for a IndexArchiveBundle
      * bundle.
@@ -544,8 +543,9 @@ class ArcTool implements CrawlConstants
         echo "Number of generations: ".$num_generations."\n";
         echo "Number of stored links and documents: ".$info['COUNT']."\n";
         echo "Number of stored documents: ".$info['VISITED_URLS_COUNT']."\n";
-        $crawl_order = ($info[self::CRAWL_ORDER] == self::BREADTH_FIRST) ?
-            "Bread First" : "Page Importance";
+        $crawl_order = (isset($info[self::CRAWL_ORDER]) &&
+            $info[self::CRAWL_ORDER] == self::BREADTH_FIRST) ?
+            "Breadth First" : "Page Importance";
         echo "Crawl order was: $crawl_order\n";
         echo "Seed sites:\n";
         foreach($info[self::TO_CRAWL] as $seed) {

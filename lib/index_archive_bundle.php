@@ -323,9 +323,11 @@ class IndexArchiveBundle implements CrawlConstants
      * getActiveShard() instead. The point of this method is to allow
      * for lazy reading of the file associated with the shard.
      *
+     * @param bool $force_read whether to force no advance generation and
+     *      merge dictionary side effects
      * @return object the currently being index shard
      */
-     function getCurrentShard()
+     function getCurrentShard($force_read = false)
      {
         if(!isset($this->current_shard)) {
             if(!isset($this->generation_info['CURRENT'])) {
@@ -344,7 +346,7 @@ class IndexArchiveBundle implements CrawlConstants
                     $this->current_shard->getShardHeader();
                     $this->current_shard->read_only_from_disk = true;
                 } else {
-                    if(filesize($current_index_shard_file) >
+                    if(!$force_read && filesize($current_index_shard_file) >
                         self::NO_LOAD_SIZE) {
                         $this->addAdvanceGeneration();
                     } else {
