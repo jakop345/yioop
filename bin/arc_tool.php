@@ -157,7 +157,7 @@ class ArcTool implements CrawlConstants
                 $this->rebuildIndexArchive($path);
             break;
             case "count":
-                $this->outputCountIndexArchive($path);
+                $this->outputCountIndexArchive($path, $argv[3]);
             break;
             case "reindex":
                 $this->reindexIndexArchive($path);
@@ -350,7 +350,7 @@ class ArcTool implements CrawlConstants
      *
      * @param string $archive_path patch of archive to count
      */
-    function outputCountIndexArchive($archive_path)
+    function outputCountIndexArchive($archive_path, $set_count = false)
     {
         $bundle_name = $this->getArchiveName($archive_path);
         echo "\nBundle Name: $bundle_name\n";
@@ -380,6 +380,14 @@ class ArcTool implements CrawlConstants
         echo "\n=======\n";
         echo "Total Number of Docs Seen:".$visited_urls_count."\n";
         echo "Total Number of Link Items:".$count."\n";
+        if($set_count == "save") {
+            echo "\nSaving count to bundle...\n";
+            $info = IndexArchiveBundle::getArchiveInfo($archive_path);
+            $info['COUNT'] = $visited_urls_count + $count;
+            $info['VISITED_URLS_COUNT'] = $visited_urls_count;
+            IndexArchiveBundle::setArchiveInfo($archive_path, $info);
+            echo "..done\n";
+        }
     }
 
     /**
@@ -1017,8 +1025,13 @@ will check in the Yioop! crawl directory as a fall back.
 The available commands for arc_tool are:
 
 php arc_tool.php count bundle_name
+    or
+php arc_tool.php count bundle_name save
     /* returns the counts of docs and links for each shard in bundle
-       as well as an overall total */
+       as well as an overall total. The second command saves the just
+       computed count into the index description (can be used to
+       fix the index count if it get screwed up).
+     */
 
 php arc_tool.php dict bundle_name word
     // returns index dictionary records for word stored in index archive bundle.
